@@ -84,7 +84,7 @@ contract LendRewardSplitter is Initializable {
         require(amount > 0, "NO_INPUT_AMOUNT");
 
         // @devs Transfer the token from the user to this contract..
-        _transferTokens(inType, amount, msg.sender);
+        _transferTokens(inType, amount);
 
         // @devs Deposit in curveLend.
         if (inType == TOKEN_TYPE.LendAsset) {
@@ -105,8 +105,9 @@ contract LendRewardSplitter is Initializable {
             depositAmount = balanceAfter - balanceBefore;
         }
 
-        // @dev Handle this contrat state.
+       
         if (isStableReward) {
+             //@dev For svcUSD, we mint 1:1 from cvcrvUSD.
             svcUSD.mint(msg.sender, depositAmount);
             stableDepositTotal += depositAmount;
         } else {
@@ -139,42 +140,38 @@ contract LendRewardSplitter is Initializable {
         uint amountWithdrawn = balanceAfter - balanceBefore;
         require(amountWithdrawn > 0, "NO_STAKEDAO_WITHDRAW");
 
-        //@dev we burn the corresponding token
+        // @devs we burn the corresponding token
         recipeToken.burn(msg.sender, amount);
 
         if (outType == TOKEN_TYPE.LendCurveAsset) {
-            //@dev we transfert the CURVE_VAULT_TOKEN to the user
+            // @devs we transfert the CURVE_VAULT_TOKEN to the user
             curveLendVault.transfer(msg.sender, amountWithdrawn);
         } else if (outType == TOKEN_TYPE.LendAsset) {
-            //@dev we withdraw from curve if needed
+            // @devs we withdraw from curve if needed
             uint maxWithdraw = curveLendVault.maxWithdraw(address(this));
-
-            uint totalDebt = ICrvUSDController(curveLendVault.controller())
-                .total_debt();
             require(
                 maxWithdraw < amountWithdrawn,
                 "CANNOT_WIDTHDRAW_THIS_MUCH_FROM_CURVELEND"
             );
-            uint crvUsdAmount = curveLendVault.withdraw(amountWithdrawn);
-            lendAsset.transfer(msg.sender, crvUsdAmount);
+            uint amountAssetToWithdraw = curveLendVault.convertToAssets(
+                amountWithdrawn
+            );
+            curveLendVault.withdraw(amountAssetToWithdraw);
+            lendAsset.transfer(msg.sender, amountAssetToWithdraw);
         }
         emit Withdraw(msg.sender, isStableReward, outType, amount);
     }
 
-    function _transferTokens(
-        TOKEN_TYPE inType,
-        uint amount,
-        address sender
-    ) internal {
+    function _transferTokens(TOKEN_TYPE inType, uint amount) internal {
         // @devs Transfer the token (LendAsset).
         if (inType == TOKEN_TYPE.LendAsset) {
-            lendAsset.safeTransferFrom(sender, address(this), amount);
+            lendAsset.safeTransferFrom(msg.sender, address(this), amount);
         }
 
-        //@dev Transfer the token (LendCurveAsset) to this contract.
+        // @devs Transfer the token (LendCurveAsset) to this contract.
         if (inType == TOKEN_TYPE.LendCurveAsset) {
             IERC20(curveLendVault).safeTransferFrom(
-                sender,
+                msg.sender,
                 address(this),
                 amount
             );
@@ -182,7 +179,7 @@ contract LendRewardSplitter is Initializable {
         // @devs Transfer the token (LendStakeDaoAsset) to this contract.
         if (inType == TOKEN_TYPE.LendStakeDaoAsset) {
             IERC20(stakeDaoVault.liquidityGauge()).safeTransferFrom(
-                sender,
+                msg.sender,
                 address(this),
                 amount
             );
