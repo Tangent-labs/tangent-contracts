@@ -1,32 +1,38 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {Initializable} from "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import {ICurvelendVault} from "./interfaces/ICurvelendVault.sol";
+import {ICurveLendVault} from "./interfaces/ICurveLendVault.sol";
 import {IStakeDaoVault} from "./interfaces/IStakeDaoVault.sol";
+import {ISDLiquidityGauge} from "./interfaces/ISDLiquidityGauge.sol";
 import {ICrvUSDController} from "./interfaces/ICrvUSDController.sol";
-import {ICurveLendSplitterToken} from "./interfaces/ICurveLendSplitterToken.sol";
+import {ICurveLendSplitterTokenStream} from "./interfaces/ICurveLendSplitterTokenStream.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract LendRewardSplitter is Initializable {
     using SafeERC20 for IERC20;
 
-    // @dev Curve vault contract for lending (CurvelendVault).
-    ICurvelendVault curveLendVault;
-    // @dev Stake dao vault contract for lending (StakeDaoVault).
-    IStakeDaoVault stakeDaoVault;
-    // @dev collateral asset for lending (IERC20).
-    IERC20 lendAsset;
+    uint256 constant MAX_UINT = uint256(int256(-1));
 
-    // @dev Issued for governance reward deposits(IERC20).
-    ICurveLendSplitterToken gUsd;
-    // @dev Issued for stable reward deposits(IERC20).
-    ICurveLendSplitterToken svcUSD;
+    /// @dev Curve vault contract for lending (CurvelendVault).
+    ICurveLendVault public curveLendVault;
+    /// @dev Stake dao vault contract for lending (StakeDaoVault).
+    IStakeDaoVault public stakeDaoVault;
+    /// @dev collateral asset for lending (IERC20).
+    IERC20 public lendAsset;
 
-    // @dev Keep track of all deposit done for stable rewards.
+    /// @dev Issued for governance reward deposits(IERC20).
+    ICurveLendSplitterTokenStream public gUSD;
+    /// @dev Issued for stable reward deposits(IERC20).
+    ICurveLendSplitterTokenStream public scvUSD;
+
+    ISDLiquidityGauge public liquidityGauge;
+
+    /// @dev Keep track of all deposit done for stable rewards.
     uint public stableDepositTotal;
-    // @dev Keep track of all deposit done for governance rewards.
+    /// @dev Keep track of all deposit done for governance rewards.
     uint public govDepositTotal;
-
-    uint256 MAX_INT = uint256(int256(-1));
 
     mapping(address => uint) public balanceOf;
 
@@ -39,33 +45,81 @@ contract LendRewardSplitter is Initializable {
     );
 
     enum TOKEN_TYPE {
-        // @dev Asset use as collateral in the lend contract. (ex : crvUSD)
+        /// @dev Asset use as collateral in the lend contract. (ex : crvUSD)
         LendAsset,
-        // @dev share of  curve vault contract. (ex : cvcrvUSD)
+        /// @dev share of  curve vault contract. (ex : cvcrvUSD)
         LendCurveAsset,
-        // @dev share of  curve vault contract. (ex : sdcvcrvUSD)
+        /// @dev share of  curve vault contract. (ex : sdcvcrvUSD)
         LendStakeDaoAsset
     }
 
     function initialize(
         address _curveLendVault,
         address _stakeDaoVault,
-        address _gUsd,
-        address _svcUSD
+        address _gUSD,
+        address _scvUSD
     ) external initializer {
-        // @dev We initialize the lobal variables.
-        curveLendVault = ICurvelendVault(_curveLendVault);
+        /// @dev We initialize the lobal variables.
+        curveLendVault = ICurveLendVault(_curveLendVault);
         stakeDaoVault = IStakeDaoVault(_stakeDaoVault);
         lendAsset = IERC20(curveLendVault.asset());
-        gUsd = ICurveLendSplitterToken(_gUsd);
-        svcUSD = ICurveLendSplitterToken(_svcUSD);
-        // @dev We approve the operation contract to move  tokens from/to this contract .
-        lendAsset.approve(address(curveLendVault), MAX_INT);
-        curveLendVault.approve(address(stakeDaoVault), MAX_INT);
-        // @dev We approve for the mint operation
-        IERC20(stakeDaoVault.liquidityGauge()).approve(_gUsd, MAX_INT);
-        IERC20(stakeDaoVault.liquidityGauge()).approve(_svcUSD, MAX_INT);
+        gUSD = ICurveLendSplitterTokenStream(_gUSD);
+        scvUSD = ICurveLendSplitterTokenStream(_scvUSD);
+        /// @dev We approve the operation contract to move  tokens from/to this contract .
+        lendAsset.approve(address(curveLendVault), MAX_UINT);
+        curveLendVault.approve(address(stakeDaoVault), MAX_UINT);
+        /// @dev We approve for the mint operation
+        address _liquidityGauge = stakeDaoVault.liquidityGauge();
+        liquidityGauge = ISDLiquidityGauge(_liquidityGauge);
+        IERC20(_liquidityGauge).approve(_gUSD, MAX_UINT);
+        IERC20(_liquidityGauge).approve(_scvUSD, MAX_UINT);
     }
+    function processRewards() external {
+        processGovRewards();
+    }
+    function processGovRewards() internal {
+        /// @dev Iterate through gauge rewards
+        uint256 rewardCount = liquidityGauge.reward_count();
+        IERC20[] memory rewardTokens = new IERC20[](rewardCount);
+        uint256[] memory amountsClaim = new uint256[](rewardCount);
+        /// @dev get balances before claim and addRewards if a new token has been added to the liquidity gauge
+        for (uint256 i; i < rewardCount; ) {
+            IERC20 rewardToken = IERC20(liquidityGauge.reward_tokens(i));
+            rewardTokens[i] = rewardToken;
+            ICurveLendSplitterTokenStream.Reward memory rewardData = gUSD
+                .rewardData(rewardToken);
+            /// @dev addReward if necessary
+            if (rewardData.lastUpdateTime == 0) {
+                gUSD.addReward(rewardToken);
+            }
+            amountsClaim[i] = rewardToken.balanceOf(address(gUSD));
+            unchecked {
+                ++i;
+            }
+        }
+        /// @dev claim rewards
+        liquidityGauge.claim_rewards(address(this), address(gUSD));
+
+        /// @dev notify rewards for each rewardTokens
+        bool isClaim = false;
+        for (uint256 i; i < rewardTokens.length; ) {
+            amountsClaim[i] =
+                rewardTokens[i].balanceOf(address(gUSD)) -
+                amountsClaim[i];
+            if (amountsClaim[i] != 0) isClaim = true;
+            unchecked {
+                ++i;
+            }
+        }
+        /// @dev if nothing to claim, continue to not ruin all the processes
+        if (isClaim) gUSD.notifyRewards(rewardTokens, amountsClaim);
+    }
+
+    /*
+    TODO:
+    deposit with...
+    USDT/DAI/USDC/USDe/ETH/WETH
+    */
 
     /**
      *  @notice Deposit asset into the Convergence splitter contract in order to get one part of the reawrd from the lend contract.
@@ -77,25 +131,25 @@ contract LendRewardSplitter is Initializable {
      */
     function deposit(
         TOKEN_TYPE inType,
-        uint amount,
+        uint256 amount,
         bool isStableReward,
         bool doDeposit
-    ) public returns (uint depositAmount) {
-        require(amount > 0, "NO_INPUT_AMOUNT");
+    ) external returns (uint256 depositAmount) {
+        require(amount != 0, "NO_INPUT_AMOUNT");
 
-        // @devs Transfer the token from the user to this contract..
+        /// @dev Transfer the token from the user to this contract..
         _transferTokens(inType, amount, msg.sender);
 
-        // @devs Deposit in curveLend.
+        /// @dev Deposit in curveLend.
         if (inType == TOKEN_TYPE.LendAsset) {
-            depositAmount = curveLendVault.deposit(amount, address(this));
+            depositAmount = curveLendVault.deposit(amount, address(this)); //shareAmount
         }
-        // @devs In others code path token are minted 1:1.
+        /// @dev In others code path token are minted 1:1.
         else {
             depositAmount = amount;
         }
 
-        // @devs Stake into stakedao strategies to get OnlyBoost.
+        /// @dev Stake into stakedao strategies to get OnlyBoost.
         if (inType < TOKEN_TYPE.LendStakeDaoAsset) {
             uint balanceBefore = IERC20(stakeDaoVault.liquidityGauge())
                 .balanceOf(address(this));
@@ -105,14 +159,14 @@ contract LendRewardSplitter is Initializable {
             depositAmount = balanceAfter - balanceBefore;
         }
 
-        // @dev Handle this contrat state.
+        /// @dev Handle this contrat state.
         if (isStableReward) {
-            svcUSD.mint(msg.sender, depositAmount);
+            scvUSD.mint(msg.sender, depositAmount);
             stableDepositTotal += depositAmount;
         } else {
-            //@dev For gUsd, we mint 1:1 from crvUSD , we use the curveLendVault.convertToAssets to calculate the amount.
+            /// @dev For gUSD, we mint 1:1 from crvUSD , we use the curveLendVault.convertToAssets to calculate the amount.
             depositAmount = curveLendVault.convertToAssets(depositAmount);
-            gUsd.mint(msg.sender, depositAmount);
+            gUSD.mint(msg.sender, depositAmount);
             govDepositTotal += depositAmount;
         }
         emit Deposit(msg.sender, isStableReward, depositAmount);
@@ -120,37 +174,37 @@ contract LendRewardSplitter is Initializable {
 
     function withdraw(
         TOKEN_TYPE outType,
-        uint amount,
+        uint256 amount,
         bool isStableReward
     ) public {
         require(amount != 0, "WITHDRAW_LTE_0");
 
-        ICurveLendSplitterToken recipeToken = isStableReward ? svcUSD : gUsd;
+        ICurveLendSplitterTokenStream recipeToken = isStableReward
+            ? scvUSD
+            : gUSD;
         require(outType != TOKEN_TYPE.LendStakeDaoAsset, "OUT_TYPE_NOT_VALID");
         require(
             amount <= recipeToken.balanceOf(msg.sender),
             "NOT_ENOUGH_BALANCE"
         );
 
-        // @devs withdraw from stake DAO
+        /// @dev withdraw from stake DAO
         uint balanceBefore = curveLendVault.balanceOf(address(this));
         stakeDaoVault.withdraw(amount);
         uint balanceAfter = curveLendVault.balanceOf(address(this));
         uint amountWithdrawn = balanceAfter - balanceBefore;
         require(amountWithdrawn > 0, "NO_STAKEDAO_WITHDRAW");
 
-        //@dev we burn the corresponding token
+        /// @dev we burn the corresponding token
         recipeToken.burn(msg.sender, amount);
 
         if (outType == TOKEN_TYPE.LendCurveAsset) {
-            //@dev we transfert the CURVE_VAULT_TOKEN to the user
+            /// @dev we transfert the CURVE_VAULT_TOKEN to the user
             curveLendVault.transfer(msg.sender, amountWithdrawn);
         } else if (outType == TOKEN_TYPE.LendAsset) {
-            //@dev we withdraw from curve if needed
+            /// @dev we withdraw from curve if needed
             uint maxWithdraw = curveLendVault.maxWithdraw(address(this));
 
-            uint totalDebt = ICrvUSDController(curveLendVault.controller())
-                .total_debt();
             require(
                 maxWithdraw < amountWithdrawn,
                 "CANNOT_WIDTHDRAW_THIS_MUCH_FROM_CURVELEND"
@@ -166,12 +220,12 @@ contract LendRewardSplitter is Initializable {
         uint amount,
         address sender
     ) internal {
-        // @devs Transfer the token (LendAsset).
+        /// @dev Transfer the token (LendAsset).
         if (inType == TOKEN_TYPE.LendAsset) {
             lendAsset.safeTransferFrom(sender, address(this), amount);
         }
 
-        //@dev Transfer the token (LendCurveAsset) to this contract.
+        /// @dev Transfer the token (LendCurveAsset) to this contract.
         if (inType == TOKEN_TYPE.LendCurveAsset) {
             IERC20(curveLendVault).safeTransferFrom(
                 sender,
@@ -179,7 +233,7 @@ contract LendRewardSplitter is Initializable {
                 amount
             );
         }
-        // @devs Transfer the token (LendStakeDaoAsset) to this contract.
+        /// @dev Transfer the token (LendStakeDaoAsset) to this contract.
         if (inType == TOKEN_TYPE.LendStakeDaoAsset) {
             IERC20(stakeDaoVault.liquidityGauge()).safeTransferFrom(
                 sender,

@@ -2,10 +2,8 @@
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-
-interface ICurvelendVault is IERC20 {
-
-   function borrow_apr() external view returns (uint256);
+interface ICurveLendVault is IERC20 {
+    function borrow_apr() external view returns (uint256);
     function lend_apr() external view returns (uint256);
     function asset() external view returns (address);
     function totalAssets() external view returns (uint256);

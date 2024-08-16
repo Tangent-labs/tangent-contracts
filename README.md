@@ -1,5 +1,11 @@
 # Convergence study on Llamalend ( for yield splitter prodcut)
 
+## Install dependencies
+
+```
+forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-contracts --no-git
+```
+
 ## Commands
 
 ```
@@ -204,6 +210,6 @@ https://lend.curve.fi/#/ethereum
 - https://defillama.com/protocol/curve-llamalend#information
 - https://messari.io/project/curve-llamalend/protocols/curve-llamalend
 
-
 ### Erc-4626
--  https://ethereum.org/fr/developers/docs/standards/tokens/erc-4626/
+
+- https://ethereum.org/fr/developers/docs/standards/tokens/erc-4626/

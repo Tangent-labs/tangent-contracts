@@ -1,15 +1,17 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
 import {Test, console} from "forge-std/Test.sol";
 import {LendRewardSplitter} from "../src/LendRewardSplitter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {TokensvcUSD} from "../src/tokens/TokensvcUSD.sol";
-import {TokengUsd} from "../src/tokens/TokengUsd.sol";
+import {CurveLendSplitterToken} from "../src/tokens/CurveLendSplitterToken.sol";
 import {IStakeDaoVault} from "../src/interfaces/IStakeDaoVault.sol";
-import {ICurvelendVault} from "../src/interfaces/ICurvelendVault.sol";
+import {ICurveLendVault} from "../src/interfaces/ICurveLendVault.sol";
 
 contract LendRewardSplitterTest is Test {
     LendRewardSplitter splitter;
 
-    uint256 MAX_INT = uint256(int256(-1));
+    uint256 MAX_UINT = uint256(int256(-1));
 
     // lendAsset
     address TOKEN_crvUSD = 0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E;
@@ -18,26 +20,33 @@ contract LendRewardSplitterTest is Test {
     // Vaulted crvUSD in stake DAO
     address STAKEDAO_CRV_VAULT = 0xfa6D40573082D797CB3cC378c0837fB90eB043e5;
 
-    TokensvcUSD svcUSD;
-    TokengUsd gUsd;
+    CurveLendSplitterToken scvUSD;
+    CurveLendSplitterToken gUSD;
     IERC20 liquidityGauge;
-    ICurvelendVault curvelendVault;
-
+    ICurveLendVault curveLendVault;
 
     function setUp() public {
         vm.createSelectFork("mainnet", 20513092);
-        
+
         liquidityGauge = IERC20(
             IStakeDaoVault(STAKEDAO_CRV_VAULT).liquidityGauge()
         );
-        curvelendVault = ICurvelendVault(CURVE_CRV_VAULT);
+        curveLendVault = ICurveLendVault(CURVE_CRV_VAULT);
 
-        svcUSD = new TokensvcUSD("CRV", STAKEDAO_CRV_VAULT);
-        gUsd = new TokengUsd("CRV", STAKEDAO_CRV_VAULT);
+        scvUSD = new CurveLendSplitterToken(
+            "Stable USD/CRV",
+            "scvUSD-CRV",
+            STAKEDAO_CRV_VAULT
+        );
+        gUSD = new CurveLendSplitterToken(
+            "Governance USD/CRV",
+            "gUSD-CRV",
+            STAKEDAO_CRV_VAULT
+        );
         splitter = new LendRewardSplitter();
 
-        svcUSD.setSplitterContract(address(splitter));
-        gUsd.setSplitterContract(address(splitter));
+        scvUSD.setSplitterContract(address(splitter));
+        gUSD.setSplitterContract(address(splitter));
         vm.label(TOKEN_crvUSD, "crvUSD");
         vm.label(STAKEDAO_CRV_VAULT, "STAKEDAO_CRV_VAULT");
         vm.label(CURVE_CRV_VAULT, "CURVE_CRV_VAULT");
@@ -57,8 +66,8 @@ contract LendRewardSplitterTest is Test {
         splitter.initialize(
             CURVE_CRV_VAULT,
             STAKEDAO_CRV_VAULT,
-            address(gUsd),
-            address(svcUSD)
+            address(gUSD),
+            address(scvUSD)
         );
     }
 
@@ -76,7 +85,7 @@ contract LendRewardSplitterTest is Test {
         assertEq(IERC20(tokenIn).balanceOf(user), 0);
         assertEq(splitter.stableDepositTotal(), depositAmount);
         assertEq(splitter.govDepositTotal(), 0);
-        assertEq(svcUSD.balanceOf(user), depositAmount);
+        assertEq(scvUSD.balanceOf(user), depositAmount);
         assertEq(liquidityGauge.balanceOf(address(splitter)), depositAmount);
     }
 
@@ -94,7 +103,7 @@ contract LendRewardSplitterTest is Test {
         assertEq(IERC20(tokenIn).balanceOf(user), 0);
         assertEq(splitter.stableDepositTotal(), depositAmount);
         assertEq(splitter.govDepositTotal(), 0);
-        assertEq(svcUSD.balanceOf(user), depositAmount);
+        assertEq(scvUSD.balanceOf(user), depositAmount);
         assertEq(liquidityGauge.balanceOf(address(splitter)), depositAmount);
     }
 
@@ -112,7 +121,7 @@ contract LendRewardSplitterTest is Test {
         assertEq(IERC20(tokenIn).balanceOf(user), 0);
         assertEq(splitter.stableDepositTotal(), depositAmount);
         assertEq(splitter.govDepositTotal(), 0);
-        assertEq(svcUSD.balanceOf(user), depositAmount);
+        assertEq(scvUSD.balanceOf(user), depositAmount);
         assertEq(liquidityGauge.balanceOf(address(splitter)), depositAmount);
     }
 
@@ -130,10 +139,10 @@ contract LendRewardSplitterTest is Test {
         assertEq(IERC20(tokenIn).balanceOf(user), 0);
         assertEq(splitter.stableDepositTotal(), 0);
         assertEq(splitter.govDepositTotal(), depositAmount);
-        assertEq(gUsd.balanceOf(user), depositAmount);
+        assertEq(gUSD.balanceOf(user), depositAmount);
         assertApproxEqAbs(
             liquidityGauge.balanceOf(address(splitter)),
-            curvelendVault.convertToShares(depositAmount),
+            curveLendVault.convertToShares(depositAmount),
             1000 wei
         );
     }
@@ -152,10 +161,10 @@ contract LendRewardSplitterTest is Test {
         assertEq(IERC20(tokenIn).balanceOf(user), 0);
         assertEq(splitter.stableDepositTotal(), 0);
         assertEq(splitter.govDepositTotal(), depositAmount);
-        assertEq(gUsd.balanceOf(user), depositAmount);
+        assertEq(gUSD.balanceOf(user), depositAmount);
         assertApproxEqAbs(
             liquidityGauge.balanceOf(address(splitter)),
-            curvelendVault.convertToShares(depositAmount),
+            curveLendVault.convertToShares(depositAmount),
             1000 wei
         );
     }
@@ -174,10 +183,10 @@ contract LendRewardSplitterTest is Test {
         assertEq(IERC20(tokenIn).balanceOf(user), 0);
         assertEq(splitter.stableDepositTotal(), 0);
         assertEq(splitter.govDepositTotal(), depositAmount);
-        assertEq(gUsd.balanceOf(user), depositAmount);
+        assertEq(gUSD.balanceOf(user), depositAmount);
         assertApproxEqAbs(
             liquidityGauge.balanceOf(address(splitter)),
-            curvelendVault.convertToShares(depositAmount),
+            curveLendVault.convertToShares(depositAmount),
             1000 wei
         );
     }
@@ -185,14 +194,14 @@ contract LendRewardSplitterTest is Test {
     function testWithrawLendAssetFromgUsd() external {
         address tokenIn = TOKEN_crvUSD;
         address user = _getUser(2, tokenIn);
-        assertEq(gUsd.balanceOf(user), 0);
+        assertEq(gUSD.balanceOf(user), 0);
         uint depositAmount = splitter.deposit(
             LendRewardSplitter.TOKEN_TYPE.LendAsset,
             10 ether,
             false,
             true
         );
-        assertEq(gUsd.balanceOf(user), depositAmount);
+        assertEq(gUSD.balanceOf(user), depositAmount);
         uint balancecrvUsdbefore = IERC20(TOKEN_crvUSD).balanceOf(user);
         uint balanceCURVE_CRV_VAULTbefore = IERC20(CURVE_CRV_VAULT).balanceOf(
             user
@@ -208,7 +217,7 @@ contract LendRewardSplitterTest is Test {
         uint balanceCURVE_CRV_VAULTafter = IERC20(CURVE_CRV_VAULT).balanceOf(
             user
         );
-        assertEq(gUsd.balanceOf(user), 0);
+        assertEq(gUSD.balanceOf(user), 0);
         assertEq(
             balanceCURVE_CRV_VAULTafter - balanceCURVE_CRV_VAULTbefore,
             depositAmount
@@ -227,7 +236,7 @@ contract LendRewardSplitterTest is Test {
         }
         vm.startPrank(user);
         deal(token, user, 1000 ether);
-        IERC20(token).approve(address(splitter), MAX_INT);
+        IERC20(token).approve(address(splitter), MAX_UINT);
     }
 }
 

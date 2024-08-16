@@ -2,7 +2,7 @@
 
 import "../lib/forge-std/src/Test.sol";
 import {IERC20} from "../lib/forge-std/src/interfaces/IERC20.sol";
-import {ICurvelendVault} from "../src/interfaces/ICurvelendVault.sol";
+import {ICurveLendVault} from "../src/interfaces/ICurveLendVault.sol";
 import {IStakeDaoVault} from "../src/interfaces/IStakeDaoVault.sol";
 import {ISDLiquidityGauge} from "../src/interfaces/ISDLiquidityGauge.sol";
 import {ICrvUSDController} from "../src/interfaces/ICrvUSDController.sol";
@@ -19,7 +19,7 @@ contract CurveLend is Test {
     }
 
     mapping(address => DepositData[]) deposits;
-    uint256 MAX_INT = uint256(int256(-1));
+    uint256 MAX_UINT = uint256(int256(-1));
     mapping(string => address) users;
     string[] userNames = ["alice", "bob", "freddy"];
     uint256 usersLength = 3;
@@ -33,7 +33,7 @@ contract CurveLend is Test {
     address STAKEDAO_CRV_VAULT = 0xfa6D40573082D797CB3cC378c0837fB90eB043e5;
 
     IStakeDaoVault stakeDaoVault;
-    ICurvelendVault curveVault;
+    ICurveLendVault curveVault;
     ISDLiquidityGauge gaugeV4;
     ICrvUSDController crvUSDController;
 
@@ -63,7 +63,7 @@ contract CurveLend is Test {
 
         stakeDaoVault = IStakeDaoVault(STAKEDAO_CRV_VAULT);
         gaugeV4 = ISDLiquidityGauge(stakeDaoVault.liquidityGauge());
-        curveVault = ICurvelendVault(CURVE_CRV_VAULT);
+        curveVault = ICurveLendVault(CURVE_CRV_VAULT);
         crvUSDController = ICrvUSDController(curveVault.controller());
 
         console.log(stakeDaoVault.token(), curveVault.borrowed_token());
@@ -280,12 +280,12 @@ contract CurveLend is Test {
 
             // For supply
             deal(TOKEN_crvUSD, wallet, 100_000 ether);
-            IERC20(TOKEN_crvUSD).approve(address(curveVault), MAX_INT);
-            IERC20(CURVE_CRV_VAULT).approve(address(stakeDaoVault), MAX_INT);
+            IERC20(TOKEN_crvUSD).approve(address(curveVault), MAX_UINT);
+            IERC20(CURVE_CRV_VAULT).approve(address(stakeDaoVault), MAX_UINT);
 
             // For create LOAN( Borrow)
             deal(TOKEN_CRV, wallet, 100_000 ether);
-            IERC20(TOKEN_CRV).approve(address(crvUSDController), MAX_INT);
+            IERC20(TOKEN_CRV).approve(address(crvUSDController), MAX_UINT);
             vm.stopPrank();
         }
 
@@ -295,14 +295,14 @@ contract CurveLend is Test {
         // deal(TOKEN_CRV, WALLET, 100_000 ether);
         // deal(TOKEN_crvUSD, WALLET, 10_000 ether);
         // // For Deposit  on stakeDAO strategy.
-        // IERC20(CURVE_CRV_VAULT).approve(address(stakeDaoVault), MAX_INT);
+        // IERC20(CURVE_CRV_VAULT).approve(address(stakeDaoVault), MAX_UINT);
 
         // // For Deposit (Supply).
-        // IERC20(TOKEN_crvUSD).approve(address(curveVault), MAX_INT);
+        // IERC20(TOKEN_crvUSD).approve(address(curveVault), MAX_UINT);
 
         // Borrower
         // vm.deal(WALLET_BOROWER, 1_000 ether);
         // deal(TOKEN_CRV, WALLET_BOROWER, 10_000 ether);
-        // IERC20(TOKEN_CRV).approve(address(curveVault), MAX_INT);
+        // IERC20(TOKEN_CRV).approve(address(curveVault), MAX_UINT);
     }
 }

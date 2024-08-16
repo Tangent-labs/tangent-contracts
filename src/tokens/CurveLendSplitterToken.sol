@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -6,7 +9,7 @@ import {IStakeDaoVault} from "../interfaces/IStakeDaoVault.sol";
 
 contract CurveLendSplitterToken is ERC20, Ownable {
     using SafeERC20 for IERC20;
-    uint256 MAX_INT = uint256(int256(-1));
+    uint256 MAX_UINT = uint256(int256(-1));
     IStakeDaoVault public lpToken;
 
     constructor(
