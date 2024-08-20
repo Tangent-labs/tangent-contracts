@@ -11,11 +11,11 @@ import {DecimalsString} from "./DecimalsString.sol";
 //source :  https://etherscan.io/tx/0x15af2ec72371090dde0da81e7c6c069afb35c259470d57df14f49fad729acfdd
 
 contract CurveLend is Test {
-    using DecimalsString for uint;
+    using DecimalsString for uint256;
 
     struct DepositData {
         uint256 amount;
-        uint pricePerShare;
+        uint256 pricePerShare;
     }
 
     mapping(address => DepositData[]) deposits;
@@ -37,7 +37,7 @@ contract CurveLend is Test {
     ISDLiquidityGauge gaugeV4;
     ICrvUSDController crvUSDController;
 
-    uint currentDay = 0;
+    uint256 currentDay = 0;
 
     struct SupplyActionData {
         string user;
@@ -46,8 +46,9 @@ contract CurveLend is Test {
         string action;
         uint256 amountToken;
         uint256 amountLp;
-        uint day;
+        uint256 day;
     }
+
     event SupplyAction(SupplyActionData data);
 
     SupplyActionData[] actions;
@@ -69,7 +70,7 @@ contract CurveLend is Test {
         console.log(stakeDaoVault.token(), curveVault.borrowed_token());
     }
 
-    function travelDay(uint dayToAdd) internal {
+    function travelDay(uint256 dayToAdd) internal {
         skip(3600 * 24 * dayToAdd);
         currentDay += dayToAdd;
     }
@@ -110,9 +111,9 @@ contract CurveLend is Test {
         stakeDaoVault.approve(address(this), 1_000 ether);
         vm.stopPrank();
 
-        uint balanceBefore = stakeDaoVault.balanceOf(jim);
+        uint256 balanceBefore = stakeDaoVault.balanceOf(jim);
         stakeDaoVault.transferFrom(jhon, jim, 2 ether);
-        uint balanceAfter = stakeDaoVault.balanceOf(jim);
+        uint256 balanceAfter = stakeDaoVault.balanceOf(jim);
         console.log(balanceBefore, balanceAfter);
     }
 
@@ -133,12 +134,7 @@ contract CurveLend is Test {
         vm.stopPrank();
     }
 
-    function doAction(
-        Action action,
-        string memory user,
-        uint256 amount,
-        string memory assetType
-    ) internal {
+    function doAction(Action action, string memory user, uint256 amount, string memory assetType) internal {
         if (action == Action.deposit) {
             actionDeposit(user, amount, assetType);
             return;
@@ -149,11 +145,7 @@ contract CurveLend is Test {
         }
     }
 
-    function actionDeposit(
-        string memory user,
-        uint256 amount,
-        string memory assetType
-    ) internal {
+    function actionDeposit(string memory user, uint256 amount, string memory assetType) internal {
         vm.startPrank(users[user]);
 
         uint256 amountOut = curveVault.deposit(amount);
@@ -161,49 +153,30 @@ contract CurveLend is Test {
         stakeDaoVault.deposit(users[user], amountOut, false);
         //displayState("deposited stakeDaoVault", users[user]);
         actions.push(
-            SupplyActionData(
-                user,
-                assetType,
-                curveVault.pricePerShare(),
-                "deposit",
-                amount,
-                amountOut,
-                currentDay
-            )
+            SupplyActionData(user, assetType, curveVault.pricePerShare(), "deposit", amount, amountOut, currentDay)
         );
         actionsLength++;
-        displayState(
-            string.concat(
-                user,
-                " deposited ",
-                amount.toDecimalString(18, false)
-            ),
-            users[user]
-        );
+        displayState(string.concat(user, " deposited ", amount.toDecimalString(18, false)));
         vm.stopPrank();
     }
 
-    function actionWithdraw(
-        string memory user,
-        uint256 percentage,
-        string memory assetType
-    ) internal {
+    function actionWithdraw(string memory user, uint256 percentage, string memory assetType) internal {
         require(percentage <= 100);
 
         vm.startPrank(users[user]);
-        uint balanceBefore = IERC20(TOKEN_crvUSD).balanceOf(users[user]);
+        uint256 balanceBefore = IERC20(TOKEN_crvUSD).balanceOf(users[user]);
 
-        uint balance = gaugeV4.balanceOf(users[user]);
-        uint amountOutStake = balance;
+        uint256 balance = gaugeV4.balanceOf(users[user]);
+        uint256 amountOutStake = balance;
         if (percentage < 100) {
             amountOutStake = (balance * percentage) / 100;
         }
 
         stakeDaoVault.withdraw(amountOutStake);
-        uint amountToWithdrawFromCurve = curveVault.maxWithdraw(users[user]);
+        uint256 amountToWithdrawFromCurve = curveVault.maxWithdraw(users[user]);
         curveVault.withdraw(amountToWithdrawFromCurve);
 
-        uint balanceAfter = IERC20(TOKEN_crvUSD).balanceOf(users[user]);
+        uint256 balanceAfter = IERC20(TOKEN_crvUSD).balanceOf(users[user]);
 
         // displayBalance(users[user]);
         actions.push(
@@ -219,13 +192,7 @@ contract CurveLend is Test {
         );
         actionsLength++;
         displayState(
-            string.concat(
-                user,
-                " withdraw ",
-                (balanceAfter - balanceBefore).toDecimalString(18, false)
-            ),
-            users[user]
-        );
+            string.concat(user, " withdraw ", (balanceAfter - balanceBefore).toDecimalString(18, false)));
         vm.stopPrank();
     }
 
@@ -235,9 +202,7 @@ contract CurveLend is Test {
             */
         string memory path = "./output/write_file.csv";
         CsvMaker csv = new CsvMaker(path);
-        csv.writeLine(
-            "user;asset-type;pricePerShare;action;amountToken;amountLp;diffDay"
-        );
+        csv.writeLine("user;asset-type;pricePerShare;action;amountToken;amountLp;diffDay");
         for (uint256 i; i < actionsLength; i++) {
             csv.addToLine(actions[i].user);
             csv.addToLine(actions[i].assetType);
@@ -251,28 +216,19 @@ contract CurveLend is Test {
     }
 
     function displayBalance(address wallet) internal view {
-        console.log(
-            "stakeDaoVault balanceOf ",
-            IERC20(address(gaugeV4)).balanceOf(wallet)
-        );
+        console.log("stakeDaoVault balanceOf ", IERC20(address(gaugeV4)).balanceOf(wallet));
         console.log("curveVault balanceOf ", curveVault.balanceOf(wallet));
         console.log("TOKEN_crvUSD", IERC20(TOKEN_crvUSD).balanceOf(wallet));
         console.log("TOKEN_CRV", IERC20(TOKEN_CRV).balanceOf(wallet));
     }
 
-    function displayState(string memory action, address wallet) internal view {
-        console.log(
-            string.concat(
-                "----   ",
-                action,
-                "    -----------------------------------"
-            )
-        );
+    function displayState(string memory action) internal pure {
+        console.log(string.concat("----   ", action, "    -----------------------------------"));
         // displayBalance(wallet);
     }
 
     function prepareWallets() internal {
-        for (uint i = 0; i < usersLength; i++) {
+        for (uint256 i = 0; i < usersLength; i++) {
             address wallet = users[userNames[i]];
             vm.startPrank(wallet);
 

@@ -17,9 +17,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         splitter = testCommon.setUpSplitter();
     }
 
-    function test_deposit_lendasset_with_stable_reward_deposit_enabled()
-        external
-    {
+    function test_deposit_LendassetWithStableRewardDepositEnabled() external {
         uint256 depositAmount = 100 ether;
         address tokenIn = testCommon.TOKEN_crvUSD();
         address user = testCommon.getUser(1, tokenIn);
@@ -42,9 +40,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         vm.stopPrank();
     }
 
-    function test_deposit_lendasset_with_stable_reward_deposit_disabled()
-        external
-    {
+    function test_deposit_LendassetWithStableRewardDepositDisabled() external {
         uint256 depositAmount = 100 ether;
         address tokenIn = testCommon.TOKEN_crvUSD();
         address user = testCommon.getUser(1, tokenIn);
@@ -71,7 +67,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         vm.stopPrank();
     }
 
-    function test_deposit_lendcurveasset_with_stable_reward_deposit_enabled()
+    function test_deposit_LendcurveassetWithStableRewardDepositEnabled()
         external
     {
         uint256 depositAmount = 100 ether;
@@ -92,7 +88,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         vm.stopPrank();
     }
 
-    function test_deposit_lendcurveasset_with_stable_reward_deposit_disabled()
+    function test_deposit_LendcurveassetWithStableRewardDepositDisabled()
         external
     {
         uint256 depositAmount = 100 ether;
@@ -131,7 +127,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         vm.stopPrank();
     }
 
-    function test_deposit_lendstakeasset_with_stable_reward_deposit_enabled()
+    function test_deposit_LendstakeassetWithStableRewardDepositEnabled()
         external
     {
         uint256 depositAmount = 100 ether;
@@ -150,7 +146,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         assertEq(testCommon.splitter().stableDepositTotal(), depositAmount);
         vm.stopPrank();
     }
-    function test_deposit_lendstakeasset_with_stable_reward_deposit_disabled()
+    function test_deposit_LendstakeassetWithStableRewardDepositDisabled()
         external
     {
         uint256 depositAmount = 100 ether;
@@ -176,7 +172,7 @@ contract LendRewardSplitterStableDepositTest is Test {
 
     // EDGE -------------------------------------------------------------------------------------
 
-    function test_deposit_lendasset_with_stable_reward_deposit_enabled_without_enough_balance()
+    function test_revertWhen_depositLendassetWithStableRewardDepositEnabledWithoutEnoughBalance()
         external
     {
         uint256 depositAmount = 100 ether;
@@ -193,7 +189,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         );
         vm.stopPrank();
     }
-    function test_deposit_lendcurveasset_with_stable_reward_with_deposit_without_enough_balance()
+    function test_revertWhen_depositLendcurveassetWithStableRewardWithDepositWithoutEnoughBalance()
         external
     {
         uint256 depositAmount = 100 ether;
@@ -210,7 +206,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         );
         vm.stopPrank();
     }
-    function test_deposit_lendstakeasset_with_stable_reward_deposit_enabled_without_enough_balance()
+    function test_revertWhen_depositLendstakeassetWithStableRewardDepositEnabledWithoutEnoughBalance()
         external
     {
         uint256 depositAmount = 100 ether;
@@ -227,9 +223,9 @@ contract LendRewardSplitterStableDepositTest is Test {
         );
         vm.stopPrank();
     }
-    function test_deposit_with_0() external {
+    function test_revertWhen_depositWith0() external {
         uint256 depositAmount = 0 ether;
-        address user = testCommon.getUser(1, testCommon.TOKEN_crvUSD());
+        testCommon.getUser(1, testCommon.TOKEN_crvUSD());
 
         vm.expectRevert();
         splitter.deposit(
@@ -240,9 +236,9 @@ contract LendRewardSplitterStableDepositTest is Test {
         );
         vm.stopPrank();
     }
-    function test_deposit_with_not_existing_token_type_in() external {
+    function test_revertWhen_depositWithNotExistingTokenTypeIn() external {
         uint256 depositAmount = 0 ether;
-        address user = testCommon.getUser(1, testCommon.TOKEN_crvUSD());
+        testCommon.getUser(1, testCommon.TOKEN_crvUSD());
         vm.expectRevert();
         uint8 invalidEnumValue = 255;
         splitter.deposit(
@@ -253,9 +249,9 @@ contract LendRewardSplitterStableDepositTest is Test {
         );
         vm.stopPrank();
     }
-    function test_deposit_with_more_than_maxint() external {
+    function test_revertWhen_depositWithMoreThanMaxint() external {
         uint256 depositAmount = testCommon.MAX_INT();
-        address user = testCommon.getUser(1, testCommon.TOKEN_crvUSD());
+        testCommon.getUser(1, testCommon.TOKEN_crvUSD());
         vm.expectRevert();
         splitter.deposit(
             LendRewardSplitter.TOKEN_TYPE.LendAsset,
