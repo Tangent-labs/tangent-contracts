@@ -93,5 +93,7 @@ interface ISDLiquidityGauge {
         address _newDistrib
     ) external;
 
+    function set_rewards_receiver(address _receiver) external;
+
     function admin() external view returns (address);
 }

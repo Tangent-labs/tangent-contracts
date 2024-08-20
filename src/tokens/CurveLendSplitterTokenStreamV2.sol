@@ -8,9 +8,9 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ILendRewardSplitter} from "../interfaces/ILendRewardSplitter.sol";
 import {ISDLiquidityGauge} from "../interfaces/ISDLiquidityGauge.sol";
-import "forge-std/console.sol"; //TODO: to remove
+import "forge-std/console.sol";//TODO: to remove
 
-contract CurveLendSplitterTokenStream is ERC20Upgradeable, OwnableUpgradeable {
+contract CurveLendSplitterTokenStreamV2 is ERC20Upgradeable, OwnableUpgradeable {
     struct Reward {
         uint128 lastUpdateTime;
         uint128 periodFinish;
@@ -385,7 +385,7 @@ contract CurveLendSplitterTokenStream is ERC20Upgradeable, OwnableUpgradeable {
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _update(address from, address to, uint256 value) internal override {
-        /// @dev do the checkpoint before the transfer
+        //do the checkpoint before the transfer
         if (from != address(0)) {
             _updateReward(from);
         }

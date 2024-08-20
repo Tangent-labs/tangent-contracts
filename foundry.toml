@@ -5,6 +5,7 @@ ffi = true
 ast = true
 build_info = true
 libs = ["lib"]
+extra_output = ["storageLayout"]
 
 ignored_error_codes = [
     3420, # pragma-solidity
@@ -12,9 +13,8 @@ ignored_error_codes = [
 ]
 
 fs_permissions = [
-    { access = "read-write", path = "./output/" }
+    { access = "read-write", path = "./" }
 ]
-
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 solc = "0.8.25"
 evm_version = "cancun"

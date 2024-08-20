@@ -49,8 +49,6 @@ contract CurveLendSplitterToken is ERC20, Ownable {
      * @param _splitterContract  Splitter contract allowed to mint.
      **/
     function setSplitterContract(address _splitterContract) external onlyOwner {
-        isSpecialMinter[_splitterContract] = !isSpecialMinter[
-            _splitterContract
-        ];
+        isSpecialMinter[_splitterContract] = !isSpecialMinter[_splitterContract];
     }
 }

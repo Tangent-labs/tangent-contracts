@@ -3,7 +3,7 @@
 ## Install dependencies
 
 ```
-forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-contracts --no-git
+forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-contracts OpenZeppelin/openzeppelin-contracts-upgradeable OpenZeppelin/openzeppelin-foundry-upgrades --no-git
 ```
 
 ## Commands
