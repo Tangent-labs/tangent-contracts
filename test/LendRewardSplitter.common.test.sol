@@ -28,10 +28,6 @@ contract LendRewardSplitterTestCommon is Test {
         vm.createSelectFork("mainnet", 20513092);
     }
 
-    function getTimeFromDays(uint256 nbDays) public pure returns (uint256) {
-        return nbDays * 24 * 60 * 60;
-    }
-
     function setUpSplitter() public returns (LendRewardSplitter) {
         stakeDaoLendVault = IStakeDaoVault(STAKEDAO_CRV_VAULT);
         liquidityGauge = IERC20(stakeDaoLendVault.liquidityGauge());

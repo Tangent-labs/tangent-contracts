@@ -40,9 +40,8 @@ contract LendRewardSplitterGovWithdrawTest is Test {
         assertEq(testCommon.crvUSD().balanceOf(user), balancecrvUSDBeforeDeposit - depositAmount);
 
         // Advance in time.
-        console.log("pps before", testCommon.curvelendVault().pricePerShare());
-        skip(testCommon.getTimeFromDays(100));
-        console.log("pps after", testCommon.curvelendVault().pricePerShare());
+        skip(100 days);
+    
 
         // Withdraw.
         testCommon.widthraw(balanceDeposited, false, LendRewardSplitter.TOKEN_TYPE.LendAsset);
@@ -85,7 +84,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
 
         // Advance in time.
         console.log("pps before", testCommon.curvelendVault().pricePerShare());
-        skip(testCommon.getTimeFromDays(100));
+          skip(100 days);
         console.log("pps after", testCommon.curvelendVault().pricePerShare());
 
         // Withdraw.
@@ -138,7 +137,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
 
         // Advance in time.
         console.log("pps before", testCommon.curvelendVault().pricePerShare());
-        skip(testCommon.getTimeFromDays(100));
+         skip(100 days);
         console.log("pps after", testCommon.curvelendVault().pricePerShare());
 
         // Withdraw.

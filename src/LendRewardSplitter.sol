@@ -26,7 +26,12 @@ contract LendRewardSplitter is Initializable {
 
     event Deposit(address indexed account, bool isStableReward, uint256 amount);
 
-    event Withdraw(address indexed account, bool isStableReward, TOKEN_TYPE outType, uint256 amount);
+    event Withdraw(
+        address indexed account,
+        bool isStableReward,
+        TOKEN_TYPE outType,
+        uint256 amount
+    );
 
     enum TOKEN_TYPE {
         // @dev Asset use as collateral in the lend contract. (ex : crvUSD)
@@ -44,10 +49,12 @@ contract LendRewardSplitter is Initializable {
      *  @param _gUsd Address of  gUSD token created for this market.
      *  @param _svcUSD Address of svcUSD token created for this market.
      */
-    function initialize(address _curveLendVault, address _stakeDaoVault, address _gUsd, address _svcUSD)
-        external
-        initializer
-    {
+    function initialize(
+        address _curveLendVault,
+        address _stakeDaoVault,
+        address _gUsd,
+        address _svcUSD
+    ) external initializer {
         // @dev We initialize the lobal variables.
         curveLendVault = ICurvelendVault(_curveLendVault);
         stakeDaoVault = IStakeDaoVault(_stakeDaoVault);
@@ -67,10 +74,12 @@ contract LendRewardSplitter is Initializable {
      *  @param doDeposit bool  IF doDeposit == true THEN  all the pending asset will be deposited in stakeValut.
      *  @return depositAmount Staked amount eligible to rewards.
      */
-    function deposit(TOKEN_TYPE inType, uint256 amount, bool isStableReward, bool doDeposit)
-        public
-        returns (uint256 depositAmount)
-    {
+    function deposit(
+        TOKEN_TYPE inType,
+        uint256 amount,
+        bool isStableReward,
+        bool doDeposit
+    ) public returns (uint256 depositAmount) {
         require(amount > 0, "NO_INPUT_AMOUNT");
 
         // @devs Transfer the token from the user to this contract..
@@ -86,9 +95,11 @@ contract LendRewardSplitter is Initializable {
 
         if (inType < TOKEN_TYPE.LendStakeDaoAsset) {
             // @devs Stake into stakedao strategies to get OnlyBoost.
-            uint256 balanceBefore = IERC20(stakeDaoVault.liquidityGauge()).balanceOf(address(this));
+            uint256 balanceBefore = IERC20(stakeDaoVault.liquidityGauge())
+                .balanceOf(address(this));
             stakeDaoVault.deposit(address(this), depositAmount, doDeposit);
-            uint256 balanceAfter = IERC20(stakeDaoVault.liquidityGauge()).balanceOf(address(this));
+            uint256 balanceAfter = IERC20(stakeDaoVault.liquidityGauge())
+                .balanceOf(address(this));
             depositAmount = balanceAfter - balanceBefore;
         }
 
@@ -96,7 +107,8 @@ contract LendRewardSplitter is Initializable {
             //@dev For svcUSD, we mint 1:1 from cvcrvUSD.
             svcUSD.mint(msg.sender, depositAmount);
         } else {
-            //@dev For gUsd, we mint 1:1 from crvUSD ,we use the curveLendVault.convertToAssets to calculate the amount.
+            //@dev For gUsd, we mint 1:1 from crvUSD,
+            // we use the curveLendVault.convertToAssets to calculate the amount.
             depositAmount = curveLendVault.convertToAssets(depositAmount);
             gUsd.mint(msg.sender, depositAmount);
         }
@@ -109,21 +121,33 @@ contract LendRewardSplitter is Initializable {
      *  @param amount Amount  of {gUSd|scvUsd} token you want to withdraw.
      *  @param isStableReward  If isStableReward == true THEN   scvUsd of user is used   ELSE  gUsd of user is used.
      */
-    function withdraw(TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
+    function withdraw(
+        TOKEN_TYPE outType,
+        uint256 amount,
+        bool isStableReward
+    ) public {
         // @devs We check the prerequesite.
         require(amount != 0, "WITHDRAW_LTE_0");
         ICurveLendSplitterToken recipeToken = isStableReward ? svcUSD : gUsd;
-        require(amount <= recipeToken.balanceOf(msg.sender), "NOT_ENOUGH_BALANCE");
+        require(
+            amount <= recipeToken.balanceOf(msg.sender),
+            "NOT_ENOUGH_BALANCE"
+        );
 
         // @devs We burn the corresponding token.
         recipeToken.burn(msg.sender, amount);
 
         // @devs We process the amounts.
-        (, uint256 shareAmount) = _getWithdrawAmount(amount, isStableReward);
+        uint256 shareAmount = isStableReward
+            ? amount
+            : curveLendVault.convertToShares(amount);
 
         if (outType == TOKEN_TYPE.LendStakeDaoAsset) {
             // @devs we  transfer the stake share to the user.
-            IERC20(stakeDaoVault.liquidityGauge()).safeTransfer(msg.sender, shareAmount);
+            IERC20(stakeDaoVault.liquidityGauge()).safeTransfer(
+                msg.sender,
+                shareAmount
+            );
         } else {
             // @devs We withdraw the share from stakeDAO vault.
             stakeDaoVault.withdraw(shareAmount);
@@ -134,30 +158,22 @@ contract LendRewardSplitter is Initializable {
             }
             if (outType == TOKEN_TYPE.LendAsset) {
                 /// @devs We chack if we can withdraw from curvelend vault.
-                uint256 maxShareAllowed = curveLendVault.maxRedeem(address(this));
-                require(shareAmount <= maxShareAllowed, "MORE_THAN_MAX_WIDTHDRAW");
+                uint256 maxShareAllowed = curveLendVault.maxRedeem(
+                    address(this)
+                );
+                require(
+                    shareAmount <= maxShareAllowed,
+                    "MORE_THAN_MAX_WIDTHDRAW"
+                );
                 /// @devs We withdraw from curvelend vault.
-                uint256 assetAmountWithdrawn = curveLendVault.redeem(shareAmount);
+                uint256 assetAmountWithdrawn = curveLendVault.redeem(
+                    shareAmount
+                );
                 /// @devs We transfer to the user.
                 lendAsset.safeTransfer(msg.sender, assetAmountWithdrawn);
             }
         }
         emit Withdraw(msg.sender, isStableReward, outType, amount);
-    }
-
-    function _getWithdrawAmount(uint256 amount, bool isStableReward) view
-        internal
-        returns (uint256 assetAmount, uint256 shareAmount)
-    {
-        if (isStableReward) {
-            // @devs the requested amount corresponds to the share.
-            shareAmount = amount;
-            assetAmount = curveLendVault.convertToAssets(amount);
-        } else {
-            // @devs the requested amount corresponds to the asset.
-            assetAmount = amount;
-            shareAmount = curveLendVault.convertToShares(amount);
-        }
     }
 
     function _transferTokens(TOKEN_TYPE inType, uint256 amount) internal {
@@ -168,11 +184,19 @@ contract LendRewardSplitter is Initializable {
 
         // @devs Transfer the token (LendCurveAsset) to this contract.
         if (inType == TOKEN_TYPE.LendCurveAsset) {
-            IERC20(curveLendVault).safeTransferFrom(msg.sender, address(this), amount);
+            IERC20(curveLendVault).safeTransferFrom(
+                msg.sender,
+                address(this),
+                amount
+            );
         }
         // @devs Transfer the token (LendStakeDaoAsset) to this contract.
         if (inType == TOKEN_TYPE.LendStakeDaoAsset) {
-            IERC20(stakeDaoVault.liquidityGauge()).safeTransferFrom(msg.sender, address(this), amount);
+            IERC20(stakeDaoVault.liquidityGauge()).safeTransferFrom(
+                msg.sender,
+                address(this),
+                amount
+            );
         }
     }
 
