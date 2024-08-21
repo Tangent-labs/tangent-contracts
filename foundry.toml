@@ -5,18 +5,18 @@ ffi = true
 ast = true
 build_info = true
 libs = ["lib"]
-
+solc = "0.8.25"
+evm_version = "cancun"
 ignored_error_codes = [
     3420, # pragma-solidity
     1878, # SPX
+    5574, # Disable the specific warning code for contract size in tests
+    3860, # Disable the specific warning code 3860 in tests
 ]
 
-fs_permissions = [
-    { access = "read-write", path = "./output/" }
-]
+fs_permissions = [{ access = "read-write", path = "./output/" }]
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
-solc = "0.8.25"
-evm_version = "cancun"
+
 [rpc_endpoints]
 mainnet = 'https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy'

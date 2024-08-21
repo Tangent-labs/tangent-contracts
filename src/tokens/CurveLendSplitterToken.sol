@@ -17,8 +17,8 @@ contract CurveLendSplitterToken is ERC20, Ownable {
         lpToken = IStakeDaoVault(_lpToken);
     }
 
-    /** Determines address allowed to mint. */
-    mapping(address => bool) public isSpecialMinter;
+    /** Determines address allowed to mint/burn. */
+    address public splitterContract;
 
     /**
      *   @notice        Mint gUSD
@@ -26,28 +26,27 @@ contract CurveLendSplitterToken is ERC20, Ownable {
      *   @param amount  Amount of transfered asset.
      **/
     function mint(address to, uint256 amount) public returns (uint256) {
-        require(isSpecialMinter[msg.sender], "CALLER_NOT_MINTER");
+        require(msg.sender == splitterContract, "CALLER_NOT_SPLITTER");
         _mint(to, amount);
         return amount;
     }
 
     /**
      *   @notice        Burn  gUSD
-     *   @param account Owner  of the minted token
-     *   @param amount  Amount of burnt asset.
+     *   @param account Owner of the burnt token
+     *   @param amount  Amount of  asset to burn .
      **/
     function burn(address account, uint amount) external {
+        require(msg.sender == splitterContract, "CALLER_NOT_SPLITTER");
         _burn(account, amount);
     }
 
     /**
-     * @notice Update the staking service of cvgCVX
+     * @notice set the contract allow to mint/burn
      * @dev Callable by the owner only.
      * @param _splitterContract  Splitter contract allowed to mint.
      **/
     function setSplitterContract(address _splitterContract) external onlyOwner {
-        isSpecialMinter[_splitterContract] = !isSpecialMinter[
-            _splitterContract
-        ];
+        splitterContract = _splitterContract;
     }
 }
