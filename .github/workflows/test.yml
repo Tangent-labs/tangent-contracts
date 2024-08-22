@@ -17,7 +17,8 @@ jobs:
     name: Foundry project
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -25,6 +26,10 @@ jobs:
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
+
+      - name: Install dependencies with Forge
+        run: |
+          forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-contracts OpenZeppelin/openzeppelin-contracts-upgradeable OpenZeppelin/openzeppelin-foundry-upgrades --no-git
 
       - name: Run Forge build
         run: |
