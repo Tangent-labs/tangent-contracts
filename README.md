@@ -4,14 +4,27 @@
 
 ```
 forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-contracts OpenZeppelin/openzeppelin-contracts-upgradeable OpenZeppelin/openzeppelin-foundry-upgrades --no-git
+
+```
+## update foundry 
+
+```
+foundryup
 ```
 
-## Commands
+## Tests Commands
+
+for more info : https://book.getfoundry.sh/reference/forge/forge-test
 
 ```
 forge test --match-contract  LendRewardSplitterTest  -vvv --fail-fast
 forge test --match-test testWith -vvv --fail-fast
 ```
+
+**-v** : for the `--verbosity` part you can use up to 5 v  from  `-v` to `-vvvvv` 
+**--fail-fast** : stop running tests after the first failure.
+
+
 
 ## Concepts
 
@@ -36,180 +49,115 @@ so for the splitter, we have several options for depositing:
 
 - take the DAO stake deposits
 - take the curve deposits and deposit them on StakeDAO
-- Take the money to convert it into CRVUsd and deposit it at stake DAO
+- Take the lend asset and deposit them on curve &  stake DAO. 
+- Take other asset ( stable & ETH ) convert them into lend asset and depositt the lendasset
 
 ## Conception
 
 ### Options
 
-- Deux tokens
-- Un seul token ( non ERC20 )
+- 1 multi market splitter contract 
+- 2 tokens  for a market.
 
 ### Features
 
 - Deposit gUSD
 - Withdraw gUSD
 
-- Deposit sUSD
-- Withdraw sUsD
+- Deposit scvUSD
+- Withdraw scvUSD
 
-- Transfert gUSD To USD
-- Transfert sUSD To gUSD
 
-## Existing contract
 
-### StakeDao deposit usecase
+## Method : deposit  
+    The deposit method will allow you to deposit into the splitter contrat assets related to the market . 
+    - lendAsset 
+    - curve vault asset. 
+    - Stake dao vault asset. 
+    you will be able to decide with side of the splitter you choose , and finally  deposit into stake DAO wich cost a large amount of gas 
+    will be socialized , so you can decide if you want to deposit into stake or not. 
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Vault
-    participant ERC20 as LP Token
-    participant Strategy
-    participant LiquidityGauge as Reward Distributor Gauge
+### Parameters
+- address **stakeDaoVault**: The address of the market.
+- TOKEN_TYPE  **inType**: The type of token being deposited. Types :  `LendAsset`,`LendCurveAsset`,`LendStakeDaoAsset`.
+- uint256 **amount**: The amount of the inType token to be deposited.
+- bool **isStableReward**: Determines the type of reward: (true for stable reward (`scvUSD`), false for gauge reward (`gUSD`).)
+- bool **doDeposit**: If true, you will deposit into stakeDao , incentiveRewards will be added to your deposit.
 
-    User->>Vault: deposit(_receiver, _amount, _doEarn)
-    Vault->>ERC20: safeTransferFrom(User, Vault, _amount)
-    alt if _doEarn is false
-        Vault->>Vault: Calculate incentive fee
-        Vault->>Vault: Subtract incentive from _amount
-        Vault->>Vault: Add incentive to total incentive token amount
-    else
-        Vault->>Vault: Add total incentive token amount to _amount
-        Vault->>Vault: Reset incentive token amount
-        Vault->>Vault: _earn()
-        Vault->>Strategy: deposit(LP Token, _balance)
-    end
-    Vault->>Vault: _mint(Vault, _amount)
-    Vault->>LiquidityGauge: deposit(_amount, _receiver)
-    Note over User: Receiver's account credited in Reward Distributor Gauge
-```
+### Process
+1. Transfers the specified inType tokens from the user to the contract.
+2. process doDeposit parameters 
+     We use the sociabilisation already implemented in stakeDaoValut contract , the `doDeposit` parameter is match with the `doEarn` parameter of stakeDaoDeposit
+3. Depending on the inType, deposits the tokens into the corresponding vault:
+    - For `LendAsset`, transfer the asset & deposits into curveLendVault then in stakeDaoLendVault.
+    - For `LendCurveAsset` transfer the asset & deposits into stakeDaoLendVault.
+    - For `LendStakeDaoAsset`transfer the asset.
+4. Mints the corresponding reward tokens based on the isStableReward flag: 
+    - `scvUSD` for stable rewards, minted for each share deposit.
+    - `gUSD` for gov rewards,minted for each asset deposit.
 
-### StakeDao Withdraw usecase
+| `tokenIn`             | `isStableReward` | `Token Minted` | `Amount`                                                                 |
+|-----------------------|------------------|---------------------|-----------------------------------------------------------------------|
+| `LendAsset`           | `true`           | `scvUSD`            | Minted with curveLendVault.convertToShares(amount)                                       |
+| `LendAsset`           | `false`          | `gUSD`              | Minted 1:1.      |
+| `LendCurveAsset`      | `true`           | `scvUSD`            | Minted 1:1.                                        |
+| `LendCurveAsset`      | `false`          | `gUSD`              | Minted with curveLendVault.convertToAssets(amount).      |
+| `LendStakeDaoAsset`   | `true`           | `scvUSD`            | Minted 1:1.                                         |
+| `LendStakeDaoAsset`   | `false`          | `gUSD`              | Minted with curveLendVault.convertToAssets(amount).      |
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Vault
-    participant ERC20 as LP Token
-    participant Strategy
-    participant LiquidityGauge as Reward Distributor Gauge
 
-    User->>Vault: withdraw(_shares)
-    Vault->>LiquidityGauge: balanceOf(User)
-    alt if shares requested <= balance
-        LiquidityGauge->>Vault: withdraw(_shares, User, true)
-        Vault->>Vault: _burn(Vault, _shares)
-        Vault->>Vault: Check available LP Token balance
-        Vault->>ERC20: balanceOf(Vault)
-        alt if shares > available tokens
-            Vault->>Strategy: withdraw(LP Token, needed amount)
-        end
-        Vault->>ERC20: safeTransfer(User, _shares)
-    else
-        Vault-->>User: NOT_ENOUGH_TOKENS()
-    end
+## Method : depositWithAssetOrETh  
 
-```
+- TBD
 
-### Curve Deposit usecase
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Vault
-    participant ERC20 as ERC20 (Borrowed Token)
-    participant Controller
+## Method : withdraw 
 
-    User->>Vault: deposit(assets, receiver)
-    Note over Vault: Verify enough assets can be added
-    Vault->>Vault: _total_assets()
-    Vault->>ERC20: balanceOf(Controller)
-    Vault->>Controller: total_debt()
-    Vault->>Vault: _convert_to_shares(assets, true)
-    Note over Vault: Calculate shares to mint
-    Vault->>ERC20: transferFrom(User, Controller, assets)
-    Note over ERC20: Transfer assets from user to controller
-    Vault->>Vault: _mint(receiver, to_mint)
-    Note over Vault: Mint new shares to receiver
-    Controller->>Controller: save_rate()
-    Note over Vault: Optionally update rates in Controller
-    Note over User: Receiver credited with new shares
+The withdraw function allows a user to withdraw assets from the Convergence Splitter contract.
 
-```
+### parameters 
 
-### Curve Withdraw usecase
+- address **stakeDaoVault**: The address of the market.
+- TOKEN_TYPE **outType**: The type of token to withdraw.  types :`LendAsset`, `LendCurveAsset`, `LendStakeDaoAsset`
+- uint256 **amount**: The amount of reward tokens (gUSD or scvUSD) to withdraw.
+- bool **isStableReward**: Determines the type of reward being withdrawn:
+true to withdraw stable rewards using scvUSD.
+false to withdraw gauge rewards using gUSD.
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant Vault
-    participant ERC20 as ERC20 (Borrowed Token)
-    participant Controller
+### Process
+1. Checks prerequisites, including the non-zero amount and sufficient balance.
+2. Burns the corresponding reward tokens from the user's balance, we use the `isStableReward` parameters 
+in order to determine wich asset to burn: `true -> scvUSD `,  `false -> gUSD `.
+3. Processes the withdrawal based on the outType
+    - Details of flow base on  `outTokenType ` parameter
+        - For  `LendStakeDaoAsset `, transfers the stake share to the user.
+        - For  `LendCurveAsset `, withdraws the share from the StakeDAO vault and transfers it to the user.
+        - For  `LendAsset `, checks the maximum redeemable amount, withdraws the share from the StakeDAO redeems from curveLendVault, and then transfers the asset to the user.
+    - Amount of flow : the amount of asset return to the user depends on the  `isStableReward` parameters : 
+        - `true `: all the asset are sent back to the user, 
+        - `false `: curveLendVault.convertToAssets part is sent to the user, the other part is kept on the stakeDao vault, and will be proceeseed in the processStableReward method.
+ 
 
-    User->>Vault: withdraw(assets, receiver, owner)
-    Note over Vault: Verify sufficient assets are available
-    Vault->>Vault: _total_assets()
-    Vault->>ERC20: balanceOf(Controller)
-    Vault->>Controller: total_debt()
-    Vault->>Vault: _convert_to_shares(assets, false)
-    Note over Vault: Calculate shares to burn
-    alt If owner != msg.sender
-        Vault->>Vault: Check allowance of owner for msg.sender
-        Note right of Vault: Adjust allowance if needed
-    end
-    Vault->>Vault: _burn(owner, shares)
-    Note over Vault: Burn the corresponding shares from owner's balance
-    Vault->>ERC20: transferFrom(Controller, receiver, assets)
-    Note over ERC20: Transfer assets from controller to receiver
-    Controller->>Controller: save_rate()
-    Note over Vault: Optionally update rates in Controller
-    Note over User: Receiver gets the assets, shares are burned
+## Method : processStableRewardsMarket
 
-```
+This method will stream the accumulated  stable rewards , to the scvUSD holders for one market.
 
-## Ressources
+### parameters 
+- address **stakeDaoVault**: The address of the market.
 
-### Tools
+### Process
+1. Determines the amount to stream, from the balance of stakeDaoShare we remove 
+    - The totalSupply of scvUSD
+    - The curveLendVault.convertToAssets(totalSupply of gUSD).
+2. The amount is withdrawn from stakeDAo and then redeem from curve    
+3. We feed the stream process  with this amount. 
 
-- Abi to solidity interface code : https://bia.is/tools/abi2solidity/
+## Method : claimStableReward 
 
-### Contracts
+### parameters 
+- address **account**: The address of account to claim.
 
-#### Stake DAO
-
-https://www.stakedao.org/yield?chainId=1&protocol=llamalend
-
-- Vault : https://etherscan.io/address/0xfa6D40573082D797CB3cC378c0837fB90eB043e5#code
-- LP : https://etherscan.io/address/0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA#code
-- Gauge (StakeDAO) : https://etherscan.io/address/0xFCc5a1B4e3d80Ce459e346A0b8F63b655ED709cb#code
-- Gauge (Curve) : https://etherscan.io/address/0x49887dF6fE905663CDB46c616BfBfBB50e85a265
-- ConvexFallBack : https://etherscan.io/address/0x360CE1C08Ab93e940275149655CA8419e97f8b4c#code
-
-#### Curve
-
-https://lend.curve.fi/#/ethereum
-
-- Vault : https://etherscan.io/address/0xcea18a8752bb7e7817f9ae7565328fe415c0f2ca#code
-- Controller : https://etherscan.io/address/0xEdA215b7666936DEd834f76f3fBC6F323295110A#code
-- AMM : https://etherscan.io/address/0xafca625321Df8D6A068bDD8F1585d489D2acF11b#code
-
-- Gauge STAKE :
-
-### Inner
-
-- https://docs.google.com/spreadsheets/d/1NBay39-V_1s75x62JKiDrEd_1xAD6upsau8Zr8AgX0Q/edit?gid=2082479589#gid=2082479589
-
-### Documentation
-
-- https://resources.curve.fi/lending/overview/
-
-### Data
-
-- https://dune.com/mrblock_tw/curve-llamalend
-- https://defillama.com/protocol/curve-llamalend#information
-- https://messari.io/project/curve-llamalend/protocols/curve-llamalend
-
-### Erc-4626
-
-- https://ethereum.org/fr/developers/docs/standards/tokens/erc-4626/
+### Process
+1. We calculate the amount of rewards for this account
+2. We update the alreadyPaid variables  
+3. We transfer the money to the account.  
