@@ -10,10 +10,7 @@ interface ISDLiquidityGauge {
     }
 
     // solhint-disable-next-line
-    function deposit_reward_token(
-        address _rewardToken,
-        uint256 _amount
-    ) external;
+    function deposit_reward_token(address _rewardToken, uint256 _amount) external;
 
     // solhint-disable-next-line
     function claim_rewards_for(address _user, address _recipient) external;
@@ -33,11 +30,7 @@ interface ISDLiquidityGauge {
     // solhint-disable-next-line
     function reward_tokens(uint256 _i) external view returns (address);
 
-    function withdraw(
-        uint256 _value,
-        address _addr,
-        bool _claim_rewards
-    ) external;
+    function withdraw(uint256 _value, address _addr, bool _claim_rewards) external;
 
     function withdraw(uint256 _value, address _addr) external;
 
@@ -46,20 +39,15 @@ interface ISDLiquidityGauge {
     function vault() external view returns (address);
 
     // solhint-disable-next-line
-    function reward_data(
-        address _tokenReward
-    ) external view returns (Reward memory);
+    function reward_data(address _tokenReward) external view returns (Reward memory);
 
     function reward_count() external view returns (uint256);
 
     function totalSupply() external view returns (uint256);
 
-    function balanceOf(address) external returns (uint256);
+    function balanceOf(address) external view returns (uint256);
 
-    function claimable_reward(
-        address _user,
-        address _reward_token
-    ) external view returns (uint256);
+    function claimable_reward(address _user, address _reward_token) external view returns (uint256);
 
     function user_checkpoint(address _user) external returns (bool);
 
@@ -88,12 +76,11 @@ interface ISDLiquidityGauge {
 
     function working_balances(address _address) external returns (uint256);
 
-    function set_reward_distributor(
-        address _rewardToken,
-        address _newDistrib
-    ) external;
+    function set_reward_distributor(address _rewardToken, address _newDistrib) external;
 
     function set_rewards_receiver(address _receiver) external;
 
     function admin() external view returns (address);
+
+    function approve(address spender, uint256 amount) external returns (bool);
 }

@@ -31,6 +31,8 @@ contract CurveLendSplitterTokenStream is ERC20Upgradeable, OwnableUpgradeable {
 
     ILendRewardSplitter public lendRewardSplitter;
 
+    ISDLiquidityGauge public liquidityGauge;
+
     /// @notice Percentage of rewards to be sent to the user who processed the GOV rewards
     uint256 public processorRewardsPercentage; //Question: same fee percentage for all tokens ?
 
@@ -68,11 +70,18 @@ contract CurveLendSplitterTokenStream is ERC20Upgradeable, OwnableUpgradeable {
     // }
 
     /// @notice initialize function
-    function initialize(string memory _name, string memory _symbol) external initializer {
+    function initialize(
+        string memory _name,
+        string memory _symbol,
+        address _lendRewardSplitter,
+        address _liquidityGauge
+    ) external initializer {
         __ERC20_init(_name, _symbol);
         _transferOwnership(msg.sender);
         processorRewardsPercentage = 1000; /// @dev TODO: TO CHANGE -> corresponds to 1%
         daoFeesPercentage = 2000; /// @dev TODO: TO CHANGE -> corresponds to 2%
+        lendRewardSplitter = ILendRewardSplitter(_lendRewardSplitter);
+        liquidityGauge = ISDLiquidityGauge(_liquidityGauge);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -128,8 +137,7 @@ contract CurveLendSplitterTokenStream is ERC20Upgradeable, OwnableUpgradeable {
     //TODO: Notice
     function processGovRewards() external {
         /// @dev Claim rewards on behalf of the splitter on this contract
-        //TODO: save liquidityGauge variable on this contract ?
-        lendRewardSplitter.liquidityGauge().claim_rewards(address(lendRewardSplitter));
+        liquidityGauge.claim_rewards(address(lendRewardSplitter));
 
         /// @dev Update reward tokens if a new one have been added
         uint256 rewardTokensLength = rewardTokens.length;
@@ -222,7 +230,7 @@ contract CurveLendSplitterTokenStream is ERC20Upgradeable, OwnableUpgradeable {
 
     /// @notice If a new token reward is added on the liquidity gauge, update it
     function _updateRewardTokens(uint256 currentRewardTokens) internal {
-        ISDLiquidityGauge _liquidityGauge = lendRewardSplitter.liquidityGauge();
+        ISDLiquidityGauge _liquidityGauge = liquidityGauge;
         uint256 rewardCount = _liquidityGauge.reward_count();
         for (uint256 i = currentRewardTokens; i < rewardCount; ) {
             IERC20 rewardToken = IERC20(_liquidityGauge.reward_tokens(i));
@@ -414,11 +422,6 @@ contract CurveLendSplitterTokenStream is ERC20Upgradeable, OwnableUpgradeable {
         /// @dev it must never exceed 3% (TODO: ???)
         require(_percentage <= 3000, "PERCENTAGE_TOO_HIGH");
         daoFeesPercentage = _percentage;
-    }
-
-    //TODO: remove for singleton
-    function setLendRewardSplitter(address _lendRewardSplitter) external onlyOwner {
-        lendRewardSplitter = ILendRewardSplitter(_lendRewardSplitter);
     }
 
     /**

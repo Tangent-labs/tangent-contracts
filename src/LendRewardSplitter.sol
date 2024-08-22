@@ -6,6 +6,7 @@ import {ICurveLendVault} from "./interfaces/ICurveLendVault.sol";
 import {IStakeDaoVault} from "./interfaces/IStakeDaoVault.sol";
 import {ISDLiquidityGauge} from "./interfaces/ISDLiquidityGauge.sol";
 import {ICrvUSDController} from "./interfaces/ICrvUSDController.sol";
+import {CurveLendSplitterTokenStream} from "./tokens/CurveLendSplitterTokenStream.sol";
 import {ICurveLendSplitterTokenStream} from "./interfaces/ICurveLendSplitterTokenStream.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
@@ -18,23 +19,17 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
     uint256 constant MAX_UINT = uint256(int256(-1));
 
-    /// @dev Curve vault contract for lending (CurvelendVault).
-    ICurveLendVault public curveLendVault;
-    /// @dev Stake dao vault contract for lending (StakeDaoVault).
-    IStakeDaoVault public stakeDaoVault;
-    /// @dev collateral asset for lending (IERC20).
-    IERC20 public lendAsset;
-
-    /// @dev Issued for governance reward deposits(IERC20).
-    ICurveLendSplitterTokenStream public gUSD;
-    /// @dev Issued for stable reward deposits(IERC20).
-    ICurveLendSplitterTokenStream public scvUSD;
-
-    ISDLiquidityGauge public liquidityGauge;
-
-    mapping(address => uint256) public balanceOf;
-
     mapping(IERC20 => uint256) public daoFeeForToken;
+    mapping(address => MarketStruct) public markets;
+    mapping(address => bool) public isSpecialUpdater;
+
+    struct MarketStruct {
+        ICurveLendVault curveLendVault;
+        ISDLiquidityGauge liquidityGauge;
+        IERC20 lendAsset;
+        CurveLendSplitterTokenStream gUSD;
+        CurveLendSplitterTokenStream scvUSD;
+    }
 
     event Deposit(address indexed account, bool isStableReward, uint256 amount);
     event Withdraw(address indexed account, bool isStableReward, TOKEN_TYPE outType, uint256 amount);
@@ -48,41 +43,42 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         LendStakeDaoAsset
     }
 
-    /**
-     *  @notice initialize the contract.
-     *  @param _curveLendVault Address of the lend market on curve.
-     *  @param _stakeDaoVault Address of the  stakedao vault corresponding to the lend market on curve.
-     *  @param _gUSD Address of  gUSD token created for this market.
-     *  @param _scvUSD Address of scvUSD token created for this market.
-     */
-    function initialize(
-        address _curveLendVault,
-        address _stakeDaoVault,
-        address _gUSD,
-        address _scvUSD
-    ) external initializer {
-        /// @dev We initialize the lobal variables.
-        curveLendVault = ICurveLendVault(_curveLendVault);
-        stakeDaoVault = IStakeDaoVault(_stakeDaoVault);
-        lendAsset = IERC20(curveLendVault.asset());
-
-        gUSD = ICurveLendSplitterTokenStream(_gUSD);
-        scvUSD = ICurveLendSplitterTokenStream(_scvUSD);
-
-        /// @dev We approve the operation contract to move  tokens from/to this contract .
-        lendAsset.approve(address(curveLendVault), MAX_UINT);
-        curveLendVault.approve(address(stakeDaoVault), MAX_UINT);
-
-        /// @dev We approve for the mint operation
-        address _liquidityGauge = stakeDaoVault.liquidityGauge();
-        liquidityGauge = ISDLiquidityGauge(_liquidityGauge);
-        IERC20(_liquidityGauge).approve(_gUSD, MAX_UINT);
-        IERC20(_liquidityGauge).approve(_scvUSD, MAX_UINT);
-
-        /// @dev Set gUSD as the receiver of liquidity gauge rewards
-        liquidityGauge.set_rewards_receiver(_gUSD);
-
+    function initialize() external initializer {
         _transferOwnership(msg.sender);
+    }
+
+    function createMarket(IStakeDaoVault _stakeDaoVault) external onlyOwner {
+        require(address(markets[address(_stakeDaoVault)].curveLendVault) == address(0), "MARKET_ALREADY_EXIST");
+        ICurveLendVault _curveLendVault = ICurveLendVault(_stakeDaoVault.token());
+        //TODO: require address(0)
+        IERC20 _lendAsset = IERC20(_curveLendVault.asset());
+        ISDLiquidityGauge _liquidityGauge = ISDLiquidityGauge(_stakeDaoVault.liquidityGauge());
+        //TODO:deploy gUSD via beacon
+        CurveLendSplitterTokenStream _gUSD = new CurveLendSplitterTokenStream();
+        _gUSD.initialize("Governance USD/CRV", "gUSD-CRV", address(this), address(_liquidityGauge));
+        //TODO: deploy scvUSD via beacon
+        CurveLendSplitterTokenStream _scvUSD = new CurveLendSplitterTokenStream();
+        _scvUSD.initialize("Stable USD/CRV", "scvUSD-CRV", address(this), address(_liquidityGauge));
+
+        /// @dev approvals
+        _lendAsset.approve(address(_curveLendVault), MAX_UINT);
+        _curveLendVault.approve(address(_stakeDaoVault), MAX_UINT);
+        _liquidityGauge.approve(address(_gUSD), MAX_UINT);
+        _liquidityGauge.approve(address(_scvUSD), MAX_UINT);
+
+        _liquidityGauge.set_rewards_receiver(address(_gUSD));
+
+        /// @dev save market on markets mapping
+        markets[address(_stakeDaoVault)] = MarketStruct({
+            curveLendVault: _curveLendVault,
+            liquidityGauge: _liquidityGauge,
+            lendAsset: _lendAsset,
+            gUSD: _gUSD,
+            scvUSD: _scvUSD
+        });
+
+        /// @dev WL gUSD as an special updater
+        isSpecialUpdater[address(_gUSD)] = true;
     }
 
     /*
@@ -100,6 +96,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      *  @return depositAmount Staked amount eligible to rewards.
      */
     function deposit(
+        address stakeDaoVault,
         TOKEN_TYPE inType,
         uint256 amount,
         bool isStableReward,
@@ -107,12 +104,14 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     ) external returns (uint256 depositAmount) {
         require(amount != 0, "NO_INPUT_AMOUNT");
 
+        MarketStruct memory market = markets[stakeDaoVault];
+
         /// @dev Transfer the token from the user to this contract..
-        _transferTokens(inType, amount);
+        _transferTokens(market, inType, amount);
 
         if (inType == TOKEN_TYPE.LendAsset) {
             /// @dev Deposit in curveLend.
-            depositAmount = curveLendVault.deposit(amount, address(this));
+            depositAmount = market.curveLendVault.deposit(amount, address(this));
         } else {
             /// @dev In others code path token are minted 1:1.
             depositAmount = amount;
@@ -120,20 +119,19 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         if (inType < TOKEN_TYPE.LendStakeDaoAsset) {
             /// @dev Stake into stakedao strategies to get OnlyBoost.
-            uint256 balanceBefore = IERC20(stakeDaoVault.liquidityGauge()).balanceOf(address(this));
-            stakeDaoVault.deposit(address(this), depositAmount, doDeposit);
-            uint256 balanceAfter = IERC20(stakeDaoVault.liquidityGauge()).balanceOf(address(this));
-            depositAmount = balanceAfter - balanceBefore;
+            uint256 balanceBefore = market.liquidityGauge.balanceOf(address(this));
+            IStakeDaoVault(stakeDaoVault).deposit(address(this), depositAmount, doDeposit);
+            depositAmount = market.liquidityGauge.balanceOf(address(this)) - balanceBefore;
         }
 
         if (isStableReward) {
             /// @dev For scvUSD, we mint 1:1 from cvcrvUSD.
-            scvUSD.mint(msg.sender, depositAmount);
+            market.scvUSD.mint(msg.sender, depositAmount);
         } else {
             /// @dev For gUSD, we mint 1:1 from crvUSD,
             // we use the curveLendVault.convertToAssets to calculate the amount.
-            depositAmount = curveLendVault.convertToAssets(depositAmount);
-            gUSD.mint(msg.sender, depositAmount);
+            depositAmount = market.curveLendVault.convertToAssets(depositAmount);
+            market.gUSD.mint(msg.sender, depositAmount);
         }
         emit Deposit(msg.sender, isStableReward, depositAmount);
     }
@@ -144,73 +142,80 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      *  @param amount Amount  of {gUSD|scvUsd} token you want to withdraw.
      *  @param isStableReward  If isStableReward == true THEN   scvUsd of user is used   ELSE  gUSD of user is used.
      */
-    function withdraw(TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
+    function withdraw(address stakeDaoVault, TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
         /// @dev We check the prerequesite.
         require(amount != 0, "WITHDRAW_LTE_0");
-        ICurveLendSplitterTokenStream recipeToken = isStableReward ? scvUSD : gUSD;
+
+        MarketStruct memory market = markets[stakeDaoVault];
+
+        CurveLendSplitterTokenStream recipeToken = isStableReward ? market.scvUSD : market.gUSD;
         require(amount <= recipeToken.balanceOf(msg.sender), "NOT_ENOUGH_BALANCE");
 
         /// @dev We burn the corresponding token.
         recipeToken.burn(msg.sender, amount);
 
         /// @dev We process the amounts.
-        uint256 shareAmount = isStableReward ? amount : curveLendVault.convertToShares(amount);
+        uint256 shareAmount = isStableReward ? amount : market.curveLendVault.convertToShares(amount);
 
         if (outType == TOKEN_TYPE.LendStakeDaoAsset) {
             /// @dev we  transfer the stake share to the user.
-            IERC20(stakeDaoVault.liquidityGauge()).safeTransfer(msg.sender, shareAmount);
+            IERC20(address(market.liquidityGauge)).safeTransfer(msg.sender, shareAmount);
         } else {
             /// @dev We withdraw the share from stakeDAO vault.
-            stakeDaoVault.withdraw(shareAmount);
+            IStakeDaoVault(stakeDaoVault).withdraw(shareAmount);
             // require(balanceBefore - balanceAfter >= shareAmount, "WITHDRAW ERROR");
             if (outType == TOKEN_TYPE.LendCurveAsset) {
                 /// @dev we  transfer the stake share to the user.
-                curveLendVault.safeTransfer(msg.sender, shareAmount);
+                IERC20(address(market.curveLendVault)).safeTransfer(msg.sender, shareAmount);
             }
             if (outType == TOKEN_TYPE.LendAsset) {
                 /// @dev We chack if we can withdraw from curvelend vault.
-                uint256 maxShareAllowed = curveLendVault.maxRedeem(address(this));
+                uint256 maxShareAllowed = market.curveLendVault.maxRedeem(address(this));
                 require(shareAmount <= maxShareAllowed, "MORE_THAN_MAX_WIDTHDRAW");
                 /// @dev We withdraw from curvelend vault.
-                uint256 assetAmountWithdrawn = curveLendVault.redeem(shareAmount);
+                uint256 assetAmountWithdrawn = market.curveLendVault.redeem(shareAmount);
                 /// @dev We transfer to the user.
-                lendAsset.safeTransfer(msg.sender, assetAmountWithdrawn);
+                IERC20(address(market.lendAsset)).safeTransfer(msg.sender, assetAmountWithdrawn);
             }
         }
         emit Withdraw(msg.sender, isStableReward, outType, amount);
     }
 
-    function _transferTokens(TOKEN_TYPE inType, uint256 amount) internal {
+    function _transferTokens(MarketStruct memory market, TOKEN_TYPE inType, uint256 amount) internal {
         /// @dev Transfer the token (LendAsset).
         if (inType == TOKEN_TYPE.LendAsset) {
-            lendAsset.safeTransferFrom(msg.sender, address(this), amount);
+            market.lendAsset.safeTransferFrom(msg.sender, address(this), amount);
         }
 
         /// @dev Transfer the token (LendCurveAsset) to this contract.
         if (inType == TOKEN_TYPE.LendCurveAsset) {
-            IERC20(curveLendVault).safeTransferFrom(msg.sender, address(this), amount);
+            market.curveLendVault.safeTransferFrom(msg.sender, address(this), amount);
         }
         /// @dev Transfer the token (LendStakeDaoAsset) to this contract.
         if (inType == TOKEN_TYPE.LendStakeDaoAsset) {
-            IERC20(stakeDaoVault.liquidityGauge()).safeTransferFrom(msg.sender, address(this), amount);
+            IERC20(address(market.liquidityGauge)).safeTransferFrom(msg.sender, address(this), amount);
         }
     }
 
-    function stableDepositTotal() public view returns (uint256) {
-        return scvUSD.totalSupply();
+    function stableDepositTotal(address stakeDaoVault) external view returns (uint256) {
+        return markets[stakeDaoVault].scvUSD.totalSupply();
     }
 
-    function govDepositTotal() public view returns (uint256) {
-        return gUSD.totalSupply();
+    function govDepositTotal(address stakeDaoVault) external view returns (uint256) {
+        return markets[stakeDaoVault].gUSD.totalSupply();
     }
 
-    function stakeDaoVaultShareOwned() public view returns (uint256) {
-        return IERC20(stakeDaoVault.liquidityGauge()).balanceOf(address(this));
+    function stakeDaoVaultShareOwned(address stakeDaoVault) external view returns (uint256) {
+        return markets[stakeDaoVault].liquidityGauge.balanceOf(address(this));
+    }
+
+    function getMarket(address stakeDaoVault) external view returns (MarketStruct memory) {
+        return markets[stakeDaoVault];
     }
 
     //TODO: notice
     function updateDaoFees(IERC20[] memory tokens, uint256[] memory amounts) external {
-        require(msg.sender == address(gUSD), "NOT_GUSD");
+        require(isSpecialUpdater[msg.sender], "NOT_GUSD");
         require(tokens.length == amounts.length, "WRONG_LENGTH");
         for (uint256 i; i < tokens.length; ) {
             daoFeeForToken[tokens[i]] += amounts[i];
@@ -222,7 +227,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
     //TODO: notice
     function approveGovReward(IERC20 token) external {
-        require(msg.sender == address(gUSD), "NOT_GUSD");
+        require(isSpecialUpdater[msg.sender], "NOT_GUSD");
         token.approve(msg.sender, MAX_UINT);
     }
 

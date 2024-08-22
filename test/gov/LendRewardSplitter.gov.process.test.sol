@@ -10,15 +10,19 @@ import {ICurveLendVault} from "../../src/interfaces/ICurveLendVault.sol";
 import {Addresses} from "../../src/libs/Addresses.sol";
 import {ISDLiquidityGauge} from "../../src/interfaces/ISDLiquidityGauge.sol";
 import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
+import {LendRewardSplitterTestCommon} from "../LendRewardSplitter.common.test.sol";
 
 contract LendRewardSplitterGovProcessTest is Test {
     uint256 constant MAX_UINT = uint256(int256(-1));
     uint256 constant DENOMINATOR = 100_000;
 
+    LendRewardSplitterTestCommon testCommon = new LendRewardSplitterTestCommon();
+
+    IStakeDaoVault stakeDaoVault = IStakeDaoVault(Addresses.STAKEDAO_CRV_VAULT);
     LendRewardSplitter splitter;
     CurveLendSplitterTokenStream scvUSD;
     CurveLendSplitterTokenStream gUSD;
-    IERC20 liquidityGauge;
+    ISDLiquidityGauge liquidityGauge;
     ICurveLendVault curveLendVault;
     uint256 processorRewardsPercentage;
     uint256 daoFeesPercentage;
@@ -26,57 +30,26 @@ contract LendRewardSplitterGovProcessTest is Test {
 
     address owner = makeAddr("Owner");
     address depositor = makeAddr("Depositor");
-    address ownerGauge = makeAddr("ownerGauge");
     address processor = makeAddr("Processor");
 
-    function _getUser(uint index, address token) internal returns (address user) {
-        user = makeAddr(string.concat("user", vm.toString((index))));
-        vm.deal(user, 10 ether);
-        if (token == Addresses.STAKEDAO_CRV_VAULT) {
-            token = IStakeDaoVault(Addresses.STAKEDAO_CRV_VAULT).liquidityGauge();
-        }
-        vm.startPrank(user);
-        deal(token, user, 1000 ether);
-        IERC20(token).approve(address(splitter), MAX_UINT);
-    }
-
     function setUp() public {
-        vm.createSelectFork("mainnet", 20513092);
+        testCommon = new LendRewardSplitterTestCommon();
+        testCommon.fork();
+        splitter = testCommon.setUpSplitter();
+        //dealing
         vm.deal(owner, 10 ether);
-        vm.deal(ownerGauge, 10 ether);
 
-        liquidityGauge = IERC20(IStakeDaoVault(Addresses.STAKEDAO_CRV_VAULT).liquidityGauge());
-        curveLendVault = ICurveLendVault(Addresses.CURVE_CRV_VAULT);
-
-        scvUSD = new CurveLendSplitterTokenStream();
-        scvUSD.initialize("Stable USD/CRV", "scvUSD-CRV");
-        gUSD = new CurveLendSplitterTokenStream();
-        gUSD.initialize("Governance USD/CRV", "gUSD-CRV");
-
-        splitter = new LendRewardSplitter();
-
-        scvUSD.setLendRewardSplitter(address(splitter));
-        gUSD.setLendRewardSplitter(address(splitter));
-        //labelizing
-        vm.label(Addresses.TOKEN_CRVUSD, "crvUSD");
-        vm.label(Addresses.STAKEDAO_CRV_VAULT, "STAKEDAO_CRV_VAULT");
-        vm.label(Addresses.CURVE_CRV_VAULT, "CURVE_CRV_VAULT");
-        vm.label(IStakeDaoVault(Addresses.STAKEDAO_CRV_VAULT).strategy(), "STAKEDAO_CRV_STRATEGY");
-        vm.label(IStakeDaoVault(Addresses.STAKEDAO_CRV_VAULT).liquidityGauge(), "STAKEDAO_CRV_LIQUIDITY_GAUGE");
-        /*
-            address _curveLendVault,
-            address _stakeDaoVault,
-            address _curveGauge
-        */
-        vm.prank(owner);
-        splitter.initialize(Addresses.CURVE_CRV_VAULT, Addresses.STAKEDAO_CRV_VAULT, address(gUSD), address(scvUSD));
+        liquidityGauge = testCommon.liquidityGauge();
+        curveLendVault = testCommon.curveLendVault();
+        gUSD = testCommon.gUSD();
+        scvUSD = testCommon.scvUSD();
 
         daoFeesPercentage = gUSD.daoFeesPercentage(); //2%
         processorRewardsPercentage = gUSD.processorRewardsPercentage(); //1%
 
         /// @dev Deposit
         address tokenIn = Addresses.TOKEN_CRVUSD;
-        _getUser(1, tokenIn);
+        testCommon.getUser(1, tokenIn);
         bool doDeposit = true;
         uint256 depositedAmount = 1000 ether;
         vm.stopPrank();
@@ -85,10 +58,16 @@ contract LendRewardSplitterGovProcessTest is Test {
         vm.prank(depositor);
         IERC20(Addresses.TOKEN_CRVUSD).approve(address(splitter), MAX_UINT);
         vm.prank(depositor);
-        splitter.deposit(LendRewardSplitter.TOKEN_TYPE.LendAsset, depositedAmount, isStableReward, doDeposit);
+        splitter.deposit(
+            address(stakeDaoVault),
+            LendRewardSplitter.TOKEN_TYPE.LendAsset,
+            depositedAmount,
+            isStableReward,
+            doDeposit
+        );
         vm.stopPrank();
         skip(3600);
-        _takesGaugeOnwershipAndSetDistributor();
+        testCommon._takesGaugeOnwershipAndSetDistributor();
     }
 
     function test_FailProcessGovRewardsWithNothingToClaim() external {
@@ -211,6 +190,8 @@ contract LendRewardSplitterGovProcessTest is Test {
         assertEq(0, splitter.daoFeeForToken(SDT));
     }
 
+    //TODO: owner reverts function
+
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                        INTERNALS
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -221,67 +202,35 @@ contract LendRewardSplitterGovProcessTest is Test {
     uint256 crvProcessorRewards;
     uint256 crvDaoFees;
     function _processGovReward(bool isClaimedByUser) internal {
-        ISDLiquidityGauge _liquidityGauge = ISDLiquidityGauge(address(liquidityGauge));
-        DistributionGauge[] memory distributionGauges = new DistributionGauge[](2);
-        distributionGauges[1] = DistributionGauge({token: Addresses.TOKEN_CRV, amount: 100 ether});
-        distributionGauges[0] = DistributionGauge({token: Addresses.TOKEN_SDT, amount: 10 ether});
-        _distributeGaugeRewards(distributionGauges);
+        LendRewardSplitterTestCommon.DistributionGauge[]
+            memory distributionGauges = new LendRewardSplitterTestCommon.DistributionGauge[](2);
+        distributionGauges[1] = LendRewardSplitterTestCommon.DistributionGauge({
+            token: Addresses.TOKEN_CRV,
+            amount: 100 ether
+        });
+        distributionGauges[0] = LendRewardSplitterTestCommon.DistributionGauge({
+            token: Addresses.TOKEN_SDT,
+            amount: 10 ether
+        });
+        testCommon._distributeGaugeRewards(distributionGauges);
         skip(72000);
         //CRV
-        crvClaimable = _liquidityGauge.claimable_reward(address(splitter), Addresses.TOKEN_CRV);
+        crvClaimable = liquidityGauge.claimable_reward(address(splitter), Addresses.TOKEN_CRV);
         crvProcessorRewards = (crvClaimable * processorRewardsPercentage) / DENOMINATOR;
         crvDaoFees = (crvClaimable * daoFeesPercentage) / DENOMINATOR;
         crvClaimable -= crvProcessorRewards;
         crvClaimable -= crvDaoFees;
         //SDT
-        sdtClaimable = _liquidityGauge.claimable_reward(address(splitter), Addresses.TOKEN_SDT);
+        sdtClaimable = liquidityGauge.claimable_reward(address(splitter), Addresses.TOKEN_SDT);
         sdtProcessorRewards = (sdtClaimable * processorRewardsPercentage) / DENOMINATOR;
         sdtDaoFees = (sdtClaimable * daoFeesPercentage) / DENOMINATOR;
         sdtClaimable -= sdtProcessorRewards;
         sdtClaimable -= sdtDaoFees;
 
         /// @dev claim rewards with a random user outside of the process
-        if (isClaimedByUser) _liquidityGauge.claim_rewards(address(splitter));
+        if (isClaimedByUser) liquidityGauge.claim_rewards(address(splitter));
 
         vm.prank(processor);
         gUSD.processGovRewards();
-    }
-
-    function _takesGaugeOnwershipAndSetDistributor() internal {
-        ISDLiquidityGauge _liquidityGauge = ISDLiquidityGauge(address(liquidityGauge));
-        address admin = _liquidityGauge.admin();
-        uint256 rewardCount = _liquidityGauge.reward_count();
-        for (uint256 i; i < rewardCount; ) {
-            IERC20 token = IERC20(_liquidityGauge.reward_tokens(i));
-            vm.prank(ownerGauge);
-            token.approve(address(liquidityGauge), 0);
-            vm.prank(ownerGauge);
-            token.approve(address(liquidityGauge), MAX_UINT);
-            vm.stopPrank();
-
-            vm.prank(admin);
-            _liquidityGauge.set_reward_distributor(address(token), ownerGauge);
-            vm.stopPrank();
-            unchecked {
-                ++i;
-            }
-        }
-    }
-    struct DistributionGauge {
-        address token;
-        uint256 amount;
-    }
-    function _distributeGaugeRewards(DistributionGauge[] memory distributionGauges) internal {
-        ISDLiquidityGauge _liquidityGauge = ISDLiquidityGauge(address(liquidityGauge));
-        for (uint256 i; i < distributionGauges.length; ) {
-            vm.prank(ownerGauge);
-            deal(distributionGauges[i].token, ownerGauge, distributionGauges[i].amount);
-            vm.prank(ownerGauge);
-            _liquidityGauge.deposit_reward_token(distributionGauges[i].token, distributionGauges[i].amount);
-            unchecked {
-                ++i;
-            }
-        }
-        vm.stopPrank();
     }
 }
