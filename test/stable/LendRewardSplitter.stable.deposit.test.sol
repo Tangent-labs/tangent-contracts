@@ -20,12 +20,12 @@ contract LendRewardSplitterStableDepositTest is Test {
         address tokenIn = Addr.TOKEN_CRVUSD;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
 
         testCommon.deposit(depositAmount, true, true, tokenIn);
         assertEq(testCommon.scvUSD().balanceOf(user), testCommon.curveLendVault().convertToShares(depositAmount));
         assertEq(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             testCommon.curveLendVault().convertToShares(depositAmount)
         );
         assertEq(testCommon.stakeDaoVault().incentiveTokenAmount(), 0 ether);
@@ -37,7 +37,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         address tokenIn = Addr.TOKEN_CRVUSD;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         testCommon.deposit(depositAmount, true, false, tokenIn);
         uint256 incentive = testCommon.stakeDaoVault().incentiveTokenAmount();
         assertGt(incentive, 0);
@@ -48,7 +48,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         );
 
         assertEq(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             testCommon.curveLendVault().convertToShares(depositAmount) - incentive
         );
 
@@ -60,12 +60,12 @@ contract LendRewardSplitterStableDepositTest is Test {
         address tokenIn = Addr.CURVE_CRV_VAULT;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         testCommon.deposit(depositAmount, true, true, tokenIn);
 
         assertEq(testCommon.scvUSD().balanceOf(user), depositAmount, "balance user");
 
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), depositAmount);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), depositAmount);
 
         vm.stopPrank();
     }
@@ -76,7 +76,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         address user = testCommon.getUser(1, tokenIn);
 
         assertEq(testCommon.scvUSD().balanceOf(user), 0, "balanceOf user before");
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0, "stableDepositTotal");
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0, "stableDepositTotal");
 
         testCommon.deposit(depositAmount, true, false, tokenIn);
 
@@ -85,36 +85,36 @@ contract LendRewardSplitterStableDepositTest is Test {
         assertGt(incentive, 0);
         assertEq(testCommon.scvUSD().balanceOf(user), depositAmount - incentive, "balance user after");
 
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), depositAmount - incentive);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), depositAmount - incentive);
 
         vm.stopPrank();
     }
 
     function test_deposit_LendstakeassetWithStableRewardDepositEnabled() external {
         uint256 depositAmount = 100 ether;
-        address tokenIn = Addr.STAKEDAO_CRV_VAULT;
+        address tokenIn = Addr.STAKEDAO_CRVUSD_CRV;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         testCommon.deposit(depositAmount, true, false, tokenIn);
 
         assertEq(testCommon.scvUSD().balanceOf(user), depositAmount, "balance user");
 
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), depositAmount);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), depositAmount);
         vm.stopPrank();
     }
     function test_deposit_LendstakeassetWithStableRewardDepositDisabled() external {
         uint256 depositAmount = 100 ether;
-        address tokenIn = Addr.STAKEDAO_CRV_VAULT;
+        address tokenIn = Addr.STAKEDAO_CRVUSD_CRV;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         testCommon.deposit(depositAmount, true, false, tokenIn);
         uint256 incentive = testCommon.stakeDaoVault().incentiveTokenAmount();
         assertEq(incentive, 0);
         assertEq(testCommon.scvUSD().balanceOf(user), depositAmount, "balance user");
 
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), depositAmount);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), depositAmount);
 
         vm.stopPrank();
     }
@@ -123,12 +123,12 @@ contract LendRewardSplitterStableDepositTest is Test {
 
     function test_revertWhen_depositLendassetWithStableRewardDepositEnabledWithoutEnoughBalance() external {
         uint256 depositAmount = 100 ether;
-        address user = testCommon.getUser(1, Addr.STAKEDAO_CRV_VAULT);
+        address user = testCommon.getUser(1, Addr.STAKEDAO_CRVUSD_CRV);
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
         assertEq(IERC20(Addr.TOKEN_CRVUSD).balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         vm.expectRevert();
-        splitter.deposit(Addr.STAKEDAO_CRV_VAULT, LendRewardSplitter.TOKEN_TYPE.LendAsset, depositAmount, true, true);
+        splitter.deposit(Addr.STAKEDAO_CRVUSD_CRV, LendRewardSplitter.TOKEN_TYPE.LendAsset, depositAmount, true, true);
         vm.stopPrank();
     }
     function test_revertWhen_depositLendcurveassetWithStableRewardWithDepositWithoutEnoughBalance() external {
@@ -136,10 +136,10 @@ contract LendRewardSplitterStableDepositTest is Test {
         address user = testCommon.getUser(1, Addr.TOKEN_CRVUSD);
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
         assertEq(IERC20(Addr.CURVE_CRV_VAULT).balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         vm.expectRevert();
         splitter.deposit(
-            Addr.STAKEDAO_CRV_VAULT,
+            Addr.STAKEDAO_CRVUSD_CRV,
             LendRewardSplitter.TOKEN_TYPE.LendCurveAsset,
             depositAmount,
             true,
@@ -151,11 +151,11 @@ contract LendRewardSplitterStableDepositTest is Test {
         uint256 depositAmount = 100 ether;
         address user = testCommon.getUser(1, Addr.TOKEN_CRVUSD);
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(IERC20(Addr.STAKEDAO_CRV_VAULT).balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(IERC20(Addr.STAKEDAO_CRVUSD_CRV).balanceOf(user), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         vm.expectRevert();
         splitter.deposit(
-            Addr.STAKEDAO_CRV_VAULT,
+            Addr.STAKEDAO_CRVUSD_CRV,
             LendRewardSplitter.TOKEN_TYPE.LendStakeDaoAsset,
             depositAmount,
             true,
@@ -169,7 +169,7 @@ contract LendRewardSplitterStableDepositTest is Test {
 
         vm.expectRevert();
         splitter.deposit(
-            Addr.STAKEDAO_CRV_VAULT,
+            Addr.STAKEDAO_CRVUSD_CRV,
             LendRewardSplitter.TOKEN_TYPE.LendStakeDaoAsset,
             depositAmount,
             true,
@@ -183,7 +183,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         vm.expectRevert();
         uint8 invalidEnumValue = 255;
         splitter.deposit(
-            Addr.STAKEDAO_CRV_VAULT,
+            Addr.STAKEDAO_CRVUSD_CRV,
             LendRewardSplitter.TOKEN_TYPE(invalidEnumValue),
             depositAmount,
             true,
@@ -196,7 +196,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         testCommon.getUser(1, Addr.TOKEN_CRVUSD);
         vm.expectRevert();
         splitter.deposit(
-            Addr.STAKEDAO_CRV_VAULT,
+            Addr.STAKEDAO_CRVUSD_CRV,
             LendRewardSplitter.TOKEN_TYPE.LendAsset,
             depositAmount + 1,
             true,

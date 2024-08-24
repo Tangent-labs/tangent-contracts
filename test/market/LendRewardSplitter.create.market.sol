@@ -20,13 +20,13 @@ contract LendRewardSplitterCreateMarket is Test {
     function test_revertWhen_CreateMarketWithRandomUser() external {
         vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", randomUser));
         vm.prank(randomUser);
-        splitter.createMarket(Addr.STAKEDAO_CRV_VAULT);
+        splitter.createMarket(Addr.STAKEDAO_CRVUSD_CRV);
     }
 
     function test_revertWhen_CreateMarketAlreadyExistent() external {
         vm.expectRevert(bytes("MARKET_ALREADY_EXIST"));
         vm.prank(owner);
-        splitter.createMarket(Addr.STAKEDAO_CRV_VAULT);
+        splitter.createMarket(Addr.STAKEDAO_CRVUSD_CRV);
     }
 
     //TODO: create a new market and verify each datas (need other markets)

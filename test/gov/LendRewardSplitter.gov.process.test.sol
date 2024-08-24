@@ -18,7 +18,7 @@ contract LendRewardSplitterGovProcessTest is Test {
 
     LendRewardSplitterTestCommon testCommon = new LendRewardSplitterTestCommon();
 
-    IStakeDaoVault stakeDaoVault = IStakeDaoVault(Addr.STAKEDAO_CRV_VAULT);
+    IStakeDaoVault stakeDaoVault = IStakeDaoVault(Addr.STAKEDAO_CRVUSD_CRV);
     LendRewardSplitter splitter;
     CurveLendSplitterToken scvUSD;
     CurveLendSplitterToken gUSD;

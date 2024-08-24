@@ -23,7 +23,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
 
         // Check the initial.
         assertEq(testCommon.gUSD().balanceOf(user), 0);
-        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         uint256 balancecrvUSDBeforeDeposit = testCommon.crvUSD().balanceOf(user);
 
         // Deposit
@@ -32,7 +32,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
 
         // Check deposit.
         assertApproxEqAbs(
-            splitter.govDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            splitter.govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             depositAmount,
             1 wei,
             "govDepositTotal before withdraw"
@@ -54,12 +54,12 @@ contract LendRewardSplitterGovWithdrawTest is Test {
             2 wei,
             "balance crvUSD  After withdraw"
         );
-        assertGt(splitter.stakeDaoVaultShareOwned(Addr.STAKEDAO_CRV_VAULT), 0, "Share stay on Stake");
+        assertGt(splitter.stakeDaoVaultShareOwned(Addr.STAKEDAO_CRVUSD_CRV), 0, "Share stay on Stake");
 
         // Chek widthraw OUT.
         uint256 balanceWithdrawn = testCommon.gUSD().balanceOf(user);
         assertEq(balanceWithdrawn, 0, "balancegUsdAfter After withdraw");
-        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0, "govDepositTotal After withdraw");
+        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0, "govDepositTotal After withdraw");
 
         vm.stopPrank();
     }
@@ -71,7 +71,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
 
         // Check the initial.
         assertEq(testCommon.gUSD().balanceOf(user), 0);
-        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         uint256 balancecrvUSDBeforeDeposit = testCommon.crvUSD().balanceOf(user);
 
         // Deposit
@@ -80,7 +80,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
 
         // Check deposit.
         assertApproxEqAbs(
-            splitter.govDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            splitter.govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             depositAmount,
             1 wei,
             "govDepositTotal before withdraw"
@@ -104,7 +104,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
             1 wei,
             " balance curveLendValut after"
         );
-        assertGt(splitter.stakeDaoVaultShareOwned(Addr.STAKEDAO_CRV_VAULT), 0, "Share stay on Stake");
+        assertGt(splitter.stakeDaoVaultShareOwned(Addr.STAKEDAO_CRVUSD_CRV), 0, "Share stay on Stake");
         // Chek widthraw OUT.
         assertApproxEqAbs(
             balancecrvUSDBeforeDeposit - depositAmount,
@@ -114,7 +114,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
         );
         uint256 balanceWithdrawn = testCommon.gUSD().balanceOf(user);
         assertEq(balanceWithdrawn, 0, "balancegUsdAfter After withdraw");
-        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0, "govDepositTotal After withdraw");
+        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0, "govDepositTotal After withdraw");
 
         vm.stopPrank();
     }
@@ -126,7 +126,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
 
         // Check the initial.
         assertEq(testCommon.gUSD().balanceOf(user), 0);
-        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         assertEq(testCommon.stakeDaoVault().balanceOf(user), 0);
         uint256 balancecrvUSDBeforeDeposit = testCommon.crvUSD().balanceOf(user);
 
@@ -136,7 +136,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
 
         // Check deposit.
         assertApproxEqAbs(
-            splitter.govDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            splitter.govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             depositAmount,
             1 wei,
             "govDepositTotal before withdraw"
@@ -160,7 +160,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
             1 wei,
             " balance stakeDaoVault after"
         );
-        assertGt(splitter.stakeDaoVaultShareOwned(Addr.STAKEDAO_CRV_VAULT), 0, "Share stay on Stake");
+        assertGt(splitter.stakeDaoVaultShareOwned(Addr.STAKEDAO_CRVUSD_CRV), 0, "Share stay on Stake");
 
         // Chek widthraw OUT.
         assertApproxEqAbs(
@@ -171,7 +171,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
         );
         uint256 balanceWithdrawn = testCommon.gUSD().balanceOf(user);
         assertEq(balanceWithdrawn, 0, "balancegUsdAfter After withdraw");
-        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0, "govDepositTotal After withdraw");
+        assertEq(splitter.govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0, "govDepositTotal After withdraw");
 
         vm.stopPrank();
     }

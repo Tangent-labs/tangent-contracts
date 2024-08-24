@@ -20,11 +20,11 @@ contract LendRewardSplitterGovDepositTest is Test {
         address tokenIn = Addr.TOKEN_CRVUSD;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.gUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
 
         testCommon.deposit(depositAmount, false, true, tokenIn);
         assertApproxEqAbs(testCommon.gUSD().balanceOf(user), depositAmount, 1 wei);
-        assertApproxEqAbs(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT), depositAmount, 1 wei);
+        assertApproxEqAbs(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), depositAmount, 1 wei);
         assertEq(testCommon.stakeDaoVault().incentiveTokenAmount(), 0 ether);
         vm.stopPrank();
     }
@@ -35,7 +35,7 @@ contract LendRewardSplitterGovDepositTest is Test {
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.gUSD().balanceOf(user), 0);
         uint256 incentive = testCommon.stakeDaoVault().incentiveTokenAmount();
-        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         testCommon.deposit(depositAmount, false, false, tokenIn);
         incentive = testCommon.stakeDaoVault().incentiveTokenAmount();
         incentive = testCommon.curveLendVault().convertToAssets(incentive);
@@ -52,12 +52,12 @@ contract LendRewardSplitterGovDepositTest is Test {
         address tokenIn = Addr.CURVE_CRV_VAULT;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.gUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         testCommon.deposit(depositAmount, false, true, tokenIn);
         uint256 depositedAmount = testCommon.curveLendVault().convertToAssets(depositAmount);
         assertEq(testCommon.gUSD().balanceOf(user), depositedAmount);
 
-        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT), depositedAmount);
+        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), depositedAmount);
 
         vm.stopPrank();
     }
@@ -68,7 +68,7 @@ contract LendRewardSplitterGovDepositTest is Test {
         address user = testCommon.getUser(1, tokenIn);
 
         assertEq(testCommon.gUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
 
         testCommon.deposit(depositAmount, false, false, tokenIn);
 
@@ -82,7 +82,7 @@ contract LendRewardSplitterGovDepositTest is Test {
         assertApproxEqAbs(testCommon.gUSD().balanceOf(user), depositedAmount - incentive, 1 wei);
 
         assertApproxEqAbs(
-            testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             depositedAmount - incentive,
             1 wei
         );
@@ -92,24 +92,24 @@ contract LendRewardSplitterGovDepositTest is Test {
 
     function test_deposit_LendstakeassetWithGovRewardDepositEnabled() external {
         uint256 depositAmount = 100 ether;
-        address tokenIn = Addr.STAKEDAO_CRV_VAULT;
+        address tokenIn = Addr.STAKEDAO_CRVUSD_CRV;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.gUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         testCommon.deposit(depositAmount, false, false, tokenIn);
         uint256 depositedAmount = testCommon.curveLendVault().convertToAssets(depositAmount);
         assertEq(testCommon.gUSD().balanceOf(user), depositedAmount);
 
-        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT), depositedAmount);
+        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), depositedAmount);
         vm.stopPrank();
     }
 
     function test_deposit_LendstakeassetWithGovRewardDepositDisabled() external {
         uint256 depositAmount = 100 ether;
-        address tokenIn = Addr.STAKEDAO_CRV_VAULT;
+        address tokenIn = Addr.STAKEDAO_CRVUSD_CRV;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.gUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         testCommon.deposit(depositAmount, false, false, tokenIn);
         uint256 depositedAmount = testCommon.curveLendVault().convertToAssets(depositAmount);
 
@@ -119,7 +119,7 @@ contract LendRewardSplitterGovDepositTest is Test {
         assertEq(incentive, 0);
         assertApproxEqAbs(testCommon.gUSD().balanceOf(user), depositedAmount, 1 wei);
 
-        assertApproxEqAbs(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRV_VAULT), depositedAmount, 1 wei);
+        assertApproxEqAbs(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), depositedAmount, 1 wei);
 
         vm.stopPrank();
     }

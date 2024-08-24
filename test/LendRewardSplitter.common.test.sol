@@ -17,7 +17,7 @@ contract LendRewardSplitterTestCommon is Test {
     address owner = makeAddr("Owner");
     address ownerGauge = makeAddr("ownerGauge");
 
-    IStakeDaoVault public constant stakeDaoVault = IStakeDaoVault(Addr.STAKEDAO_CRV_VAULT);
+    IStakeDaoVault public constant stakeDaoVault = IStakeDaoVault(Addr.STAKEDAO_CRVUSD_CRV);
     IERC20 public constant crvUSD = IERC20(Addr.TOKEN_CRVUSD);
     LendRewardSplitter public splitter;
     address public beaconCurveLendSplitterToken;
@@ -69,8 +69,8 @@ contract LendRewardSplitterTestCommon is Test {
 
         //create market
         vm.prank(owner);
-        splitter.createMarket(Addr.STAKEDAO_CRV_VAULT);
-        LendRewardSplitter.MarketStruct memory market = splitter.getMarket(Addr.STAKEDAO_CRV_VAULT);
+        splitter.createMarket(Addr.STAKEDAO_CRVUSD_CRV);
+        LendRewardSplitter.MarketStruct memory market = splitter.getMarket(Addr.STAKEDAO_CRVUSD_CRV);
 
         //Init vars
         liquidityGauge = market.liquidityGauge;
@@ -80,10 +80,10 @@ contract LendRewardSplitterTestCommon is Test {
 
         //labelizing
         vm.label(Addr.TOKEN_CRVUSD, "crvUSD");
-        vm.label(Addr.STAKEDAO_CRV_VAULT, "STAKEDAO_CRV_VAULT");
+        vm.label(Addr.STAKEDAO_CRVUSD_CRV, "STAKEDAO_CRVUSD_CRV");
         vm.label(Addr.CURVE_CRV_VAULT, "CURVE_CRV_VAULT");
-        vm.label(IStakeDaoVault(Addr.STAKEDAO_CRV_VAULT).strategy(), "STAKEDAO_CRV_STRATEGY");
-        vm.label(IStakeDaoVault(Addr.STAKEDAO_CRV_VAULT).liquidityGauge(), "STAKEDAO_CRV_LIQUIDITY_GAUGE");
+        vm.label(IStakeDaoVault(Addr.STAKEDAO_CRVUSD_CRV).strategy(), "STAKEDAO_CRV_STRATEGY");
+        vm.label(IStakeDaoVault(Addr.STAKEDAO_CRVUSD_CRV).liquidityGauge(), "STAKEDAO_CRV_LIQUIDITY_GAUGE");
         vm.label(address(scvUSD), "scvUSD");
         vm.label(address(gUSD), "gUSD");
     }
@@ -92,7 +92,7 @@ contract LendRewardSplitterTestCommon is Test {
         LendRewardSplitter.TOKEN_TYPE typeAsset = LendRewardSplitter.TOKEN_TYPE.LendAsset;
         if (tokenIn == Addr.CURVE_CRV_VAULT) {
             typeAsset = LendRewardSplitter.TOKEN_TYPE.LendCurveAsset;
-        } else if (tokenIn == Addr.STAKEDAO_CRV_VAULT) {
+        } else if (tokenIn == Addr.STAKEDAO_CRVUSD_CRV) {
             typeAsset = LendRewardSplitter.TOKEN_TYPE.LendStakeDaoAsset;
         }
         return splitter.deposit(address(stakeDaoVault), typeAsset, amount, isStableReward, doDeposit);
@@ -105,7 +105,7 @@ contract LendRewardSplitterTestCommon is Test {
     function getUser(uint256 index, address token, uint256 amount) public returns (address user) {
         user = makeAddr(string.concat("user", vm.toString((index))));
         vm.deal(user, 10 ether);
-        if (token == Addr.STAKEDAO_CRV_VAULT) {
+        if (token == Addr.STAKEDAO_CRVUSD_CRV) {
             token = address(liquidityGauge);
         }
         vm.startPrank(user);

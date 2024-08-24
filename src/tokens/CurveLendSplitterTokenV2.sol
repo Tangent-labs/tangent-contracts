@@ -109,7 +109,8 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
 
     /**
      * @notice Claim all pending rewards for an address
-     * @dev Only lendRewardSplitter can call this function
+     * @dev Only lendRewardSplitter can call this function,
+     *      returns a TokenAmount[] struct and the rewards receiver address
      * @param _address Address to claim rewards for
      */
     struct TokenAmount {
@@ -146,7 +147,11 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
         return (tokenAmounts, rewardRedirect[_address] != address(0) ? rewardRedirect[_address] : _address);
     }
 
-    //TODO: Notice
+    /**
+     * @notice Process Governance Rewards (only for gUSD)
+     * @dev Claim rewards from the splitter and stream it for the holders of gUSD.
+     *      Anyone can trigger this function and will be incentivized by a processor fee.
+     */
     function processGovRewards() external {
         /// @dev Claim rewards on behalf of the splitter on this contract
         liquidityGauge.claim_rewards(address(lendRewardSplitter));
@@ -419,7 +424,10 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
         processorRewardsPercentage = _percentage;
     }
 
-    //TODO: notice
+    /**
+     * @notice Set the percentage of rewards to be sent to the splitter as a DAO fees.
+     * @param _percentage rewards percentage value
+     */
     function setDaoFeesPercentage(uint256 _percentage) external onlyOwner {
         /// @dev it must never exceed 3% (TODO: ???)
         require(_percentage <= 3000, "PERCENTAGE_TOO_HIGH");

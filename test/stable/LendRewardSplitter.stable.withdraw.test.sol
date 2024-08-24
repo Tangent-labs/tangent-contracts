@@ -23,7 +23,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check the initial.
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         assertEq(testCommon.crvUSD().balanceOf(user), depositAmount);
 
         // Deposit
@@ -32,7 +32,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check deposit.
         assertApproxEqAbs(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             expectedDeposit,
             1 wei,
             "stableDepositTotal before withdraw"
@@ -60,7 +60,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
         uint256 balanceWithdrawn = testCommon.scvUSD().balanceOf(user);
         assertEq(balanceWithdrawn, 0, "balancescvUSDAfter After withdraw");
         assertEq(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             0,
             "stableDepositTotal After withdraw"
         );
@@ -76,7 +76,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check the initial.
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         assertEq(testCommon.crvUSD().balanceOf(user), depositAmount);
 
         // Deposit
@@ -85,7 +85,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check deposit.
         assertApproxEqAbs(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             expectedDeposit,
             1 wei,
             "stableDepositTotal before withdraw"
@@ -114,7 +114,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
         uint256 balanceWithdrawn = testCommon.scvUSD().balanceOf(user);
         assertApproxEqAbs(balanceWithdrawn, balanceDeposited / 2, 1 wei, "balancescvUSDAfter After withdraw");
         assertApproxEqAbs(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             balanceDeposited / 2,
             1 wei,
             "stableDepositTotal After withdraw"
@@ -131,7 +131,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check the initial.
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         assertEq(testCommon.crvUSD().balanceOf(user), depositAmount);
 
         // Deposit
@@ -140,7 +140,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check deposit.
         assertApproxEqAbs(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             expectedDeposit,
             1 wei,
             "stableDepositTotal before withdraw"
@@ -164,7 +164,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
         uint256 balanceWithdrawn = testCommon.scvUSD().balanceOf(user);
         assertEq(balanceWithdrawn, 0, "balancescvUSDAfter After withdraw");
         assertEq(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             0,
             "stableDepositTotal After withdraw"
         );
@@ -180,7 +180,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check the initial.
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         assertEq(testCommon.crvUSD().balanceOf(user), depositAmount);
 
         // Deposit
@@ -189,7 +189,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check deposit.
         assertApproxEqAbs(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             expectedDeposit,
             1 wei,
             "stableDepositTotal before withdraw"
@@ -218,7 +218,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
         uint256 balanceWithdrawn = testCommon.scvUSD().balanceOf(user);
         assertApproxEqAbs(balanceWithdrawn, balanceDeposited / 2, 1 wei, "balancescvUSDAfter After withdraw");
         assertApproxEqAbs(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             balanceDeposited / 2,
             1 wei,
             "stableDepositTotal After withdraw"
@@ -236,7 +236,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check the initial.
         assertEq(stakeLiquidityGauge.balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         assertEq(testCommon.crvUSD().balanceOf(user), depositAmount);
 
         // Deposit
@@ -245,7 +245,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check deposit.
         assertApproxEqAbs(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             expectedDeposit,
             1 wei,
             "stableDepositTotal before withdraw"
@@ -269,7 +269,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
         uint256 balanceWithdrawn = testCommon.scvUSD().balanceOf(user);
         assertEq(balanceWithdrawn, 0, "balancescvUSDAfter After withdraw");
         assertEq(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             0,
             "stableDepositTotal After withdraw"
         );
@@ -286,7 +286,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check the initial.
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         assertEq(testCommon.crvUSD().balanceOf(user), depositAmount);
 
         // Deposit
@@ -295,7 +295,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         // Check deposit.
         assertApproxEqAbs(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             expectedDeposit,
             1 wei,
             "stableDepositTotal before withdraw"
@@ -324,7 +324,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
         uint256 balanceWithdrawn = testCommon.scvUSD().balanceOf(user);
         assertApproxEqAbs(balanceWithdrawn, balanceDeposited / 2, 1 wei, "balancescvUSDAfter After withdraw");
         assertApproxEqAbs(
-            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT),
+            testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV),
             balanceDeposited / 2,
             1 wei,
             "stableDepositTotal After withdraw"
@@ -340,7 +340,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
         assertEq(testCommon.curveLendVault().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
 
         testCommon.deposit(depositAmount, true, true, tokenIn);
 
@@ -356,7 +356,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
         assertEq(testCommon.curveLendVault().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
 
         testCommon.deposit(depositAmount, true, true, tokenIn);
         uint256 overWithDraw = testCommon.curveLendVault().convertToShares(100 ether);
@@ -371,7 +371,7 @@ contract LendRewardSplitterStableWithdrawTest is Test {
 
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
         assertEq(testCommon.curveLendVault().balanceOf(user), 0);
-        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRV_VAULT), 0);
+        assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
 
         testCommon.deposit(depositAmount, true, true, tokenIn);
         uint256 overWithDraw = testCommon.curveLendVault().convertToShares(100 ether);

@@ -30,7 +30,7 @@ contract CurveLend is Test {
     // Vaulted crvUSD
     address CURVE_CRV_VAULT = 0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA; // Vaulted crvUSD
     // Vaulted crvUSD in stake DAO
-    address STAKEDAO_CRV_VAULT = 0xfa6D40573082D797CB3cC378c0837fB90eB043e5;
+    address STAKEDAO_CRVUSD_CRV = 0xfa6D40573082D797CB3cC378c0837fB90eB043e5;
 
     IStakeDaoVault stakeDaoVault;
     ICurveLendVault curveVault;
@@ -62,7 +62,7 @@ contract CurveLend is Test {
         users["freddy"] = 0x90F79bf6EB2c4f870365E785982E1f101E93b906; // Hardhat #3
         vm.label(0x90F79bf6EB2c4f870365E785982E1f101E93b906, "freddy");
 
-        stakeDaoVault = IStakeDaoVault(STAKEDAO_CRV_VAULT);
+        stakeDaoVault = IStakeDaoVault(STAKEDAO_CRVUSD_CRV);
         gaugeV4 = ISDLiquidityGauge(stakeDaoVault.liquidityGauge());
         curveVault = ICurveLendVault(CURVE_CRV_VAULT);
         crvUSDController = ICrvUSDController(curveVault.controller());
@@ -191,8 +191,7 @@ contract CurveLend is Test {
             )
         );
         actionsLength++;
-        displayState(
-            string.concat(user, " withdraw ", (balanceAfter - balanceBefore).toDecimalString(18, false)));
+        displayState(string.concat(user, " withdraw ", (balanceAfter - balanceBefore).toDecimalString(18, false)));
         vm.stopPrank();
     }
 

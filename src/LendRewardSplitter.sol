@@ -198,7 +198,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
             }
         }
 
-        //iterate through tokenList and transfer with the amount present into tokensToClaim
+        //iterate through tokenList and transfer with the amount present into tokensToClaim + erase transient mapping 
         //et voilà, mon nom Borat !
     }
     */
@@ -243,10 +243,33 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                            UPDATER
+   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    /**
+     * @notice Increment dao fees that will be transferred in this contract during a process rewards.
+     *         This function is only callable by an updater (scvUSD or gUSD).
+     * @param tokens array of token to update
+     * @param amounts array of amount to update
+     */
+    function updateDaoFees(IERC20[] memory tokens, uint256[] memory amounts) external {
+        require(isSpecialUpdater[msg.sender], "NOT_UPDATER");
+        for (uint256 i; i < tokens.length; ) {
+            daoFeeForToken[tokens[i]] += amounts[i];
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                             OWNER
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    //TODO: notice
+    /**
+     * @notice Create a new Market through a StakeDao vault (only for collatered vaults).
+     *         Deploy on the fly the corresponding streamed tokens: scvUSD (stable) & gUSD (governance)
+     * @param stakeDaoVault address
+     */
     function createMarket(address stakeDaoVault) external onlyOwner {
         IStakeDaoVault _stakeDaoVault = IStakeDaoVault(stakeDaoVault);
         require(address(markets[stakeDaoVault].curveLendVault) == address(0), "MARKET_ALREADY_EXIST");
@@ -311,18 +334,10 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         isSpecialUpdater[address(_gUSD)] = true;
     }
 
-    //TODO: notice
-    function updateDaoFees(IERC20[] memory tokens, uint256[] memory amounts) external {
-        require(isSpecialUpdater[msg.sender], "NOT_UPDATER");
-        for (uint256 i; i < tokens.length; ) {
-            daoFeeForToken[tokens[i]] += amounts[i];
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
-    //TODO: notice
+    /**
+     * @notice Withdraw all the balance of the desired fees token and erase the corresponding storage.
+     * @param tokens IERC20 array to withdraw
+     */
     function withdrawFees(IERC20[] memory tokens) external onlyOwner {
         //TODO: Change this function to send token to the right treasury
         for (uint256 i; i < tokens.length; ) {
@@ -336,6 +351,11 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         }
     }
 
+    /**
+     * @notice Set a new beacon contract used to deploy scvUSD/gUSD tokens
+     *         To use only for emergencys.
+     * @param _beaconCurveLendSplitterToken address of the new beacon
+     */
     function setBeaconCurveLendSplitterToken(address _beaconCurveLendSplitterToken) external onlyOwner {
         beaconCurveLendSplitterToken = _beaconCurveLendSplitterToken;
     }
