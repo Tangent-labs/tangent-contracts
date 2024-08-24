@@ -7,11 +7,11 @@
 // contract UpgradeableValidateTest is Test {
 //     function test_validateImplem() external {
 //         Options memory opts;
-//         Upgrades.validateImplementation("CurveLendSplitterTokenStream.sol:CurveLendSplitterTokenStream", opts);
+//         Upgrades.validateImplementation("CurveLendSplitterToken.sol:CurveLendSplitterToken", opts);
 //     }
 //     function test_validateUpgrade() external {
 //         Options memory opts;
-//         opts.referenceContract = "CurveLendSplitterTokenStream.sol:CurveLendSplitterTokenStream";
+//         opts.referenceContract = "CurveLendSplitterToken.sol:CurveLendSplitterToken";
 //         Upgrades.validateUpgrade("CurveLendSplitterTokenStreamV2.sol:CurveLendSplitterTokenStreamV2", opts);
 //     }
 // }

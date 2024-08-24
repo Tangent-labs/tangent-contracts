@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {BeaconProxy} from "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ICurveLendVault} from "./interfaces/ICurveLendVault.sol";
 import {IStakeDaoVault} from "./interfaces/IStakeDaoVault.sol";
 import {ISDLiquidityGauge} from "./interfaces/ISDLiquidityGauge.sol";
-import {ICrvUSDController} from "./interfaces/ICrvUSDController.sol";
-import {CurveLendSplitterTokenStream} from "./tokens/CurveLendSplitterTokenStream.sol";
-import {ICurveLendSplitterTokenStream} from "./interfaces/ICurveLendSplitterTokenStream.sol";
+import {CurveLendSplitterToken} from "./tokens/CurveLendSplitterToken.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "forge-std/console.sol"; //TODO: to remove
@@ -19,6 +18,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
     uint256 constant MAX_UINT = uint256(int256(-1));
 
+    address public beaconCurveLendSplitterToken;
     mapping(IERC20 => uint256) public daoFeeForToken;
     mapping(address => MarketStruct) public markets;
     mapping(address => bool) public isSpecialUpdater;
@@ -27,8 +27,8 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         ICurveLendVault curveLendVault;
         ISDLiquidityGauge liquidityGauge;
         IERC20 lendAsset;
-        CurveLendSplitterTokenStream gUSD;
-        CurveLendSplitterTokenStream scvUSD;
+        CurveLendSplitterToken gUSD;
+        CurveLendSplitterToken scvUSD;
     }
 
     event Deposit(address indexed account, bool isStableReward, uint256 amount);
@@ -43,43 +43,22 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         LendStakeDaoAsset
     }
 
-    function initialize() external initializer {
-        _transferOwnership(msg.sender);
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                        CONSTRUCTOR & INITIALIZER
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
     }
 
-    function createMarket(IStakeDaoVault _stakeDaoVault) external onlyOwner {
-        require(address(markets[address(_stakeDaoVault)].curveLendVault) == address(0), "MARKET_ALREADY_EXIST");
-        ICurveLendVault _curveLendVault = ICurveLendVault(_stakeDaoVault.token());
-        //TODO: require address(0)
-        IERC20 _lendAsset = IERC20(_curveLendVault.asset());
-        ISDLiquidityGauge _liquidityGauge = ISDLiquidityGauge(_stakeDaoVault.liquidityGauge());
-        //TODO:deploy gUSD via beacon
-        CurveLendSplitterTokenStream _gUSD = new CurveLendSplitterTokenStream();
-        _gUSD.initialize("Governance USD/CRV", "gUSD-CRV", address(this), address(_liquidityGauge));
-        //TODO: deploy scvUSD via beacon
-        CurveLendSplitterTokenStream _scvUSD = new CurveLendSplitterTokenStream();
-        _scvUSD.initialize("Stable USD/CRV", "scvUSD-CRV", address(this), address(_liquidityGauge));
-
-        /// @dev approvals
-        _lendAsset.approve(address(_curveLendVault), MAX_UINT);
-        _curveLendVault.approve(address(_stakeDaoVault), MAX_UINT);
-        _liquidityGauge.approve(address(_gUSD), MAX_UINT);
-        _liquidityGauge.approve(address(_scvUSD), MAX_UINT);
-
-        _liquidityGauge.set_rewards_receiver(address(_gUSD));
-
-        /// @dev save market on markets mapping
-        markets[address(_stakeDaoVault)] = MarketStruct({
-            curveLendVault: _curveLendVault,
-            liquidityGauge: _liquidityGauge,
-            lendAsset: _lendAsset,
-            gUSD: _gUSD,
-            scvUSD: _scvUSD
-        });
-
-        /// @dev WL gUSD as an special updater
-        isSpecialUpdater[address(_gUSD)] = true;
+    function initialize(address _owner, address _beaconCurveLendSplitterToken) external initializer {
+        beaconCurveLendSplitterToken = _beaconCurveLendSplitterToken;
+        _transferOwnership(_owner);
     }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                        EXTERNALS USER
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /*
     TODO:
@@ -148,7 +127,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         MarketStruct memory market = markets[stakeDaoVault];
 
-        CurveLendSplitterTokenStream recipeToken = isStableReward ? market.scvUSD : market.gUSD;
+        CurveLendSplitterToken recipeToken = isStableReward ? market.scvUSD : market.gUSD;
         require(amount <= recipeToken.balanceOf(msg.sender), "NOT_ENOUGH_BALANCE");
 
         /// @dev We burn the corresponding token.
@@ -158,18 +137,18 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         uint256 shareAmount = isStableReward ? amount : market.curveLendVault.convertToShares(amount);
 
         if (outType == TOKEN_TYPE.LendStakeDaoAsset) {
-            /// @dev we  transfer the stake share to the user.
+            /// @dev we transfer the stake share to the user.
             IERC20(address(market.liquidityGauge)).safeTransfer(msg.sender, shareAmount);
         } else {
             /// @dev We withdraw the share from stakeDAO vault.
             IStakeDaoVault(stakeDaoVault).withdraw(shareAmount);
             // require(balanceBefore - balanceAfter >= shareAmount, "WITHDRAW ERROR");
             if (outType == TOKEN_TYPE.LendCurveAsset) {
-                /// @dev we  transfer the stake share to the user.
+                /// @dev we transfer the stake share to the user.
                 IERC20(address(market.curveLendVault)).safeTransfer(msg.sender, shareAmount);
             }
             if (outType == TOKEN_TYPE.LendAsset) {
-                /// @dev We chack if we can withdraw from curvelend vault.
+                /// @dev We check if we can withdraw from curvelend vault.
                 uint256 maxShareAllowed = market.curveLendVault.maxRedeem(address(this));
                 require(shareAmount <= maxShareAllowed, "MORE_THAN_MAX_WIDTHDRAW");
                 /// @dev We withdraw from curvelend vault.
@@ -181,12 +160,58 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         emit Withdraw(msg.sender, isStableReward, outType, amount);
     }
 
+    //TODO: notice
+    function claimSimple(address stakeDaoVault, bool isGovRewards, address claimer) external {
+        (CurveLendSplitterToken.TokenAmount[] memory tokenAmounts, address rewardReceiver) = isGovRewards
+            ? markets[stakeDaoVault].gUSD.getReward(claimer)
+            : markets[stakeDaoVault].scvUSD.getReward(claimer);
+
+        require(tokenAmounts.length != 0, "NOTHING_TO_CLAIM");
+
+        for (uint256 i; i < tokenAmounts.length; ) {
+            tokenAmounts[i].token.safeTransfer(rewardReceiver, tokenAmounts[i].amount);
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    /// QUESTION: Reward receiver can be different on multiple stakings,
+    /// so are we allowing the rewards redirection to always do the safeTransfer to the same receiver ?
+    //TODO: function claimSimple(address stakeDaoVault, address claimer)
+    //TODO: function claimMultiple(address[] vaults,address claimer)
+    /*
+    mapping(IERC20=>amount) tokensToClaim;
+    function claimMultiple(address[] vaults,address claimer){
+        IERC20[] tokenList;
+        for(uint256 i;i<vaults.length,){
+            //gov rewards
+            markets[vaults[i]].gUSD.getReward(claimer)
+            //if tokenAmounts.length != 0 update tokensToClaim
+            //if token is seen for the first time (tokensToClaim[token] == 0 ) => add the token to the tokenList
+
+            //scvUSD rewards
+            markets[vaults[i]].gUSD.getReward(claimer)
+            //if tokenAmounts.length != 0 update tokensToClaim
+            unchecked {
+                ++i;
+            }
+        }
+
+        //iterate through tokenList and transfer with the amount present into tokensToClaim
+        //et voilà, mon nom Borat !
+    }
+    */
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                            INTERNALS
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
     function _transferTokens(MarketStruct memory market, TOKEN_TYPE inType, uint256 amount) internal {
         /// @dev Transfer the token (LendAsset).
         if (inType == TOKEN_TYPE.LendAsset) {
             market.lendAsset.safeTransferFrom(msg.sender, address(this), amount);
         }
-
         /// @dev Transfer the token (LendCurveAsset) to this contract.
         if (inType == TOKEN_TYPE.LendCurveAsset) {
             market.curveLendVault.safeTransferFrom(msg.sender, address(this), amount);
@@ -196,6 +221,10 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
             IERC20(address(market.liquidityGauge)).safeTransferFrom(msg.sender, address(this), amount);
         }
     }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                            VIEWS
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function stableDepositTotal(address stakeDaoVault) external view returns (uint256) {
         return markets[stakeDaoVault].scvUSD.totalSupply();
@@ -213,10 +242,78 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         return markets[stakeDaoVault];
     }
 
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                            OWNER
+   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    //TODO: notice
+    function createMarket(address stakeDaoVault) external onlyOwner {
+        IStakeDaoVault _stakeDaoVault = IStakeDaoVault(stakeDaoVault);
+        require(address(markets[stakeDaoVault].curveLendVault) == address(0), "MARKET_ALREADY_EXIST");
+        require(beaconCurveLendSplitterToken != address(0), "BEACON_0");
+
+        ICurveLendVault _curveLendVault = ICurveLendVault(_stakeDaoVault.token());
+        require(address(_curveLendVault) != address(0), "CURVE_LEND_0");
+
+        IERC20 _lendAsset = IERC20(_curveLendVault.asset());
+        require(address(_lendAsset) != address(0), "LEND_ASSET_0");
+
+        ISDLiquidityGauge _liquidityGauge = ISDLiquidityGauge(_stakeDaoVault.liquidityGauge());
+        require(address(_liquidityGauge) != address(0), "LIQUIDITY_GAUGE_0");
+
+        /// @dev Deploy gUSD (beaconProxy)
+        CurveLendSplitterToken _gUSD = CurveLendSplitterToken(
+            address(
+                new BeaconProxy(
+                    beaconCurveLendSplitterToken,
+                    //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
+                    abi.encodeCall(
+                        CurveLendSplitterToken.initialize,
+                        ("Governance USD/CRV", "gUSD-CRV", address(this), address(_liquidityGauge))
+                    )
+                )
+            )
+        );
+        /// @dev Deploy scvUSD (beaconProxy)
+        CurveLendSplitterToken _scvUSD = CurveLendSplitterToken(
+            address(
+                new BeaconProxy(
+                    beaconCurveLendSplitterToken,
+                    //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
+                    abi.encodeCall(
+                        CurveLendSplitterToken.initialize,
+                        ("Stable USD/CRV", "scvUSD-CRV", address(this), address(_liquidityGauge))
+                    )
+                )
+            )
+        );
+
+        /// @dev Approvals
+        //TODO: check approvals ???
+        _lendAsset.approve(address(_curveLendVault), MAX_UINT);
+        _curveLendVault.approve(stakeDaoVault, MAX_UINT);
+        _liquidityGauge.approve(address(_gUSD), MAX_UINT);
+        _liquidityGauge.approve(address(_scvUSD), MAX_UINT);
+
+        /// @dev Redirect liquidity gauge rewards to gUSD when claim occur (for processGovRewards)
+        _liquidityGauge.set_rewards_receiver(address(_gUSD));
+
+        /// @dev Save market on markets mapping
+        markets[stakeDaoVault] = MarketStruct({
+            curveLendVault: _curveLendVault,
+            liquidityGauge: _liquidityGauge,
+            lendAsset: _lendAsset,
+            gUSD: _gUSD,
+            scvUSD: _scvUSD
+        });
+
+        /// @dev WL gUSD as an special updater
+        isSpecialUpdater[address(_gUSD)] = true;
+    }
+
     //TODO: notice
     function updateDaoFees(IERC20[] memory tokens, uint256[] memory amounts) external {
-        require(isSpecialUpdater[msg.sender], "NOT_GUSD");
-        require(tokens.length == amounts.length, "WRONG_LENGTH");
+        require(isSpecialUpdater[msg.sender], "NOT_UPDATER");
         for (uint256 i; i < tokens.length; ) {
             daoFeeForToken[tokens[i]] += amounts[i];
             unchecked {
@@ -226,20 +323,20 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     }
 
     //TODO: notice
-    function approveGovReward(IERC20 token) external {
-        require(isSpecialUpdater[msg.sender], "NOT_GUSD");
-        token.approve(msg.sender, MAX_UINT);
-    }
-
-    //TODO: notice
     function withdrawFees(IERC20[] memory tokens) external onlyOwner {
         //TODO: Change this function to send token to the right treasury
         for (uint256 i; i < tokens.length; ) {
-            tokens[i].transfer(msg.sender, daoFeeForToken[tokens[i]]);
+            uint256 daoFeeToken = daoFeeForToken[tokens[i]];
+            require(daoFeeToken != 0, "SOME_TOKEN_WITHDRAW_0");
+            tokens[i].transfer(msg.sender, daoFeeToken);
             delete daoFeeForToken[tokens[i]];
             unchecked {
                 ++i;
             }
         }
+    }
+
+    function setBeaconCurveLendSplitterToken(address _beaconCurveLendSplitterToken) external onlyOwner {
+        beaconCurveLendSplitterToken = _beaconCurveLendSplitterToken;
     }
 }

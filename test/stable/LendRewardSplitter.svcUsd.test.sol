@@ -1,17 +1,19 @@
 import {Test, console} from "forge-std/Test.sol";
 import {LendRewardSplitterTestCommon} from "../LendRewardSplitter.common.test.sol";
 import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-import {CurveLendSplitterTokenStream} from "../../src/tokens/CurveLendSplitterTokenStream.sol";
+import {CurveLendSplitterToken} from "../../src/tokens/CurveLendSplitterToken.sol";
+import {Addr} from "../../src/libs/Addr.sol";
 
 contract LendRewardSplitterScvUsdTest is Test {
     LendRewardSplitter splitter;
     LendRewardSplitterTestCommon testCommon;
-    CurveLendSplitterTokenStream scvUSD;
+    CurveLendSplitterToken scvUSD;
 
     function setUp() public {
         testCommon = new LendRewardSplitterTestCommon();
         testCommon.fork();
-        splitter = testCommon.setUpSplitter();
+        testCommon.setUpSplitter();
+        splitter = testCommon.splitter();
         scvUSD = testCommon.scvUSD();
     }
 
@@ -26,7 +28,7 @@ contract LendRewardSplitterScvUsdTest is Test {
     function test_revertWhen_BurnCallByUser() external {
         // User 2 deposit
         uint256 depositAmount = 50 ether;
-        address tokenIn = testCommon.TOKEN_crvUSD();
+        address tokenIn = Addr.TOKEN_CRVUSD;
         address user2 = testCommon.getUser(2, tokenIn);
         testCommon.deposit(depositAmount, true, true, tokenIn);
         vm.stopPrank();
