@@ -17,6 +17,8 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     using SafeERC20 for IStakeDaoVault;
 
     uint256 constant MAX_UINT = uint256(int256(-1));
+    uint256 constant TOKENS_TO_CLAIM_SLOT = 0;
+    mapping(address => uint256) /* transient */ tokensToClaim;
 
     address public beaconCurveLendSplitterToken;
     mapping(IERC20 => uint256) public daoFeeForToken;
@@ -162,14 +164,14 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
     //TODO: notice
     function claimSimple(address stakeDaoVault, bool isGovRewards, address claimer) external {
-        (CurveLendSplitterToken.TokenAmount[] memory tokenAmounts, address rewardReceiver) = isGovRewards
+        CurveLendSplitterToken.TokenAmount[] memory tokenAmounts = isGovRewards
             ? markets[stakeDaoVault].gUSD.getReward(claimer)
             : markets[stakeDaoVault].scvUSD.getReward(claimer);
 
         require(tokenAmounts.length != 0, "NOTHING_TO_CLAIM");
 
         for (uint256 i; i < tokenAmounts.length; ) {
-            tokenAmounts[i].token.safeTransfer(rewardReceiver, tokenAmounts[i].amount);
+            tokenAmounts[i].token.safeTransfer(claimer, tokenAmounts[i].amount);
             unchecked {
                 ++i;
             }
@@ -178,34 +180,106 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
     /// QUESTION: Reward receiver can be different on multiple stakings,
     /// so are we allowing the rewards redirection to always do the safeTransfer to the same receiver ?
-    //TODO: function claimSimple(address stakeDaoVault, address claimer)
-    //TODO: function claimMultiple(address[] vaults,address claimer)
-    /*
-    mapping(IERC20=>amount) tokensToClaim;
-    function claimMultiple(address[] vaults,address claimer){
-        IERC20[] tokenList;
-        for(uint256 i;i<vaults.length,){
-            //gov rewards
-            markets[vaults[i]].gUSD.getReward(claimer)
-            //if tokenAmounts.length != 0 update tokensToClaim
-            //if token is seen for the first time (tokensToClaim[token] == 0 ) => add the token to the tokenList
 
-            //scvUSD rewards
-            markets[vaults[i]].gUSD.getReward(claimer)
-            //if tokenAmounts.length != 0 update tokensToClaim
+    
+
+    function claimMultiple(address[] memory stakeDaoVaults, address claimer) external {
+        /// @dev We save this length on his own variable, to not miss with the assembly manipulations
+        uint256 stakeDaoVaultsLength = stakeDaoVaults.length;
+        address[] memory tokenList;
+        uint256 tokenListLength;
+        for (uint256 i; i < stakeDaoVaultsLength; ) {
+            //gUSD rewards
+            CurveLendSplitterToken.TokenAmount[] memory tokenAmounts = markets[stakeDaoVaults[i]].gUSD.getReward(
+                claimer
+            );
+            require(tokenAmounts.length != 0, "VAULT_HAS_NOTHING_TO_CLAIM");
+            for (uint256 x; x < tokenAmounts.length; ) {
+                address tokenAddress = address(tokenAmounts[x].token);
+                /// @dev If token is seen the first time (tokensToClaim[token] == 0)
+                if (_tloadMapping(tokenAddress) == 0) {
+                    /// @dev Increment tokenList length & add new token on new index
+                    _incrementArrayMemory(tokenList, tokenAddress, tokenListLength++);
+                }
+                /// @dev Increment mapping
+                _tStoreMappingIncrement(tokenAddress, tokenAmounts[x].amount);
+                unchecked {
+                    ++x;
+                }
+            }
+
+            //TODO: scvUSD rewards
+            // markets[vaults[i]].scvUSD.getReward(claimer)
             unchecked {
                 ++i;
             }
         }
 
-        //iterate through tokenList and transfer with the amount present into tokensToClaim + erase transient mapping 
-        //et voilà, mon nom Borat !
+        /// @dev Iterate through tokenList
+        bool isClaim;
+        for (uint256 i; i < tokenList.length; ) {
+            uint256 amountClaim = _tloadMapping(tokenList[i]);
+            if (amountClaim != 0) {
+                isClaim = true;
+                /// @dev Transfer sum of token to user
+                /// TODO: redirect rewards ???
+                IERC20(tokenList[i]).safeTransfer(claimer, amountClaim);
+                /// @dev Erase transient mapping key
+                _tStoreMappingRemove(tokenList[i]);
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+        require(isClaim, "NOTHING_TO_CLAIM");
+        /// @dev Et voilà, mon nom Borat !
     }
-    */
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                             INTERNALS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    function _tStoreMappingIncrement(address key, uint256 value) internal {
+        bytes32 location = keccak256(abi.encode(key, TOKENS_TO_CLAIM_SLOT));
+        assembly {
+            let exValue := tload(location)
+            tstore(location, add(value, exValue))
+        }
+    }
+    function _tloadMapping(address key) internal view returns (uint256 ret) {
+        bytes32 location = keccak256(abi.encode(key, TOKENS_TO_CLAIM_SLOT));
+        assembly {
+            ret := tload(location)
+        }
+    }
+    function _tStoreMappingRemove(address key) internal {
+        bytes32 location = keccak256(abi.encode(key, TOKENS_TO_CLAIM_SLOT));
+        assembly {
+            tstore(location, 0)
+        }
+    }
+    function _incrementArrayMemory(
+        address[] memory tokenList,
+        address tokenAddress,
+        uint256 currentLen
+    ) internal pure returns (address[] memory) {
+        assembly {
+            // Calculate the new length
+            let newLen := add(currentLen, 1)
+
+            // Update the length in memory
+            mstore(tokenList, newLen)
+
+            // Calculate the position for the new element
+            let elementPtr := add(add(tokenList, 0x20), mul(currentLen, 0x20))
+
+            // Store the new value in the calculated position
+            mstore(elementPtr, tokenAddress)
+        }
+
+        // Return the modified array
+        return tokenList;
+    }
 
     function _transferTokens(MarketStruct memory market, TOKEN_TYPE inType, uint256 amount) internal {
         /// @dev Transfer the token (LendAsset).

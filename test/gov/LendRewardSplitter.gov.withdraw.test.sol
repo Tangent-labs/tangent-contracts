@@ -183,7 +183,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
         address tokenIn = Addr.TOKEN_CRVUSD;
         address user = testCommon.getUser(1, tokenIn);
         vm.startPrank(user);
-        crvUSD.approve(Addr.CURVE_CRV_VAULT, testCommon.MAX_UINT());
+        crvUSD.approve(Addr.CURVE_CRVUSD_CRV, testCommon.MAX_UINT());
         assertApproxEqAbs(crvUSD.balanceOf(user), 1000 ether, 1 wei);
         uint256 share = curveLendVault.deposit(depositAmount);
         assertApproxEqAbs(crvUSD.balanceOf(user), 900 ether, 1 wei);

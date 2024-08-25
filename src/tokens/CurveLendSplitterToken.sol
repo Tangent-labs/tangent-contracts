@@ -45,9 +45,6 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     /// @dev Reward data associated to a reward token
     mapping(IERC20 => Reward) public rewardData; // token => reward data
 
-    /// @dev Reward redirection data
-    mapping(address => address) public rewardRedirect; // owner => receiver
-
     /// @dev Reward amount already sent to an user for a reward token
     mapping(address => mapping(IERC20 => uint256)) public userRewardPerTokenPaid; // user => reward token => amount
 
@@ -59,7 +56,6 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     event Recovered(IERC20 _token, uint256 _amount);
     event RewardAdded(IERC20 indexed _rewardToken);
     event RewardDistributorApproved(IERC20 indexed _reward, address indexed _distributor, bool _state);
-    event RewardRedirected(address indexed _account, address _forward);
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CONSTRUCTOR & INITIALIZER
@@ -98,16 +94,6 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
-     * @notice Set reward redirection address for the caller
-     * @dev Set address to zero to disable
-     * @param _to Address of the receiver
-     */
-    function setRewardRedirect(address _to) external {
-        rewardRedirect[msg.sender] = _to;
-        emit RewardRedirected(msg.sender, _to);
-    }
-
-    /**
      * @notice Claim all pending rewards for an address
      * @dev Only lendRewardSplitter can call this function,
      *      returns a TokenAmount[] struct and the rewards receiver address
@@ -117,12 +103,11 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
         IERC20 token;
         uint256 amount;
     }
-    function getReward(address _address) external updateReward(_address) returns (TokenAmount[] memory, address) {
+    function getReward(address _address) external updateReward(_address) returns (TokenAmount[] memory) {
         require(msg.sender == address(lendRewardSplitter), "NOT_SPLITTER");
         uint256 rewardTokensLength = rewardTokens.length;
         TokenAmount[] memory tokenAmounts = new TokenAmount[](rewardTokensLength);
         uint256 counter;
-
         for (uint256 i; i < rewardTokensLength; ) {
             IERC20 _rewardToken = rewardTokens[i];
             uint256 reward = rewards[_address][_rewardToken];
@@ -137,14 +122,15 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
                 ++i;
             }
         }
-
-        /// @dev Reduce length of tokenAmounts struct to not return useless 0
-        // solhint-disable-next-line no-inline-assembly
-        assembly {
-            mstore(tokenAmounts, sub(mload(tokenAmounts), sub(rewardTokensLength, counter)))
+        if (tokenAmounts.length != 0) {
+            /// @dev Reduce length of tokenAmounts struct to not return useless 0
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                mstore(tokenAmounts, sub(mload(tokenAmounts), sub(rewardTokensLength, counter)))
+            }
         }
 
-        return (tokenAmounts, rewardRedirect[_address] != address(0) ? rewardRedirect[_address] : _address);
+        return tokenAmounts;
     }
 
     /**

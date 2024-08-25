@@ -71,7 +71,7 @@ contract LendRewardSplitterGovProcessTest is Test {
         );
         vm.stopPrank();
         skip(3600);
-        testCommon._takesGaugeOnwershipAndSetDistributor();
+        testCommon._takesGaugeOnwershipAndSetDistributor(Addr.STAKEDAO_CRVUSD_CRV);
     }
 
     function test_FailProcessGovRewardsWithNothingToClaim() external {
@@ -239,7 +239,7 @@ contract LendRewardSplitterGovProcessTest is Test {
             token: Addr.TOKEN_SDT,
             amount: 10 ether
         });
-        testCommon._distributeGaugeRewards(distributionGauges);
+        testCommon._distributeGaugeRewards(address(stakeDaoVault), distributionGauges);
         skip(72000);
         //CRV
         crvClaimable = liquidityGauge.claimable_reward(address(splitter), Addr.TOKEN_CRV);

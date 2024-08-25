@@ -28,7 +28,7 @@ contract CurveLend is Test {
     address TOKEN_crvUSD = 0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E;
 
     // Vaulted crvUSD
-    address CURVE_CRV_VAULT = 0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA; // Vaulted crvUSD
+    address CURVE_CRVUSD_CRV = 0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA; // Vaulted crvUSD
     // Vaulted crvUSD in stake DAO
     address STAKEDAO_CRVUSD_CRV = 0xfa6D40573082D797CB3cC378c0837fB90eB043e5;
 
@@ -64,7 +64,7 @@ contract CurveLend is Test {
 
         stakeDaoVault = IStakeDaoVault(STAKEDAO_CRVUSD_CRV);
         gaugeV4 = ISDLiquidityGauge(stakeDaoVault.liquidityGauge());
-        curveVault = ICurveLendVault(CURVE_CRV_VAULT);
+        curveVault = ICurveLendVault(CURVE_CRVUSD_CRV);
         crvUSDController = ICrvUSDController(curveVault.controller());
 
         console.log(stakeDaoVault.token(), curveVault.borrowed_token());
@@ -236,7 +236,7 @@ contract CurveLend is Test {
             // For supply
             deal(TOKEN_crvUSD, wallet, 100_000 ether);
             IERC20(TOKEN_crvUSD).approve(address(curveVault), MAX_UINT);
-            IERC20(CURVE_CRV_VAULT).approve(address(stakeDaoVault), MAX_UINT);
+            IERC20(CURVE_CRVUSD_CRV).approve(address(stakeDaoVault), MAX_UINT);
 
             // For create LOAN( Borrow)
             deal(TOKEN_CRV, wallet, 100_000 ether);
@@ -246,11 +246,11 @@ contract CurveLend is Test {
 
         // Suplier
         // vm.deal(WALLET, 1_000 ether);
-        // deal(CURVE_CRV_VAULT, WALLET, 10_000 ether);
+        // deal(CURVE_CRVUSD_CRV, WALLET, 10_000 ether);
         // deal(TOKEN_CRV, WALLET, 100_000 ether);
         // deal(TOKEN_crvUSD, WALLET, 10_000 ether);
         // // For Deposit  on stakeDAO strategy.
-        // IERC20(CURVE_CRV_VAULT).approve(address(stakeDaoVault), MAX_UINT);
+        // IERC20(CURVE_CRVUSD_CRV).approve(address(stakeDaoVault), MAX_UINT);
 
         // // For Deposit (Supply).
         // IERC20(TOKEN_crvUSD).approve(address(curveVault), MAX_UINT);

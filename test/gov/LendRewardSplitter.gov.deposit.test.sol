@@ -49,7 +49,7 @@ contract LendRewardSplitterGovDepositTest is Test {
 
     function test_deposit_LendcurveassetWithGovRewardDepositEnabled() external {
         uint256 depositAmount = 100 ether;
-        address tokenIn = Addr.CURVE_CRV_VAULT;
+        address tokenIn = Addr.CURVE_CRVUSD_CRV;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.gUSD().balanceOf(user), 0);
         assertEq(testCommon.splitter().govDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
@@ -64,7 +64,7 @@ contract LendRewardSplitterGovDepositTest is Test {
 
     function test_deposit_LendcurveassetWithGovRewardDepositDisabled() external {
         uint256 depositAmount = 100 ether;
-        address tokenIn = Addr.CURVE_CRV_VAULT;
+        address tokenIn = Addr.CURVE_CRVUSD_CRV;
         address user = testCommon.getUser(1, tokenIn);
 
         assertEq(testCommon.gUSD().balanceOf(user), 0);

@@ -22,12 +22,24 @@ contract LendRewardSplitterCreateMarket is Test {
         vm.prank(randomUser);
         splitter.createMarket(Addr.STAKEDAO_CRVUSD_CRV);
     }
-
     function test_revertWhen_CreateMarketAlreadyExistent() external {
         vm.expectRevert(bytes("MARKET_ALREADY_EXIST"));
         vm.prank(owner);
         splitter.createMarket(Addr.STAKEDAO_CRVUSD_CRV);
     }
-
-    //TODO: create a new market and verify each datas (need other markets)
+    function test_revertWhen_CreateMarketWithWrongVault() external {
+        vm.expectRevert();
+        vm.prank(owner);
+        splitter.createMarket(Addr.TOKEN_SDT);
+    }
+    function test_CreateMarketAndVerifyDatas() external {
+        vm.prank(owner);
+        splitter.createMarket(Addr.STAKEDAO_CRVUSD_LEVERAGE_WETH);
+        LendRewardSplitter.MarketStruct memory market = splitter.getMarket(Addr.STAKEDAO_CRVUSD_LEVERAGE_WETH);
+        assertEq(address(market.curveLendVault), Addr.CURVE_CRVUSD_LEVERAGE_WETH);
+        assertEq(address(market.lendAsset), Addr.TOKEN_CRVUSD);
+        assertEq(address(market.liquidityGauge), Addr.STAKEDAO_CRVUSD_LEVERAGE_WETH_GAUGE);
+        assumeNotZeroAddress(address(market.gUSD));
+        assumeNotZeroAddress(address(market.scvUSD));
+    }
 }

@@ -81,7 +81,7 @@ contract LendRewardSplitterTestCommon is Test {
         //labelizing
         vm.label(Addr.TOKEN_CRVUSD, "crvUSD");
         vm.label(Addr.STAKEDAO_CRVUSD_CRV, "STAKEDAO_CRVUSD_CRV");
-        vm.label(Addr.CURVE_CRV_VAULT, "CURVE_CRV_VAULT");
+        vm.label(Addr.CURVE_CRVUSD_CRV, "CURVE_CRVUSD_CRV");
         vm.label(IStakeDaoVault(Addr.STAKEDAO_CRVUSD_CRV).strategy(), "STAKEDAO_CRV_STRATEGY");
         vm.label(IStakeDaoVault(Addr.STAKEDAO_CRVUSD_CRV).liquidityGauge(), "STAKEDAO_CRV_LIQUIDITY_GAUGE");
         vm.label(address(scvUSD), "scvUSD");
@@ -90,7 +90,7 @@ contract LendRewardSplitterTestCommon is Test {
 
     function deposit(uint256 amount, bool isStableReward, bool doDeposit, address tokenIn) public returns (uint256) {
         LendRewardSplitter.TOKEN_TYPE typeAsset = LendRewardSplitter.TOKEN_TYPE.LendAsset;
-        if (tokenIn == Addr.CURVE_CRV_VAULT) {
+        if (tokenIn == Addr.CURVE_CRVUSD_CRV) {
             typeAsset = LendRewardSplitter.TOKEN_TYPE.LendCurveAsset;
         } else if (tokenIn == Addr.STAKEDAO_CRVUSD_CRV) {
             typeAsset = LendRewardSplitter.TOKEN_TYPE.LendStakeDaoAsset;
@@ -117,20 +117,22 @@ contract LendRewardSplitterTestCommon is Test {
         return getUser(index, token, 1000 ether);
     }
 
-    function _takesGaugeOnwershipAndSetDistributor() public {
+    function _takesGaugeOnwershipAndSetDistributor(address _stakeDaoVault) public {
+        LendRewardSplitter.MarketStruct memory market = splitter.getMarket(_stakeDaoVault);
+        ISDLiquidityGauge _liquidityGauge = market.liquidityGauge;
         vm.deal(ownerGauge, 10 ether);
-        address admin = liquidityGauge.admin();
-        uint256 rewardCount = liquidityGauge.reward_count();
+        address admin = _liquidityGauge.admin();
+        uint256 rewardCount = _liquidityGauge.reward_count();
         for (uint256 i; i < rewardCount; ) {
-            IERC20 token = IERC20(liquidityGauge.reward_tokens(i));
+            IERC20 token = IERC20(_liquidityGauge.reward_tokens(i));
             vm.prank(ownerGauge);
-            token.approve(address(liquidityGauge), 0);
+            token.approve(address(_liquidityGauge), 0);
             vm.prank(ownerGauge);
-            token.approve(address(liquidityGauge), MAX_UINT);
+            token.approve(address(_liquidityGauge), MAX_UINT);
             vm.stopPrank();
 
             vm.prank(admin);
-            liquidityGauge.set_reward_distributor(address(token), ownerGauge);
+            _liquidityGauge.set_reward_distributor(address(token), ownerGauge);
             vm.stopPrank();
             unchecked {
                 ++i;
@@ -141,12 +143,14 @@ contract LendRewardSplitterTestCommon is Test {
         address token;
         uint256 amount;
     }
-    function _distributeGaugeRewards(DistributionGauge[] memory distributionGauges) public {
+    function _distributeGaugeRewards(address _stakeDaoVault, DistributionGauge[] memory distributionGauges) public {
+        LendRewardSplitter.MarketStruct memory market = splitter.getMarket(_stakeDaoVault);
+        ISDLiquidityGauge _liquidityGauge = market.liquidityGauge;
         for (uint256 i; i < distributionGauges.length; ) {
             vm.prank(ownerGauge);
             deal(distributionGauges[i].token, ownerGauge, distributionGauges[i].amount);
             vm.prank(ownerGauge);
-            liquidityGauge.deposit_reward_token(distributionGauges[i].token, distributionGauges[i].amount);
+            _liquidityGauge.deposit_reward_token(distributionGauges[i].token, distributionGauges[i].amount);
             unchecked {
                 ++i;
             }

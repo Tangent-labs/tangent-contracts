@@ -57,7 +57,7 @@ contract LendRewardSplitterStableDepositTest is Test {
 
     function test_deposit_LendcurveassetWithStableRewardDepositEnabled() external {
         uint256 depositAmount = 100 ether;
-        address tokenIn = Addr.CURVE_CRV_VAULT;
+        address tokenIn = Addr.CURVE_CRVUSD_CRV;
         address user = testCommon.getUser(1, tokenIn);
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
         assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
@@ -72,7 +72,7 @@ contract LendRewardSplitterStableDepositTest is Test {
 
     function test_deposit_LendcurveassetWithStableRewardDepositDisabled() external {
         uint256 depositAmount = 100 ether;
-        address tokenIn = Addr.CURVE_CRV_VAULT;
+        address tokenIn = Addr.CURVE_CRVUSD_CRV;
         address user = testCommon.getUser(1, tokenIn);
 
         assertEq(testCommon.scvUSD().balanceOf(user), 0, "balanceOf user before");
@@ -135,7 +135,7 @@ contract LendRewardSplitterStableDepositTest is Test {
         uint256 depositAmount = 100 ether;
         address user = testCommon.getUser(1, Addr.TOKEN_CRVUSD);
         assertEq(testCommon.scvUSD().balanceOf(user), 0);
-        assertEq(IERC20(Addr.CURVE_CRV_VAULT).balanceOf(user), 0);
+        assertEq(IERC20(Addr.CURVE_CRVUSD_CRV).balanceOf(user), 0);
         assertEq(testCommon.splitter().stableDepositTotal(Addr.STAKEDAO_CRVUSD_CRV), 0);
         vm.expectRevert();
         splitter.deposit(
