@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ILendRewardSplitter} from "../interfaces/ILendRewardSplitter.sol";
 import {ISDLiquidityGauge} from "../interfaces/ISDLiquidityGauge.sol";
+import {ICurveLendVault} from "../interfaces/ICurveLendVault.sol";
 import "forge-std/console.sol"; //TODO: to remove
 
 contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
@@ -28,6 +29,9 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
 
     uint256 private constant DENOMINATOR = 100_000;
+
+    /// @dev Determines if the Asset is the gUSD or the scvUSD
+    bool isGUSD;
 
     ILendRewardSplitter public lendRewardSplitter;
 
@@ -57,6 +61,10 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     event RewardAdded(IERC20 indexed _rewardToken);
     event RewardDistributorApproved(IERC20 indexed _reward, address indexed _distributor, bool _state);
 
+    error WrongToken();
+    error MarketNotExists(address requestedMarket);
+    error NoRewardToProcess();
+
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CONSTRUCTOR & INITIALIZER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -70,7 +78,8 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
         string memory _name,
         string memory _symbol,
         address _lendRewardSplitter,
-        address _liquidityGauge
+        address _liquidityGauge,
+        bool _isGUSD
     ) external initializer {
         __ERC20_init(_name, _symbol);
         _transferOwnership(msg.sender);
@@ -78,6 +87,7 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
         daoFeesPercentage = 2000; /// @dev TODO: TO CHANGE -> corresponds to 2%
         lendRewardSplitter = ILendRewardSplitter(_lendRewardSplitter);
         liquidityGauge = ISDLiquidityGauge(_liquidityGauge);
+        isGUSD = _isGUSD;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -122,8 +132,8 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
                 ++i;
             }
         }
+        /// @dev Reduce length of tokenAmounts struct to not return useless 0
         if (tokenAmounts.length != 0) {
-            /// @dev Reduce length of tokenAmounts struct to not return useless 0
             // solhint-disable-next-line no-inline-assembly
             assembly {
                 mstore(tokenAmounts, sub(mload(tokenAmounts), sub(rewardTokensLength, counter)))
@@ -134,11 +144,76 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     }
 
     /**
+     * @notice Process Stable Rewards (only for scvUSD)
+     * @dev Claim rewards from the splitter share  and stream it for the holders of scvUSD.
+     *   Anyone can trigger this function and will be incentivized by a processor fee.
+     */
+    function processStableRewards(address _market) external {
+        if (isGUSD) revert WrongToken();
+
+        ILendRewardSplitter.MarketStruct memory market = lendRewardSplitter.getMarket(_market);
+        if (address(market.scvUSD) != address(this)) revert MarketNotExists(_market);
+
+        /// @dev if the reward is not added we Add it.
+        IERC20[] memory _rewardsToken = rewardTokens;
+        if (_rewardsToken.length==0) {
+            _addReward(market.lendAsset);
+        }
+        IERC20 rewardToken = rewardTokens[0];
+        uint256 daoFeesToUpdate;
+        /// @dev We need to keep enough share to back the stableSupply and the assetPart of the govSupply.
+        uint256 rewardShare = market.liquidityGauge.balanceOf(address(lendRewardSplitter)) -
+            totalSupply() -
+            market.curveLendVault.convertToAssets(market.gUSD.totalSupply());
+
+        /// @dev We withdraw the reward share from the splitter
+        lendRewardSplitter.withdrawForRewards(_market, rewardShare);
+
+        /// @dev The balance of market lendAsset on this contract is the amount to proceed.
+        uint256 rewardToProcess = rewardToken.balanceOf(address(this));
+
+        if (rewardToProcess == 0) {
+            revert NoRewardToProcess();
+        }
+
+        /// @dev We process the  processorFess.
+        uint256 processorFees = (rewardToProcess * processorRewardsPercentage) / DENOMINATOR;
+        if (processorFees != 0) {
+            rewardToken.safeTransfer(msg.sender, processorFees);
+            rewardToProcess -= processorFees;
+        }
+
+        /// @dev We process the daoFees.
+        uint256 daoFees = (rewardToProcess * daoFeesPercentage) / DENOMINATOR;
+
+        /// @dev Send reward to process + DAO fees to the splitter
+        rewardToken.safeTransfer(address(lendRewardSplitter), rewardToProcess);
+
+        /// @dev DAO fees update.
+        if (daoFees != 0) {
+            daoFeesToUpdate = daoFees;
+            rewardToProcess -= daoFees;
+        }
+
+        /// @dev Stream rewards.
+        _notifyRewardAmount(rewardToken, rewardToProcess);
+
+        /// @dev Update DAO fees on the splitter contract.
+        IERC20[] memory tokens = new IERC20[](1);
+        tokens[0] = rewardToken;
+        uint256[] memory daoFeesList = new uint256[](1);
+        daoFeesList[0] = daoFeesToUpdate;
+        lendRewardSplitter.updateDaoFees(tokens, daoFeesList);
+    }
+
+    /**
      * @notice Process Governance Rewards (only for gUSD)
      * @dev Claim rewards from the splitter and stream it for the holders of gUSD.
      *      Anyone can trigger this function and will be incentivized by a processor fee.
      */
     function processGovRewards() external {
+        if (!isGUSD) revert WrongToken();
+
         /// @dev Claim rewards on behalf of the splitter on this contract
         liquidityGauge.claim_rewards(address(lendRewardSplitter));
 

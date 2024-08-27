@@ -1,6 +1,7 @@
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 
 interface ICurveLendSplitterToken is IERC20 {
+
     struct Reward {
         uint128 lastUpdateTime;
         uint128 periodFinish;

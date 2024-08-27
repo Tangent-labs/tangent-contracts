@@ -14,7 +14,6 @@ import "forge-std/console.sol"; //TODO: to remove
 contract LendRewardSplitter is Ownable2StepUpgradeable {
     using SafeERC20 for IERC20;
     using SafeERC20 for ICurveLendVault;
-    using SafeERC20 for IStakeDaoVault;
 
     uint256 constant MAX_UINT = uint256(int256(-1));
     uint256 constant TOKENS_TO_CLAIM_SLOT = 0;
@@ -26,6 +25,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     mapping(address => bool) public isSpecialUpdater;
 
     struct MarketStruct {
+        IStakeDaoVault stakeDaoVault;
         ICurveLendVault curveLendVault;
         ISDLiquidityGauge liquidityGauge;
         IERC20 lendAsset;
@@ -35,6 +35,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
     event Deposit(address indexed account, bool isStableReward, uint256 amount);
     event Withdraw(address indexed account, bool isStableReward, TOKEN_TYPE outType, uint256 amount);
+    event RewardWithdraw(address indexed market,uint256 amount);
 
     enum TOKEN_TYPE {
         /// @dev Asset use as collateral in the lend contract. (ex : crvUSD)
@@ -44,6 +45,10 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         /// @dev share of  curve vault contract. (ex : sdcvcrvUSD)
         LendStakeDaoAsset
     }
+
+
+    error WrongCaller();
+    error MarketNotExists(address requestedMarket);
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CONSTRUCTOR & INITIALIZER
@@ -116,18 +121,38 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         }
         emit Deposit(msg.sender, isStableReward, depositAmount);
     }
+    
+
+    function withdrawForRewards(address _market,uint256 _amount) external {
+       
+        /// @dev We get the market from the mapping.
+        MarketStruct memory  market = markets[_market];
+        if (address(market.lendAsset) == address(0)) revert MarketNotExists(_market);
+
+        /// @dev We check that the method is call via processStableReward on the scvUSD.
+         if(msg.sender != address(market.scvUSD))
+            revert WrongCaller();
+
+        /// @dev We redeem the {lendAsset} and update the balance of the scvUSD.
+        _withdraw(market, TOKEN_TYPE.LendAsset, _amount, true);
+
+         emit RewardWithdraw(_market,_amount);
+        
+    }
+
 
     /**
-     *  @notice Withdraw assets from  the Convergence splitter contract.
+     *  @notice Withdraw assets from  the Convergence splitter contract. 
+        @param _market StakeDao valut for the requested market.
      *  @param outType Type of token you want to in with with 4 steps  LendAsset >  LendCurveAsset.
      *  @param amount Amount  of {gUSD|scvUsd} token you want to withdraw.
      *  @param isStableReward  If isStableReward == true THEN   scvUsd of user is used   ELSE  gUSD of user is used.
      */
-    function withdraw(address stakeDaoVault, TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
+    function withdraw(address _market, TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
         /// @dev We check the prerequesite.
         require(amount != 0, "WITHDRAW_LTE_0");
 
-        MarketStruct memory market = markets[stakeDaoVault];
+        MarketStruct memory market = markets[_market];
 
         CurveLendSplitterToken recipeToken = isStableReward ? market.scvUSD : market.gUSD;
         require(amount <= recipeToken.balanceOf(msg.sender), "NOT_ENOUGH_BALANCE");
@@ -135,15 +160,21 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         /// @dev We burn the corresponding token.
         recipeToken.burn(msg.sender, amount);
 
+        _withdraw(market,outType,amount,isStableReward);
+       
+        emit Withdraw(msg.sender, isStableReward, outType, amount);
+    }
+
+    function _withdraw(MarketStruct memory market, TOKEN_TYPE outType, uint256 amount, bool isStableReward) internal {
         /// @dev We process the amounts.
         uint256 shareAmount = isStableReward ? amount : market.curveLendVault.convertToShares(amount);
 
         if (outType == TOKEN_TYPE.LendStakeDaoAsset) {
             /// @dev we transfer the stake share to the user.
-            IERC20(address(market.liquidityGauge)).safeTransfer(msg.sender, shareAmount);
+             IERC20(address(market.liquidityGauge)).safeTransfer(msg.sender, shareAmount);
         } else {
             /// @dev We withdraw the share from stakeDAO vault.
-            IStakeDaoVault(stakeDaoVault).withdraw(shareAmount);
+            market.stakeDaoVault.withdraw(shareAmount);
             // require(balanceBefore - balanceAfter >= shareAmount, "WITHDRAW ERROR");
             if (outType == TOKEN_TYPE.LendCurveAsset) {
                 /// @dev we transfer the stake share to the user.
@@ -159,8 +190,8 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                 IERC20(address(market.lendAsset)).safeTransfer(msg.sender, assetAmountWithdrawn);
             }
         }
-        emit Withdraw(msg.sender, isStableReward, outType, amount);
     }
+
 
     //TODO: notice
     function claimSimple(address stakeDaoVault, bool isGovRewards, address claimer) external {
@@ -366,7 +397,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                     //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
                     abi.encodeCall(
                         CurveLendSplitterToken.initialize,
-                        ("Governance USD/CRV", "gUSD-CRV", address(this), address(_liquidityGauge))
+                        ("Governance USD/CRV", "gUSD-CRV", address(this), address(_liquidityGauge),true)
                     )
                 )
             )
@@ -379,7 +410,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                     //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
                     abi.encodeCall(
                         CurveLendSplitterToken.initialize,
-                        ("Stable USD/CRV", "scvUSD-CRV", address(this), address(_liquidityGauge))
+                        ("Stable USD/CRV", "scvUSD-CRV",  address(this), address(_liquidityGauge),false)
                     )
                 )
             )
@@ -397,6 +428,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         /// @dev Save market on markets mapping
         markets[stakeDaoVault] = MarketStruct({
+            stakeDaoVault : _stakeDaoVault,
             curveLendVault: _curveLendVault,
             liquidityGauge: _liquidityGauge,
             lendAsset: _lendAsset,
@@ -406,6 +438,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         /// @dev WL gUSD as an special updater
         isSpecialUpdater[address(_gUSD)] = true;
+        isSpecialUpdater[address(_scvUSD)] = true;
     }
 
     /**
