@@ -12,7 +12,7 @@ sequenceDiagram
     0x00 ->>LendSplitter:Receive cvCRVUSD
     LendSplitter->>StakeDaoGauge:Stake cvCRVUSD in StakeDao
     0x00->>LendSplitter:Receive gaugeAsset
-    0x00->>User: Receive gUSD
+    0x00->>User: Receive gUSD/scvUSD
 ```
 
 ### Deposit with crvUSD
@@ -24,7 +24,7 @@ sequenceDiagram
     0x00 ->>LendSplitter:Receive cvCRVUSD
     LendSplitter->>StakeDaoGauge:Stakes cvCRVUSD in StakeDao
     0x00->>LendSplitter:Receive StakeDao gaugeAsset
-    0x00->>User: Receive gUSD
+    0x00->>User: Receive gUSD/scvUSD
 ```
 
 ### Deposit with Llamalend deposit proof
@@ -34,7 +34,8 @@ sequenceDiagram
     User ->>LendSplitter: Send cvCRVUSD
     LendSplitter->>StakeDaoGauge:Stakes cvCRVUSD in StakeDao
     0x00->>LendSplitter:Receive StakeDao gaugeAsset
-    0x00->>User: Receive gUSD
+    
+    0x00->>User: Receive gUSD/scvUSD
 ```
 
 ### Deposit with StakeDao gauge asset
@@ -42,7 +43,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     User->>LendSplitter: Send StakeDao gaugeAsset
-    0x00->>User: Receive gUSD
+    0x00->>User: Receive gUSD/scvUSD
 ```
 
 ## Reward Processing
