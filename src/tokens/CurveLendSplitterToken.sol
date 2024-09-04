@@ -9,7 +9,6 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {ILendRewardSplitter} from "../interfaces/ILendRewardSplitter.sol";
 import {ISDLiquidityGauge} from "../interfaces/ISDLiquidityGauge.sol";
 import {ICurveLendVault} from "../interfaces/ICurveLendVault.sol";
-import "forge-std/console.sol"; //TODO: to remove
 
 contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     struct Reward {
@@ -28,7 +27,7 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     /// @dev Duration that rewards are streamed over
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
 
-    uint256 private constant DENOMINATOR = 100_000;
+    uint256 public constant DENOMINATOR = 100_000;
 
     /// @dev Determines if the Asset is the gUSD or the scvUSD
     bool isGUSD;
@@ -113,10 +112,12 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
         IERC20 token;
         uint256 amount;
     }
+
     function getReward(address _address) external updateReward(_address) returns (TokenAmount[] memory) {
         require(msg.sender == address(lendRewardSplitter), "NOT_SPLITTER");
         uint256 rewardTokensLength = rewardTokens.length;
         TokenAmount[] memory tokenAmounts = new TokenAmount[](rewardTokensLength);
+
         uint256 counter;
         for (uint256 i; i < rewardTokensLength; ) {
             IERC20 _rewardToken = rewardTokens[i];
@@ -148,7 +149,7 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
      * @dev Claim rewards from the splitter share  and stream it for the holders of scvUSD.
      *   Anyone can trigger this function and will be incentivized by a processor fee.
      */
-    function processStableRewards(address _market) external {
+    function processStableRewards(address _market) external returns (uint256 rewardToProcess) {
         if (isGUSD) revert WrongToken();
 
         ILendRewardSplitter.MarketStruct memory market = lendRewardSplitter.getMarket(_market);
@@ -156,10 +157,9 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
 
         /// @dev if the reward is not added we Add it.
         IERC20[] memory _rewardsToken = rewardTokens;
-        if (_rewardsToken.length==0) {
+        if (_rewardsToken.length == 0) {
             _addReward(market.lendAsset);
         }
-        IERC20 rewardToken = rewardTokens[0];
         uint256 daoFeesToUpdate;
         /// @dev We need to keep enough share to back the stableSupply and the assetPart of the govSupply.
         uint256 rewardShare = market.liquidityGauge.balanceOf(address(lendRewardSplitter)) -
@@ -170,8 +170,7 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
         lendRewardSplitter.withdrawForRewards(_market, rewardShare);
 
         /// @dev The balance of market lendAsset on this contract is the amount to proceed.
-        uint256 rewardToProcess = rewardToken.balanceOf(address(this));
-
+        rewardToProcess = rewardTokens[0].balanceOf(address(this));
         if (rewardToProcess == 0) {
             revert NoRewardToProcess();
         }
@@ -179,15 +178,14 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
         /// @dev We process the  processorFess.
         uint256 processorFees = (rewardToProcess * processorRewardsPercentage) / DENOMINATOR;
         if (processorFees != 0) {
-            rewardToken.safeTransfer(msg.sender, processorFees);
+            rewardTokens[0].safeTransfer(msg.sender, processorFees);
             rewardToProcess -= processorFees;
         }
 
         /// @dev We process the daoFees.
         uint256 daoFees = (rewardToProcess * daoFeesPercentage) / DENOMINATOR;
-
         /// @dev Send reward to process + DAO fees to the splitter
-        rewardToken.safeTransfer(address(lendRewardSplitter), rewardToProcess);
+        rewardTokens[0].safeTransfer(address(lendRewardSplitter), rewardToProcess);
 
         /// @dev DAO fees update.
         if (daoFees != 0) {
@@ -196,14 +194,12 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
         }
 
         /// @dev Stream rewards.
-        _notifyRewardAmount(rewardToken, rewardToProcess);
+        _notifyRewardAmount(rewardTokens[0], rewardToProcess);
 
         /// @dev Update DAO fees on the splitter contract.
-        IERC20[] memory tokens = new IERC20[](1);
-        tokens[0] = rewardToken;
         uint256[] memory daoFeesList = new uint256[](1);
         daoFeesList[0] = daoFeesToUpdate;
-        lendRewardSplitter.updateDaoFees(tokens, daoFeesList);
+        lendRewardSplitter.updateDaoFees(rewardTokens, daoFeesList);
     }
 
     /**
@@ -354,7 +350,8 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
 
         rData.lastUpdateTime = uint128(block.timestamp);
         rData.periodFinish = uint128(block.timestamp + REWARDS_DURATION);
-
+        // console.log("_notifyRewardAmount", "set lastUpdateTime", rData.lastUpdateTime);
+        // console.log("_notifyRewardAmount", "set periodFinish", rData.periodFinish);
         emit RewardNotified(_rewardToken, _reward);
     }
 
@@ -399,11 +396,11 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     function _updateReward(address _account) internal {
         uint256 userBal = balanceOf(_account);
         uint256 rewardLength = rewardTokens.length;
+
         for (uint256 i; i < rewardLength; ) {
             IERC20 token = rewardTokens[i];
             rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
             rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
-
             if (_account != address(0)) {
                 rewards[_account][token] = _earned(_account, token, userBal);
                 userRewardPerTokenPaid[_account][token] = rewardData[token].rewardPerTokenStored;

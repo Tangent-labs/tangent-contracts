@@ -9,7 +9,6 @@ import {ISDLiquidityGauge} from "./interfaces/ISDLiquidityGauge.sol";
 import {CurveLendSplitterToken} from "./tokens/CurveLendSplitterToken.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
-import "forge-std/console.sol"; //TODO: to remove
 
 contract LendRewardSplitter is Ownable2StepUpgradeable {
     using SafeERC20 for IERC20;
@@ -124,7 +123,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     
 
     function withdrawForRewards(address _market,uint256 _amount) external {
-       
+
         /// @dev We get the market from the mapping.
         MarketStruct memory  market = markets[_market];
         if (address(market.lendAsset) == address(0)) revert MarketNotExists(_market);
@@ -135,9 +134,8 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         /// @dev We redeem the {lendAsset} and update the balance of the scvUSD.
         _withdraw(market, TOKEN_TYPE.LendAsset, _amount, true);
-
          emit RewardWithdraw(_market,_amount);
-        
+      
     }
 
 

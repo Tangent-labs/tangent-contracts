@@ -102,7 +102,7 @@ contract LendRewardSplitterTestCommon is Test {
         splitter.withdraw(address(stakeDaoVault), tokenOutType, depositAmount, isStableReward);
     }
 
-    function getMarket() external returns  (LendRewardSplitter.MarketStruct  memory  )  {
+    function getMarket() view external   returns  (LendRewardSplitter.MarketStruct  memory  )  {
         return splitter.getMarket(address(stakeDaoVault));
     }
     function getUser(uint256 index, address token, uint256 amount) public returns (address user) {
