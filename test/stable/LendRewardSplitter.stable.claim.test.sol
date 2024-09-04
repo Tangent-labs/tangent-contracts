@@ -21,7 +21,7 @@ contract LendRewardSplitterStableClaimTest is Test {
         LendRewardSplitter.MarketStruct memory market = testCommon.getMarket();
 
         // Do the deposit.
-        (address user1, ) = deposit();
+        (address user1, address user2) = deposit();
 
         assertEq(_getlendAssetBalance(address(splitter)), 0, "No lend asset should be available on splitter");
 
@@ -43,6 +43,8 @@ contract LendRewardSplitterStableClaimTest is Test {
             rewardToProcess + daoFeesForLendAsset,
             "Lend asset should be available on splitter contract"
         );
+
+        // TODO add 3.5 jours and test claim
 
         // Go at the end of the reward period.
         skip(9 days);
@@ -68,9 +70,10 @@ contract LendRewardSplitterStableClaimTest is Test {
             rewardToProcess,
             "Balances must match the reward processed"
         );
+        console.log(userBalance,splitterBalance);
     }
 
-    function test_revertWhen_getRewardCalledOnToken() external {
+    function test_revertWhen_getRewardCalledOnNToken() external {
         // Get the market.
         LendRewardSplitter.MarketStruct memory market = testCommon.getMarket();
 

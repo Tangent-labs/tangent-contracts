@@ -14,8 +14,8 @@ import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 contract LendRewardSplitterTestCommon is Test {
     uint256 public MAX_UINT = uint256(int256(-1));
 
-    address owner = makeAddr("Owner");
-    address ownerGauge = makeAddr("ownerGauge");
+    address public owner = makeAddr("Owner");
+    address public ownerGauge = makeAddr("ownerGauge");
 
     IStakeDaoVault public constant stakeDaoVault = IStakeDaoVault(Addr.STAKEDAO_CRVUSD_CRV);
     IERC20 public constant crvUSD = IERC20(Addr.TOKEN_CRVUSD);
@@ -102,7 +102,7 @@ contract LendRewardSplitterTestCommon is Test {
         splitter.withdraw(address(stakeDaoVault), tokenOutType, depositAmount, isStableReward);
     }
 
-    function getMarket() view external   returns  (LendRewardSplitter.MarketStruct  memory  )  {
+    function getMarket() external view returns (LendRewardSplitter.MarketStruct memory) {
         return splitter.getMarket(address(stakeDaoVault));
     }
     function getUser(uint256 index, address token, uint256 amount) public returns (address user) {
