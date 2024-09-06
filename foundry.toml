@@ -20,5 +20,13 @@ fs_permissions = [
 ]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 
+remappings = [
+    "@contracts/=./contracts/",
+    "@tests/=./tests/",
+    "@openzeppelin/=lib/openzeppelin-contracts",
+    "@openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable"
+]
+
+
 [rpc_endpoints]
 mainnet = 'https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy'

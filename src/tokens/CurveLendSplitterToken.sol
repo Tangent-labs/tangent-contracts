@@ -11,6 +11,8 @@ import {ISDLiquidityGauge} from "../interfaces/ISDLiquidityGauge.sol";
 import {ICurveLendVault} from "../interfaces/ICurveLendVault.sol";
 
 contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
+    using SafeERC20 for IERC20;
+
     struct Reward {
         uint128 lastUpdateTime;
         uint128 periodFinish;
@@ -21,13 +23,13 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
         IERC20 token;
         uint256 amount;
     }
-    using SafeERC20 for IERC20;
-    uint256 constant MAX_UINT = uint256(int256(-1));
+
+    uint256 constant MAX_UINT =  uint256(int256(-1));
 
     /// @dev Duration that rewards are streamed over
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
 
-    uint256 public constant DENOMINATOR = 100_000;
+    uint256 public constant DENOMINATOR = 100000;
 
     /// @dev Determines if the Asset is the gUSD or the scvUSD
     bool isGUSD;

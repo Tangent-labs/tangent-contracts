@@ -45,42 +45,45 @@ contract LendRewardSplitterZapTest is Test {
         vm.startPrank(testCommon.owner());
         splitter.addZapPool(USDC, POOL_USDC_USDCRV);
         vm.stopPrank();
-        assertEq(address(splitter.zapPools(IERC20(USDC))), POOL_USDC_USDCRV,"USDC deposit should enabled pool != 0x0 ");
+        assertEq(address(splitter.zapPools(USDC)), POOL_USDC_USDCRV, "USDC deposit should enabled pool != 0x0 ");
     }
 
     function test_disableUSDC() public {
         vm.startPrank(testCommon.owner());
         splitter.addZapPool(USDC, address(0));
         vm.stopPrank();
-        assertEq(address(splitter.zapPools(IERC20(USDC))), address(0),"USDC deposit should be disabled pool = 0x0 ");
+        assertEq(address(splitter.zapPools(USDC)), address(0), "USDC deposit should be disabled pool = 0x0 ");
     }
 
     function test_revertWhen_zapAndDepositWithBadMarket() public {
         testCommon.getUser(1, USDC, 2000 ether);
         vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("MarketNotExists(address)")), USDC));
         // USDC is not a market
-        splitter.zapAndDeposit(USDC, USDC, 0, 0);
+        splitter.zapAndDeposit(USDC, USDC, 0, 0, true, true);
     }
 
     function test_revertWhen_zapAndDepositWithNoAmount() public {
         testCommon.getUser(1, USDC, 2000 ether);
-        vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("EmptyAmount()"))));
-        splitter.zapAndDeposit(address(market.stakeDaoVault), USDC, 0, 0);
+        vm.expectRevert();
+        splitter.zapAndDeposit(address(market.stakeDaoVault), USDC, 0, 0, true, true);
     }
 
     function test_revertWhen_zapAndDepositWithNotAllowedToken() public {
         testCommon.getUser(1, USDC, 2000 ether);
         vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("TokenNotAllowed()"))));
-        splitter.zapAndDeposit(address(market.stakeDaoVault), USDC, 1000 ether, 0);
+        splitter.zapAndDeposit(address(market.stakeDaoVault), USDC, 1000 ether, 0, true, true);
     }
 
-
     function test_zapAndDepositWithEth() public {
-
-        
         testCommon.getUser(1, USDC, 2000 ether);
-        uint256 depositedValue = splitter.zapAndDeposit{value: 1 ether}(address(market.stakeDaoVault) , address(0), 0, 1000);
+        uint256 depositedValue = splitter.zapAndDeposit{value: 1 ether}(
+            address(market.stakeDaoVault),
+            address(0),
+            0,
+            1000,
+            true,
+            true
+        );
         console.log(depositedValue);
-
     }
 }

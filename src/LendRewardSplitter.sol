@@ -7,19 +7,22 @@ import {ICurveLendVault} from "./interfaces/ICurveLendVault.sol";
 import {IStakeDaoVault} from "./interfaces/IStakeDaoVault.sol";
 import {ICrvPoolPlain} from "./interfaces/ICrvPoolPlain.sol";
 import {ISDLiquidityGauge} from "./interfaces/ISDLiquidityGauge.sol";
+import {ICurveRouter} from "./interfaces/ICurveRouter.sol";
 import {IWETH} from "./interfaces/IWETH.sol";
 import {CurveLendSplitterToken} from "./tokens/CurveLendSplitterToken.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import{OwnableUpgradeable} from  "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import {Ownable2StepUpgradeable} from  "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
 contract LendRewardSplitter is Ownable2StepUpgradeable { 
     
     
     IWETH private constant WETH = IWETH(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
-    address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7; // USDT contract address
-    ICrvPoolPlain private constant TRYCRYTO2_CURVE_POOL = ICrvPoolPlain(0xd51a44d3fae010294c616388b506acda1bfaae46); // Curve 3pool contract address
-    ICrvPoolPlain public constant USDT_CRVUSD_CURVE_POOL = ICrvPoolPlain(0x4dece678ceceb27446b35c672dc7d61f30bad69e); // Curve USDT/crvUSD pool contract address
-    address public constant CRVUSD = 0x1234567890abcdef1234567890abcdef12345678; // Replace with actual crvUSD token address
+    address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7; 
+    address private constant TRI_CRYPO2_CURVE_POOL = 0xD51a44d3FaE010294C616388b506AcdA1bfAAE46; 
+    address private constant USDT_CRV_USD_CURVE_POOL = 0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E; 
+    address private constant CRV_USD = 0x1234567890AbcdEF1234567890aBcdef12345678; 
+
+    ICurveRouter private constant curveRouter = ICurveRouter(0x16C6521Dff6baB339122a0FE25a9116693265353);
 
 
     using SafeERC20 for IERC20;
@@ -35,10 +38,10 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     mapping(address => MarketStruct) public markets;
     mapping(address => bool) public isSpecialUpdater;
     /// @dev Token allowed in the zap function, each token is associated with is curve pool. 
-    mapping(IERC20 => ICrvPoolPlain) public zapPools;
+    mapping(address => ICrvPoolPlain) public zapPools;
 
     struct MarketStruct {
-        IStakeDaoVault stakeDaoVault;
+         IStakeDaoVault stakeDaoVault;
         ICurveLendVault curveLendVault;
         ISDLiquidityGauge liquidityGauge;
         IERC20 lendAsset;
@@ -61,7 +64,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     }
 
 
-    error WrongCaller();
+    error CallerNotAllowed();
     error EmptyAmount();
     error NoZeroAddress(string parameters);
     error MarketNotExists(address requestedMarket);
@@ -86,51 +89,6 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-     /**
-     *  @notice zapAndDeposit zap the given asset into lendAsset and use the deposit function.
-     *  @param stakeDaoVault Market to deposit to
-     *  @param tokenIn Address  to zap to the lendAsset token (can be 0x0 if ETH is sent) 
-     *  @param inAmout Amount  of {toklenIn} token you want to deposit. (can be 0 if ETH is sent) )
-     *  @param minLendAssetAmount min amount of {lendasset token } accpeted for the {inAmout} of {inTOken}
-     *  @param isStableReward   IF isStableReward == true THEN   you want the stable part of the reward  ELSE you want the gauge part of the reward.
-     *  @param doDeposit  IF doDeposit == true THEN  all the pending asset will be deposited in stakeValut.
-     */
-    function zapAndDeposit(address stakeDaoVault , address tokenIn, uint256 inAmout, uint256 minLendAssetAmount,
-    bool isStableReward,bool doDeposit) public payable
-        returns (uint256){
-        /// @dev find the matching market.
-        MarketStruct memory market = markets[stakeDaoVault];
-        if(address(market.stakeDaoVault)!=stakeDaoVault)
-            revert MarketNotExists(stakeDaoVault);
-
-        /// @dev Check amounts.
-        uint256 ethAmount = msg.value;
-        if(ethAmount + inAmout == 0)
-            revert EmptyAmount();
-
-        /// @dev Check token.
-        if(inAmout>0 && address(zapPools[IERC20(tokenIn)])==address(0))
-            revert TokenNotAllowed();
-
-        /// @dev Process ETH.
-        uint256 lendAssetFromEth =0;
-        if(ethAmount>0)
-           lendAssetFromEth =  _zapEth(ethAmount);
-
-        /// @dev Process Token.
-        uint256 lendAssetFromToken =0;
-        if(inAmout>0)
-           lendAssetFromToken = _zapToken(tokenIn,inAmout);
-
-        /// @dev Check mint amount.
-        if(lendAssetFromEth+lendAssetFromToken < minLendAssetAmount )
-            revert MinAmountNotMet();
-
-        /// @dev Continue deposit.
-        return  deposit(stakeDaoVault, TOKEN_TYPE.LendAsset, lendAssetFromToken + lendAssetFromEth, isStableReward, doDeposit);
-    
-      }
-
     /**
      *  @notice Deposit asset into the Convergence splitter contract in order to get one part of the reawrd from the lend contract.
      *  @param stakeDaoVault Market to deposit to
@@ -146,7 +104,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         uint256 amount,
         bool isStableReward,
         bool doDeposit
-    ) external returns (uint256 depositAmount) {
+    ) public returns (uint256 depositAmount) {
         require(amount != 0, "NO_INPUT_AMOUNT");
 
         MarketStruct memory market = markets[stakeDaoVault];
@@ -183,22 +141,54 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         }
         emit Deposit(msg.sender, isStableReward, depositAmount);
     }
+
+      /**
+     *  @notice zapAndDeposit zap the given asset into lendAsset and use the deposit function.
+     *  @param stakeDaoVault Market to deposit to
+     *  @param tokenIn Address  to zap to the lendAsset token (can be 0x0 if ETH is sent) 
+     *  @param inAmout Amount  of {toklenIn} token you want to deposit. (can be 0 if ETH is sent) )
+     *  @param minLendAssetAmount min amount of {lendasset token } accpeted for the {inAmout} of {inTOken}
+     *  @param isStableReward   IF isStableReward == true THEN   you want the stable part of the reward  ELSE you want the gauge part of the reward.
+     *  @param doDeposit  IF doDeposit == true THEN  all the pending asset will be deposited in stakeValut.
+     */
+    function zapAndDeposit(address stakeDaoVault , address tokenIn, uint256 inAmout, uint256 minLendAssetAmount,
+    bool isStableReward,bool doDeposit) public payable
+        returns (uint256 depositAmount){
+        /// @dev find the matching market.
+        MarketStruct memory market = markets[stakeDaoVault];
+        if(address(market.stakeDaoVault)!=stakeDaoVault)
+            revert MarketNotExists(stakeDaoVault);
+
+        uint256 ethAmount = msg.value;
+        /// @dev Check token.
+        if(inAmout>0 && address(zapPools[tokenIn])==address(0))
+            revert TokenNotAllowed();
+
+        /// @dev Process ETH.
+        uint256 lendAsset =0;
+        if(ethAmount > 0)
+           lendAsset = _zapEth(ethAmount,minLendAssetAmount);
+        else    if(inAmout > 0)
+           lendAsset = _zapToken(tokenIn,inAmout,minLendAssetAmount);
+                       
+        /// @dev Continue deposit.
+         depositAmount = deposit(stakeDaoVault, TOKEN_TYPE.LendAsset, lendAsset, isStableReward, doDeposit);
+    
+      }
     
 
     function withdrawForRewards(address _market,uint256 _amount) external {
-
         /// @dev We get the market from the mapping.
         MarketStruct memory  market = markets[_market];
         if (address(market.lendAsset) == address(0)) revert MarketNotExists(_market);
 
         /// @dev We check that the method is call via processStableReward on the scvUSD.
          if(msg.sender != address(market.scvUSD))
-            revert WrongCaller();
+            revert CallerNotAllowed();
 
         /// @dev We redeem the {lendAsset} and update the balance of the scvUSD.
         _withdraw(market, TOKEN_TYPE.LendAsset, _amount, true);
          emit RewardWithdraw(_market,_amount);
-      
     }
 
 
@@ -256,7 +246,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
     //TODO: notice
     function claimSimple(address stakeDaoVault, bool isGovRewards, address claimer) external {
-        CurveLendSplitterToken.TokenAmount[] memory tokenAmounts = isGovRewards
+         CurveLendSplitterToken.TokenAmount[] memory tokenAmounts = isGovRewards
             ? markets[stakeDaoVault].gUSD.getReward(claimer)
             : markets[stakeDaoVault].scvUSD.getReward(claimer);
 
@@ -389,28 +379,63 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     }
 
 
-    function _zapEth(uint256 ethAmount) internal returns(uint256 lendAssetAmount){
+    function _zapEth(uint256 ethAmount,uint256 minAmount) internal returns(uint256 lendAssetAmount){
 
         /// @dev : convert ETH =>  WETH 
         WETH.deposit{value: ethAmount}();
 
-        /// @dev : WETH =>  USDT with 3Crypto pool
-        WETH.approve(address(TRYCRYTO2_CURVE_POOL), msg.value);
-        uint256 usdtAmount = TRYCRYTO2_CURVE_POOL.exchange(0, 2, ethAmount, 0);
+        // /// @dev : WETH =>  USDT with 3Crypto pool
+        // WETH.approve(address(tryCrypro2CurvePool), ethAmount);
+        // uint256 usdtAmount = tryCrypro2CurvePool.exchange(0, 2, ethAmount,0 ,address(this) );
 
-        /// @dev :  USDT =>  crvUSD 
-        IERC20(USDT).approve(address(USDT_CRVUSD_CURVE_POOL), usdtAmount);
-        lendAssetAmount=  USDT_CRVUSD_CURVE_POOL.exchange(0, 1, usdtAmount, 0);
+        // /// @dev :  USDT =>  crvUSD 
+        // IERC20(USDT).approve(address(usdtCrvUsdCurvePool), usdtAmount);
+        // lendAssetAmount=  usdtCrvUsdCurvePool.exchange(0, 1, usdtAmount, minAmount,address(this));
+    
+        address[11] memory routes = [
+            address(WETH), 
+            USDT,  
+            CRV_USD,
+            address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0)
+        ];
+
+         address[5] memory pools = [
+           TRI_CRYPO2_CURVE_POOL, 
+           USDT_CRV_USD_CURVE_POOL,  
+            address(0),
+            address(0), address(0) 
+        ];
+
+        /// @devs https://docs.curve.fi/router/CurveRouterNG/#_swap_params
+        /// @devs [i, j, swap_type, pool_type, n_coins]
+       uint256[5][5] memory swapParams = [
+            [uint256(0), uint256(2), uint256(1), uint256(3), uint256(3)],  
+            [uint256(0), uint256(1), uint256(1), uint256(1), uint256(2)],  
+            [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],  
+            [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],  
+            [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)]   
+        ];
+        uint256 amountOut = curveRouter.exchange{value: ethAmount}(
+            routes,
+            swapParams,
+            ethAmount,  // Amount of ETH to swap
+            minAmount,    // Minimum amount of crvUSD to receive (slippage protection)
+            pools,
+            address(this)    // Receiver of the crvUSD
+        );
+
+
+
 
     }
 
-    function _zapToken(address token, uint256 amount) internal returns(uint256 lendAssetAmount){
+    function _zapToken(address token, uint256 amount,uint256 minAmount) internal returns(uint256 lendAssetAmount){
         /// @dev transfer token to this contract.
         IERC20(token).safeTransferFrom(msg.sender, address(this),amount);
       
         /// @dev : swap for lendAsset
         ICrvPoolPlain curvePool = zapPools[token];
-        lendAssetAmount = curvePool.exchange(0, 1, amount, 0, address(this));
+         lendAssetAmount = curvePool.exchange(0, 1, amount, minAmount, address(this));
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -562,7 +587,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         if(_token==address(0))
             revert NoZeroAddress('_token');
 
-        zapPools[IERC20(_token)] = ICrvPoolPlain(_pool);
+        zapPools[_token] = ICrvPoolPlain(_pool);
         emit zapPoolChange(_token,_pool);
 
     }
