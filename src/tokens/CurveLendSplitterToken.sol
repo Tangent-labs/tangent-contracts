@@ -8,7 +8,6 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ILendRewardSplitter} from "../interfaces/ILendRewardSplitter.sol";
 import {ISDLiquidityGauge} from "../interfaces/ISDLiquidityGauge.sol";
-import {ICurveLendVault} from "../interfaces/ICurveLendVault.sol";
 
 contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     using SafeERC20 for IERC20;
