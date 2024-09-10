@@ -10,12 +10,12 @@ import {ICurveRouter} from "./interfaces/ICurveRouter.sol";
 import {CurveLendSplitterToken} from "./tokens/CurveLendSplitterToken.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {Ownable2StepUpgradeable} from  "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
-// import { console} from "forge-std/Test.sol";
+import { console} from "forge-std/Test.sol";
 
 
 contract LendRewardSplitter is Ownable2StepUpgradeable { 
     
-    ICurveRouter private constant curveRouter = ICurveRouter(0x16C6521Dff6baB339122a0FE25a9116693265353);
+    ICurveRouter public constant curveRouter = ICurveRouter(0x16C6521Dff6baB339122a0FE25a9116693265353);
 
     using SafeERC20 for IERC20;
     using SafeERC20 for ICurveLendVault;
@@ -30,6 +30,9 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     mapping(address => MarketStruct) public markets;
     mapping(address => bool) public isSpecialUpdater;
 
+    /// @dev Tokens allowed to be used in zapAndDeposit method.
+    mapping(address => bool ) public  allowedZapToken;
+
 
     struct MarketStruct {
         IStakeDaoVault stakeDaoVault;
@@ -43,7 +46,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     event Deposit(address indexed account, bool isStableReward, uint256 amount);
     event Withdraw(address indexed account, bool isStableReward, TOKEN_TYPE outType, uint256 amount);
     event RewardWithdraw(address market,uint256 amount);
-    event zapPoolChange(address token,address pool);
+    event zapTokenChange(address token,bool activated);
 
     enum TOKEN_TYPE {
         /// @dev Asset use as collateral in the lend contract. (ex : crvUSD)
@@ -57,6 +60,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
     error CallerNotAllowed();
     error NotLendAssetRoute(address token);
+    error NotAllowedInToken(address token);
     error EmptyAmount();
     error NoZeroAddress(string parameters);
     error MarketNotExists(address requestedMarket);
@@ -66,12 +70,14 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                         CONSTRUCTOR & INITIALIZER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() public {
+    constructor() {
         _disableInitializers();
     }
     
     function initialize(address _owner, address _beaconCurveLendSplitterToken) external initializer {
         beaconCurveLendSplitterToken = _beaconCurveLendSplitterToken;
+
+
         _transferOwnership(_owner);
     }
 
@@ -140,7 +146,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         if(address(market.stakeDaoVault)!=stakeDaoVault)
             revert MarketNotExists(stakeDaoVault);
 
-
+ 
          /// @dev Check that the end route is the llenAsset of the market.
         address lastToken;
         for (uint256 i = routes.length; i > 0; i--) {
@@ -152,19 +158,22 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         if (lastToken != address(market.lendAsset))
             revert NotLendAssetRoute(lastToken);
 
-        if(tokenIn!=address(0)){
-            // TODO Transfer the token to this contract.
+        /// @dev if not ETH deposit , we tranfer the token to this contract,and allow the router to move it. 
+        if(msg.value==0){
+            if(!allowedZapToken[tokenIn]){
+                revert NotAllowedInToken(tokenIn);
+            }
+           IERC20(tokenIn).safeTransferFrom(msg.sender,address(this),inAmount);
         }
-
 
         /// @dev Process Swap.
         uint256 lendAssetAmount = curveRouter.exchange{value: msg.value}(
             routes,
             swapParams,
-            msg.value > 0  ? msg.value : inAmount ,  // Amount of ETH to swap
+            msg.value > 0  ? msg.value : inAmount ,  
             minLendAssetAmount,    // Minimum amount of crvUSD to receive (slippage protection)
-            pools,
-            address(this)    // Receiver of the crvUSD
+            pools ,
+            address(this)
         );
               
         /// @dev Continue deposit.
@@ -192,8 +201,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
 
     /**
-     *  @notice Withdraw assets from  the Convergence splitter contract. 
-        @param _market StakeDao valut for the requested market.
+     *  @notice Withdraw assets from  the Convergence splitter contract. zzzzzzzzzz
      *  @param outType Type of token you want to in with with 4 steps  LendAsset >  LendCurveAsset.
      *  @param amount Amount  of {gUSD|scvUsd} token you want to withdraw.
      *  @param isStableReward  If isStableReward == true THEN   scvUsd of user is used   ELSE  gUSD of user is used.
@@ -553,6 +561,26 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      */
     function setBeaconCurveLendSplitterToken(address _beaconCurveLendSplitterToken) external onlyOwner {
         beaconCurveLendSplitterToken = _beaconCurveLendSplitterToken;
+    }
+
+
+    /**
+     * @notice Allow owner to Add or disable an token in the zapDeposit function     
+     * @param _token address of the token (  disable the token if call when enable)
+     */
+    function toggleZapToken(address _token ) external onlyOwner {
+        if(_token==address(0))
+            revert NoZeroAddress('_token');
+
+        allowedZapToken[_token] = !allowedZapToken[_token];
+        
+        /// @dev handle the approve for the curve router.
+        IERC20 ierc20Token = IERC20(_token); 
+        if(allowedZapToken[_token]  && ierc20Token.allowance(address(this),address(curveRouter))!= MAX_UINT)
+            ierc20Token.forceApprove(address(curveRouter), MAX_UINT);
+
+        emit zapTokenChange(_token, allowedZapToken[_token]);
+
     }
 
 }
