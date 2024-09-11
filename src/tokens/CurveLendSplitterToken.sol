@@ -18,20 +18,21 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
         uint256 rewardRate;
         uint256 rewardPerTokenStored;
     }
+
     struct EarnedData {
         IERC20 token;
         uint256 amount;
     }
 
-    uint256 constant MAX_UINT =  uint256(int256(-1));
+    uint256 public constant MAX_UINT = uint256(int256(-1));
 
     /// @dev Duration that rewards are streamed over
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
 
-    uint256 public constant DENOMINATOR = 100000;
+    uint256 public constant DENOMINATOR = 100_000;
 
     /// @dev Determines if the Asset is the gUSD or the scvUSD
-    bool isGUSD;
+    bool public isGUSD;
 
     ILendRewardSplitter public lendRewardSplitter;
 
@@ -69,7 +70,7 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
                         CONSTRUCTOR & INITIALIZER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() {
+    constructor()  {
         _disableInitializers();
     }
 
@@ -83,8 +84,10 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
     ) external initializer {
         __ERC20_init(_name, _symbol);
         _transferOwnership(msg.sender);
-        processorRewardsPercentage = 1000; /// @dev TODO: TO CHANGE -> corresponds to 1%
-        daoFeesPercentage = 2000; /// @dev TODO: TO CHANGE -> corresponds to 2%
+        processorRewardsPercentage = 1000;
+        /// @dev TODO: TO CHANGE -> corresponds to 1%
+        daoFeesPercentage = 2000;
+        /// @dev TODO: TO CHANGE -> corresponds to 2%
         lendRewardSplitter = ILendRewardSplitter(_lendRewardSplitter);
         liquidityGauge = ISDLiquidityGauge(_liquidityGauge);
         isGUSD = _isGUSD;
@@ -266,7 +269,7 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                        EXTERNAL DAO
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
      * @notice Mint Staked tokens
@@ -301,7 +304,7 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                        INTERNALS
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /// @notice If a new token reward is added on the liquidity gauge, update it
     function _updateRewardTokens(uint256 currentRewardTokens) internal {
@@ -456,7 +459,7 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                        ERC20 OVERRIDE
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _update(address from, address to, uint256 value) internal override {
         /// @dev do the checkpoint before the transfer
@@ -471,7 +474,7 @@ contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                             OWNER
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
      * @notice Set the percentage of rewards to be sent to the user processing the GOV rewards.

@@ -2,20 +2,19 @@ import {Test, console} from "forge-std/Test.sol";
 import {ICrvPoolPlain} from "../../src/interfaces/ICrvPoolPlain.sol";
 import {LendRewardSplitterTestCommon} from "../LendRewardSplitter.common.test.sol";
 import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-import {IStakeDaoVault} from "../../src/interfaces/IStakeDaoVault.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ICurveRouter} from "../../src/interfaces/ICurveRouter.sol";
 import {Addr} from "../../src/libs/Addr.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ZapAndDepositReentrancyAttack} from "./ZapAndDepositReentrancyAttack.sol";
 
 contract LendRewardSplitterZapTest is Test {
-
     using SafeERC20 for IERC20;
-    ICurveRouter private constant curveRouter = ICurveRouter(0x16C6521Dff6baB339122a0FE25a9116693265353);
 
+    ICurveRouter private constant CURVE_ROUTER = ICurveRouter(0x16C6521Dff6baB339122a0FE25a9116693265353);
     address private constant CRV_USD = 0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E; // 0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E
     address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48; //0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
-    address private constant AAVE = 0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9 ; 
+    address private constant AAVE = 0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9;
 
     LendRewardSplitter splitter;
     LendRewardSplitterTestCommon testCommon;
@@ -28,15 +27,13 @@ contract LendRewardSplitterZapTest is Test {
         splitter = testCommon.splitter();
         // Get the market.
         market = testCommon.getMarket();
-        
     }
 
     function test_revertWhen_zapAndDepositWithBadMarket() public {
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForEth();
         testCommon.getUser(1, USDC, 2000 ether);
         vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("MarketNotExists(address)")), USDC));
-        // USDC is not a market
-        splitter.zapAndDeposit(USDC, USDC, 0, 0, true, true, routes, pools, swapParams);
+        splitter.zapAndDeposit(USDC, USDC, 0, 0, true, true, routes, pools, swapParams); // USDC is not a market
     }
 
     function test_revertWhen_zapAndDepositWithNoAmount() public {
@@ -52,7 +49,6 @@ contract LendRewardSplitterZapTest is Test {
         routes[3] = USDC;
 
         vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("NotLendAssetRoute(address)")), USDC));
-
         splitter.zapAndDeposit{value: 1 ether}(
             address(market.stakeDaoVault),
             address(0),
@@ -79,7 +75,7 @@ contract LendRewardSplitterZapTest is Test {
 
         // Do the zapAndDeposit
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForEth();
-        uint expected = curveRouter.get_dy(routes, swapParams, 1 ether, pools);
+        uint256 expected = CURVE_ROUTER.get_dy(routes, swapParams, 1 ether, pools);
         splitter.zapAndDeposit{value: 1 ether}(
             address(market.stakeDaoVault),
             address(0),
@@ -96,7 +92,6 @@ contract LendRewardSplitterZapTest is Test {
     }
 
     function test_zapAndDepositWithUsdt() public {
-
         // first deposit to remove the incentive for doDeposit
         testCommon.getUser(1, Addr.CURVE_CRVUSD_CRV, 2000 ether);
         testCommon.deposit(200 ether, true, true, Addr.CURVE_CRVUSD_CRV);
@@ -115,14 +110,14 @@ contract LendRewardSplitterZapTest is Test {
 
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForUsdt();
 
-        uint256 depositAmount = 1000  * 1e6;
+        uint256 depositAmount = 1000 * 1e6;
         // Do the zapAndDeposit
-        uint expected = curveRouter.get_dy(routes, swapParams, depositAmount, pools);
+        uint256 expected = CURVE_ROUTER.get_dy(routes, swapParams, depositAmount, pools);
         splitter.zapAndDeposit(
             address(market.stakeDaoVault),
             USDT,
             depositAmount,
-            depositAmount * 99 /100 ,
+            (depositAmount * 99) / 100,
             true,
             true,
             routes,
@@ -150,9 +145,9 @@ contract LendRewardSplitterZapTest is Test {
         IERC20(USDC).approve(address(splitter), 100_000 ether);
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForUsdc();
 
-        uint depositAmount = 1000  * 1e6;
+        uint256 depositAmount = 1000 * 1e6;
         // Do the zapAndDeposit
-        uint expected = curveRouter.get_dy(routes, swapParams, depositAmount, pools);
+        uint256 expected = CURVE_ROUTER.get_dy(routes, swapParams, depositAmount, pools);
         splitter.zapAndDeposit(
             address(market.stakeDaoVault),
             USDC,
@@ -168,7 +163,7 @@ contract LendRewardSplitterZapTest is Test {
         assertEq(testCommon.scvUSD().balanceOf(user2), testCommon.curveLendVault().convertToShares(expected));
     }
 
-     function test_revertWhen_zapAndDepositWithShiba() public {
+    function test_revertWhen_zapAndDepositWithShiba() public {
         // first deposit to remove the incentive for doDeposit
         testCommon.getUser(1, Addr.CURVE_CRVUSD_CRV, 2000 ether);
         testCommon.deposit(200 ether, true, true, Addr.CURVE_CRVUSD_CRV);
@@ -186,7 +181,7 @@ contract LendRewardSplitterZapTest is Test {
         IERC20(SHIBA).approve(address(splitter), 100_000 ether);
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForDai();
 
-        uint depositAmount = 1000 ether;
+        uint256 depositAmount = 1000 ether;
         // Do the zapAndDeposit
         vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("NotAllowedInToken(address)")), SHIBA));
         splitter.zapAndDeposit(
@@ -221,9 +216,9 @@ contract LendRewardSplitterZapTest is Test {
         IERC20(DAI).approve(address(splitter), 100_000 ether);
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForDai();
 
-        uint depositAmount = 1000 ether;
+        uint256 depositAmount = 1000 ether;
         // Do the zapAndDeposit
-        uint expected = curveRouter.get_dy(routes, swapParams, depositAmount, pools);
+        uint256 expected = CURVE_ROUTER.get_dy(routes, swapParams, depositAmount, pools);
         splitter.zapAndDeposit(
             address(market.stakeDaoVault),
             DAI,
@@ -236,13 +231,15 @@ contract LendRewardSplitterZapTest is Test {
             swapParams
         );
         vm.stopPrank();
-        assertApproxEqAbs(testCommon.scvUSD().balanceOf(user2), testCommon.curveLendVault().convertToShares(expected),1 ether);
+        assertApproxEqAbs(
+            testCommon.scvUSD().balanceOf(user2),
+            testCommon.curveLendVault().convertToShares(expected),
+            1 ether
+        );
     }
 
-    
     function test_revertWhen_addZapTokenWithZeroAddress() public {
         vm.startPrank(testCommon.owner());
-        // vm.expectRevert(abi.encodeWithSelector(LendRewardSplitter.NoZeroAddress.selector, "_token"));
         vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("NoZeroAddress(string)")), "_token"));
         splitter.toggleZapToken(address(0));
         vm.stopPrank();
@@ -259,7 +256,6 @@ contract LendRewardSplitterZapTest is Test {
     }
 
     function test_addZapTokenAave() public {
-        
         vm.startPrank(testCommon.owner());
         splitter.toggleZapToken(AAVE);
         vm.stopPrank();
@@ -268,13 +264,40 @@ contract LendRewardSplitterZapTest is Test {
 
     function test_disableAaveZapToken() public {
         vm.startPrank(testCommon.owner());
+        vm.expectEmit(address(splitter));
+        emit LendRewardSplitter.ZapTokenChange(AAVE, true);
         splitter.toggleZapToken(AAVE);
         assertEq(splitter.allowedZapToken(AAVE), true, "AAVE deposit should be enabled  ");
+        vm.expectEmit(address(splitter));
+        emit LendRewardSplitter.ZapTokenChange(AAVE, false);
         splitter.toggleZapToken(AAVE); // second time to disable it.
         vm.stopPrank();
         assertEq(splitter.allowedZapToken(AAVE), false, "AAVE deposit should be disabled  ");
     }
 
+    function test_revertWhen_zapDepositReentrancy() public {
+        ZapAndDepositReentrancyAttack attacker = new ZapAndDepositReentrancyAttack(address(splitter));
+
+        // Fund attacker with some Ether to perform the attack.
+        vm.deal(address(attacker), 100 ether);
+
+        (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForEth();
+
+        // Start the attack.
+        attacker.startAttack{value: 1 ether}(
+            address(market.stakeDaoVault),
+            address(0),
+            0,
+            0,
+            true,
+            true,
+            routes,
+            pools,
+            swapParams
+        );
+        // expect the code has not been reenterd
+        assertEq(attacker.hasReentered(),false);
+    }
 
     function _getSwapParamsForEth()
         internal
@@ -301,21 +324,21 @@ contract LendRewardSplitterZapTest is Test {
         pools = [TRI_CRV_CURVE_POOL, address(0), address(0), address(0), address(0)];
 
         /// @devs https://docs.curve.fi/router/CurveRouterNG/#_swap_params
-        /// @devs [i, j, swap_type, pool_type, n_coins]
+        /// @devs [i => index of intoken , index of output token, swap_type, pool_type, n_coins]
+        uint256[5] memory emptyParams = [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)];
         swapParams = [
             [uint256(1), uint256(0), uint256(1), uint256(3), uint256(3)],
-            [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],
-            [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],
-            [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)],
-            [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)]
+            emptyParams,
+            emptyParams,
+            emptyParams,
+            emptyParams
         ];
     }
 
     function _getSwapParamsForUsdt()
         internal
         returns (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams)
-    {
-        // https://etherscan.io/tx/0xe074756ec2b7d4f13a37f54f61635b7116cad6c5ef23bd38e5a952be945cf0a6
+    { 
         address POOL = 0x390f3595bCa2Df7d23783dFd126427CCeb997BF4; // Stableswap
         address USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
         vm.label(USDT, "USDT");
@@ -337,7 +360,7 @@ contract LendRewardSplitterZapTest is Test {
         pools = [POOL, address(0), address(0), address(0), address(0)];
 
         /// @devs https://docs.curve.fi/router/CurveRouterNG/#_swap_params
-        /// @devs [i, j, swap_type, pool_type, n_coins]
+        /// @devs [i => index of intoken , index of output token, swap_type, pool_type, n_coins]
         uint256[5] memory emptyParams = [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)];
         swapParams = [
             [uint256(0), uint256(1), uint256(1), uint256(1), uint256(2)],
@@ -348,33 +371,24 @@ contract LendRewardSplitterZapTest is Test {
         ];
     }
 
-    function _getSwapParamsForDai() internal pure returns (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) {
-        //   https://etherscan.io/tx/0xcc96b84287f72c933529edc56f293f30cb755b0ac39d224604ebc9c87b4cf9a
-        address t1 = 0x6B175474E89094C44Da98b954EedeAC495271d0F ; 
+    function _getSwapParamsForDai()
+        internal
+        pure
+        returns (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams)
+    {
+        address t1 = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
         address t2 = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
         address t3 = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-        address t4 =0x390f3595bCa2Df7d23783dFd126427CCeb997BF4;
+        address t4 = 0x390f3595bCa2Df7d23783dFd126427CCeb997BF4;
         address t5 = 0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E;
 
-         routes = [
-            t1,
-            t2,
-            t3,
-            t4,
-            t5,
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            address(0)
-        ];
-        
-        address p1 = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7; 
+        routes = [t1, t2, t3, t4, t5, address(0), address(0), address(0), address(0), address(0), address(0)];
+
+        address p1 = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
         address p2 = 0x390f3595bCa2Df7d23783dFd126427CCeb997BF4;
         pools = [p1, p2, address(0), address(0), address(0)];
 
-        uint256[5] memory emptyParams = [uint256(0),uint256(0),uint256(0),uint256(0),uint256(0)];
+        uint256[5] memory emptyParams = [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)];
         swapParams = [
             [uint256(0), uint256(2), uint256(1), uint256(1), uint256(3)],
             [uint256(0), uint256(1), uint256(1), uint256(1), uint256(2)],
@@ -382,8 +396,6 @@ contract LendRewardSplitterZapTest is Test {
             emptyParams,
             emptyParams
         ];
-
-
     }
 
     function _getSwapParamsForUsdc()
@@ -412,11 +424,11 @@ contract LendRewardSplitterZapTest is Test {
         ];
 
         pools = [POOL, address(0), address(0), address(0), address(0)];
-        (uint256 inIndex, uint256 outIndex) = _getPoolIndexes(USDC, POOL,false);
+        (uint256 inIndex, uint256 outIndex) = _getPoolIndexes(USDC, POOL, false);
 
         /// @devs https://docs.curve.fi/router/CurveRouterNG/#_swap_params
         /// @devs [i => index of intoken , index of output token, swap_type, pool_type, n_coins]
-        uint256[5] memory emptyParams = [uint256(0),uint256(0),uint256(0),uint256(0),uint256(0)];
+        uint256[5] memory emptyParams = [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)];
         swapParams = [
             [inIndex, outIndex, uint256(1), uint256(1), uint256(2)],
             emptyParams,
@@ -426,13 +438,16 @@ contract LendRewardSplitterZapTest is Test {
         ];
     }
 
-    function _getPoolIndexes(address _inToken, address _pool, bool triPool) internal view returns (uint256 inIndex, uint256 outIndex) {
+    function _getPoolIndexes(
+        address _inToken,
+        address _pool,
+        bool triPool
+    ) internal view returns (uint256 inIndex, uint256 outIndex) {
         address[3] memory poolCoins;
-        
+
         poolCoins[0] = ICrvPoolPlain(_pool).coins(0);
         poolCoins[1] = ICrvPoolPlain(_pool).coins(1);
-        if(triPool)
-            poolCoins[2] = ICrvPoolPlain(_pool).coins(2);
+        if (triPool) poolCoins[2] = ICrvPoolPlain(_pool).coins(2);
 
         bool foundInIndex = false;
         bool foundOutIndex = false;
@@ -451,5 +466,4 @@ contract LendRewardSplitterZapTest is Test {
         require(foundInIndex, "Input token not found in pool");
         require(foundOutIndex, "CRV_USD not found in pool");
     }
-
 }

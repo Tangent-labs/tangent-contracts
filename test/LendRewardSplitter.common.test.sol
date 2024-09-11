@@ -1,4 +1,4 @@
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {LendRewardSplitter} from "../src/LendRewardSplitter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
@@ -9,10 +9,10 @@ import {ISDLiquidityGauge} from "../src/interfaces/ISDLiquidityGauge.sol";
 import {IStakeDaoVault} from "../src/interfaces/IStakeDaoVault.sol";
 import {ICurveLendVault} from "../src/interfaces/ICurveLendVault.sol";
 import {Addr} from "../src/libs/Addr.sol";
-import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
+import {Upgrades, Options} from "@openzeppelin-foundry-upgrades/Upgrades.sol";
 
 contract LendRewardSplitterTestCommon is Test {
-    uint256 public MAX_UINT = uint256(int256(-1));
+    uint256 public  MAX_UINT = uint256(int256(-1));
 
     address public owner = makeAddr("Owner");
     address public ownerGauge = makeAddr("ownerGauge");
@@ -70,13 +70,13 @@ contract LendRewardSplitterTestCommon is Test {
         deployBeaconCurveLendSplitterToken();
         deploySplitterProxy();
 
-         vm.startPrank(owner);
+        vm.startPrank(owner);
 
-        //create market 
+        //create market
         splitter.createMarket(Addr.STAKEDAO_CRVUSD_CRV);
         LendRewardSplitter.MarketStruct memory market = splitter.getMarket(Addr.STAKEDAO_CRVUSD_CRV);
 
-        // configure Zap 
+        // configure Zap
         splitter.toggleZapToken(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48); // USDC
         splitter.toggleZapToken(0xdAC17F958D2ee523a2206206994597C13D831ec7); // USDT
         splitter.toggleZapToken(0x6B175474E89094C44Da98b954EedeAC495271d0F); // DAI
@@ -91,7 +91,7 @@ contract LendRewardSplitterTestCommon is Test {
 
         //labelizing
         vm.label(address(splitter), "Splitter");
-        vm.label(address(splitter.curveRouter()), "CurveRouter");
+        vm.label(address(splitter.CURVE_ROUTER()), "CurveRouter");
         vm.label(Addr.TOKEN_CRVUSD, "crvUSD");
         vm.label(Addr.STAKEDAO_CRVUSD_CRV, "STAKEDAO_CRVUSD_CRV");
         vm.label(Addr.CURVE_CRVUSD_CRV, "CURVE_CRVUSD_CRV");
