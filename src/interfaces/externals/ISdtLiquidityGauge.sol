@@ -1,5 +1,7 @@
 /// Modified version of the liquidity for Stake DAO needs.
-interface ISDLiquidityGauge {
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
+interface ISdtLiquidityGauge is IERC20 {
     struct Reward {
         address token;
         address distributor;

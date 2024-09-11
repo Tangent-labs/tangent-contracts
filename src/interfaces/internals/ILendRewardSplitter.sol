@@ -1,0 +1,35 @@
+import {ISdtLiquidityGauge} from "../externals/ISdtLiquidityGauge.sol";
+import {ILlamaLendVault} from "../externals/ILlamaLendVault.sol";
+import {IStakeDaoVault} from "../externals/IStakeDaoVault.sol";
+
+import {ICurveLendSplitterToken} from "./ICurveLendSplitterToken.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ICommonStruct} from "../internals/ICommonStruct.sol";
+
+interface ILendRewardSplitter {
+    enum SDT_TOKEN_TYPE {
+        /// @dev Asset use as collateral in the lend contract. (ex : crvUSD)
+        LendAsset,
+        /// @dev Share of  curve vault contract. (ex : cvcrvUSD)
+        LlamalendVaultAsset,
+        /// @dev Stake Dao gauge asset
+        SdtGaugeAsset
+    }
+
+    enum CVX_TOKEN_TYPE {
+        /// @dev Asset use as collateral in the lend contract. (ex : crvUSD)
+        LendAsset,
+        /// @dev Share of  curve vault contract. (ex : cvcrvUSD)
+        LlamalendVaultAsset
+    }
+
+    function liquidityGauge() external view returns (ISdtLiquidityGauge);
+
+    function incrementDaoFees(ICommonStruct.TokenAmount[] memory tokenAmounts) external;
+
+    function createSdtMarket(IStakeDaoVault stakeDaoVault) external;
+
+    function deposit(IStakeDaoVault stakeDaoVault, SDT_TOKEN_TYPE typeAsset, uint256 amount, bool isStableReward, bool doDeposit) external returns (uint256);
+
+    function withdraw(IStakeDaoVault stakeDaoVault, ILendRewardSplitter.SDT_TOKEN_TYPE outType, uint256 amount, bool isStableReward) external;
+}

@@ -13,3 +13,4 @@ lib/
 
 # Dotenv file
 .env
+lcov.info

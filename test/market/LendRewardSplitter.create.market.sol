@@ -1,7 +1,11 @@
 import {Test, console} from "forge-std/Test.sol";
 import {LendRewardSplitterTestCommon} from "../LendRewardSplitter.common.test.sol";
+import {ILendRewardSplitter} from "../../src/interfaces/internals/ILendRewardSplitter.sol";
+import {IStakeDaoVault} from "../../src/interfaces/externals/IStakeDaoVault.sol";
+
 import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-import {Addr} from "../../src/libs/Addr.sol";
+
+import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20} from "../../src/libs/Resources.sol";
 
 contract LendRewardSplitterCreateMarket is Test {
     LendRewardSplitter splitter;
@@ -20,26 +24,28 @@ contract LendRewardSplitterCreateMarket is Test {
     function test_revertWhen_CreateMarketWithRandomUser() external {
         vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", randomUser));
         vm.prank(randomUser);
-        splitter.createMarket(Addr.STAKEDAO_CRVUSD_CRV);
+        splitter.createSdtMarket(AddrSdtVaults.CRVUSD_CRV);
     }
+
     function test_revertWhen_CreateMarketAlreadyExistent() external {
         vm.expectRevert(bytes("MARKET_ALREADY_EXIST"));
         vm.prank(owner);
-        splitter.createMarket(Addr.STAKEDAO_CRVUSD_CRV);
+        splitter.createSdtMarket(AddrSdtVaults.CRVUSD_CRV);
     }
+
     function test_revertWhen_CreateMarketWithWrongVault() external {
         vm.expectRevert();
         vm.prank(owner);
-        splitter.createMarket(Addr.TOKEN_SDT);
+        splitter.createSdtMarket(IStakeDaoVault(AddrClassicERC20.TOKEN_SDT));
     }
+
     function test_CreateMarketAndVerifyDatas() external {
         vm.prank(owner);
-        splitter.createMarket(Addr.STAKEDAO_CRVUSD_LEVERAGE_WETH);
-        LendRewardSplitter.MarketStruct memory market = splitter.getMarket(Addr.STAKEDAO_CRVUSD_LEVERAGE_WETH);
-        assertEq(address(market.curveLendVault), Addr.CURVE_CRVUSD_LEVERAGE_WETH);
-        assertEq(address(market.lendAsset), Addr.TOKEN_CRVUSD);
-        assertEq(address(market.liquidityGauge), Addr.STAKEDAO_CRVUSD_LEVERAGE_WETH_GAUGE);
-        assumeNotZeroAddress(address(market.gUSD));
-        assumeNotZeroAddress(address(market.scvUSD));
+        splitter.createSdtMarket(AddrSdtVaults.CRVUSD_LEVERAGE_WETH);
+        assertEq(address(splitter.sdtVaultPerLlamaVault(AddrLlamaLendVaults.CRVUSD_LEVERAGE_WETH)), address(AddrSdtVaults.CRVUSD_LEVERAGE_WETH));
+        assertEq(address(splitter.lentAssetPerLlamaVault(AddrLlamaLendVaults.CRVUSD_LEVERAGE_WETH)), address(AddrClassicERC20.TOKEN_CRVUSD));
+        assertEq(address(splitter.sdtGaugePerLlamaVault(AddrLlamaLendVaults.CRVUSD_LEVERAGE_WETH)), address(AddrSdtGauges.CRVUSD_LEVERAGE_WETH));
+        assumeNotZeroAddress(address(splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_LEVERAGE_WETH)));
+        assumeNotZeroAddress(address(splitter.scvUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_LEVERAGE_WETH)));
     }
 }
