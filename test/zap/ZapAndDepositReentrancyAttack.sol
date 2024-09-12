@@ -13,7 +13,6 @@ contract ZapAndDepositReentrancyAttack {
 
     function startAttack(
         address _stakeDaoVault,
-        address _tokenIn,
         uint256 _inAmount,
         uint256 _minLendAssetAmount,
         bool _isStableReward,
@@ -25,7 +24,6 @@ contract ZapAndDepositReentrancyAttack {
         // Trigger zapAndDeposit function
         target.zapAndDeposit{value: msg.value}(
             _stakeDaoVault,
-            _tokenIn,
             _inAmount,
             _minLendAssetAmount,
             _isStableReward,

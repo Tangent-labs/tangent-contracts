@@ -33,14 +33,14 @@ contract LendRewardSplitterZapTest is Test {
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForEth();
         testCommon.getUser(1, USDC, 2000 ether);
         vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("MarketNotExists(address)")), USDC));
-        splitter.zapAndDeposit(USDC, USDC, 0, 0, true, true, routes, pools, swapParams); // USDC is not a market
+        splitter.zapAndDeposit(USDC,  0, 0, true, true, routes, pools, swapParams); // USDC is not a market
     }
 
     function test_revertWhen_zapAndDepositWithNoAmount() public {
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForEth();
         testCommon.getUser(1, USDC, 2000 ether);
         vm.expectRevert();
-        splitter.zapAndDeposit(address(market.stakeDaoVault), USDC, 0, 0, true, true, routes, pools, swapParams);
+        splitter.zapAndDeposit(address(market.stakeDaoVault),  0, 0, true, true, routes, pools, swapParams);
     }
 
     function test_revertWhen_zapAndDepositWhenRouteNotMatchLendAsset() public {
@@ -51,7 +51,6 @@ contract LendRewardSplitterZapTest is Test {
         vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("NotLendAssetRoute(address)")), USDC));
         splitter.zapAndDeposit{value: 1 ether}(
             address(market.stakeDaoVault),
-            address(0),
             0,
             0,
             true,
@@ -78,7 +77,6 @@ contract LendRewardSplitterZapTest is Test {
         uint256 expected = CURVE_ROUTER.get_dy(routes, swapParams, 1 ether, pools);
         splitter.zapAndDeposit{value: 1 ether}(
             address(market.stakeDaoVault),
-            address(0),
             0,
             0,
             true,
@@ -115,7 +113,6 @@ contract LendRewardSplitterZapTest is Test {
         uint256 expected = CURVE_ROUTER.get_dy(routes, swapParams, depositAmount, pools);
         splitter.zapAndDeposit(
             address(market.stakeDaoVault),
-            USDT,
             depositAmount,
             (depositAmount * 99) / 100,
             true,
@@ -150,7 +147,6 @@ contract LendRewardSplitterZapTest is Test {
         uint256 expected = CURVE_ROUTER.get_dy(routes, swapParams, depositAmount, pools);
         splitter.zapAndDeposit(
             address(market.stakeDaoVault),
-            USDC,
             depositAmount,
             (depositAmount * 50) / 100,
             true,
@@ -181,12 +177,12 @@ contract LendRewardSplitterZapTest is Test {
         IERC20(SHIBA).approve(address(splitter), 100_000 ether);
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForDai();
 
+        routes[0] = SHIBA;
         uint256 depositAmount = 1000 ether;
         // Do the zapAndDeposit
         vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("NotAllowedInToken(address)")), SHIBA));
         splitter.zapAndDeposit(
             address(market.stakeDaoVault),
-            SHIBA,
             depositAmount,
             (depositAmount * 50) / 100,
             true,
@@ -221,7 +217,6 @@ contract LendRewardSplitterZapTest is Test {
         uint256 expected = CURVE_ROUTER.get_dy(routes, swapParams, depositAmount, pools);
         splitter.zapAndDeposit(
             address(market.stakeDaoVault),
-            DAI,
             depositAmount,
             (depositAmount * 50) / 100,
             true,
@@ -236,13 +231,6 @@ contract LendRewardSplitterZapTest is Test {
             testCommon.curveLendVault().convertToShares(expected),
             1 ether
         );
-    }
-
-    function test_revertWhen_addZapTokenWithZeroAddress() public {
-        vm.startPrank(testCommon.owner());
-        vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("NoZeroAddress(string)")), "_token"));
-        splitter.toggleZapToken(address(0));
-        vm.stopPrank();
     }
 
     function test_revertWhen_addZapTokenNotOwner() public {
@@ -260,6 +248,7 @@ contract LendRewardSplitterZapTest is Test {
         splitter.toggleZapToken(AAVE);
         vm.stopPrank();
         assertEq(splitter.allowedZapToken(AAVE), true, "AAVE deposit should be enabled  ");
+        assertEq(IERC20(AAVE).allowance(address(splitter),address(splitter.CURVE_ROUTER())), testCommon.MAX_UINT(), "AAVE deposit should be enabled  ");
     }
 
     function test_disableAaveZapToken() public {
@@ -272,6 +261,7 @@ contract LendRewardSplitterZapTest is Test {
         emit LendRewardSplitter.ZapTokenChange(AAVE, false);
         splitter.toggleZapToken(AAVE); // second time to disable it.
         vm.stopPrank();
+        assertEq(IERC20(AAVE).allowance(address(splitter),address(splitter.CURVE_ROUTER())), 0, "AAVE deposit should be enabled  ");
         assertEq(splitter.allowedZapToken(AAVE), false, "AAVE deposit should be disabled  ");
     }
 
@@ -286,7 +276,6 @@ contract LendRewardSplitterZapTest is Test {
         // Start the attack.
         attacker.startAttack{value: 1 ether}(
             address(market.stakeDaoVault),
-            address(0),
             0,
             0,
             true,

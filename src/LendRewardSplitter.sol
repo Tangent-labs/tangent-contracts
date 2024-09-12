@@ -105,11 +105,10 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     }
 
     /**
-     *  @notice zapAndDeposit zap the given asset into lendAsset and use the deposit function. (asset must be listed in allowedZapToken)
+     *  @notice Zap the given asset into lendAsset and use the deposit function. (asset must be listed in allowedZapToken)
      *  @param stakeDaoVault Market to deposit to
-     *  @param tokenIn Address to zap to the lendAsset token (can be 0x0 if ETH is sent)
      *  @param inAmount Amount of {tokenIn} token you want to deposit. (can be 0 if ETH is sent) )
-     *  @param minLendAssetAmount min amount of {lendasset token} accepted for the {inAmout} of {tokenIn}
+     *  @param minLendAssetAmount min amount of {lendasset token} accepted for the {inAmout} of {tokenIn} (cf routes[0])
      *  @param isStableReward   IF isStableReward == true THEN   you want the stable part of the reward  ELSE you want the gauge part of the reward.
      *  @param doDeposit  IF doDeposit == true THEN  all the pending asset will be deposited in stakeValut.
      *  @param routes parameters for curve router . (see https://docs.curve.fi/router/CurveRouterNG/#_route) - route must end with the lendAsset.
@@ -118,7 +117,6 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      */
     function zapAndDeposit(
         address stakeDaoVault,
-        address tokenIn,
         uint256 inAmount,
         uint256 minLendAssetAmount,
         bool isStableReward,
@@ -135,16 +133,16 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         }
 
         /// @dev Check that the end route is the llenAsset of the market.
-        address lastToken;
-        for (uint256 i = routes.length; i > 0; i--) {
-            if (routes[i - 1] != address(0)) {
-                lastToken = routes[i - 1];
+        for (uint256 i = 0; i < routes.length; i++) {
+            /// @dev when we find the first 0x0, this is the end of the route.
+            if (routes[i] == address(0)) {
+                if (i > 1 && routes[i -  1] != address(market.lendAsset)){
+                    revert NotLendAssetRoute(routes[i -  1]);
+                }
                 break;
             }
         }
-        if (lastToken != address(market.lendAsset)) {
-            revert NotLendAssetRoute(lastToken);
-        }
+        address tokenIn = routes[0];
 
         /// @dev if not ETH deposit , we tranfer the token to this contract,and allow the router to move it.
         if (msg.value == 0) {
@@ -554,16 +552,15 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      * @param _token address of the token (  disable the token if call when enable)
      */
     function toggleZapToken(address _token) external onlyOwner {
-        if (_token == address(0)) {
-            revert NoZeroAddress("_token");
-        }
 
         allowedZapToken[_token] = !allowedZapToken[_token];
 
         /// @dev handle the approve for the curve router.
         IERC20 ierc20Token = IERC20(_token);
-        if (allowedZapToken[_token] && ierc20Token.allowance(address(this), address(CURVE_ROUTER)) != MAX_UINT) {
+        if (allowedZapToken[_token]) {
             ierc20Token.forceApprove(address(CURVE_ROUTER), MAX_UINT);
+        }else {
+            ierc20Token.forceApprove(address(CURVE_ROUTER), 0);
         }
 
         emit ZapTokenChange(_token, allowedZapToken[_token]);
