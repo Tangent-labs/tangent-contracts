@@ -497,6 +497,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         _llamaLendVault.approve(address(CVX_BOOSTER), MAX_UINT);
 
         cvxPidPerLlamaVault[_llamaLendVault] = pid;
+        lentAssetPerLlamaVault[_llamaLendVault] = _lendAsset;
         cvxRewardTokenPerLlamaVault[_llamaLendVault] = rewardToken;
         cvxVaultPerLlamaVault[_llamaLendVault] = IERC20(cvxVaultToken);
 

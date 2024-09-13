@@ -16,6 +16,7 @@ import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, Add
 contract DepositLendAssetGov is Test {
     LendRewardSplitter splitter;
     LendRewardSplitterTestCommon testCommon = new LendRewardSplitterTestCommon();
+    IERC20 constant CRVUSD = IERC20(AddrClassicERC20.TOKEN_CRVUSD);
 
     function setUp() public {
         testCommon = new LendRewardSplitterTestCommon();
@@ -27,15 +28,16 @@ contract DepositLendAssetGov is Test {
         splitter.createCvxMarket(PidCvxBooster.CRVUSD_CRV);
     }
 
-    function test_deposit_lend_asset_and_doDeposit() external {
+    function test_deposit_lend_asset_and_doDeposit(uint104 amountIn) external {
+        vm.assume(amountIn > 1);
         // PREPARE
         LendRewardSplitter _splitter = splitter;
         ICurveLendSplitterToken gUSD = _splitter.gUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
         address usr = makeAddr("User");
-        deal(address(AddrClassicERC20.TOKEN_CRVUSD), usr, 100 ether);
+        deal(address(CRVUSD), usr, amountIn);
         vm.startPrank(usr);
 
-        uint256 usrLendAssetBalanceBfr = IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr);
+        uint256 usrLendAssetBalanceBfr = CRVUSD.balanceOf(usr);
         // uint256 llamaLendVaultLendAssetBalanceBfr = IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(address(AddrLlamaLendVaults.CRVUSD_CRV));
 
         uint256 usrCvxVaultBfr = AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(usr);
@@ -47,16 +49,16 @@ contract DepositLendAssetGov is Test {
 
         uint256 usrGUSDBalanceBfr = gUSD.balanceOf(usr);
 
-        uint256 sharesConverted = AddrLlamaLendVaults.CRVUSD_CRV.convertToShares(100 ether);
+        uint256 sharesConverted = AddrLlamaLendVaults.CRVUSD_CRV.convertToShares(amountIn);
 
         // ACTIONS
-        IERC20(address(AddrClassicERC20.TOKEN_CRVUSD)).approve(address(_splitter), 100 ether);
-        _splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, false, true);
+        CRVUSD.approve(address(_splitter), amountIn);
+        _splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amountIn, false, true);
 
         // VERIFY
 
         // 100 crvUSD sent by usr
-        assertEq(usrLendAssetBalanceBfr - IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr), 100 ether);
+        assertEq(usrLendAssetBalanceBfr - IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr), amountIn);
         // "sharesConverted" CvxVault assets created
         assertEq(AddrCvxVaultTokens.CRVUSD_CRV.totalSupply() - totalSupplyCvxVaultBefore, sharesConverted);
         // "sharesConverted" CvxVault assets received by the CvxReward
@@ -64,7 +66,7 @@ contract DepositLendAssetGov is Test {
         // "sharesConverted" CvxReward assets received by the gUSD
         assertEq(AddrCvxRewardTokens.CRVUSD_CRV.balanceOf(address(gUSD)) - gUSDRewardTokenBfr, sharesConverted);
         // An amount of gUSD equivalent to the convertToAsset is minted to the usr
-        assertApproxEqAbs(gUSD.balanceOf(usr) - usrGUSDBalanceBfr, 100 ether, 1);
+        assertApproxEqAbs(gUSD.balanceOf(usr) - usrGUSDBalanceBfr, amountIn, 1);
 
         // No CvxReward token are given to the user
         assertEq(usrRewardTokenBfr - AddrCvxRewardTokens.CRVUSD_CRV.balanceOf(usr), 0);
@@ -77,10 +79,10 @@ contract DepositLendAssetGov is Test {
         LendRewardSplitter _splitter = splitter;
         ICurveLendSplitterToken gUSD = _splitter.gUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
         address usr = makeAddr("User");
-        deal(address(AddrClassicERC20.TOKEN_CRVUSD), usr, 200 ether);
+        deal(address(CRVUSD), usr, 200 ether);
         vm.startPrank(usr);
 
-        uint256 usrLendAssetBalanceBfr = IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr);
+        uint256 usrLendAssetBalanceBfr = CRVUSD.balanceOf(usr);
 
         uint256 usrCvxVaultBfr = AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(usr);
         uint256 gUSDCvxVaultBfr = AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(gUSD));
@@ -93,13 +95,13 @@ contract DepositLendAssetGov is Test {
 
         uint256 sharesConverted = AddrLlamaLendVaults.CRVUSD_CRV.convertToShares(100 ether);
         // ACTIONS
-        IERC20(address(AddrClassicERC20.TOKEN_CRVUSD)).approve(address(_splitter), 200 ether);
+        CRVUSD.approve(address(_splitter), 200 ether);
         _splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, false, false);
 
         // VERIFY
 
         // 100 crvUSD sent by usr
-        assertEq(usrLendAssetBalanceBfr - IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr), 100 ether);
+        assertEq(usrLendAssetBalanceBfr - CRVUSD.balanceOf(usr), 100 ether);
 
         // "sharesConverted" CvxVault tokens received by gUSD
         assertEq(AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(gUSD)) - gUSDCvxVaultBfr, sharesConverted);

@@ -19,7 +19,7 @@ import {ILlamaLendVault} from "../src/interfaces/externals/ILlamaLendVault.sol";
 import {ILendRewardSplitter} from "../src/interfaces/internals/ILendRewardSplitter.sol";
 import {ICurveLendSplitterToken} from "../src/interfaces/internals/ICurveLendSplitterToken.sol";
 import {ICommonStruct} from "../src/interfaces/internals/ICommonStruct.sol";
-import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, AddrGlobal,AddrCvxVaultTokens} from "../src/libs/Resources.sol";
+import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, AddrGlobal, AddrCvxVaultTokens, AddrCvxRewardTokens} from "../src/libs/Resources.sol";
 import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 contract LendRewardSplitterTestCommon is Test {
@@ -49,50 +49,54 @@ contract LendRewardSplitterTestCommon is Test {
     bool constant IS_VALIDATE_IMPLEM = false;
 
     function fork() public {
-        vm.createSelectFork("mainnet", 20513092);
+        vm.createSelectFork("mainnet", 20725852);
     }
 
     function deployProxyAdmin() public {
         proxyAdmin = address(new ProxyAdmin(owner));
     }
 
-    function deployGUSDBeaconSdt() public {
+    function deployGUSDBeaconSdt() public returns (address) {
         if (IS_VALIDATE_IMPLEM) {
             Options memory opts;
             Upgrades.validateImplementation("gUSDSdt.sol:gUSDSdt", opts);
         }
         //deploy
         gUSDBeaconSdt = address(new UpgradeableBeacon(address(new gUSDSdt()), (owner)));
+        return scvUSDBeaconSdt;
     }
 
-    function deploySCVUSDBeaconSdt() public {
+    function deploySCVUSDBeaconSdt() public returns (address) {
         if (IS_VALIDATE_IMPLEM) {
             Options memory opts;
             Upgrades.validateImplementation("scvUSDSdt.sol:scvUSDSdt", opts);
         }
         //deploy
         scvUSDBeaconSdt = address(new UpgradeableBeacon(address(new scvUSDSdt()), (owner)));
+        return scvUSDBeaconSdt;
     }
 
-    function deployGUSDBeaconCvx() public {
+    function deployGUSDBeaconCvx() public returns (address) {
         if (IS_VALIDATE_IMPLEM) {
             Options memory opts;
             Upgrades.validateImplementation("gUSDCvx.sol:gUSDCvx", opts);
         }
         //deploy
         gUSDBeaconCvx = address(new UpgradeableBeacon(address(new gUSDCvx()), (owner)));
+        return gUSDBeaconCvx;
     }
 
-    function deploySCVUSDBeaconCvx() public {
+    function deploySCVUSDBeaconCvx() public returns (address) {
         if (IS_VALIDATE_IMPLEM) {
             Options memory opts;
             Upgrades.validateImplementation("scvUSDCvx.sol:scvUSDCvx", opts);
         }
         //deploy
         scvUSDBeaconCvx = address(new UpgradeableBeacon(address(new scvUSDCvx()), (owner)));
+        return scvUSDBeaconCvx;
     }
 
-    function deploySplitterProxy() public {
+    function deploySplitterProxy(address ownerToSet) public returns (address) {
         if (IS_VALIDATE_IMPLEM) {
             Options memory opts;
             Upgrades.validateImplementation("LendRewardSplitter.sol:LendRewardSplitter", opts);
@@ -103,10 +107,11 @@ contract LendRewardSplitterTestCommon is Test {
                 new TransparentUpgradeableProxy(
                     address(new LendRewardSplitter()),
                     proxyAdmin,
-                    abi.encodeCall(LendRewardSplitter.initialize, (owner, gUSDBeaconSdt, scvUSDBeaconSdt, gUSDBeaconCvx, scvUSDBeaconCvx))
+                    abi.encodeCall(LendRewardSplitter.initialize, (ownerToSet, gUSDBeaconSdt, scvUSDBeaconSdt, gUSDBeaconCvx, scvUSDBeaconCvx))
                 )
             )
         );
+        return address(splitter);
     }
 
     function setUpSplitter() public {
@@ -116,7 +121,7 @@ contract LendRewardSplitterTestCommon is Test {
         deploySCVUSDBeaconSdt();
         deployGUSDBeaconCvx();
         deploySCVUSDBeaconCvx();
-        deploySplitterProxy();
+        deploySplitterProxy(owner);
 
         //create StakeDao Market
         vm.prank(owner);
@@ -127,16 +132,20 @@ contract LendRewardSplitterTestCommon is Test {
         gUSDImplem = gUSDSdt(address(splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV)));
 
         //labelizing
+        vm.label(address(splitter), "SPLITTER");
         vm.label(AddrClassicERC20.TOKEN_CRVUSD, "crvUSD");
-        vm.label(address(AddrSdtVaults.CRVUSD_CRV), "CRVUSD_CRV");
-        vm.label(address(AddrLlamaLendVaults.CRVUSD_CRV), "LLAMALEND_CRVUSD_CRV");
+        vm.label(address(AddrLlamaLendVaults.CRVUSD_CRV), "LLAMALEND_VAULT_CRVUSD_CRV");
+
+        vm.label(address(AddrSdtVaults.CRVUSD_CRV), "STAKE_DAO_VAULT_CRVUSD_CRV");
         vm.label(AddrSdtVaults.CRVUSD_CRV.strategy(), "STAKEDAO_CRV_STRATEGY");
+
         vm.label(AddrSdtVaults.CRVUSD_CRV.liquidityGauge(), "STAKEDAO_CRV_LIQUIDITY_GAUGE");
         vm.label(address(scvUSDImplem), "scvUSD");
         vm.label(address(gUSDImplem), "gUSD");
 
         vm.label(address(AddrGlobal.CVX_BOOSTER), "CVX_BOOSTER");
         vm.label(address(AddrCvxVaultTokens.CRVUSD_CRV), "CVX_VAULT_CRV_CRVUSD");
+        vm.label(address(AddrCvxRewardTokens.CRVUSD_CRV), "CVX_REWARD_TOKEN_CRV_CRVUSD");
 
         vm.label(address(AddrGlobal.CRVUSD_CONTROLLER), "CRVUSD_CONTROLLER");
     }
