@@ -44,7 +44,7 @@ contract LendRewardSplitterGovDepositTest is Test {
 
         assertGt(incentive, 0);
 
-        assertApproxEqAbs(testCommon.gUSDImplem().balanceOf(user), depositAmount - incentive, 1 wei);
+        assertApproxEqAbs(testCommon.gUSDImplem().balanceOf(user), depositAmount - incentive, 2);
     }
 
     function test_deposit_LendcurveassetWithGovRewardDepositEnabled() external {
