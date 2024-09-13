@@ -18,6 +18,15 @@ ignored_error_codes = [
 fs_permissions = [{ access = "read-write", path = "./" }]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 
+remappings = [
+    "@contracts/=./contracts/",
+    "@tests/=./tests/",
+    "@openzeppelin/=lib/openzeppelin-contracts",
+    "@openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable",
+    "@openzeppelin-foundry-upgrades/=lib/openzeppelin-foundry-upgrades/src/",
+]
+
+
 [rpc_endpoints]
 mainnet = 'https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy'
 forkito = 'http://127.0.0.1:8545'

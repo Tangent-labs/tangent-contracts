@@ -15,6 +15,7 @@ library AddrGlobal {
     ICvxBooster constant CVX_BOOSTER = ICvxBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
     address constant CRVUSD_CONTROLLER = 0xEdA215b7666936DEd834f76f3fBC6F323295110A;
     address constant CRVUSD_AMM = 0xafca625321Df8D6A068bDD8F1585d489D2acF11b;
+    address constant CURVE_ROUTER = 0x16C6521Dff6baB339122a0FE25a9116693265353;
 }
 
 library AddrClassicERC20 {
@@ -23,6 +24,8 @@ library AddrClassicERC20 {
     address constant TOKEN_SDT = 0x73968b9a57c6E53d41345FD57a6E6ae27d6CDB2F;
     address constant TOKEN_CRV = 0xD533a949740bb3306d119CC777fa900bA034cd52;
     address constant TOKEN_CVX = 0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B;
+    address constant TOKEN_USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address constant TOKEN_AAVE = 0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9;
 }
 
 library AddrSdtGauges {

@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {BeaconProxy} from "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
 import {gUSDSdt} from "./tokens/stakeDao/gUSDSdt.sol";
 import {scvUSDSdt} from "./tokens/stakeDao/scvUSDSdt.sol";
@@ -19,10 +20,10 @@ import {ICurveLendSplitterToken} from "./interfaces/internals/ICurveLendSplitter
 import {ILendRewardSplitter} from "./interfaces/internals/ILendRewardSplitter.sol";
 import {ICommonStruct} from "./interfaces/internals/ICommonStruct.sol";
 import {IgUSDCvx} from "./interfaces/internals/IgUSDCvx.sol";
-
+import {IgUSDSdt} from "./interfaces/internals/IgUSDSdt.sol";
 import {ICvxBooster} from "./interfaces/externals/ICvxBooster.sol";
+import {ICurveRouter} from "./interfaces/externals/ICurveRouter.sol";
 import {ICvxRewardToken} from "./interfaces/externals/ICvxRewardToken.sol";
-import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "forge-std/console.sol"; //TODO: to remove
 
 contract LendRewardSplitter is Ownable2StepUpgradeable {
@@ -35,12 +36,13 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     uint256 constant MAX_UINT = uint256(int256(-1));
 
     ICvxBooster constant CVX_BOOSTER = ICvxBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
+    ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x16C6521Dff6baB339122a0FE25a9116693265353);
 
-    address public gUSDBeaconSdt;
-    address public scvUSDBeaconSdt;
+    address public GUSDBeaconSdt;
+    address public SCVUSDBeaconSdt;
 
-    address public gUSDBeaconCvx;
-    address public scvUSDBeaconCvx;
+    address public GUSDBeaconCvx;
+    address public SCVUSDBeaconCvx;
 
     mapping(IERC20 => uint256) public daoFeeForToken;
 
@@ -58,11 +60,14 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     mapping(ILlamaLendVault => ICurveLendSplitterToken) public scvUSDCvxPerLlamaVault;
 
     mapping(address => bool) public isLendSplitterToken;
+    /// @dev Tokens allowed to be used in zapAndDeposit method.
+    mapping(address => bool) public allowedZapToken;
 
     event DepositSdt(address indexed account, bool isStableReward, ILendRewardSplitter.SDT_TOKEN_TYPE outType, uint256 amount);
     event WithdrawSdt(address indexed account, bool isStableReward, ILendRewardSplitter.SDT_TOKEN_TYPE outType, uint256 amount);
     event DepositCvx(address indexed account, bool isStableReward, ILendRewardSplitter.CVX_TOKEN_TYPE outType, uint256 amount);
     event WithdrawCvx(address indexed account, bool isStableReward, ILendRewardSplitter.CVX_TOKEN_TYPE outType, uint256 amount);
+    event ToggleZapToken(address erc20, bool newState);
 
     error NoRewardsToClaimFromContract(address contractAddr);
     error IncorretRewardLength(uint256 rewardLengthInParam, uint256 realRewardLength);
@@ -70,6 +75,11 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     error NoRewardToSimpleClaim();
     error NotACurveSplitterToken(address contractAddr);
     error AlreadyCreatedCvxMarket(uint256 pid);
+
+    error CallerNotAllowed();
+    error NotLendAssetRoute(address token);
+    error NotAllowedInToken(address token);
+    error EmptyAmount();
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CONSTRUCTOR & INITIALIZER
@@ -86,10 +96,10 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         address _gUSDBeaconCvx,
         address _scvUSDBeaconCvx
     ) external initializer {
-        gUSDBeaconSdt = _gUSDBeaconSdt;
-        scvUSDBeaconSdt = _scvUSDBeaconSdt;
-        gUSDBeaconCvx = _gUSDBeaconCvx;
-        scvUSDBeaconCvx = _scvUSDBeaconCvx;
+        GUSDBeaconSdt = _gUSDBeaconSdt;
+        SCVUSDBeaconSdt = _scvUSDBeaconSdt;
+        GUSDBeaconCvx = _gUSDBeaconCvx;
+        SCVUSDBeaconCvx = _scvUSDBeaconCvx;
 
         _transferOwnership(_owner);
     }
@@ -98,11 +108,79 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                         DEPOSITS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    /*
-    TODO:
-    deposit with...
-    USDT/DAI/USDC/USDe/ETH/WETH
-    */
+    /**
+     *  @notice Zap the given asset into lendAsset and use the deposit function. (asset must be listed in allowedZapToken)
+     *  @param llamaLendVault Llamalend vault address
+     *  @param inAmount Amount of {tokenIn} token you want to deposit. (can be 0 if ETH is sent) )
+     *  @param minLendAssetAmount min amount of {lendasset token} accepted for the {inAmout} of {tokenIn} (cf routes[0])
+     *  @param isStableReward   IF isStableReward == true THEN   you want the stable part of the reward  ELSE you want the gauge part of the reward.
+     *  @param doDeposit  IF doDeposit == true THEN  all the pending asset will be deposited in stakeValut.
+     *  @param routes parameters for curve router . (see https://docs.curve.fi/router/CurveRouterNG/#_route) - route must end with the lendAsset.
+     *  @param pools parameters for curve router. (see https://docs.curve.fi/router/CurveRouterNG/#exchange)
+     *  @param swapParams parameters for curve router (see https://docs.curve.fi/router/CurveRouterNG/#_swap_params)
+     */
+    function zapAndDeposit(
+        ILlamaLendVault llamaLendVault,
+        uint256 inAmount,
+        uint256 minLendAssetAmount,
+        bool isCvx,
+        bool isStableReward,
+        bool doDeposit,
+        address[11] calldata routes,
+        address[5] calldata pools,
+        uint256[5][5] calldata swapParams
+    ) public payable returns (uint256) {
+        {
+            address lentAsset = address(lentAssetPerLlamaVault[llamaLendVault]);
+            /// @dev Check that the end route is the llenAsset of the market.
+            for (uint256 routeIndex = 0; routeIndex < routes.length; ) {
+                /// @dev when we find the first 0x0, this is the end of the route.
+                if (routes[routeIndex] == address(0)) {
+                    if (routeIndex > 1 && routes[routeIndex - 1] != lentAsset) {
+                        revert NotLendAssetRoute(routes[routeIndex - 1]);
+                    }
+                    break;
+                }
+                unchecked {
+                    ++routeIndex;
+                }
+            }
+        }
+        address tokenIn = routes[0];
+
+        /// @dev if not ETH deposit , we tranfer the token to this contract,and allow the router to move it.
+        if (msg.value == 0) {
+            if (!allowedZapToken[tokenIn]) {
+                revert NotAllowedInToken(tokenIn);
+            }
+            IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), inAmount);
+        }
+
+        /// @dev Process Swap.
+        uint256 lendAssetAmount = CURVE_ROUTER.exchange{value: msg.value}(
+            routes,
+            swapParams,
+            msg.value > 0 ? msg.value : inAmount,
+            minLendAssetAmount, // Minimum amount of crvUSD to receive (slippage protection)
+            pools,
+            address(this)
+        );
+
+        /// @dev Continue deposit.
+        if (isCvx) {
+            return depositCvx(llamaLendVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit);
+        } else {
+            return _depositSdt(llamaLendVault, ILendRewardSplitter.SDT_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit,true);
+        }
+    }
+
+    function depositSdt(ILlamaLendVault llamaVault,
+        ILendRewardSplitter.SDT_TOKEN_TYPE inType,
+        uint256 amount,
+        bool isStableReward,
+        bool doDeposit) external returns (uint256 depositAmount) {
+            return _depositSdt(llamaVault,inType,amount,isStableReward,doDeposit, false);
+        }
 
     /**
      *  @notice Deposit asset into the Convergence splitter contract in order to get one part of the reawrd from the lend contract.
@@ -112,31 +190,43 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      *  @param doDeposit bool  IF doDeposit == true THEN  all the pending asset will be deposited in stakeValut.
      *  @return depositAmount Staked amount eligible to rewards.
      */
-    function depositSdt(
+    function _depositSdt(
         ILlamaLendVault llamaVault,
         ILendRewardSplitter.SDT_TOKEN_TYPE inType,
         uint256 amount,
         bool isStableReward,
-        bool doDeposit
-    ) external returns (uint256 depositAmount) {
+        bool doDeposit,
+        bool isZap
+    ) internal returns (uint256 depositAmount) {
         depositAmount = amount;
         ISdtLiquidityGauge stakeDaoGauge = sdtGaugePerLlamaVault[llamaVault];
-        /// TODO Add input check on llamavault
+        address gUSD = address(gUSDSdtPerLlamaVault[llamaVault]);
+
+        /// @dev User enter staking with the StakeDao Gauge Asset
         if (inType == ILendRewardSplitter.SDT_TOKEN_TYPE.SdtGaugeAsset) {
             stakeDaoGauge.safeTransferFrom(msg.sender, address(this), amount);
-        } else {
+        }
+        /// @dev User enter with the Llamalend Vault asset or the Lent asset
+        else {
+            /// @dev User enter with the Llamalend Vault asset
             if (inType == ILendRewardSplitter.SDT_TOKEN_TYPE.LlamalendVaultAsset) {
                 /// @dev Transfer the vault asset from LlamaLend
                 llamaVault.safeTransferFrom(msg.sender, address(this), amount);
-            } else {
-                lentAssetPerLlamaVault[llamaVault].safeTransferFrom(msg.sender, address(this), amount);
+            }
+            /// @dev User enter with the lent asset
+            else {
+                if (!isZap) {
+                    /// @dev User enter with the lent asset
+                    lentAssetPerLlamaVault[llamaVault].safeTransferFrom(msg.sender, address(this), amount);
+                }
+
                 /// @dev Deposit in curveLend.
                 depositAmount = llamaVault.deposit(amount, address(this));
             }
 
-            uint256 balanceBefore = stakeDaoGauge.balanceOf(address(this));
-            sdtVaultPerLlamaVault[llamaVault].deposit(address(this), depositAmount, doDeposit);
-            depositAmount = stakeDaoGauge.balanceOf(address(this)) - balanceBefore;
+            uint256 balanceBefore = stakeDaoGauge.balanceOf(gUSD);
+            sdtVaultPerLlamaVault[llamaVault].deposit(gUSD, depositAmount, doDeposit);
+            depositAmount = stakeDaoGauge.balanceOf(gUSD) - balanceBefore;
         }
 
         if (isStableReward) {
@@ -163,7 +253,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         uint256 amount,
         bool isStableReward,
         bool doDeposit
-    ) external returns (uint256 depositAmount) {
+    ) public returns (uint256 depositAmount) {
         depositAmount = amount;
         ICvxRewardToken cvxRewardToken = cvxRewardTokenPerLlamaVault[llamaVault];
 
@@ -211,33 +301,26 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      *  @param amount Amount  of {gUSD|scvUsd} token you want to withdraw.
      *  @param isStableReward  If isStableReward == true THEN   scvUsd of user is used   ELSE  gUSD of user is used.
      */
-    function withdrawSdt(ILlamaLendVault llamaLendVault, ILendRewardSplitter.SDT_TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
+    function withdrawSdt(ILlamaLendVault llamaVault, ILendRewardSplitter.SDT_TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
         /// @dev We check the prerequesite.
-        require(amount != 0, "WITHDRAW_LTE_0");
-
-        ICurveLendSplitterToken recipeToken = isStableReward ? scvUSDSdtPerLlamaVault[llamaLendVault] : gUSDSdtPerLlamaVault[llamaLendVault];
-
-        /// @dev We burn the corresponding token.
-        recipeToken.burn(msg.sender, amount);
-
-        /// @dev We process the amounts.
-        uint256 shareAmount = isStableReward ? amount : llamaLendVault.convertToShares(amount);
-
-        if (outType == ILendRewardSplitter.SDT_TOKEN_TYPE.SdtGaugeAsset) {
-            /// @dev we transfer the stake share to the user.
-            sdtGaugePerLlamaVault[llamaLendVault].safeTransfer(msg.sender, shareAmount);
-        } else {
-            /// @dev We withdraw the share from stakeDAO vault.
-            sdtVaultPerLlamaVault[llamaLendVault].withdraw(shareAmount);
-            // require(balanceBefore - balanceAfter >= shareAmount, "WITHDRAW ERROR");
-            if (outType == ILendRewardSplitter.SDT_TOKEN_TYPE.LlamalendVaultAsset) {
-                /// @dev we transfer the stake share to the user.
-                llamaLendVault.safeTransfer(msg.sender, shareAmount);
-            } else {
-                /// @dev We withdraw from curvelend vault and send it to the user
-                llamaLendVault.redeem(shareAmount, msg.sender);
-            }
+        if (amount == 0) {
+            revert Errors.ZeroAmount();
         }
+
+        IgUSDSdt gUSD = IgUSDSdt(address(gUSDSdtPerLlamaVault[llamaVault]));
+
+        uint256 shareAmount = amount;
+        if (isStableReward) {
+            /// @dev We burn the corresponding token.
+            scvUSDSdtPerLlamaVault[llamaVault].burn(msg.sender, amount);
+        } else {
+            /// @dev We burn the corresponding token.
+            gUSD.burn(msg.sender, amount);
+            shareAmount = llamaVault.convertToShares(amount);
+        }
+
+        gUSD.withdraw(shareAmount, msg.sender, outType, llamaVault, sdtVaultPerLlamaVault[llamaVault]);
+
         emit WithdrawSdt(msg.sender, isStableReward, outType, amount);
     }
 
@@ -248,8 +331,9 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      *  @param isStableReward  If isStableReward == true THEN   scvUsd of user is used   ELSE  gUSD of user is used.
      */
     function withdrawCvx(ILlamaLendVault llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
-        /// @dev We check the prerequesite.
-        require(amount != 0, "WITHDRAW_LTE_0");
+        if (amount == 0) {
+            revert Errors.ZeroAmount();
+        }
 
         IgUSDCvx gUSD = IgUSDCvx(address(gUSDCvxPerLlamaVault[llamaVault]));
 
@@ -259,7 +343,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
             scvUSDCvxPerLlamaVault[llamaVault].burn(msg.sender, amount);
         } else {
             /// @dev We burn the corresponding token.
-            ICurveLendSplitterToken(address(gUSD)).burn(msg.sender, amount);
+            gUSD.burn(msg.sender, amount);
             shareAmount = llamaVault.convertToShares(amount);
         }
 
@@ -268,11 +352,34 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         emit WithdrawCvx(msg.sender, isStableReward, outType, amount);
     }
 
+    // /**
+    //  *  @notice this method is used for internal purpose (Stable reward)
+    //  *  @param _market Market to deposit to
+    //  *  @param _amount Amount  of  lend asset to withdraw
+    //  */
+    // function withdrawForRewards(address _market, uint256 _amount) external {
+    //     /// @dev We get the market from the mapping.
+    //     MarketStruct memory market = markets[_market];
+    //     if (address(market.lendAsset) == address(0)) revert MarketNotExists(_market);
+
+    //     /// @dev We check that the method is call via processStableReward on the scvUSD.
+    //     if (msg.sender != address(market.scvUSD)) {
+    //         revert CallerNotAllowed();
+    //     }
+
+    //     // /// @dev We redeem the {lendAsset} and update the balance of the scvUSD.
+    //     _withdraw(market, TOKEN_TYPE.LendAsset, _amount, true);
+    //     emit RewardWithdraw(_market, _amount);
+    // }
+
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CLAIM REWARDS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    //TODO: notice
+    /**
+     *  @notice Claim rewards on one staking contract only
+     *  @param lendSplitterToken The erc20 to claim the rewards on
+     *  @param account The address having the rewards to claim on
+     */
     function claimSimple(address lendSplitterToken, address account) external {
         if (!isLendSplitterToken[lendSplitterToken]) {
             revert NotACurveSplitterToken(lendSplitterToken);
@@ -292,8 +399,12 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         }
     }
 
-    /// QUESTION: Reward receiver can be different on multiple stakings,
-    /// so are we allowing the rewards redirection to always do the safeTransfer to the same receiver ?
+    /**
+     *  @notice Claim rewards on one staking contract only
+     *  @param lendSplitterTokens Array of contract to claim the rewards on
+     *  @param account The address having the rewards to claim on
+     *  @param rewardLength Amount of different tokens to claim as a reward
+     */
     function claimMultiple(address[] calldata lendSplitterTokens, address account, uint256 rewardLength) external {
         /// @dev We save this length on his own variable, to not miss with the assembly manipulations
         uint256 lendTokensLength = lendSplitterTokens.length;
@@ -391,8 +502,8 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      * @param stakeDaoVault Address of the vault of StakeDao
      */
     function createSdtMarket(IStakeDaoVault stakeDaoVault) external onlyOwner {
-        require(scvUSDBeaconSdt != address(0), "BEACON_0");
-        require(gUSDBeaconSdt != address(0), "BEACON_0");
+        require(SCVUSDBeaconSdt != address(0), "BEACON_0");
+        require(GUSDBeaconSdt != address(0), "BEACON_0");
 
         ILlamaLendVault _llamaLendVault = ILlamaLendVault(stakeDaoVault.token());
         require(address(sdtVaultPerLlamaVault[_llamaLendVault]) == address(0), "MARKET_ALREADY_EXIST");
@@ -405,34 +516,33 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         ISdtLiquidityGauge _liquidityGauge = ISdtLiquidityGauge(stakeDaoVault.liquidityGauge());
         require(address(_liquidityGauge) != address(0), "LIQUIDITY_GAUGE_0");
 
-        /// @dev Deploy gUSD (beaconProxy)
-        gUSDSdt _gUSD = gUSDSdt(
-            address(
-                new BeaconProxy(
-                    gUSDBeaconSdt,
-                    //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
-                    abi.encodeCall(gUSDSdt.initialize, ("Governance USD/CRV", "gUSD-CRV", address(this), address(_liquidityGauge)))
-                )
-            )
-        );
         /// @dev Deploy scvUSD (beaconProxy)
         scvUSDSdt _scvUSD = scvUSDSdt(
             address(
                 new BeaconProxy(
-                    scvUSDBeaconSdt,
+                    SCVUSDBeaconSdt,
                     //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
-                    abi.encodeCall(scvUSDSdt.initialize, ("Stable USD/CRV", "scvUSD-CRV", address(this)))
+                    abi.encodeCall(scvUSDSdt.initialize, ("Stable USD/CRV", "scvUSD-CRV", address(this), address(_liquidityGauge), _llamaLendVault))
                 )
             )
         );
+
+        /// @dev Deploy gUSD (beaconProxy)
+        gUSDSdt _gUSD = gUSDSdt(
+            address(
+                new BeaconProxy(
+                    GUSDBeaconSdt,
+                    //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
+                    abi.encodeCall(gUSDSdt.initialize, ("Governance USD/CRV", "gUSD-CRV", address(this), _liquidityGauge, stakeDaoVault, address(_scvUSD)))
+                )
+            )
+        );
+        _scvUSD.setGUSD(address(_gUSD));
 
         /// @dev Approvals
         //TODO: check approvals ???
         _lendAsset.approve(address(_llamaLendVault), MAX_UINT);
         _llamaLendVault.approve(address(stakeDaoVault), MAX_UINT);
-
-        /// @dev Redirect liquidity gauge rewards to gUSD when claim occur (for processRewards)
-        _liquidityGauge.set_rewards_receiver(address(_gUSD));
 
         sdtVaultPerLlamaVault[_llamaLendVault] = stakeDaoVault;
         sdtGaugePerLlamaVault[_llamaLendVault] = _liquidityGauge;
@@ -440,10 +550,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         scvUSDSdtPerLlamaVault[_llamaLendVault] = ICurveLendSplitterToken(address(_scvUSD));
         gUSDSdtPerLlamaVault[_llamaLendVault] = ICurveLendSplitterToken(address(_gUSD));
 
-        isLendSplitterToken[address(_gUSD)] = true;
         isLendSplitterToken[address(_scvUSD)] = true;
-
-        /// @dev WL gUSD as an special updater
         isLendSplitterToken[address(_gUSD)] = true;
     }
 
@@ -453,8 +560,8 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      * @param pid Address of the vault of StakeDao
      */
     function createCvxMarket(uint256 pid) external onlyOwner {
-        require(scvUSDBeaconCvx != address(0), "BEACON_0");
-        require(gUSDBeaconCvx != address(0), "BEACON_0");
+        require(SCVUSDBeaconCvx != address(0), "BEACON_0");
+        require(GUSDBeaconCvx != address(0), "BEACON_0");
 
         (address _llamaLendVaultAddr, address cvxVaultToken, , address rewardTokenAddr, , ) = CVX_BOOSTER.poolInfo(pid);
         ILlamaLendVault _llamaLendVault = ILlamaLendVault(_llamaLendVaultAddr);
@@ -471,7 +578,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         gUSDCvx _gUSD = gUSDCvx(
             address(
                 new BeaconProxy(
-                    gUSDBeaconCvx,
+                    GUSDBeaconCvx,
                     //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
                     abi.encodeCall(
                         gUSDCvx.initialize,
@@ -484,7 +591,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         scvUSDCvx _scvUSD = scvUSDCvx(
             address(
                 new BeaconProxy(
-                    scvUSDBeaconCvx,
+                    SCVUSDBeaconCvx,
                     //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
                     abi.encodeCall(scvUSDCvx.initialize, ("Stable USD/CRV", "scvUSD-CRV", ILendRewardSplitter(address(this))))
                 )
@@ -530,19 +637,52 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     /**
      * @notice Set a new beacon contract used to deploy scvUSD/gUSD tokens
      *         To use only for emergencys.
-     * @param _gUSDBeaconSdt address of the new gUSDBeacon
+     * @param _GUSDBeaconSdt address of the new gUSDBeacon
      */
-    function setgUSDBeacon(address _gUSDBeaconSdt) external onlyOwner {
-        gUSDBeaconSdt = _gUSDBeaconSdt;
+    function setGUSDBeaconSdt(address _GUSDBeaconSdt) external onlyOwner {
+        GUSDBeaconSdt = _GUSDBeaconSdt;
     }
 
     /**
      * @notice Set a new beacon contract used to deploy scvUSD/gUSD tokens
      *         To use only for emergencys.
-     * @param _scvUSDBeaconSdt address of the new cvUSDBeacon
+     * @param _SCVUSDBeaconSdt address of the new cvUSDBeacon
      */
-    function setcvUSDBeacon(address _scvUSDBeaconSdt) external onlyOwner {
-        scvUSDBeaconSdt = _scvUSDBeaconSdt;
+    function setSCVUSDBeaconSdt(address _SCVUSDBeaconSdt) external onlyOwner {
+        SCVUSDBeaconSdt = _SCVUSDBeaconSdt;
+    }
+
+    /**
+     * @notice Set a new beacon contract used to deploy scvUSD/gUSD tokens
+     *         To use only for emergencys.
+     * @param _GUSDBeaconCvx address of the new gUSDBeacon
+     */
+    function setGUSDBeaconCvx(address _GUSDBeaconCvx) external onlyOwner {
+        GUSDBeaconCvx = _GUSDBeaconCvx;
+    }
+
+    /**
+     * @notice Set a new beacon contract used to deploy scvUSD/gUSD tokens
+     *         To use only for emergencys.
+     * @param _SCVUSDBeaconCvx address of the new cvUSDBeacon
+     */
+    function setSCVUSDBeaconCvx(address _SCVUSDBeaconCvx) external onlyOwner {
+        SCVUSDBeaconCvx = _SCVUSDBeaconCvx;
+    }
+
+    /**
+     * @notice Allow owner to Add or disable an token in the zapDeposit function
+     * @param _token address of the token (  disable the token if call when enable)
+     */
+    function toggleZapToken(address _token) external onlyOwner {
+        bool newIsZapable = !allowedZapToken[_token];
+
+        allowedZapToken[_token] = newIsZapable;
+
+        /// @dev handle the approve for the curve router.
+        IERC20(_token).forceApprove(address(CURVE_ROUTER), newIsZapable ? MAX_UINT : 0);
+
+        emit ToggleZapToken(_token, newIsZapable);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

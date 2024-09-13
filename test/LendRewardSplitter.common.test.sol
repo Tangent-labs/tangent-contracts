@@ -1,4 +1,4 @@
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {LendRewardSplitter} from "../src/LendRewardSplitter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
@@ -122,10 +122,16 @@ contract LendRewardSplitterTestCommon is Test {
         deployGUSDBeaconCvx();
         deploySCVUSDBeaconCvx();
         deploySplitterProxy(owner);
+        vm.startPrank(owner);
+        splitter.toggleZapToken(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48); // USDC
+        splitter.toggleZapToken(0xdAC17F958D2ee523a2206206994597C13D831ec7); // USDT
+        splitter.toggleZapToken(0x6B175474E89094C44Da98b954EedeAC495271d0F); // DAI
 
         //create StakeDao Market
-        vm.prank(owner);
+
         splitter.createSdtMarket(AddrSdtVaults.CRVUSD_CRV);
+
+        vm.stopPrank();
         liquidityGauge = splitter.sdtGaugePerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
         curveLendVault = AddrLlamaLendVaults.CRVUSD_CRV;
         scvUSDImplem = scvUSDSdt(address(splitter.scvUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV)));
@@ -170,8 +176,8 @@ contract LendRewardSplitterTestCommon is Test {
         if (token == address(AddrSdtVaults.CRVUSD_CRV)) {
             token = address(liquidityGauge);
         }
-        vm.startPrank(user);
         deal(token, user, amount);
+        vm.startPrank(user);
         IERC20(token).approve(address(splitter), MAX_UINT);
     }
 

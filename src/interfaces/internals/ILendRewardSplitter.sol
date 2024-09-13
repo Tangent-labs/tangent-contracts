@@ -23,8 +23,6 @@ interface ILendRewardSplitter {
         LlamalendVaultAsset
     }
 
-    function liquidityGauge() external view returns (ISdtLiquidityGauge);
-
     function incrementDaoFees(ICommonStruct.TokenAmount[] memory tokenAmounts) external;
 
     function createSdtMarket(IStakeDaoVault stakeDaoVault) external;

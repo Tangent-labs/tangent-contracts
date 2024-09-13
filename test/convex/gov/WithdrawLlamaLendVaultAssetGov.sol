@@ -140,12 +140,10 @@ contract WithdrawLlamaLendVaultAssetGov is Test {
         ICurveLendSplitterToken gUSD = splitter.gUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
 
         uint256 usrLendAssetBalanceBfr = CRVUSD.balanceOf(usr2);
-        uint256 lendSplitterVaultBalanceBfr = AddrLlamaLendVaults.CRVUSD_CRV.balanceOf(address(splitter));
 
         uint256 rewardTokenCvxVaultBfr = CVX_VAULT.balanceOf(address(CVX_REWARD_TOKEN));
         uint256 totalSupplyCvxVaultBefore = CVX_VAULT.totalSupply();
 
-        uint256 usrRewardTokenBfr = CVX_REWARD_TOKEN.balanceOf(usr2);
         uint256 gUSDRewardTokenBfr = CVX_REWARD_TOKEN.balanceOf(address(gUSD));
 
         uint256 usrGUSDBalanceBfr = gUSD.balanceOf(usr2);

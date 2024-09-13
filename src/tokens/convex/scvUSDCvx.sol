@@ -18,12 +18,35 @@ contract scvUSDCvx is CurveLendSplitterToken {
     function initialize(string memory _name, string memory _symbol, ILendRewardSplitter _lendRewardSplitter) external initializer {
         __ERC20_init(_name, _symbol);
         _transferOwnership(msg.sender);
-        // processorRewardsPercentage = 1_000; /// @dev TODO: TO CHANGE -> corresponds to 1%
-        // daoFeesPercentage = 2_000; /// @dev TODO: TO CHANGE -> corresponds to 2%
+
         lendRewardSplitter = _lendRewardSplitter;
+
+        IERC20 crvUsd = IERC20(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
+        rewardTokens.push(crvUsd);
+        rewardData[crvUsd].lastUpdateTime = uint128(block.timestamp);
+        rewardData[crvUsd].periodFinish = uint128(block.timestamp);
+        fees.push(ICurveLendSplitterToken.Fees({processorFeePercentage: 1_000, daoFeePercentage: 2_000}));
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    //     /**
+    //      * @notice Process Stable Rewards (only for scvUSD)
+    //      * @dev Claim rewards from the splitter share  and stream it for the holders of scvUSD.
+    //      *   Anyone can trigger this function and will be incentivized by a processor fee.
+    //      */
+    //     function processRewards(address _market) external returns (uint256 rewardToProcess) {
+    //         ILendRewardSplitter _lendRewardSplitter = lendRewardSplitter;
+    //         ISdtLiquidityGauge _sdtGauge = sdtGauge;
+
+    //         /// @dev We need to keep enough share to back the stableSupply and the assetPart of the govSupply.
+    //         uint256 rewardShare = _sdtGauge.balanceOf(address(_lendRewardSplitter)) - totalSupply() - llamaLendVault.convertToAssets(gUSD.totalSupply());
+    //         /// @dev We withdraw the reward share from the splitter
+    //         _lendRewardSplitter.withdrawScvUsdRewards(_market, rewardShare);
+
+    //         _processRewards();
+    //     }
+    // }
 }

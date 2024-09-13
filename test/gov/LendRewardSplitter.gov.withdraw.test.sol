@@ -5,6 +5,7 @@ import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20} fro
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ILlamaLendVault} from "../../src/interfaces/externals/ILlamaLendVault.sol";
 import {ILendRewardSplitter} from "../../src/interfaces/internals/ILendRewardSplitter.sol";
+import {ICurveLendSplitterToken} from "../../src/interfaces/internals/ICurveLendSplitterToken.sol";
 
 contract LendRewardSplitterGovWithdrawTest is Test {
     LendRewardSplitter splitter;
@@ -22,9 +23,11 @@ contract LendRewardSplitterGovWithdrawTest is Test {
         address tokenIn = AddrClassicERC20.TOKEN_CRVUSD;
         address user = testCommon.getUser(1, tokenIn);
 
+        ICurveLendSplitterToken gUSD = splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
+
         // Check the initial.
         assertEq(testCommon.gUSDImplem().balanceOf(user), 0);
-        assertEq(splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).totalSupply(), 0);
+        assertEq(gUSD.totalSupply(), 0);
         uint256 balancecrvUSDBeforeDeposit = testCommon.crvUSD().balanceOf(user);
 
         // Deposit
@@ -32,7 +35,7 @@ contract LendRewardSplitterGovWithdrawTest is Test {
         testCommon.deposit(depositAmount, false, true, tokenIn);
 
         // Check deposit.
-        assertApproxEqAbs(splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).totalSupply(), depositAmount, 1 wei, "govDepositTotal before withdraw");
+        assertApproxEqAbs(gUSD.totalSupply(), depositAmount, 1 wei, "govDepositTotal before withdraw");
         uint256 balanceDeposited = testCommon.gUSDImplem().balanceOf(user);
         assertApproxEqAbs(balanceDeposited, depositAmount, 1 wei, "balancegUsdBefore before withdraw");
         assertEq(testCommon.crvUSD().balanceOf(user), balancecrvUSDBeforeDeposit - depositAmount);
@@ -45,12 +48,12 @@ contract LendRewardSplitterGovWithdrawTest is Test {
 
         // Chek widthraw IN.
         assertApproxEqAbs(balancecrvUSDBeforeDeposit, testCommon.crvUSD().balanceOf(user), 2 wei, "balance crvUSD  After withdraw");
-        assertGt(splitter.sdtGaugePerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).balanceOf(address(splitter)), 0, "Share stay on Stake");
+        assertGt(splitter.sdtGaugePerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).balanceOf(address(gUSD)), 0, "Share stay on Stake");
 
         // Chek widthraw OUT.
         uint256 balanceWithdrawn = testCommon.gUSDImplem().balanceOf(user);
         assertEq(balanceWithdrawn, 0, "balancegUsdAfter After withdraw");
-        assertEq(splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).totalSupply(), 0, "govDepositTotal After withdraw");
+        assertEq(gUSD.totalSupply(), 0, "govDepositTotal After withdraw");
 
         vm.stopPrank();
     }
@@ -59,10 +62,11 @@ contract LendRewardSplitterGovWithdrawTest is Test {
         // Setup.
         address tokenIn = AddrClassicERC20.TOKEN_CRVUSD;
         address user = testCommon.getUser(1, tokenIn);
+        ICurveLendSplitterToken gUSD = splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
 
         // Check the initial.
-        assertEq(testCommon.gUSDImplem().balanceOf(user), 0);
-        assertEq(splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).totalSupply(), 0);
+        assertEq(gUSD.balanceOf(user), 0);
+        assertEq(gUSD.totalSupply(), 0);
         uint256 balancecrvUSDBeforeDeposit = testCommon.crvUSD().balanceOf(user);
 
         // Deposit
@@ -70,15 +74,13 @@ contract LendRewardSplitterGovWithdrawTest is Test {
         testCommon.deposit(depositAmount, false, true, tokenIn);
 
         // Check deposit.
-        assertApproxEqAbs(splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).totalSupply(), depositAmount, 1 wei, "govDepositTotal before withdraw");
-        uint256 balanceDeposited = testCommon.gUSDImplem().balanceOf(user);
+        assertApproxEqAbs(gUSD.totalSupply(), depositAmount, 1 wei, "govDepositTotal before withdraw");
+        uint256 balanceDeposited = gUSD.balanceOf(user);
         assertApproxEqAbs(balanceDeposited, depositAmount, 1 wei, "balancegUsdBefore before withdraw");
         assertEq(testCommon.crvUSD().balanceOf(user), balancecrvUSDBeforeDeposit - depositAmount);
 
         // Advance in time.
-        console.log("pps before", testCommon.curveLendVault().pricePerShare());
         skip(100 days);
-        console.log("pps after", testCommon.curveLendVault().pricePerShare());
 
         // Withdraw.
         testCommon.widthraw(balanceDeposited, false, ILendRewardSplitter.SDT_TOKEN_TYPE.LlamalendVaultAsset);
@@ -91,12 +93,12 @@ contract LendRewardSplitterGovWithdrawTest is Test {
             " balance curveLendValut after"
         );
         //TODO Replace
-        assertGt(AddrSdtGauges.CRVUSD_CRV.balanceOf(address(splitter)), 0, "Share stay on Stake");
+        assertGt(AddrSdtGauges.CRVUSD_CRV.balanceOf(address(gUSD)), 0, "Share stay on Stake");
         // Chek widthraw OUT.
         assertApproxEqAbs(balancecrvUSDBeforeDeposit - depositAmount, testCommon.crvUSD().balanceOf(user), 2 wei, "balance crvUSD  After withdraw");
-        uint256 balanceWithdrawn = testCommon.gUSDImplem().balanceOf(user);
+        uint256 balanceWithdrawn = gUSD.balanceOf(user);
         assertEq(balanceWithdrawn, 0, "balancegUsdAfter After withdraw");
-        assertEq(splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).totalSupply(), 0, "govDepositTotal After withdraw");
+        assertEq(gUSD.totalSupply(), 0, "govDepositTotal After withdraw");
 
         vm.stopPrank();
     }
@@ -105,10 +107,11 @@ contract LendRewardSplitterGovWithdrawTest is Test {
         // Setup.
         address tokenIn = AddrClassicERC20.TOKEN_CRVUSD;
         address user = testCommon.getUser(1, tokenIn);
+        ICurveLendSplitterToken gUSD = splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
 
         // Check the initial.
-        assertEq(testCommon.gUSDImplem().balanceOf(user), 0);
-        assertEq(splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).totalSupply(), 0);
+        assertEq(gUSD.balanceOf(user), 0);
+        assertEq(gUSD.totalSupply(), 0);
         assertEq(testCommon.stakeDaoVault().balanceOf(user), 0);
         uint256 balancecrvUSDBeforeDeposit = testCommon.crvUSD().balanceOf(user);
 
@@ -117,15 +120,13 @@ contract LendRewardSplitterGovWithdrawTest is Test {
         testCommon.deposit(depositAmount, false, true, tokenIn);
 
         // Check deposit.
-        assertApproxEqAbs(splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).totalSupply(), depositAmount, 1 wei, "govDepositTotal before withdraw");
+        assertApproxEqAbs(gUSD.totalSupply(), depositAmount, 1 wei, "govDepositTotal before withdraw");
         uint256 balanceDeposited = testCommon.gUSDImplem().balanceOf(user);
         assertApproxEqAbs(balanceDeposited, depositAmount, 1 wei, "balancegUsdBefore before withdraw");
         assertEq(testCommon.crvUSD().balanceOf(user), balancecrvUSDBeforeDeposit - depositAmount);
 
         // Advance in time.
-        console.log("pps before", testCommon.curveLendVault().pricePerShare());
         skip(100 days);
-        console.log("pps after", testCommon.curveLendVault().pricePerShare());
 
         // Withdraw.
         testCommon.widthraw(balanceDeposited, false, ILendRewardSplitter.SDT_TOKEN_TYPE.SdtGaugeAsset);

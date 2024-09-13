@@ -5,7 +5,7 @@ import "../CurveLendSplitterToken.sol";
 import {ICvxRewardToken} from "../../interfaces/externals/ICvxRewardToken.sol";
 import {ICvxBooster} from "../../interfaces/externals/ICvxBooster.sol";
 import {ILlamaLendVault} from "../../interfaces/externals/ILlamaLendVault.sol";
-import {ILlamaLendVault} from "../../interfaces/internals/ILendRewardSplitter.sol";
+import {ILendRewardSplitter} from "../../interfaces/internals/ILendRewardSplitter.sol";
 
 contract gUSDCvx is CurveLendSplitterToken {
     using SafeERC20 for IERC20;
@@ -80,24 +80,27 @@ contract gUSDCvx is CurveLendSplitterToken {
         ILendRewardSplitter.CVX_TOKEN_TYPE outType,
         ILlamaLendVault llamaVault
     ) external verifyLendSplitterCaller {
+        /// @dev We withdraw the Llamalend vault asset on this contract
         cvxRewardToken.withdrawAndUnwrap(amount, false);
+
+        /// @dev The user claimed the LlamaLend vault asset so we transfer it to him directly
         if (outType == ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset) {
             llamaVault.transfer(receiver, amount);
-        } else {
-            /// @dev We withdraw from curvelend vault.
+        }
+        /// @dev User claims the lent asset so we redeem it from the the LlamaLend vault
+        else {
             llamaVault.redeem(amount, receiver);
         }
     }
 
     /**
-     * @notice Process Governance Rewards (only for gUSD)
-     * @dev Claim rewards from the splitter and stream it for the holders of gUSD.
-     *      Anyone can trigger this function and will be incentivized by a processor fee.
+     * @notice Claim and process the governance rewards
+     * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
+     *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
     function processRewards() external {
         /// @dev Claim rewards on behalf
         cvxRewardToken.getReward();
-
         _processRewards();
     }
 }

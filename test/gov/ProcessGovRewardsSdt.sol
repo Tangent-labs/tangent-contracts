@@ -166,7 +166,6 @@ contract ProcessGovRewardsSdt is Test {
         /// @dev First Process
         _processGovReward(false);
         uint256 crvClaimableOne = crvClaimable;
-        uint256 crvProcessorRewardsOne = crvProcessorRewards;
         uint256 crvDaoFeesOne = crvDaoFees;
         uint256 sdtClaimableOne = cvxClaimable;
         uint256 sdtProcessorRewardsOne = cvxProcessorRewards;
@@ -237,20 +236,20 @@ contract ProcessGovRewardsSdt is Test {
         testCommon._distributeGaugeRewards(ISdtLiquidityGauge(stakeDaoVault.liquidityGauge()), distributionGauges);
         skip(72000);
         //CRV
-        crvClaimable = liquidityGauge.claimable_reward(address(splitter), AddrClassicERC20.TOKEN_CRV);
+        crvClaimable = liquidityGauge.claimable_reward(address(gUSDImplem), AddrClassicERC20.TOKEN_CRV);
         crvProcessorRewards = (crvClaimable * processorFeePercentageCrv) / DENOMINATOR;
         crvDaoFees = (crvClaimable * daoFeePercentageCrv) / DENOMINATOR;
         crvClaimable -= crvProcessorRewards;
         crvClaimable -= crvDaoFees;
         //CVX
-        cvxClaimable = liquidityGauge.claimable_reward(address(splitter), AddrClassicERC20.TOKEN_CVX);
+        cvxClaimable = liquidityGauge.claimable_reward(address(gUSDImplem), AddrClassicERC20.TOKEN_CVX);
         cvxProcessorRewards = (cvxClaimable * processorFeePercentageCvx) / DENOMINATOR;
         cvxDaoFees = (cvxClaimable * daoFeePercentageCvx) / DENOMINATOR;
         cvxClaimable -= cvxProcessorRewards;
         cvxClaimable -= cvxDaoFees;
 
         /// @dev claim rewards with a random user outside of the process
-        if (isClaimedByUser) liquidityGauge.claim_rewards(address(splitter));
+        if (isClaimedByUser) liquidityGauge.claim_rewards(address(gUSDImplem));
 
         vm.prank(processor);
         gUSDImplem.processRewards();

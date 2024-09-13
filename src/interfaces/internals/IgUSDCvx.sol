@@ -11,4 +11,6 @@ interface IgUSDCvx is ICurveLendSplitterToken {
     function depositNoStake(IERC20 _cvxVault, uint256 pid, uint256 depositedAmount) external returns (uint256);
 
     function withdraw(uint256 amount, address receiver, ILendRewardSplitter.CVX_TOKEN_TYPE outType, ILlamaLendVault llamaVault) external;
+
+    function withdrawForRewards(address _market, uint256 _amount) external;
 }

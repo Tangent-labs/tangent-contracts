@@ -39,7 +39,7 @@ The user deposits an asset and chooses the type of reward they want.
 There are two types of reward:
 
 - gUSD: governance token, all tokens from the gauge mechanism
-- sUSD: stable token, the stacking part of the lending mechanism.
+- scvUSD: stable token, the stacking part of the lending mechanism.
 
 ## System
 

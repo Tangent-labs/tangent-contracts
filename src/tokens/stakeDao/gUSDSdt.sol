@@ -1,11 +1,22 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import {ISdtLiquidityGauge} from "../../interfaces/externals/ISdtLiquidityGauge.sol";
+import {ILlamaLendVault} from "../../interfaces/externals/ILlamaLendVault.sol";
+import {IStakeDaoVault} from "../../interfaces/externals/IStakeDaoVault.sol";
+import {IgUSDSdt} from "../../interfaces/internals/IgUSDSdt.sol";
 import "../CurveLendSplitterToken.sol";
 
 contract gUSDSdt is CurveLendSplitterToken {
     using SafeERC20 for IERC20;
+    using SafeERC20 for ISdtLiquidityGauge;
+    using SafeERC20 for ILlamaLendVault;
+
     ISdtLiquidityGauge public liquidityGauge;
+    IStakeDaoVault public stakeDaoVault;
+
+    address public scvUSD;
+
+    error OnlySCVUSDCaller(address caller);
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CONSTRUCTOR & INITIALIZER
@@ -16,11 +27,20 @@ contract gUSDSdt is CurveLendSplitterToken {
     }
 
     /// @notice initialize function
-    function initialize(string memory _name, string memory _symbol, address _lendRewardSplitter, address _liquidityGauge) external initializer {
+    function initialize(
+        string memory _name,
+        string memory _symbol,
+        address _lendRewardSplitter,
+        ISdtLiquidityGauge _liquidityGauge,
+        IStakeDaoVault _stakeDaoVault,
+        address _scvUSD
+    ) external initializer {
         __ERC20_init(_name, _symbol);
         _transferOwnership(msg.sender);
         lendRewardSplitter = ILendRewardSplitter(_lendRewardSplitter);
-        liquidityGauge = ISdtLiquidityGauge(_liquidityGauge);
+        liquidityGauge = _liquidityGauge;
+        stakeDaoVault = _stakeDaoVault;
+        scvUSD = _scvUSD;
 
         IERC20 crv = IERC20(0xD533a949740bb3306d119CC777fa900bA034cd52);
         rewardTokens.push(crv);
@@ -39,6 +59,41 @@ contract gUSDSdt is CurveLendSplitterToken {
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    function withdraw(
+        uint256 amount,
+        address receiver,
+        ILendRewardSplitter.SDT_TOKEN_TYPE outType,
+        ILlamaLendVault llamaVault,
+        IStakeDaoVault _stakeDaoVault
+    ) external verifyLendSplitterCaller {
+        if (outType == ILendRewardSplitter.SDT_TOKEN_TYPE.SdtGaugeAsset) {
+            /// @dev we transfer the stake share to the user.
+            liquidityGauge.safeTransfer(receiver, amount);
+        } else {
+            /// @dev We withdraw the share from stakeDAO vault.
+            _stakeDaoVault.withdraw(amount);
+            // require(balanceBefore - balanceAfter >= shareAmount, "WITHDRAW ERROR");
+            if (outType == ILendRewardSplitter.SDT_TOKEN_TYPE.LlamalendVaultAsset) {
+                /// @dev we transfer the stake share to the user.
+                llamaVault.safeTransfer(receiver, amount);
+            } else {
+                /// @dev We withdraw from curvelend vault and send it to the user
+                llamaVault.redeem(amount, receiver);
+            }
+        }
+    }
+
+    function claimSCVUSDRewards(uint256 amount, ILlamaLendVault llamaVault) external {
+        /// @dev Only scvUSD can claim this function
+        if (msg.sender != scvUSD) {
+            revert OnlySCVUSDCaller(msg.sender);
+        }
+
+        stakeDaoVault.withdraw(amount);
+
+        llamaVault.redeem(amount, msg.sender);
+    }
+
     /**
      * @notice Process Governance Rewards (only for gUSD)
      * @dev Claim rewards from the splitter and stream it for the holders of gUSD.
@@ -46,7 +101,7 @@ contract gUSDSdt is CurveLendSplitterToken {
      */
     function processRewards() external {
         /// @dev Claim rewards on behalf of the splitter on this contract
-        liquidityGauge.claim_rewards(address(lendRewardSplitter));
+        liquidityGauge.claim_rewards(address(this));
 
         _processRewards();
     }

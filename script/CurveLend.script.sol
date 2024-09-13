@@ -67,8 +67,6 @@ contract CurveLend is Test {
         gaugeV4 = ISdtLiquidityGauge(stakeDaoVault.liquidityGauge());
         curveVault = ILlamaLendVault(CURVE_CRVUSD_CRV);
         crvUSDController = ICrvUSDController(curveVault.controller());
-
-        console.log(stakeDaoVault.token(), curveVault.borrowed_token());
     }
 
     function travelDay(uint256 dayToAdd) internal {
@@ -115,7 +113,6 @@ contract CurveLend is Test {
         uint256 balanceBefore = stakeDaoVault.balanceOf(jim);
         stakeDaoVault.transferFrom(jhon, jim, 2 ether);
         uint256 balanceAfter = stakeDaoVault.balanceOf(jim);
-        console.log(balanceBefore, balanceAfter);
     }
 
     function run() public {

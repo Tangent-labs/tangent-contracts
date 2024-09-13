@@ -22,7 +22,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
     /// @dev Duration that rewards are streamed over
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
 
-    uint256 internal constant DENOMINATOR = 100_000;
+    uint256 public constant DENOMINATOR = 100_000;
 
     ILendRewardSplitter public lendRewardSplitter;
 
@@ -52,6 +52,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
     error CantWithdrawRewardToken(IERC20 erc20);
     error NothingToProcess();
     error RewardAlreadyAdded(IERC20 erc20);
+
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         MODIFIERS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -120,6 +121,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
     function mint(address to, uint256 amount) external verifyLendSplitterCaller returns (uint256) {
         /// @dev Mint will call _updateReward
         _mint(to, amount);
+
         return amount;
     }
 
@@ -179,7 +181,6 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
             IERC20 token = rewardTokens[i];
             rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
             rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
-
             if (_account != address(0)) {
                 rewards[_account][token] = _earned(_account, token, userBal);
                 userRewardPerTokenPaid[_account][token] = rewardData[token].rewardPerTokenStored;

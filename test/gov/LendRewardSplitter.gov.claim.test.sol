@@ -153,30 +153,32 @@ contract LendRewardSplitterGovClaimTest is Test {
         uint256 amountCvx
     ) internal returns (ProcessedRewards memory) {
         ICommonStruct.TokenAmount[] memory distributionGauges = new ICommonStruct.TokenAmount[](2);
+        ISdtLiquidityGauge sdtGauge = splitter.sdtGaugePerLlamaVault(llamaLendVault);
+        address gUSD = address(splitter.gUSDSdtPerLlamaVault(llamaLendVault));
         distributionGauges[1] = ICommonStruct.TokenAmount({token: CRV, amount: amountCrv});
         distributionGauges[0] = ICommonStruct.TokenAmount({token: CVX, amount: amountCvx});
 
-        testCommon._distributeGaugeRewards(splitter.sdtGaugePerLlamaVault(llamaLendVault), distributionGauges);
+        testCommon._distributeGaugeRewards(sdtGauge, distributionGauges);
         skip(72000);
         ProcessedRewards memory processedRewards;
         //CRV
-        processedRewards.crvClaimable = splitter.sdtGaugePerLlamaVault(llamaLendVault).claimable_reward(address(splitter), address(CRV));
+        processedRewards.crvClaimable = sdtGauge.claimable_reward(gUSD, address(CRV));
         processedRewards.crvProcessorRewards = (processedRewards.crvClaimable * processorPercentageCrv) / DENOMINATOR;
         processedRewards.crvDaoFees = (processedRewards.crvClaimable * daoFeesPercentageCrv) / DENOMINATOR;
         processedRewards.crvClaimable -= processedRewards.crvProcessorRewards;
         processedRewards.crvClaimable -= processedRewards.crvDaoFees;
         //CVX
-        processedRewards.cvxClaimable = splitter.sdtGaugePerLlamaVault(llamaLendVault).claimable_reward(address(splitter), address(CVX));
+        processedRewards.cvxClaimable = sdtGauge.claimable_reward(gUSD, address(CVX));
         processedRewards.cvxProcessorRewards = (processedRewards.cvxClaimable * processorPercentageCvx) / DENOMINATOR;
         processedRewards.cvxDaoFees = (processedRewards.cvxClaimable * daoFeesPercentageCvx) / DENOMINATOR;
         processedRewards.cvxClaimable -= processedRewards.cvxProcessorRewards;
         processedRewards.cvxClaimable -= processedRewards.cvxDaoFees;
 
         /// @dev claim rewards with a random user outside of the process
-        if (isClaimedByUser) splitter.sdtGaugePerLlamaVault(llamaLendVault).claim_rewards(address(splitter));
+        if (isClaimedByUser) sdtGauge.claim_rewards(gUSD);
 
         vm.prank(processor);
-        gUSDSdt(address(splitter.gUSDSdtPerLlamaVault(llamaLendVault))).processRewards();
+        gUSDSdt(gUSD).processRewards();
 
         return processedRewards;
     }
@@ -229,7 +231,7 @@ contract LendRewardSplitterGovClaimTest is Test {
         _processGovRewardForWeth();
         skip(1 weeks);
         bool isGovRewards = true;
-        (uint256 totalCrvClaimedDepositorOne, uint256 totalSdtClaimedDepositorOne, uint256 totalCrvClaimedDepositorTwo, ) = _calculateClaimableAmounts();
+        (uint256 totalCrvClaimedDepositorOne, uint256 totalSdtClaimedDepositorOne, , ) = _calculateClaimableAmounts();
         address[] memory lendSplitterTokens = new address[](3);
         lendSplitterTokens[0] = address(gUSD_Crv);
         lendSplitterTokens[1] = address(gUSD_Weth);
@@ -265,7 +267,6 @@ contract LendRewardSplitterGovClaimTest is Test {
     function test_RevertWhen_ClaimSimpleGovRewardsWithoutLeftRewards() external {
         _processGovRewardForCrv();
         skip(1 weeks);
-        bool isGovRewards = true;
 
         splitter.claimSimple(address(gUSD_Crv), depositorOne);
 
