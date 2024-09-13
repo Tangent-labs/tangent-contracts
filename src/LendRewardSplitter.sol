@@ -43,7 +43,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     event Deposit(address indexed account, bool isStableReward, uint256 amount);
     event Withdraw(address indexed account, bool isStableReward, TOKEN_TYPE outType, uint256 amount);
     event RewardWithdraw(address market, uint256 amount);
-    event ZapTokenChange(address token, bool activated);
+    event ToggleZapToken(address token, bool activated);
 
     enum TOKEN_TYPE {
         /// @dev Asset use as collateral in the lend contract. (ex : crvUSD)
@@ -58,7 +58,6 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     error NotLendAssetRoute(address token);
     error NotAllowedInToken(address token);
     error EmptyAmount();
-    error NoZeroAddress(string parameters);
     error MarketNotExists(address requestedMarket);
     error MinAmountNotMet();
 
@@ -552,17 +551,17 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      * @param _token address of the token (  disable the token if call when enable)
      */
     function toggleZapToken(address _token) external onlyOwner {
+        bool newIsZapable = !allowedZapToken[_token];
 
-        allowedZapToken[_token] = !allowedZapToken[_token];
+        allowedZapToken[_token] = newIsZapable;
 
         /// @dev handle the approve for the curve router.
-        IERC20 ierc20Token = IERC20(_token);
-        if (allowedZapToken[_token]) {
-            ierc20Token.forceApprove(address(CURVE_ROUTER), MAX_UINT);
+        if (newIsZapable) {
+            IERC20(_token).forceApprove(address(CURVE_ROUTER), MAX_UINT);
         }else {
-            ierc20Token.forceApprove(address(CURVE_ROUTER), 0);
+            IERC20(_token).forceApprove(address(CURVE_ROUTER), 0);
         }
 
-        emit ZapTokenChange(_token, allowedZapToken[_token]);
+        emit ToggleZapToken(_token, newIsZapable);
     }
 }

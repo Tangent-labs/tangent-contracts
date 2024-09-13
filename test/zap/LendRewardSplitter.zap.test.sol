@@ -33,14 +33,14 @@ contract LendRewardSplitterZapTest is Test {
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForEth();
         testCommon.getUser(1, USDC, 2000 ether);
         vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("MarketNotExists(address)")), USDC));
-        splitter.zapAndDeposit(USDC,  0, 0, true, true, routes, pools, swapParams); // USDC is not a market
+        splitter.zapAndDeposit(USDC, 0, 0, true, true, routes, pools, swapParams); // USDC is not a market
     }
 
     function test_revertWhen_zapAndDepositWithNoAmount() public {
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForEth();
         testCommon.getUser(1, USDC, 2000 ether);
         vm.expectRevert();
-        splitter.zapAndDeposit(address(market.stakeDaoVault),  0, 0, true, true, routes, pools, swapParams);
+        splitter.zapAndDeposit(address(market.stakeDaoVault), 0, 0, true, true, routes, pools, swapParams);
     }
 
     function test_revertWhen_zapAndDepositWhenRouteNotMatchLendAsset() public {
@@ -248,20 +248,28 @@ contract LendRewardSplitterZapTest is Test {
         splitter.toggleZapToken(AAVE);
         vm.stopPrank();
         assertEq(splitter.allowedZapToken(AAVE), true, "AAVE deposit should be enabled  ");
-        assertEq(IERC20(AAVE).allowance(address(splitter),address(splitter.CURVE_ROUTER())), testCommon.MAX_UINT(), "AAVE deposit should be enabled  ");
+        assertEq(
+            IERC20(AAVE).allowance(address(splitter), address(splitter.CURVE_ROUTER())),
+            testCommon.MAX_UINT(),
+            "AAVE deposit should be enabled  "
+        );
     }
 
     function test_disableAaveZapToken() public {
         vm.startPrank(testCommon.owner());
         vm.expectEmit(address(splitter));
-        emit LendRewardSplitter.ZapTokenChange(AAVE, true);
+        emit LendRewardSplitter.ToggleZapToken(AAVE, true);
         splitter.toggleZapToken(AAVE);
         assertEq(splitter.allowedZapToken(AAVE), true, "AAVE deposit should be enabled  ");
         vm.expectEmit(address(splitter));
-        emit LendRewardSplitter.ZapTokenChange(AAVE, false);
+        emit LendRewardSplitter.ToggleZapToken(AAVE, false);
         splitter.toggleZapToken(AAVE); // second time to disable it.
         vm.stopPrank();
-        assertEq(IERC20(AAVE).allowance(address(splitter),address(splitter.CURVE_ROUTER())), 0, "AAVE deposit should be enabled  ");
+        assertEq(
+            IERC20(AAVE).allowance(address(splitter), address(splitter.CURVE_ROUTER())),
+            0,
+            "AAVE deposit should be enabled  "
+        );
         assertEq(splitter.allowedZapToken(AAVE), false, "AAVE deposit should be disabled  ");
     }
 
@@ -285,7 +293,7 @@ contract LendRewardSplitterZapTest is Test {
             swapParams
         );
         // expect the code has not been reenterd
-        assertEq(attacker.hasReentered(),false);
+        assertEq(attacker.hasReentered(), false);
     }
 
     function _getSwapParamsForEth()
@@ -327,7 +335,7 @@ contract LendRewardSplitterZapTest is Test {
     function _getSwapParamsForUsdt()
         internal
         returns (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams)
-    { 
+    {
         address POOL = 0x390f3595bCa2Df7d23783dFd126427CCeb997BF4; // Stableswap
         address USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
         vm.label(USDT, "USDT");
