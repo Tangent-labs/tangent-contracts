@@ -14,6 +14,10 @@ contract gUSDCvx is CurveLendSplitterToken {
 
     ICvxRewardToken public cvxRewardToken;
 
+    address public scvUSD;
+
+    error OnlySCVUSDCaller(address caller);
+
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CONSTRUCTOR & INITIALIZER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -29,13 +33,15 @@ contract gUSDCvx is CurveLendSplitterToken {
         ILendRewardSplitter _lendRewardSplitter,
         ICvxRewardToken _cvxRewardToken,
         IERC20 _llamaLendVault,
-        IERC20 _cvxVault
+        IERC20 _cvxVault,
+        address _scvUSD
     ) external initializer {
         __ERC20_init(_name, _symbol);
         _transferOwnership(msg.sender);
 
         lendRewardSplitter = _lendRewardSplitter;
         cvxRewardToken = _cvxRewardToken;
+        scvUSD = _scvUSD;
 
         /// @dev Need this approval to the llamaLendVault on the CvxBooster
         _llamaLendVault.approve(address(CVX_BOOSTER), MAX_UINT);
@@ -102,5 +108,16 @@ contract gUSDCvx is CurveLendSplitterToken {
         /// @dev Claim rewards on behalf
         cvxRewardToken.getReward();
         _processRewards();
+    }
+
+    function claimSCVUSDRewards(uint256 amount, ILlamaLendVault llamaVault) external {
+        /// @dev Only scvUSD can claim this function
+        if (msg.sender != scvUSD) {
+            revert OnlySCVUSDCaller(msg.sender);
+        }
+
+        cvxRewardToken.withdrawAndUnwrap(amount, false);
+
+        llamaVault.redeem(amount, msg.sender);
     }
 }

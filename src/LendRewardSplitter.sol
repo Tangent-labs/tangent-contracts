@@ -170,17 +170,19 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         if (isCvx) {
             return depositCvx(llamaLendVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit);
         } else {
-            return _depositSdt(llamaLendVault, ILendRewardSplitter.SDT_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit,true);
+            return _depositSdt(llamaLendVault, ILendRewardSplitter.SDT_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit, true);
         }
     }
 
-    function depositSdt(ILlamaLendVault llamaVault,
+    function depositSdt(
+        ILlamaLendVault llamaVault,
         ILendRewardSplitter.SDT_TOKEN_TYPE inType,
         uint256 amount,
         bool isStableReward,
-        bool doDeposit) external returns (uint256 depositAmount) {
-            return _depositSdt(llamaVault,inType,amount,isStableReward,doDeposit, false);
-        }
+        bool doDeposit
+    ) external returns (uint256 depositAmount) {
+        return _depositSdt(llamaVault, inType, amount, isStableReward, doDeposit, false);
+    }
 
     /**
      *  @notice Deposit asset into the Convergence splitter contract in order to get one part of the reawrd from the lend contract.
@@ -574,6 +576,20 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         IERC20 _lendAsset = IERC20(_llamaLendVault.asset());
 
+        /// @dev Deploy scvUSD (beaconProxy)
+        scvUSDCvx _scvUSD = scvUSDCvx(
+            address(
+                new BeaconProxy(
+                    SCVUSDBeaconCvx,
+                    //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
+                    abi.encodeCall(
+                        scvUSDCvx.initialize,
+                        ("Stable USD/CRV", "scvUSD-CRV", ILendRewardSplitter(address(this)), _llamaLendVault, address(rewardToken))
+                    )
+                )
+            )
+        );
+
         /// @dev Deploy gUSD (beaconProxy)
         gUSDCvx _gUSD = gUSDCvx(
             address(
@@ -582,18 +598,16 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                     //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
                     abi.encodeCall(
                         gUSDCvx.initialize,
-                        ("Governance USD/CRV", "gUSD-CRV", ILendRewardSplitter(address(this)), rewardToken, IERC20(_llamaLendVaultAddr), IERC20(cvxVaultToken))
+                        (
+                            "Governance USD/CRV",
+                            "gUSD-CRV",
+                            ILendRewardSplitter(address(this)),
+                            rewardToken,
+                            IERC20(_llamaLendVaultAddr),
+                            IERC20(cvxVaultToken),
+                            address(_scvUSD)
+                        )
                     )
-                )
-            )
-        );
-        /// @dev Deploy scvUSD (beaconProxy)
-        scvUSDCvx _scvUSD = scvUSDCvx(
-            address(
-                new BeaconProxy(
-                    SCVUSDBeaconCvx,
-                    //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
-                    abi.encodeCall(scvUSDCvx.initialize, ("Stable USD/CRV", "scvUSD-CRV", ILendRewardSplitter(address(this))))
                 )
             )
         );
