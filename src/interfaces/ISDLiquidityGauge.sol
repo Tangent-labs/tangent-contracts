@@ -1,4 +1,3 @@
-
 /// Modified version of the liquidity for Stake DAO needs.
 interface ISDLiquidityGauge {
     struct Reward {
@@ -46,7 +45,7 @@ interface ISDLiquidityGauge {
 
     function totalSupply() external view returns (uint256);
 
-    function balanceOf(address) external returns (uint256);
+    function balanceOf(address) external view returns (uint256);
 
     function claimable_reward(address _user, address _reward_token) external view returns (uint256);
 
@@ -78,4 +77,10 @@ interface ISDLiquidityGauge {
     function working_balances(address _address) external returns (uint256);
 
     function set_reward_distributor(address _rewardToken, address _newDistrib) external;
+
+    function set_rewards_receiver(address _receiver) external;
+
+    function admin() external view returns (address);
+
+    function approve(address spender, uint256 amount) external returns (bool);
 }

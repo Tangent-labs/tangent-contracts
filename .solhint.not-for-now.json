@@ -1,0 +1,11 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "no-unused-vars":"error",
+    "no-unused-import":"error",
+    "explicit-types":"error",  
+    "no-empty-blocks":"error",
+    "avoid-throw": "error",
+    "func-visibility": ["error", { "ignoreConstructors": false }]
+  }
+}

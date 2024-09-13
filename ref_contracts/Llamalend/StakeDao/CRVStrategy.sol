@@ -16,9 +16,13 @@ abstract contract OnlyBoost is Strategy {
     /// @notice Throwed if the rebalance gone wrong.
     error REBALANCE_FAILED();
 
-    constructor(address _owner, address _locker, address _veToken, address _rewardToken, address _minter)
-        Strategy(_owner, _locker, _veToken, _rewardToken, _minter)
-    {}
+    constructor(
+        address _owner,
+        address _locker,
+        address _veToken,
+        address _rewardToken,
+        address _minter
+    ) Strategy(_owner, _locker, _veToken, _rewardToken, _minter) {}
 
     /// @notice Claim rewards from gauge & fallbacks.
     /// @param asset _asset staked to claim for.
@@ -62,8 +66,10 @@ abstract contract OnlyBoost is Strategy {
         }
 
         /// 4. Take Fees from _claimed amount.
-        claimed = claimed + claimedFromFallbacks
-            - _chargeProtocolFees(claimed, claimedFromFallbacks, protocolFeesFromFallbacks);
+        claimed =
+            claimed +
+            claimedFromFallbacks -
+            _chargeProtocolFees(claimed, claimedFromFallbacks, protocolFeesFromFallbacks);
 
         /// 6. Distribute SDT
         // Distribute SDT to the related gauge
@@ -90,8 +96,10 @@ abstract contract OnlyBoost is Strategy {
         address[] memory fallbacks = optimizer.getFallbacks(gauge);
 
         /// Get the optimal allocation for the deposit.
-        (address[] memory fundsManagers, uint256[] memory allocations) =
-            optimizer.getRebalancedAllocation(gauge, _snapshotBalance);
+        (address[] memory fundsManagers, uint256[] memory allocations) = optimizer.getRebalancedAllocation(
+            gauge,
+            _snapshotBalance
+        );
 
         for (uint256 i; i < fallbacks.length; ++i) {
             /// Get the current balance of the fallbacks.
@@ -145,10 +153,12 @@ abstract contract OnlyBoost is Strategy {
         if (gauge == address(0)) revert ADDRESS_NULL();
 
         /// Get the optimal allocation for the deposit.
-        (address[] memory fundsManagers, uint256[] memory allocations) =
-            optimizer.getOptimalDepositAllocation(gauge, amount);
+        (address[] memory fundsManagers, uint256[] memory allocations) = optimizer.getOptimalDepositAllocation(
+            gauge,
+            amount
+        );
 
-        for (uint256 i; i < fundsManagers.length;++i) {
+        for (uint256 i; i < fundsManagers.length; ++i) {
             // Skip if the allocation amount is 0.
             if (allocations[i] == 0) continue;
 
@@ -177,10 +187,12 @@ abstract contract OnlyBoost is Strategy {
         if (gauge == address(0)) revert ADDRESS_NULL();
 
         /// Get the optimal withdrawal path.
-        (address[] memory fundsManagers, uint256[] memory allocations) =
-            optimizer.getOptimalWithdrawalPath(gauge, amount);
+        (address[] memory fundsManagers, uint256[] memory allocations) = optimizer.getOptimalWithdrawalPath(
+            gauge,
+            amount
+        );
 
-        for (uint256 i; i < fundsManagers.length;++i) {
+        for (uint256 i; i < fundsManagers.length; ++i) {
             /// Skip if the optimized amount is 0.
             if (allocations[i] == 0) continue;
 
@@ -204,10 +216,11 @@ abstract contract OnlyBoost is Strategy {
     /// @param claimedFromFallbacks Amount claimed from the fallbacks.
     /// @param totalProtocolFeesFromFallbacks Total protocol fees claimed taken from the fallbacks.
     /// @return _amount Amount left after charging protocol fees.
-    function _chargeProtocolFees(uint256 amount, uint256 claimedFromFallbacks, uint256 totalProtocolFeesFromFallbacks)
-        internal
-        returns (uint256)
-    {
+    function _chargeProtocolFees(
+        uint256 amount,
+        uint256 claimedFromFallbacks,
+        uint256 totalProtocolFeesFromFallbacks
+    ) internal returns (uint256) {
         if (amount == 0 && claimedFromFallbacks == 0) return 0;
         // If there's no protocol fees set and there's no protocol fees from fallbacks, return the total amount
         if (protocolFeesPercent == 0 && totalProtocolFeesFromFallbacks == 0 && claimIncentiveFee == 0) return 0;
@@ -233,20 +246,22 @@ abstract contract OnlyBoost is Strategy {
     /// @param claimExtra True to claim extra rewards.
     /// @return claimed RewardToken amount claimed from the fallbacks to add to the total claimed amount and avoid double distribution.
     /// @return totalProtocolFees Total protocol fees claimed from the fallbacks.
-    function _claimFallbacks(address gauge, address rewardDistributor, bool claimExtra)
-        internal
-        returns (uint256 claimed, uint256 totalProtocolFees)
-    {
-        /// Get the fallback addresses.
+    function _claimFallbacks(
+        address gauge,
+        address rewardDistributor,
+        bool claimExtra
+    ) internal returns (uint256 claimed, uint256 totalProtocolFees) {
+        /// Get the fallback Addr.
         address[] memory fallbacks;
         fallbacks = optimizer.getFallbacks(gauge);
 
         address fallbackRewardToken;
 
-        for (uint256 i; i < fallbacks.length;) {
+        for (uint256 i; i < fallbacks.length; ) {
             // Do the claim
-            (uint256 rewardTokenAmount, uint256 fallbackRewardTokenAmount, uint256 protocolFees) =
-                IFallback(fallbacks[i]).claim(claimExtra);
+            (uint256 rewardTokenAmount, uint256 fallbackRewardTokenAmount, uint256 protocolFees) = IFallback(
+                fallbacks[i]
+            ).claim(claimExtra);
 
             // Add the rewardTokenAmount to the _claimed amount.
             claimed += rewardTokenAmount;

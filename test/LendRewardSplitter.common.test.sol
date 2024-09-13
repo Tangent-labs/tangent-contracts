@@ -1,81 +1,179 @@
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {LendRewardSplitter} from "../src/LendRewardSplitter.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {TokensvcUSD} from "../src/tokens/TokensvcUSD.sol";
-import {TokengUsd} from "../src/tokens/TokengUsd.sol";
+import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
+import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
+import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+import {CurveLendSplitterToken} from "../src/tokens/CurveLendSplitterToken.sol";
+import {ISDLiquidityGauge} from "../src/interfaces/ISDLiquidityGauge.sol";
 import {IStakeDaoVault} from "../src/interfaces/IStakeDaoVault.sol";
-import {ICurvelendVault} from "../src/interfaces/ICurvelendVault.sol";
+import {ICurveLendVault} from "../src/interfaces/ICurveLendVault.sol";
+import {Addr} from "../src/libs/Addr.sol";
+import {Upgrades, Options} from "@openzeppelin-foundry-upgrades/Upgrades.sol";
 
 contract LendRewardSplitterTestCommon is Test {
-    uint256 public MAX_INT = uint256(int256(-1));
+    uint256 public  MAX_UINT = uint256(int256(-1));
 
-    // lendAsset
-    address public TOKEN_crvUSD = 0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E;
-    // Vaulted crvUSD
-    address public CURVE_CRV_VAULT = 0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA; // Vaulted cvcrvUSD
-    // Vaulted crvUSD in stake DAO
-    address public STAKEDAO_CRV_VAULT = 0xfa6D40573082D797CB3cC378c0837fB90eB043e5;
+    address public owner = makeAddr("Owner");
+    address public ownerGauge = makeAddr("ownerGauge");
 
+    IStakeDaoVault public constant stakeDaoVault = IStakeDaoVault(Addr.STAKEDAO_CRVUSD_CRV);
+    IERC20 public constant crvUSD = IERC20(Addr.TOKEN_CRVUSD);
     LendRewardSplitter public splitter;
-    TokensvcUSD public svcUSD;
-    TokengUsd public gUSD;
-    IERC20 public liquidityGauge;
-    IERC20 public crvUSD;
-    ICurvelendVault public curvelendVault;
-    IStakeDaoVault public stakeDaoLendVault;
+    address public beaconCurveLendSplitterToken;
+    CurveLendSplitterToken public scvUSD;
+    CurveLendSplitterToken public gUSD;
+    ISDLiquidityGauge public liquidityGauge;
+    ICurveLendVault public curveLendVault;
+    address public proxyAdmin;
+
+    /// @dev Validate Implementation (false if you don't want to "forge clean" at each modification)
+    bool constant IS_VALIDATE_IMPLEM = false;
 
     function fork() public {
-        vm.createSelectFork("mainnet", 20513092);
+        vm.createSelectFork("mainnet", 20720612);
     }
 
-    function setUpSplitter() public returns (LendRewardSplitter) {
-        stakeDaoLendVault = IStakeDaoVault(STAKEDAO_CRV_VAULT);
-        liquidityGauge = IERC20(stakeDaoLendVault.liquidityGauge());
-        curvelendVault = ICurvelendVault(CURVE_CRV_VAULT);
-        stakeDaoLendVault = IStakeDaoVault(STAKEDAO_CRV_VAULT);
-        svcUSD = new TokensvcUSD("CRV", STAKEDAO_CRV_VAULT);
-        gUSD = new TokengUsd("CRV", STAKEDAO_CRV_VAULT);
-        crvUSD = IERC20(TOKEN_crvUSD);
-        splitter = new LendRewardSplitter();
-        svcUSD.setSplitterContract(address(splitter));
-        gUSD.setSplitterContract(address(splitter));
+    function deployProxyAdmin() public {
+        proxyAdmin = address(new ProxyAdmin(owner));
+    }
 
-        vm.label(TOKEN_crvUSD, "crvUSD");
-        vm.label(STAKEDAO_CRV_VAULT, "STAKEDAO_CRV_VAULT");
-        vm.label(CURVE_CRV_VAULT, "CURVE_CRV_VAULT");
-        vm.label(IStakeDaoVault(STAKEDAO_CRV_VAULT).strategy(), "STAKEDAO_CRV_STRATEGY");
-        vm.label(IStakeDaoVault(STAKEDAO_CRV_VAULT).liquidityGauge(), "STAKEDAO_CRV_LIQUIDITY_GAUGE");
-        splitter.initialize(CURVE_CRV_VAULT, STAKEDAO_CRV_VAULT, address(gUSD), address(svcUSD));
+    function deployBeaconCurveLendSplitterToken() public {
+        if (IS_VALIDATE_IMPLEM) {
+            Options memory opts;
+            Upgrades.validateImplementation("CurveLendSplitterToken.sol:CurveLendSplitterToken", opts);
+        }
+        //deploy
+        beaconCurveLendSplitterToken = address(new UpgradeableBeacon(address(new CurveLendSplitterToken()), (owner)));
+    }
 
-        return splitter;
+    function deploySplitterProxy() public {
+        if (IS_VALIDATE_IMPLEM) {
+            Options memory opts;
+            Upgrades.validateImplementation("LendRewardSplitter.sol:LendRewardSplitter", opts);
+        }
+        //deploy
+        splitter = LendRewardSplitter(
+            address(
+                new TransparentUpgradeableProxy(
+                    address(new LendRewardSplitter()),
+                    proxyAdmin,
+                    abi.encodeCall(LendRewardSplitter.initialize, (owner, beaconCurveLendSplitterToken))
+                )
+            )
+        );
+    }
+
+    function setUpSplitter() public {
+        //Proxys
+        deployProxyAdmin();
+        deployBeaconCurveLendSplitterToken();
+        deploySplitterProxy();
+
+        vm.startPrank(owner);
+
+        //create market
+        splitter.createMarket(Addr.STAKEDAO_CRVUSD_CRV);
+        LendRewardSplitter.MarketStruct memory market = splitter.getMarket(Addr.STAKEDAO_CRVUSD_CRV);
+
+        // configure Zap
+        splitter.toggleZapToken(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48); // USDC
+        splitter.toggleZapToken(0xdAC17F958D2ee523a2206206994597C13D831ec7); // USDT
+        splitter.toggleZapToken(0x6B175474E89094C44Da98b954EedeAC495271d0F); // DAI
+
+        vm.stopPrank();
+
+        //Init vars
+        liquidityGauge = market.liquidityGauge;
+        curveLendVault = market.curveLendVault;
+        scvUSD = market.scvUSD;
+        gUSD = market.gUSD;
+
+        //labelizing
+        vm.label(address(splitter), "Splitter");
+        vm.label(address(splitter.CURVE_ROUTER()), "CurveRouter");
+        vm.label(Addr.TOKEN_CRVUSD, "crvUSD");
+        vm.label(Addr.STAKEDAO_CRVUSD_CRV, "STAKEDAO_CRVUSD_CRV");
+        vm.label(Addr.CURVE_CRVUSD_CRV, "CURVE_CRVUSD_CRV");
+        vm.label(IStakeDaoVault(Addr.STAKEDAO_CRVUSD_CRV).strategy(), "STAKEDAO_CRV_STRATEGY");
+        vm.label(IStakeDaoVault(Addr.STAKEDAO_CRVUSD_CRV).liquidityGauge(), "STAKEDAO_CRV_LIQUIDITY_GAUGE");
+        vm.label(address(scvUSD), "scvUSD");
+        vm.label(address(gUSD), "gUSD");
     }
 
     function deposit(uint256 amount, bool isStableReward, bool doDeposit, address tokenIn) public returns (uint256) {
         LendRewardSplitter.TOKEN_TYPE typeAsset = LendRewardSplitter.TOKEN_TYPE.LendAsset;
-        if (tokenIn == CURVE_CRV_VAULT) {
+        if (tokenIn == Addr.CURVE_CRVUSD_CRV) {
             typeAsset = LendRewardSplitter.TOKEN_TYPE.LendCurveAsset;
-        } else if (tokenIn == STAKEDAO_CRV_VAULT) {
+        } else if (tokenIn == Addr.STAKEDAO_CRVUSD_CRV) {
             typeAsset = LendRewardSplitter.TOKEN_TYPE.LendStakeDaoAsset;
         }
-        return splitter.deposit(typeAsset, amount, isStableReward, doDeposit);
+        return splitter.deposit(address(stakeDaoVault), typeAsset, amount, isStableReward, doDeposit);
     }
 
     function widthraw(uint256 depositAmount, bool isStableReward, LendRewardSplitter.TOKEN_TYPE tokenOutType) public {
-        splitter.withdraw(tokenOutType, depositAmount, isStableReward);
+        splitter.withdraw(address(stakeDaoVault), tokenOutType, depositAmount, isStableReward);
+    }
+
+    function getMarket() external view returns (LendRewardSplitter.MarketStruct memory) {
+        return splitter.getMarket(address(stakeDaoVault));
     }
 
     function getUser(uint256 index, address token, uint256 amount) public returns (address user) {
         user = makeAddr(string.concat("user", vm.toString((index))));
         vm.deal(user, 10 ether);
-        if (token == STAKEDAO_CRV_VAULT) {
-            token = IStakeDaoVault(STAKEDAO_CRV_VAULT).liquidityGauge();
+        if (token == Addr.STAKEDAO_CRVUSD_CRV) {
+            token = address(liquidityGauge);
         }
         vm.startPrank(user);
         deal(token, user, amount);
-        IERC20(token).approve(address(splitter), MAX_INT);
+        IERC20(token).approve(address(splitter), MAX_UINT);
     }
 
     function getUser(uint256 index, address token) public returns (address user) {
         return getUser(index, token, 1000 ether);
+    }
+
+    function _takesGaugeOnwershipAndSetDistributor(address _stakeDaoVault) public {
+        LendRewardSplitter.MarketStruct memory market = splitter.getMarket(_stakeDaoVault);
+        ISDLiquidityGauge _liquidityGauge = market.liquidityGauge;
+        vm.deal(ownerGauge, 10 ether);
+        address admin = _liquidityGauge.admin();
+        uint256 rewardCount = _liquidityGauge.reward_count();
+        for (uint256 i; i < rewardCount; ) {
+            IERC20 token = IERC20(_liquidityGauge.reward_tokens(i));
+            vm.prank(ownerGauge);
+            token.approve(address(_liquidityGauge), 0);
+            vm.prank(ownerGauge);
+            token.approve(address(_liquidityGauge), MAX_UINT);
+            vm.stopPrank();
+
+            vm.prank(admin);
+            _liquidityGauge.set_reward_distributor(address(token), ownerGauge);
+            vm.stopPrank();
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    struct DistributionGauge {
+        address token;
+        uint256 amount;
+    }
+
+    function _distributeGaugeRewards(address _stakeDaoVault, DistributionGauge[] memory distributionGauges) public {
+        LendRewardSplitter.MarketStruct memory market = splitter.getMarket(_stakeDaoVault);
+        ISDLiquidityGauge _liquidityGauge = market.liquidityGauge;
+        for (uint256 i; i < distributionGauges.length; ) {
+            vm.prank(ownerGauge);
+            deal(distributionGauges[i].token, ownerGauge, distributionGauges[i].amount);
+            vm.prank(ownerGauge);
+            _liquidityGauge.deposit_reward_token(distributionGauges[i].token, distributionGauges[i].amount);
+            unchecked {
+                ++i;
+            }
+        }
+        vm.stopPrank();
     }
 }

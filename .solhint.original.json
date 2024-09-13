@@ -1,0 +1,29 @@
+{
+  "extends": "solhint:recommended",
+  "rules": {
+    "no-unused-vars":"error",
+    "no-unused-import":"error",
+    "explicit-types":"error",  
+    "no-empty-blocks":"error",
+    "avoid-throw": "error",
+    "compiler-fixed": "error",
+    "func-visibility": ["error", { "ignoreConstructors": false }],
+    "max-line-length": ["error", 120],
+    "no-complex-fallback": "error",
+    "reason-string": ["error", { "maxLength": 32 }],
+    "avoid-suicide": "error",
+    "avoid-sha3": "error",
+    "const-name-snakecase": "error",
+    "contract-name-camelcase": "error",
+    "func-name-mixedcase": "error",
+    "event-name-camelcase": "error",
+    "modifier-name-mixedcase": "error",
+    "private-vars-leading-underscore": "error",
+    "var-name-mixedcase": "error",
+    "check-send-result": "error",
+    "mark-callable-contracts": "error",
+    "two-lines-top-level-separator": "error",
+    "func-order": ["error", "stateful"],
+    "payable-fallback": "error"
+  }
+}
