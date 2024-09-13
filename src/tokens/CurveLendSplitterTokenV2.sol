@@ -17,11 +17,14 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
         uint256 rewardRate;
         uint256 rewardPerTokenStored;
     }
+
     struct EarnedData {
         IERC20 token;
         uint256 amount;
     }
+
     using SafeERC20 for IERC20;
+
     uint256 constant MAX_UINT = uint256(int256(-1));
 
     /// @dev Duration that rewards are streamed over
@@ -78,8 +81,10 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
     ) external initializer {
         __ERC20_init(_name, _symbol);
         _transferOwnership(msg.sender);
-        processorRewardsPercentage = 1000; /// @dev TODO: TO CHANGE -> corresponds to 1%
-        daoFeesPercentage = 2000; /// @dev TODO: TO CHANGE -> corresponds to 2%
+        processorRewardsPercentage = 1000;
+        /// @dev TODO: TO CHANGE -> corresponds to 1%
+        daoFeesPercentage = 2000;
+        /// @dev TODO: TO CHANGE -> corresponds to 2%
         lendRewardSplitter = ILendRewardSplitter(_lendRewardSplitter);
         liquidityGauge = ISDLiquidityGauge(_liquidityGauge);
     }
@@ -117,13 +122,14 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
         IERC20 token;
         uint256 amount;
     }
+
     function getReward(address _address) external updateReward(_address) returns (TokenAmount[] memory, address) {
         require(msg.sender == address(lendRewardSplitter), "NOT_SPLITTER");
         uint256 rewardTokensLength = rewardTokens.length;
         TokenAmount[] memory tokenAmounts = new TokenAmount[](rewardTokensLength);
         uint256 counter;
 
-        for (uint256 i; i < rewardTokensLength; ) {
+        for (uint256 i; i < rewardTokensLength;) {
             IERC20 _rewardToken = rewardTokens[i];
             uint256 reward = rewards[_address][_rewardToken];
 
@@ -138,9 +144,10 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
             }
         }
 
-        /// @dev Reduce length of tokenAmounts struct to not return useless 0
+       
         // solhint-disable-next-line no-inline-assembly
         assembly {
+            /// @dev Reduce length of tokenAmounts struct to not return useless 0
             mstore(tokenAmounts, sub(mload(tokenAmounts), sub(rewardTokensLength, counter)))
         }
 
@@ -168,7 +175,7 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
         bool isProcess = false;
         uint256 _daoFeesPercentage = daoFeesPercentage;
         uint256 _processorRewardsPercentage = processorRewardsPercentage;
-        for (uint256 i; i < rewardTokensLength; ) {
+        for (uint256 i; i < rewardTokensLength;) {
             uint256 rewardToProcess = _rewardTokens[i].balanceOf(address(this));
             if (rewardToProcess != 0) {
                 isProcess = true;
@@ -208,7 +215,7 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                        EXTERNAL DAO
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
      * @notice Mint Staked tokens
@@ -243,13 +250,13 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                        INTERNALS
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /// @notice If a new token reward is added on the liquidity gauge, update it
     function _updateRewardTokens(uint256 currentRewardTokens) internal {
         ISDLiquidityGauge _liquidityGauge = liquidityGauge;
         uint256 rewardCount = _liquidityGauge.reward_count();
-        for (uint256 i = currentRewardTokens; i < rewardCount; ) {
+        for (uint256 i = currentRewardTokens; i < rewardCount;) {
             IERC20 rewardToken = IERC20(_liquidityGauge.reward_tokens(i));
             _addReward(rewardToken);
             unchecked {
@@ -305,12 +312,15 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
     function _rewardPerToken(IERC20 _rewardToken) internal view returns (uint256) {
         if (totalSupply() == 0) return rewardData[_rewardToken].rewardPerTokenStored;
 
-        return
-            rewardData[_rewardToken].rewardPerTokenStored +
-            (((_lastTimeRewardApplicable(rewardData[_rewardToken].periodFinish) -
-                rewardData[_rewardToken].lastUpdateTime) *
-                rewardData[_rewardToken].rewardRate *
-                1e18) / totalSupply());
+        return rewardData[_rewardToken].rewardPerTokenStored
+            + (
+                (
+                    (
+                        _lastTimeRewardApplicable(rewardData[_rewardToken].periodFinish)
+                            - rewardData[_rewardToken].lastUpdateTime
+                    ) * rewardData[_rewardToken].rewardRate * 1e18
+                ) / totalSupply()
+            );
     }
 
     /**
@@ -321,10 +331,8 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
      * @return Reward amount to claim for the user
      */
     function _earned(address _user, IERC20 _rewardToken, uint256 _balance) internal view returns (uint256) {
-        return
-            (_balance * (_rewardPerToken(_rewardToken) - userRewardPerTokenPaid[_user][_rewardToken])) /
-            1e18 +
-            rewards[_user][_rewardToken];
+        return (_balance * (_rewardPerToken(_rewardToken) - userRewardPerTokenPaid[_user][_rewardToken])) / 1e18
+            + rewards[_user][_rewardToken];
     }
 
     function _lastTimeRewardApplicable(uint128 _finishTime) internal view returns (uint128) {
@@ -338,7 +346,7 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
     function _updateReward(address _account) internal {
         uint256 userBal = balanceOf(_account);
         uint256 rewardLength = rewardTokens.length;
-        for (uint256 i; i < rewardLength; ) {
+        for (uint256 i; i < rewardLength;) {
             IERC20 token = rewardTokens[i];
             rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
             rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
@@ -382,7 +390,7 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
     function claimableRewards(address _account) external view returns (EarnedData[] memory userRewards) {
         userRewards = new EarnedData[](rewardTokens.length);
 
-        for (uint256 i; i < userRewards.length; ) {
+        for (uint256 i; i < userRewards.length;) {
             IERC20 token = rewardTokens[i];
             userRewards[i].token = token;
             userRewards[i].amount = _earned(_account, token, balanceOf(_account));
@@ -397,7 +405,7 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                        ERC20 OVERRIDE
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _update(address from, address to, uint256 value) internal override {
         /// @dev do the checkpoint before the transfer
@@ -412,7 +420,7 @@ contract CurveLendSplitterTokenV2 is ERC20Upgradeable, OwnableUpgradeable {
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                             OWNER
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
      * @notice Set the percentage of rewards to be sent to the user processing the GOV rewards.
