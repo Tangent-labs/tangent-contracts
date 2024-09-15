@@ -264,22 +264,6 @@ contract LendRewardSplitterZapTest is Test {
     }
 
     function _getSwapParamsForDai() internal pure returns (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) {
-        address t1 = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-        address t2 = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
-        address t3 = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-        address t4 = 0x390f3595bCa2Df7d23783dFd126427CCeb997BF4;
-        address t5 = 0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E;
-
-        routes = [t1, t2, t3, t4, t5, address(0), address(0), address(0), address(0), address(0), address(0)];
-
-        address p1 = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
-        address p2 = 0x390f3595bCa2Df7d23783dFd126427CCeb997BF4;
-        pools = [p1, p2, address(0), address(0), address(0)];
-
-        uint256[5] memory emptyParams = [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)];
-        swapParams = [
-            [uint256(0), uint256(2), uint256(1), uint256(1), uint256(3)],
-            [uint256(0), uint256(1), uint256(1), uint256(1), uint256(2)],
             emptyParams,
             emptyParams,
             emptyParams

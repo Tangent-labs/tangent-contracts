@@ -36,13 +36,6 @@ contract CurveLend is Test {
     IStakeDaoVault stakeDaoVault;
     ILlamaLendVault curveVault;
     ISdtLiquidityGauge gaugeV4;
-    ICrvUSDController crvUSDController;
-
-    uint256 currentDay = 0;
-
-    struct SupplyActionData {
-        string user;
-        string assetType;
         uint256 pricePershare;
         string action;
         uint256 amountToken;

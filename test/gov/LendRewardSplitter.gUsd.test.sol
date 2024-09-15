@@ -26,7 +26,12 @@ contract LendRewardSplittergUsdTest is Test {
     function test_revertWhen_MintCallByUser() external {
         address user = makeAddr("user1");
         vm.startPrank(user);
-        vm.expectRevert(abi.encodeWithSelector(CurveLendSplitterToken.NotLendRewardSplitter.selector, user));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                CurveLendSplitterToken.NotLendRewardSplitter.selector,
+                user
+            )
+        );
         gUSDImplem.mint(user, 1000 ether);
         vm.stopPrank();
     }
