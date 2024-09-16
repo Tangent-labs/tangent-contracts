@@ -184,15 +184,6 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         return _depositSdt(llamaVault, inType, amount, isStableReward, doDeposit, false);
     }
 
-    function initialize(address _owner, address _beaconCurveLendSplitterToken) external initializer {
-        beaconCurveLendSplitterToken = _beaconCurveLendSplitterToken;
-        _transferOwnership(_owner);
-    }
-
-    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        EXTERNALS USER
-    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
     /**
      *  @notice Deposit asset into the Convergence splitter contract in order to get one part of the reawrd from the lend contract.
      *  @param inType Type of token to in with with 3 steps  LendAsset >  LendCurveAsset >  LendStakeDaoAsset

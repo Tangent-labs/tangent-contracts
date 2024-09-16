@@ -187,7 +187,6 @@ contract LendRewardSplitterGovClaimTest is Test {
         _processGovRewardForCrv();
         _processGovRewardForWeth();
         skip(1 weeks);
-        bool isGovRewards = true;
         (
             uint256 totalCrvClaimedDepositorOne,
             uint256 totalSdtClaimedDepositorOne,
@@ -208,7 +207,6 @@ contract LendRewardSplitterGovClaimTest is Test {
         _processGovRewardForCrv();
         _processGovRewardForWeth();
         skip(1 weeks);
-        bool isGovRewards = true;
         (
             uint256 totalCrvClaimedDepositorOne,
             uint256 totalSdtClaimedDepositorOne,
@@ -230,8 +228,7 @@ contract LendRewardSplitterGovClaimTest is Test {
         _processGovRewardForCrv();
         _processGovRewardForWeth();
         skip(1 weeks);
-        bool isGovRewards = true;
-        (uint256 totalCrvClaimedDepositorOne, uint256 totalSdtClaimedDepositorOne, , ) = _calculateClaimableAmounts();
+        // (, , , ) = _calculateClaimableAmounts();
         address[] memory lendSplitterTokens = new address[](3);
         lendSplitterTokens[0] = address(gUSD_Crv);
         lendSplitterTokens[1] = address(gUSD_Weth);

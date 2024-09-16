@@ -31,11 +31,18 @@ contract CurveLend is Test {
     // Vaulted crvUSD
     address CURVE_CRVUSD_CRV = 0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA; // Vaulted crvUSD
     // Vaulted crvUSD in stake DAO
-    address CRVUSD_CRV = 0xfa6D40573082D797CB3cC378c0837fB90eB043e5;
+    address STAKEDAO_CRVUSD_CRV = 0xfa6D40573082D797CB3cC378c0837fB90eB043e5;
 
     IStakeDaoVault stakeDaoVault;
     ILlamaLendVault curveVault;
     ISdtLiquidityGauge gaugeV4;
+    ICrvUSDController crvUSDController;
+
+    uint256 currentDay = 0;
+
+    struct SupplyActionData {
+        string user;
+        string assetType;
         uint256 pricePershare;
         string action;
         uint256 amountToken;
@@ -56,10 +63,12 @@ contract CurveLend is Test {
         users["freddy"] = 0x90F79bf6EB2c4f870365E785982E1f101E93b906; // Hardhat #3
         vm.label(0x90F79bf6EB2c4f870365E785982E1f101E93b906, "freddy");
 
-        stakeDaoVault = IStakeDaoVault(CRVUSD_CRV);
+        stakeDaoVault = IStakeDaoVault(STAKEDAO_CRVUSD_CRV);
         gaugeV4 = ISdtLiquidityGauge(stakeDaoVault.liquidityGauge());
         curveVault = ILlamaLendVault(CURVE_CRVUSD_CRV);
         crvUSDController = ICrvUSDController(curveVault.controller());
+
+        console.log(stakeDaoVault.token(), curveVault.borrowed_token());
     }
 
     function travelDay(uint256 dayToAdd) internal {
@@ -106,6 +115,7 @@ contract CurveLend is Test {
         uint256 balanceBefore = stakeDaoVault.balanceOf(jim);
         stakeDaoVault.transferFrom(jhon, jim, 2 ether);
         uint256 balanceAfter = stakeDaoVault.balanceOf(jim);
+        console.log(balanceBefore, balanceAfter);
     }
 
     function run() public {

@@ -54,7 +54,7 @@ contract LendSplitterHandler is CommonBase, StdCheats, StdUtils {
         tokenIn.approve(address(lendSplitter), amount);
 
         // Deposit
-        lendSplitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE(inTypeNumber), amount, isStableReward, doDeposit);
+        depositAmount = lendSplitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE(inTypeNumber), amount, isStableReward, doDeposit);
 
         // Store the balance after
         if (isStableReward) {

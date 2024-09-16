@@ -55,7 +55,7 @@ contract IntroInvariantTest is Test {
         targetSelector(FuzzSelector({addr: address(lendSplitterHandler), selectors: selectors}));
     }
 
-    function invariant_total_supply_equals_sums_of_balances() public {
+    function invariant_total_supply_equals_sums_of_balances() public view {
         assertEq(lendSplitterHandler.sumBalanceOfGUSD(), gUSD.totalSupply());
         assertEq(lendSplitterHandler.sumBalanceOfscvUSD(), scvUSD.totalSupply());
     }

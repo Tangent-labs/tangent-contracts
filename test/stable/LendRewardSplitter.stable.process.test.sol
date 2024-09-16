@@ -64,7 +64,7 @@ contract LendRewardSplitterStableProcessTest is Test {
         assertEq(CRVUSD.balanceOf(user3), 0);
 
         // Get all info .
-        (uint256 shareReward, uint256 stableReward, uint256 expectedProcessorFees, uint256 expectedDaoFees) = _getStableRewardToProcess(LLAMALEND_VAULT_CRV);
+        (, uint256 stableReward, uint256 expectedProcessorFees, uint256 expectedDaoFees) = _getStableRewardToProcess(LLAMALEND_VAULT_CRV);
 
         // Process the stable Rewards.
         vm.startPrank(user3);

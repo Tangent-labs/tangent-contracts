@@ -168,7 +168,6 @@ contract ProcessGovRewardsSdt is Test {
         uint256 crvClaimableOne = crvClaimable;
         uint256 crvDaoFeesOne = crvDaoFees;
         uint256 sdtClaimableOne = cvxClaimable;
-        uint256 sdtProcessorRewardsOne = cvxProcessorRewards;
         uint256 sdtDaoFeesOne = cvxDaoFees;
         /// @dev Second Process
         _processGovReward(false);
