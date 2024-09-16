@@ -7,7 +7,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 
 import {gUSDCvx} from "./tokens/convex/gUSDCvx.sol";
-import {scvUSDCvx} from "./tokens/convex/scvUsdCvx.sol";
+import {scvUSDCvx} from "./tokens/convex/scvUSDCvx.sol";
 import {gUSDSdt} from "./tokens/stakeDao/gUSDSdt.sol";
 import {scvUSDSdt} from "./tokens/stakeDao/scvUSDSdt.sol";
 
