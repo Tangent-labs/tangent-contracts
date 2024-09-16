@@ -12,5 +12,5 @@ interface IgUSDCvx is ICurveLendSplitterToken {
 
     function withdraw(uint256 amount, address receiver, ILendRewardSplitter.CVX_TOKEN_TYPE outType, ILlamaLendVault llamaVault) external;
 
-    function claimSCVUSDRewards(uint256 amount, ILlamaLendVault llamaVault) external;
+    function claimSCVUSDRewards(uint256 shares, ILlamaLendVault llamaVault) external;
 }

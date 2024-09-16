@@ -17,5 +17,5 @@ interface IgUSDSdt is ICurveLendSplitterToken {
         IStakeDaoVault stakeDaoVault
     ) external;
 
-    function claimSCVUSDRewards(uint256 amount, ILlamaLendVault llamaVault) external;
+    function claimSCVUSDRewards(uint256 shares, ILlamaLendVault llamaVault) external;
 }

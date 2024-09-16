@@ -81,7 +81,7 @@ contract LendRewardSplitterStableProcessTest is Test {
         // Count the share.
         uint256 shareReward = splitter.sdtGaugePerLlamaVault(llamaLendVault).balanceOf(address(gUSD)) -
             scvUSD.totalSupply() -
-            llamaLendVault.convertToAssets(gUSD.totalSupply());
+            llamaLendVault.convertToShares(gUSD.totalSupply());
 
         // Emulate the withdraw.
         uint256 stableReward = llamaLendVault.convertToAssets(shareReward);

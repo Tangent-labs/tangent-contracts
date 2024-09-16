@@ -110,14 +110,14 @@ contract gUSDCvx is CurveLendSplitterToken {
         _processRewards();
     }
 
-    function claimSCVUSDRewards(uint256 amount, ILlamaLendVault llamaVault) external {
+    function claimSCVUSDRewards(uint256 shares, ILlamaLendVault llamaVault) external {
         /// @dev Only scvUSD can claim this function
         if (msg.sender != scvUSD) {
             revert OnlySCVUSDCaller(msg.sender);
         }
 
-        cvxRewardToken.withdrawAndUnwrap(amount, false);
+        cvxRewardToken.withdrawAndUnwrap(shares, false);
 
-        llamaVault.redeem(amount, msg.sender);
+        llamaVault.redeem(shares, msg.sender);
     }
 }

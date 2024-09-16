@@ -56,7 +56,7 @@ contract scvUSDSdt is CurveLendSplitterToken {
 
         /// @dev We need to keep enough share to back the stableSupply and the assetPart of the govSupply, we withdraw the reward share from the gUSD
         _gUSD.claimSCVUSDRewards(
-            IERC20(sdtGauge).balanceOf(address(_gUSD)) - totalSupply() - _llamaLendVault.convertToAssets(_gUSD.totalSupply()),
+            IERC20(sdtGauge).balanceOf(address(_gUSD)) - totalSupply() - _llamaLendVault.convertToShares(_gUSD.totalSupply()),
             _llamaLendVault
         );
 

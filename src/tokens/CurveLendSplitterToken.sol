@@ -146,7 +146,9 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
      * @return Total reward amount of the token
      */
     function _rewardPerToken(IERC20 _rewardToken) internal view returns (uint256) {
-        if (totalSupply() == 0) return rewardData[_rewardToken].rewardPerTokenStored;
+        if (totalSupply() == 0) {
+            return rewardData[_rewardToken].rewardPerTokenStored;
+        }
 
         return
             rewardData[_rewardToken].rewardPerTokenStored +

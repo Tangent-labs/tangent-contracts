@@ -88,7 +88,6 @@ contract LendRewardSplitterGovDepositTest is Test {
         address user = testCommon.getUser(1, address(tokenIn));
         assertEq(testCommon.gUSDImplem().balanceOf(user), 0);
         assertEq(testCommon.splitter().gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV).totalSupply(), 0);
-        console.log(tokenIn.balanceOf(user));
         testCommon.deposit(depositAmount, false, false, address(tokenIn));
         uint256 depositedAmount = testCommon.curveLendVault().convertToAssets(depositAmount);
         assertEq(testCommon.gUSDImplem().balanceOf(user), depositedAmount);

@@ -168,7 +168,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         /// @dev Continue deposit.
         if (isCvx) {
-            return depositCvx(llamaLendVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit);
+            return _depositCvx(llamaLendVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit, true);
         } else {
             return _depositSdt(llamaLendVault, ILendRewardSplitter.SDT_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit, true);
         }
@@ -188,7 +188,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      *  @notice Deposit asset into the Convergence splitter contract in order to get one part of the reawrd from the lend contract.
      *  @param inType Type of token to in with with 3 steps  LendAsset >  LendCurveAsset >  LendStakeDaoAsset
      *  @param amount Amount  of {inType} token to deposit.
-     *  @param isStableReward bool  IF isStableReward == true THEN   you want the stable part of the reward  ELSE you want the gauge part of the reward.
+     *  @param isStableReward bool  IF isStableReward == true THEN you want the stable part of the reward  ELSE you want the gauge part of the reward.
      *  @param doDeposit bool  IF doDeposit == true THEN  all the pending asset will be deposited in stakeValut.
      *  @return depositAmount Staked amount eligible to rewards.
      */
@@ -256,16 +256,30 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         bool isStableReward,
         bool doDeposit
     ) public returns (uint256 depositAmount) {
+        return _depositCvx(llamaVault, inType, amount, isStableReward, doDeposit, false);
+    }
+
+    function _depositCvx(
+        ILlamaLendVault llamaVault,
+        ILendRewardSplitter.CVX_TOKEN_TYPE inType,
+        uint256 amount,
+        bool isStableReward,
+        bool doDeposit,
+        bool isZap
+    ) internal returns (uint256 depositAmount) {
         depositAmount = amount;
         ICvxRewardToken cvxRewardToken = cvxRewardTokenPerLlamaVault[llamaVault];
-
         IgUSDCvx gUSD = IgUSDCvx(address(gUSDCvxPerLlamaVault[llamaVault]));
+
         if (inType == ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset) {
             /// @dev Transfer the vault asset from LlamaLend
             llamaVault.safeTransferFrom(msg.sender, address(gUSD), amount);
         } else {
-            /// @dev Transfer the lent asset in the LlamalendVault
-            lentAssetPerLlamaVault[llamaVault].safeTransferFrom(msg.sender, address(this), amount);
+            if (!isZap) {
+                /// @dev Transfer the lent asset in the LlamalendVault
+                lentAssetPerLlamaVault[llamaVault].safeTransferFrom(msg.sender, address(this), amount);
+            }
+
             /// @dev Deposit the lent asset in the LlamalendVault
             depositAmount = llamaVault.deposit(amount, address(gUSD));
         }
@@ -353,26 +367,6 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         emit WithdrawCvx(msg.sender, isStableReward, outType, amount);
     }
-
-    // /**
-    //  *  @notice this method is used for internal purpose (Stable reward)
-    //  *  @param _market Market to deposit to
-    //  *  @param _amount Amount  of  lend asset to withdraw
-    //  */
-    // function withdrawForRewards(address _market, uint256 _amount) external {
-    //     /// @dev We get the market from the mapping.
-    //     MarketStruct memory market = markets[_market];
-    //     if (address(market.lendAsset) == address(0)) revert MarketNotExists(_market);
-
-    //     /// @dev We check that the method is call via processStableReward on the scvUSD.
-    //     if (msg.sender != address(market.scvUSD)) {
-    //         revert CallerNotAllowed();
-    //     }
-
-    //     // /// @dev We redeem the {lendAsset} and update the balance of the scvUSD.
-    //     _withdraw(market, TOKEN_TYPE.LendAsset, _amount, true);
-    //     emit RewardWithdraw(_market, _amount);
-    // }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CLAIM REWARDS
@@ -633,7 +627,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      * @notice Withdraw all the balance of the desired fees token and erase the corresponding storage.
      * @param tokens IERC20 array to withdraw
      */
-    function withdrawFees(IERC20[] memory tokens) external onlyOwner {
+    function withdrawFees(IERC20[] calldata tokens) external onlyOwner {
         //TODO: Change this function to send token to the right treasury
 
         for (uint256 erc20Id; erc20Id < tokens.length; ) {

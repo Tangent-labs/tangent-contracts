@@ -77,7 +77,6 @@ contract LendSplitterHandler is CommonBase, StdCheats, StdUtils {
         if (balanceBefore == 0) {
             uint256 randomIsDeposit;
             randomIsDeposit = bound(randomIsDeposit, 0, 1);
-            console.log("yoyoyoy", randomIsDeposit);
             depositCvx(llamaVault, outType, amount, isStableReward, randomIsDeposit == 1 ? true : false);
             return;
         }
