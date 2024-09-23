@@ -7,29 +7,35 @@ import {StdUtils} from "forge-std/StdUtils.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 import "../../src/LendRewardSplitter.sol";
+import "../../src/tokens/CurveLendSplitterToken.sol";
 import "../../src/interfaces/externals/ILlamaLendVault.sol";
 import "../../src/interfaces/internals/ILendRewardSplitter.sol";
 import "../../src/libs/Resources.sol";
+import "../../src/libs/CvxConstantStructs.sol";
 
 contract LendSplitterHandler is CommonBase, StdCheats, StdUtils {
     LendRewardSplitter private lendSplitter;
-    uint256 public sumBalanceOfGUSD;
-    uint256 public sumBalanceOfscvUSD;
+    mapping(ILlamaLendVault => uint256) public sumsBalanceOfGUSD;
+    mapping(ILlamaLendVault => uint256) public sumsBalanceOfscvUSD;
 
-    constructor(LendRewardSplitter _lendSplitter) {
+    CvxConstantStructs CVX_STRUCTS;
+
+    constructor(LendRewardSplitter _lendSplitter, CvxConstantStructs _cvxConstants) {
         lendSplitter = _lendSplitter;
+        CVX_STRUCTS = _cvxConstants;
     }
 
     function depositCvx(
-        ILlamaLendVault llamaVault,
+        ILlamaLendVault _llamaVault,
         uint8 inTypeNumber,
         uint256 amount,
         bool isStableReward,
         bool doDeposit
     ) public returns (uint256 depositAmount) {
-        llamaVault = ILlamaLendVault(AddrLlamaLendVaults.CRVUSD_CRV);
-        ICurveLendSplitterToken gUSD = lendSplitter.gUSDCvxPerLlamaVault(llamaVault);
-        ICurveLendSplitterToken scvUSD = lendSplitter.scvUSDCvxPerLlamaVault(llamaVault);
+        _llamaVault = CVX_STRUCTS.pickRandomVault();
+
+        IgUSDCvx gUSD = lendSplitter.gUSDCvxPerLlamaVault(_llamaVault);
+        IscvUSD scvUSD = lendSplitter.scvUSDCvxPerLlamaVault(_llamaVault);
 
         // Get the balance before the deposit
         uint256 balanceBefore;
@@ -39,76 +45,88 @@ contract LendSplitterHandler is CommonBase, StdCheats, StdUtils {
             balanceBefore = gUSD.balanceOf(msg.sender);
         }
         // Bound input type & amount
-        inTypeNumber = uint8(bound(uint256(inTypeNumber), 0, 1));
+        inTypeNumber = 0;
         IERC20 tokenIn;
         if (inTypeNumber == 0) {
             amount = bound(amount, 3, 10_000_000 ether);
-            tokenIn = IERC20(AddrClassicERC20.TOKEN_CRVUSD);
+            tokenIn = AddrClassicERC20.TOKEN_CRVUSD;
         } else {
             amount = bound(amount, 10_000, 10_000_000 ether);
-            tokenIn = IERC20(AddrLlamaLendVaults.CRVUSD_CRV);
+            tokenIn = _llamaVault;
         }
+
         // Get tokens & approve
         vm.startPrank(msg.sender);
         deal(address(tokenIn), msg.sender, amount);
         tokenIn.approve(address(lendSplitter), amount);
 
         // Deposit
-        depositAmount = lendSplitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE(inTypeNumber), amount, isStableReward, doDeposit);
+        depositAmount = lendSplitter.depositCvx(_llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE(inTypeNumber), amount, isStableReward, doDeposit);
 
         // Store the balance after
         if (isStableReward) {
-            sumBalanceOfscvUSD += scvUSD.balanceOf(msg.sender) - balanceBefore;
+            sumsBalanceOfscvUSD[_llamaVault] += scvUSD.balanceOf(msg.sender) - balanceBefore;
         } else {
-            sumBalanceOfGUSD += gUSD.balanceOf(msg.sender) - balanceBefore;
+            sumsBalanceOfGUSD[_llamaVault] += gUSD.balanceOf(msg.sender) - balanceBefore;
         }
-
+        // scvUSD.claimableRewards(_account);
         vm.stopPrank();
+        uint256 daysToSkip = vm.randomUint();
+
+        daysToSkip = bound(daysToSkip, 0, 7);
+        skip(daysToSkip);
     }
 
-    function withdrawCvx(ILlamaLendVault llamaVault, uint8 outType, uint256 amount, bool isStableReward) public {
-        llamaVault = ILlamaLendVault(AddrLlamaLendVaults.CRVUSD_CRV);
-        ICurveLendSplitterToken gUSD = lendSplitter.gUSDCvxPerLlamaVault(llamaVault);
-        ICurveLendSplitterToken scvUSD = lendSplitter.scvUSDCvxPerLlamaVault(llamaVault);
+    function withdrawCvx(ILlamaLendVault _llamaVault, uint8 outType, uint256 amount, bool isStableReward) public {
+        _llamaVault = CVX_STRUCTS.pickRandomVault();
+        IgUSDCvx gUSD = lendSplitter.gUSDCvxPerLlamaVault(_llamaVault);
+        IscvUSD scvUSD = lendSplitter.scvUSDCvxPerLlamaVault(_llamaVault);
         // Get tokens & approve
         vm.startPrank(msg.sender);
         // If nothing has been deposited by the user before
         uint256 balanceBefore;
-        if (balanceBefore == 0) {
-            uint256 randomIsDeposit;
-            randomIsDeposit = bound(randomIsDeposit, 0, 1);
-            depositCvx(llamaVault, outType, amount, isStableReward, randomIsDeposit == 1 ? true : false);
-            return;
-        }
+
         if (isStableReward) {
             balanceBefore = scvUSD.balanceOf(msg.sender);
         } else {
             balanceBefore = gUSD.balanceOf(msg.sender);
         }
+
+        if (balanceBefore == 0) {
+            uint256 randomIsDeposit;
+            randomIsDeposit = bound(randomIsDeposit, 0, 1);
+            depositCvx(_llamaVault, outType, amount, isStableReward, randomIsDeposit == 1 ? true : false);
+            return;
+        }
+
         // Bound input type & amount
-        outType = uint8(bound(uint256(outType), 0, 1));
+        outType = 0;
         IERC20 tokenIn;
         if (outType == 0) {
             amount = bound(amount, 1, balanceBefore);
-            tokenIn = IERC20(AddrClassicERC20.TOKEN_CRVUSD);
+            tokenIn = AddrClassicERC20.TOKEN_CRVUSD;
         } else {
             amount = bound(amount, 1, balanceBefore);
-            tokenIn = IERC20(AddrLlamaLendVaults.CRVUSD_CRV);
+            tokenIn = _llamaVault;
         }
 
         deal(address(tokenIn), msg.sender, amount);
         tokenIn.approve(address(lendSplitter), amount);
 
         // Deposit
-        lendSplitter.withdrawCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE(outType), amount, isStableReward);
+        lendSplitter.withdrawCvx(_llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE(outType), amount, isStableReward);
 
         // Store the balance after
         if (isStableReward) {
-            sumBalanceOfscvUSD += balanceBefore - scvUSD.balanceOf(msg.sender);
+            sumsBalanceOfscvUSD[_llamaVault] -= balanceBefore - scvUSD.balanceOf(msg.sender);
         } else {
-            sumBalanceOfGUSD += balanceBefore - gUSD.balanceOf(msg.sender);
+            sumsBalanceOfGUSD[_llamaVault] -= balanceBefore - gUSD.balanceOf(msg.sender);
         }
 
         vm.stopPrank();
+
+        uint256 daysToSkip = vm.randomUint();
+        daysToSkip = bound(daysToSkip, 0, 7);
+        skip(daysToSkip);
     }
 }

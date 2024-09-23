@@ -32,7 +32,9 @@ contract ProcessGovRewards is Test {
         splitter = testCommon.splitter();
 
         vm.prank(testCommon.owner());
-        splitter.createCvxMarket(PidCvxBooster.CRVUSD_CRV);
+        uint256[] memory pids = new uint256[](1);
+        pids[0] = PidCvxBooster.CRVUSD_CRV;
+        splitter.createCvxMarkets(pids);
         gUSD = gUSDCvx(address(splitter.gUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV)));
 
         (uint128 processorFeePercentageCrv, uint128 daoFeePercentageCrv) = gUSD.fees(0);
@@ -45,7 +47,7 @@ contract ProcessGovRewards is Test {
         // PREPARE
         LendRewardSplitter _splitter = splitter;
         address processor = makeAddr("Processor");
-        deal(AddrClassicERC20.TOKEN_CRVUSD, processor, 100 ether);
+        deal(address(AddrClassicERC20.TOKEN_CRVUSD), processor, 100 ether);
         vm.startPrank(processor);
 
         uint256 deltaBalanceCrvSplitter = IERC20(AddrClassicERC20.TOKEN_CRV).balanceOf(address(_splitter));
@@ -102,7 +104,7 @@ contract ProcessGovRewards is Test {
         // PREPARE
         LendRewardSplitter _splitter = splitter;
         address processor = makeAddr("Processor");
-        deal(AddrClassicERC20.TOKEN_CRVUSD, processor, 100 ether);
+        deal(address(AddrClassicERC20.TOKEN_CRVUSD), processor, 100 ether);
         vm.startPrank(processor);
 
         // ACTIONS

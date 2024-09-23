@@ -18,11 +18,14 @@ import {ISdtLiquidityGauge} from "./interfaces/externals/ISdtLiquidityGauge.sol"
 import {ICurveLendSplitterToken} from "./interfaces/internals/ICurveLendSplitterToken.sol";
 import {ILendRewardSplitter} from "./interfaces/internals/ILendRewardSplitter.sol";
 import {ICommonStruct} from "./interfaces/internals/ICommonStruct.sol";
-import {IgUSDCvx} from "./interfaces/internals/IgUSDCvx.sol";
-import {IgUSDSdt} from "./interfaces/internals/IgUSDSdt.sol";
+
 import {ICvxBooster} from "./interfaces/externals/ICvxBooster.sol";
 import {ICurveRouter} from "./interfaces/externals/ICurveRouter.sol";
 import {ICvxRewardToken} from "./interfaces/externals/ICvxRewardToken.sol";
+
+import {IgUSDCvx} from "./interfaces/internals/IgUSDCvx.sol";
+import {IgUSDSdt} from "./interfaces/internals/IgUSDSdt.sol";
+import {IscvUSD} from "./interfaces/internals/IscvUSD.sol";
 import "forge-std/console.sol"; //TODO: to remove
 
 contract LendRewardSplitter is Ownable2StepUpgradeable {
@@ -49,14 +52,14 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     /// StakeDAO
     mapping(ILlamaLendVault => IStakeDaoVault) public sdtVaultPerLlamaVault;
     mapping(ILlamaLendVault => ISdtLiquidityGauge) public sdtGaugePerLlamaVault;
-    mapping(ILlamaLendVault => ICurveLendSplitterToken) public gUSDSdtPerLlamaVault;
-    mapping(ILlamaLendVault => ICurveLendSplitterToken) public scvUSDSdtPerLlamaVault;
+    mapping(ILlamaLendVault => IgUSDSdt) public gUSDSdtPerLlamaVault;
+    mapping(ILlamaLendVault => IscvUSD) public scvUSDSdtPerLlamaVault;
     /// Convex
     mapping(ILlamaLendVault => uint256) public cvxPidPerLlamaVault;
     mapping(ILlamaLendVault => ICvxRewardToken) public cvxRewardTokenPerLlamaVault;
     mapping(ILlamaLendVault => IERC20) public cvxVaultPerLlamaVault;
-    mapping(ILlamaLendVault => ICurveLendSplitterToken) public gUSDCvxPerLlamaVault;
-    mapping(ILlamaLendVault => ICurveLendSplitterToken) public scvUSDCvxPerLlamaVault;
+    mapping(ILlamaLendVault => IgUSDCvx) public gUSDCvxPerLlamaVault;
+    mapping(ILlamaLendVault => IscvUSD) public scvUSDCvxPerLlamaVault;
 
     mapping(address => bool) public isLendSplitterToken;
     /// @dev Tokens allowed to be used in zapAndDeposit method.
@@ -75,10 +78,9 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     error NotACurveSplitterToken(address contractAddr);
     error AlreadyCreatedCvxMarket(uint256 pid);
 
-    error CallerNotAllowed();
+    error CallerNotLendSplitterToken();
     error NotLendAssetRoute(address token);
     error NotAllowedInToken(address token);
-    error EmptyAmount();
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CONSTRUCTOR & INITIALIZER
@@ -268,7 +270,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     ) internal returns (uint256 depositAmount) {
         depositAmount = amount;
         ICvxRewardToken cvxRewardToken = cvxRewardTokenPerLlamaVault[llamaVault];
-        IgUSDCvx gUSD = IgUSDCvx(address(gUSDCvxPerLlamaVault[llamaVault]));
+        IgUSDCvx gUSD = gUSDCvxPerLlamaVault[llamaVault];
 
         if (inType == ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset) {
             /// @dev Transfer the vault asset from LlamaLend
@@ -283,19 +285,26 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
             depositAmount = llamaVault.deposit(amount, address(gUSD));
         }
         if (doDeposit) {
-            depositAmount = gUSD.depositAndStake(cvxRewardToken, cvxPidPerLlamaVault[llamaVault], depositAmount);
+            if (isStableReward) {
+                /// @dev For scvUSD, we mint 1:1 from cvcrvUSD.
+                scvUSDCvxPerLlamaVault[llamaVault].mint(msg.sender, depositAmount);
+                gUSD.stakeAll(cvxPidPerLlamaVault[llamaVault]);
+            } else {
+                /// @dev For gUSD, we mint 1:1 from crvUSD,
+                // we use the curveLendVault.convertToAssets to calculate the amount.
+                depositAmount = llamaVault.convertToAssets(depositAmount);
+                depositAmount = gUSD.mint(msg.sender, depositAmount, cvxPidPerLlamaVault[llamaVault], true);
+            }
         } else {
-            depositAmount = gUSD.depositNoStake(cvxVaultPerLlamaVault[llamaVault], cvxPidPerLlamaVault[llamaVault], depositAmount);
-        }
-
-        if (isStableReward) {
-            /// @dev For scvUSD, we mint 1:1 from cvcrvUSD.
-            scvUSDCvxPerLlamaVault[llamaVault].mint(msg.sender, depositAmount);
-        } else {
-            /// @dev For gUSD, we mint 1:1 from crvUSD,
-            // we use the curveLendVault.convertToAssets to calculate the amount.
-            depositAmount = llamaVault.convertToAssets(depositAmount);
-            gUSD.mint(msg.sender, depositAmount);
+            if (isStableReward) {
+                /// @dev For scvUSD, we mint 1:1 from cvcrvUSD.
+                scvUSDCvxPerLlamaVault[llamaVault].mint(msg.sender, depositAmount);
+            } else {
+                /// @dev For gUSD, we mint 1:1 from crvUSD,
+                // we use the curveLendVault.convertToAssets to calculate the amount.
+                depositAmount = llamaVault.convertToAssets(depositAmount);
+                depositAmount = gUSD.mint(msg.sender, depositAmount, cvxPidPerLlamaVault[llamaVault], false);
+            }
         }
 
         /// @dev Requires that some tokens are deposited
@@ -350,19 +359,19 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
             revert Errors.ZeroAmount();
         }
 
-        IgUSDCvx gUSD = IgUSDCvx(address(gUSDCvxPerLlamaVault[llamaVault]));
+        IgUSDCvx gUSD = gUSDCvxPerLlamaVault[llamaVault];
 
-        uint256 shareAmount = amount;
+        uint256 amountToWithdraw = amount;
         if (isStableReward) {
             /// @dev We burn the corresponding token.
             scvUSDCvxPerLlamaVault[llamaVault].burn(msg.sender, amount);
         } else {
             /// @dev We burn the corresponding token.
             gUSD.burn(msg.sender, amount);
-            shareAmount = llamaVault.convertToShares(amount);
+            amountToWithdraw = llamaVault.convertToShares(amount);
         }
 
-        gUSD.withdraw(shareAmount, msg.sender, outType, llamaVault);
+        gUSD.withdraw(amountToWithdraw, msg.sender, outType, cvxPidPerLlamaVault[llamaVault], llamaVault);
 
         emit WithdrawCvx(msg.sender, isStableReward, outType, amount);
     }
@@ -478,7 +487,9 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      * @param tokenAmounts array of token to used to increment fees
      */
     function incrementDaoFees(ICommonStruct.TokenAmount[] memory tokenAmounts) external {
-        require(isLendSplitterToken[msg.sender], "NOT_UPDATER");
+        if (!isLendSplitterToken[msg.sender]) {
+            revert CallerNotLendSplitterToken();
+        }
         for (uint256 erc20Id; erc20Id < tokenAmounts.length; ) {
             daoFeeForToken[tokenAmounts[erc20Id].token] += tokenAmounts[erc20Id].amount;
             unchecked {
@@ -506,10 +517,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         require(address(_llamaLendVault) != address(0), "CURVE_LEND_0");
 
         IERC20 _lendAsset = IERC20(_llamaLendVault.asset());
-        require(address(_lendAsset) != address(0), "LEND_ASSET_0");
-
         ISdtLiquidityGauge _liquidityGauge = ISdtLiquidityGauge(stakeDaoVault.liquidityGauge());
-        require(address(_liquidityGauge) != address(0), "LIQUIDITY_GAUGE_0");
 
         /// @dev Deploy scvUSD (beaconProxy)
         scvUSDSdt _scvUSD = scvUSDSdt(
@@ -534,92 +542,99 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         );
         _scvUSD.setGUSD(address(_gUSD));
 
-        /// @dev Approvals
-        //TODO: check approvals ???
+        /// @dev Approve the lend asset to be spent by the corresponding LlamaLendVault in order to get LlamaLend LP
         _lendAsset.approve(address(_llamaLendVault), MAX_UINT);
+        /// @dev Approve the LlamaLend LP to be spent by the stakeDao Vault
         _llamaLendVault.approve(address(stakeDaoVault), MAX_UINT);
 
         sdtVaultPerLlamaVault[_llamaLendVault] = stakeDaoVault;
         sdtGaugePerLlamaVault[_llamaLendVault] = _liquidityGauge;
         lentAssetPerLlamaVault[_llamaLendVault] = _lendAsset;
-        scvUSDSdtPerLlamaVault[_llamaLendVault] = ICurveLendSplitterToken(address(_scvUSD));
-        gUSDSdtPerLlamaVault[_llamaLendVault] = ICurveLendSplitterToken(address(_gUSD));
+        scvUSDSdtPerLlamaVault[_llamaLendVault] = _scvUSD;
+        gUSDSdtPerLlamaVault[_llamaLendVault] = _gUSD;
 
         isLendSplitterToken[address(_scvUSD)] = true;
         isLendSplitterToken[address(_gUSD)] = true;
     }
 
     /**
-     * @notice Create a new Market through a StakeDao vault (only for collatered vaults).
+     * @notice Create several new Market through a Convex vault.
      *         Deploy on the fly the corresponding streamed tokens: scvUSD (stable) & gUSD (governance)
-     * @param pid Address of the vault of StakeDao
+     * @param pids List of pids associated to markets to create
      */
-    function createCvxMarket(uint256 pid) external onlyOwner {
+    function createCvxMarkets(uint256[] calldata pids) external onlyOwner {
         require(SCVUSDBeaconCvx != address(0), "BEACON_0");
         require(GUSDBeaconCvx != address(0), "BEACON_0");
 
-        (address _llamaLendVaultAddr, address cvxVaultToken, , address rewardTokenAddr, , ) = CVX_BOOSTER.poolInfo(pid);
-        ILlamaLendVault _llamaLendVault = ILlamaLendVault(_llamaLendVaultAddr);
-        ICvxRewardToken rewardToken = ICvxRewardToken(rewardTokenAddr);
+        for (uint256 pidIndex = 0; pidIndex < pids.length; ) {
+            uint256 pid = pids[pidIndex];
 
-        if (cvxPidPerLlamaVault[_llamaLendVault] != 0) {
-            revert AlreadyCreatedCvxMarket(pid);
-        }
-        require(address(rewardToken) != address(0), "REWARD_TOKEN_0");
+            (address _llamaLendVaultAddr, address cvxVaultToken, , address rewardTokenAddr, , ) = CVX_BOOSTER.poolInfo(pid);
+            ILlamaLendVault _llamaLendVault = ILlamaLendVault(_llamaLendVaultAddr);
+            ICvxRewardToken rewardToken = ICvxRewardToken(rewardTokenAddr);
 
-        IERC20 _lendAsset = IERC20(_llamaLendVault.asset());
+            if (cvxPidPerLlamaVault[_llamaLendVault] != 0) {
+                revert AlreadyCreatedCvxMarket(pid);
+            }
+            require(address(rewardToken) != address(0), "REWARD_TOKEN_0");
 
-        /// @dev Deploy scvUSD (beaconProxy)
-        scvUSDCvx _scvUSD = scvUSDCvx(
-            address(
-                new BeaconProxy(
-                    SCVUSDBeaconCvx,
-                    //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
-                    abi.encodeCall(
-                        scvUSDCvx.initialize,
-                        ("Stable USD/CRV", "scvUSD-CRV", ILendRewardSplitter(address(this)), _llamaLendVault, address(rewardToken))
-                    )
-                )
-            )
-        );
+            IERC20 _lendAsset = IERC20(_llamaLendVault.asset());
 
-        /// @dev Deploy gUSD (beaconProxy)
-        gUSDCvx _gUSD = gUSDCvx(
-            address(
-                new BeaconProxy(
-                    GUSDBeaconCvx,
-                    //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
-                    abi.encodeCall(
-                        gUSDCvx.initialize,
-                        (
-                            "Governance USD/CRV",
-                            "gUSD-CRV",
-                            ILendRewardSplitter(address(this)),
-                            rewardToken,
-                            IERC20(_llamaLendVaultAddr),
-                            IERC20(cvxVaultToken),
-                            address(_scvUSD)
+            /// @dev Deploy scvUSD (beaconProxy)
+            scvUSDCvx _scvUSD = scvUSDCvx(
+                address(
+                    new BeaconProxy(
+                        SCVUSDBeaconCvx,
+                        //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
+                        abi.encodeCall(
+                            scvUSDCvx.initialize,
+                            ("Stable USD/CRV", "scvUSD-CRV", ILendRewardSplitter(address(this)), _llamaLendVault, address(rewardToken))
                         )
                     )
                 )
-            )
-        );
+            );
 
-        /// @dev Approvals
-        //TODO: check approvals ???
-        _lendAsset.approve(address(_llamaLendVault), MAX_UINT);
-        _llamaLendVault.approve(address(CVX_BOOSTER), MAX_UINT);
+            /// @dev Deploy gUSD (beaconProxy)
+            gUSDCvx _gUSD = gUSDCvx(
+                address(
+                    new BeaconProxy(
+                        GUSDBeaconCvx,
+                        //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
+                        abi.encodeCall(
+                            gUSDCvx.initialize,
+                            (
+                                "Governance USD/CRV",
+                                "gUSD-CRV",
+                                ILendRewardSplitter(address(this)),
+                                rewardToken,
+                                IERC20(_llamaLendVaultAddr),
+                                IERC20(cvxVaultToken),
+                                address(_scvUSD)
+                            )
+                        )
+                    )
+                )
+            );
 
-        cvxPidPerLlamaVault[_llamaLendVault] = pid;
-        lentAssetPerLlamaVault[_llamaLendVault] = _lendAsset;
-        cvxRewardTokenPerLlamaVault[_llamaLendVault] = rewardToken;
-        cvxVaultPerLlamaVault[_llamaLendVault] = IERC20(cvxVaultToken);
+            _scvUSD.setGUSD(address(_gUSD));
 
-        scvUSDCvxPerLlamaVault[_llamaLendVault] = ICurveLendSplitterToken(address(_scvUSD));
-        gUSDCvxPerLlamaVault[_llamaLendVault] = ICurveLendSplitterToken(address(_gUSD));
+            _lendAsset.approve(address(_llamaLendVault), MAX_UINT);
+            _llamaLendVault.approve(address(CVX_BOOSTER), MAX_UINT);
 
-        isLendSplitterToken[address(_gUSD)] = true;
-        isLendSplitterToken[address(_scvUSD)] = true;
+            cvxPidPerLlamaVault[_llamaLendVault] = pid;
+            lentAssetPerLlamaVault[_llamaLendVault] = _lendAsset;
+            cvxRewardTokenPerLlamaVault[_llamaLendVault] = rewardToken;
+            cvxVaultPerLlamaVault[_llamaLendVault] = IERC20(cvxVaultToken);
+
+            scvUSDCvxPerLlamaVault[_llamaLendVault] = _scvUSD;
+            gUSDCvxPerLlamaVault[_llamaLendVault] = _gUSD;
+
+            isLendSplitterToken[address(_gUSD)] = true;
+            isLendSplitterToken[address(_scvUSD)] = true;
+            unchecked {
+                ++pidIndex;
+            }
+        }
     }
 
     /**
@@ -627,8 +642,6 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      * @param tokens IERC20 array to withdraw
      */
     function withdrawFees(IERC20[] calldata tokens) external onlyOwner {
-        //TODO: Change this function to send token to the right treasury
-
         for (uint256 erc20Id; erc20Id < tokens.length; ) {
             IERC20 erc20 = tokens[erc20Id];
             uint256 daoFeeToken = daoFeeForToken[erc20];

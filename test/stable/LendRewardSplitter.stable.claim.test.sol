@@ -112,12 +112,12 @@ contract LendRewardSplitterStableClaimTest is Test {
 
     function deposit() internal returns (address user1, address user2) {
         uint256 depositAmount = 10_000 ether;
-        address tokenIn = address(AddrClassicERC20.TOKEN_CRVUSD);
-        user1 = testCommon.getUser(1, tokenIn, depositAmount);
-        testCommon.deposit(depositAmount, true, true, tokenIn);
+
+        user1 = testCommon.getUser(1, AddrClassicERC20.TOKEN_CRVUSD, depositAmount);
+        testCommon.deposit(depositAmount, true, true, AddrClassicERC20.TOKEN_CRVUSD);
         vm.stopPrank();
-        user2 = testCommon.getUser(2, tokenIn, depositAmount);
-        testCommon.deposit(depositAmount, false, true, tokenIn);
+        user2 = testCommon.getUser(2, AddrClassicERC20.TOKEN_CRVUSD, depositAmount);
+        testCommon.deposit(depositAmount, false, true, AddrClassicERC20.TOKEN_CRVUSD);
         vm.stopPrank();
     }
 }

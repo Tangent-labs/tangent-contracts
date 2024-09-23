@@ -24,7 +24,9 @@ contract DepositLendAssetStable is Test {
         splitter = testCommon.splitter();
 
         vm.prank(testCommon.owner());
-        splitter.createCvxMarket(PidCvxBooster.CRVUSD_CRV);
+        uint256[] memory pids = new uint256[](1);
+        pids[0] = PidCvxBooster.CRVUSD_CRV;
+        splitter.createCvxMarkets(pids);
     }
 
     function test_deposit_lend_asset_and_doDeposit() external {

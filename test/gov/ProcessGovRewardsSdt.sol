@@ -63,13 +63,12 @@ contract ProcessGovRewardsSdt is Test {
         (processorFeePercentageCvx, daoFeePercentageCvx) = gUSDImplem.fees(1); //1%
 
         /// @dev Deposit
-        address tokenIn = AddrClassicERC20.TOKEN_CRVUSD;
-        testCommon.getUser(1, tokenIn);
+        testCommon.getUser(1, AddrClassicERC20.TOKEN_CRVUSD);
         bool doDeposit = true;
         uint256 depositedAmount = 1000 ether;
         vm.stopPrank();
         vm.deal(depositor, 10 ether);
-        deal(AddrClassicERC20.TOKEN_CRVUSD, depositor, 1000 ether);
+        deal(address(AddrClassicERC20.TOKEN_CRVUSD), depositor, 1000 ether);
         vm.startPrank(depositor);
         IERC20(AddrClassicERC20.TOKEN_CRVUSD).approve(address(splitter), MAX_UINT);
         splitter.depositSdt(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.SDT_TOKEN_TYPE.LendAsset, depositedAmount, isStableReward, doDeposit);
@@ -89,8 +88,8 @@ contract ProcessGovRewardsSdt is Test {
         assertEq(rewardTokens.length, 2);
         _processGovReward(false);
 
-        assertEq(address(rewardTokens[0]), AddrClassicERC20.TOKEN_CRV);
-        assertEq(address(rewardTokens[1]), AddrClassicERC20.TOKEN_CVX);
+        assertEq(address(rewardTokens[0]), address(AddrClassicERC20.TOKEN_CRV));
+        assertEq(address(rewardTokens[1]), address(AddrClassicERC20.TOKEN_CVX));
 
         //CRV
         assertEq(crvClaimable, CRV.balanceOf(address(splitter)) - crvDaoFees);
@@ -205,7 +204,7 @@ contract ProcessGovRewardsSdt is Test {
     function test_RevertWhen_updateDaoFeesWithNotUpdater() external {
         ICommonStruct.TokenAmount[] memory tokenAmounts = new ICommonStruct.TokenAmount[](1);
         tokenAmounts[0] = ICommonStruct.TokenAmount({token: CRV, amount: 5});
-        vm.expectRevert(bytes("NOT_UPDATER"));
+        vm.expectRevert(abi.encodeWithSignature("CallerNotLendSplitterToken()"));
         splitter.incrementDaoFees(tokenAmounts);
     }
 
@@ -235,13 +234,13 @@ contract ProcessGovRewardsSdt is Test {
         testCommon._distributeGaugeRewards(ISdtLiquidityGauge(stakeDaoVault.liquidityGauge()), distributionGauges);
         skip(72000);
         //CRV
-        crvClaimable = liquidityGauge.claimable_reward(address(gUSDImplem), AddrClassicERC20.TOKEN_CRV);
+        crvClaimable = liquidityGauge.claimable_reward(address(gUSDImplem), address(AddrClassicERC20.TOKEN_CRV));
         crvProcessorRewards = (crvClaimable * processorFeePercentageCrv) / DENOMINATOR;
         crvDaoFees = (crvClaimable * daoFeePercentageCrv) / DENOMINATOR;
         crvClaimable -= crvProcessorRewards;
         crvClaimable -= crvDaoFees;
         //CVX
-        cvxClaimable = liquidityGauge.claimable_reward(address(gUSDImplem), AddrClassicERC20.TOKEN_CVX);
+        cvxClaimable = liquidityGauge.claimable_reward(address(gUSDImplem), address(AddrClassicERC20.TOKEN_CVX));
         cvxProcessorRewards = (cvxClaimable * processorFeePercentageCvx) / DENOMINATOR;
         cvxDaoFees = (cvxClaimable * daoFeePercentageCvx) / DENOMINATOR;
         cvxClaimable -= cvxProcessorRewards;

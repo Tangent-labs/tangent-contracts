@@ -1,16 +1,15 @@
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ICvxBooster} from "../externals/ICvxBooster.sol";
 import {ICvxRewardToken} from "../externals/ICvxRewardToken.sol";
 import {ILlamaLendVault} from "../externals/ILlamaLendVault.sol";
 import {ILendRewardSplitter} from "../internals/ILendRewardSplitter.sol";
 import {ICurveLendSplitterToken} from "../internals/ICurveLendSplitterToken.sol";
 
 interface IgUSDCvx is ICurveLendSplitterToken {
-    function depositAndStake(ICvxRewardToken _cvxRewardToken, uint256 pid, uint256 depositedAmount) external returns (uint256);
+    function stakeAll(uint256 pid) external;
 
-    function depositNoStake(IERC20 _cvxVault, uint256 pid, uint256 depositedAmount) external returns (uint256);
+    function mint(address receiver, uint256 amount, uint256 pid, bool isStake) external returns (uint256);
 
-    function withdraw(uint256 amount, address receiver, ILendRewardSplitter.CVX_TOKEN_TYPE outType, ILlamaLendVault llamaVault) external;
+    function withdraw(uint256 amount, address receiver, ILendRewardSplitter.CVX_TOKEN_TYPE outType, uint256 pid, ILlamaLendVault llamaVault) external;
 
     function claimSCVUSDRewards(uint256 shares, ILlamaLendVault llamaVault) external;
 }

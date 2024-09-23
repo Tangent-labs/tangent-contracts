@@ -96,7 +96,7 @@ contract LendRewardSplitterTestCommon is Test {
         return scvUSDBeaconCvx;
     }
 
-    function deploySplitterProxy(address ownerToSet) public returns (address) {
+    function deploySplitterProxy(address ownerToSet) public returns (LendRewardSplitter) {
         if (IS_VALIDATE_IMPLEM) {
             Options memory opts;
             Upgrades.validateImplementation("LendRewardSplitter.sol:LendRewardSplitter", opts);
@@ -111,7 +111,7 @@ contract LendRewardSplitterTestCommon is Test {
                 )
             )
         );
-        return address(splitter);
+        return splitter;
     }
 
     function setUpSplitter() public {
@@ -139,7 +139,7 @@ contract LendRewardSplitterTestCommon is Test {
 
         //labelizing
         vm.label(address(splitter), "SPLITTER");
-        vm.label(AddrClassicERC20.TOKEN_CRVUSD, "crvUSD");
+        vm.label(address(AddrClassicERC20.TOKEN_CRVUSD), "crvUSD");
         vm.label(address(AddrLlamaLendVaults.CRVUSD_CRV), "LLAMALEND_VAULT_CRVUSD_CRV");
 
         vm.label(address(AddrSdtVaults.CRVUSD_CRV), "STAKE_DAO_VAULT_CRVUSD_CRV");
@@ -156,11 +156,11 @@ contract LendRewardSplitterTestCommon is Test {
         vm.label(address(AddrGlobal.CRVUSD_CONTROLLER), "CRVUSD_CONTROLLER");
     }
 
-    function deposit(uint256 amount, bool isStableReward, bool doDeposit, address tokenIn) public returns (uint256) {
+    function deposit(uint256 amount, bool isStableReward, bool doDeposit, IERC20 tokenIn) public returns (uint256) {
         ILendRewardSplitter.SDT_TOKEN_TYPE typeAsset = ILendRewardSplitter.SDT_TOKEN_TYPE.LendAsset;
-        if (tokenIn == address(AddrLlamaLendVaults.CRVUSD_CRV)) {
+        if (address(tokenIn) == address(AddrLlamaLendVaults.CRVUSD_CRV)) {
             typeAsset = ILendRewardSplitter.SDT_TOKEN_TYPE.LlamalendVaultAsset;
-        } else if (tokenIn == address(AddrSdtVaults.CRVUSD_CRV)) {
+        } else if (address(tokenIn) == address(AddrSdtVaults.CRVUSD_CRV)) {
             typeAsset = ILendRewardSplitter.SDT_TOKEN_TYPE.SdtGaugeAsset;
         }
         return splitter.depositSdt(llamalendVault, typeAsset, amount, isStableReward, doDeposit);
@@ -170,18 +170,18 @@ contract LendRewardSplitterTestCommon is Test {
         splitter.withdrawSdt(llamalendVault, tokenOutType, depositAmount, isStableReward);
     }
 
-    function getUser(uint256 index, address token, uint256 amount) public returns (address user) {
+    function getUser(uint256 index, IERC20 token, uint256 amount) public returns (address user) {
         user = makeAddr(string.concat("user", vm.toString((index))));
         vm.deal(user, 10 ether);
-        if (token == address(AddrSdtVaults.CRVUSD_CRV)) {
-            token = address(liquidityGauge);
+        if (address(token) == address(AddrSdtVaults.CRVUSD_CRV)) {
+            token = IERC20(address(liquidityGauge));
         }
-        deal(token, user, amount);
+        deal(address(token), user, amount);
         vm.startPrank(user);
-        IERC20(token).approve(address(splitter), MAX_UINT);
+        token.approve(address(splitter), MAX_UINT);
     }
 
-    function getUser(uint256 index, address token) public returns (address user) {
+    function getUser(uint256 index, IERC20 token) public returns (address user) {
         return getUser(index, token, 1000 ether);
     }
 

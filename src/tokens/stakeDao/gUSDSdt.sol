@@ -6,7 +6,7 @@ import {IStakeDaoVault} from "../../interfaces/externals/IStakeDaoVault.sol";
 import {IgUSDSdt} from "../../interfaces/internals/IgUSDSdt.sol";
 import "../CurveLendSplitterToken.sol";
 
-contract gUSDSdt is CurveLendSplitterToken {
+contract gUSDSdt is CurveLendSplitterToken, IgUSDSdt {
     using SafeERC20 for IERC20;
     using SafeERC20 for ISdtLiquidityGauge;
     using SafeERC20 for ILlamaLendVault;
@@ -83,18 +83,6 @@ contract gUSDSdt is CurveLendSplitterToken {
         }
     }
 
-    function claimSCVUSDRewards(uint256 shares, ILlamaLendVault llamaVault) external {
-        /// @dev Only scvUSD can claim this function
-        if (msg.sender != scvUSD) {
-            revert OnlySCVUSDCaller(msg.sender);
-        }
-
-        /// @dev Withdraw the LlamaLend LP tokens from StakeDao
-        stakeDaoVault.withdraw(shares);
-        /// @dev Redeem the lend asset from LlamaLend to the scvUSD
-        llamaVault.redeem(shares, msg.sender);
-    }
-
     /**
      * @notice Process Governance Rewards (only for gUSD)
      * @dev Claim rewards from the splitter and stream it for the holders of gUSD.
@@ -105,5 +93,17 @@ contract gUSDSdt is CurveLendSplitterToken {
         liquidityGauge.claim_rewards(address(this));
 
         _processRewards();
+    }
+
+    function claimSCVUSDRewards(uint256 shares, ILlamaLendVault llamaVault) external {
+        /// @dev Only scvUSD can claim this function
+        if (msg.sender != scvUSD) {
+            revert OnlySCVUSDCaller(msg.sender);
+        }
+
+        /// @dev Withdraw the LlamaLend LP tokens from StakeDao
+        stakeDaoVault.withdraw(shares);
+        /// @dev Redeem the lend asset from LlamaLend to the scvUSD
+        llamaVault.redeem(shares, msg.sender);
     }
 }

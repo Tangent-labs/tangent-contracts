@@ -20,7 +20,9 @@ contract CreateConvexMarket is Test {
 
     function test_create_cvrUSD_crv_market() external {
         vm.prank(testCommon.owner());
-        splitter.createCvxMarket(PidCvxBooster.CRVUSD_CRV);
+        uint256[] memory pids = new uint256[](1);
+        pids[0] = PidCvxBooster.CRVUSD_CRV;
+        splitter.createCvxMarkets(pids);
 
         CurveLendSplitterToken gUSD = CurveLendSplitterToken(address(splitter.gUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV)));
         CurveLendSplitterToken scvUSD = CurveLendSplitterToken(address(splitter.scvUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV)));
@@ -38,16 +40,23 @@ contract CreateConvexMarket is Test {
     }
 
     function test_create_twice_same_market() external {
+        uint256[] memory pids = new uint256[](1);
+        pids[0] = PidCvxBooster.CRVUSD_CRV;
+        splitter.createCvxMarkets(pids);
+
         vm.startPrank(testCommon.owner());
-        splitter.createCvxMarket(PidCvxBooster.CRVUSD_CRV);
+        splitter.createCvxMarkets(pids);
         vm.expectRevert(abi.encodeWithSelector(LendRewardSplitter.AlreadyCreatedCvxMarket.selector, PidCvxBooster.CRVUSD_CRV));
-        splitter.createCvxMarket(PidCvxBooster.CRVUSD_CRV);
+        splitter.createCvxMarkets(pids);
     }
 
     function test_create_market_as_not_owner() external {
+        uint256[] memory pids = new uint256[](1);
+        pids[0] = PidCvxBooster.CRVUSD_CRV;
+
         address usr = makeAddr("Test");
         vm.prank(usr);
         vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", usr));
-        splitter.createCvxMarket(PidCvxBooster.CRVUSD_CRV);
+        splitter.createCvxMarkets(pids);
     }
 }

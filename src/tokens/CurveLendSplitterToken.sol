@@ -14,7 +14,7 @@ import {Errors} from "../libs/Errors.sol";
 
 import "forge-std/console.sol"; //TODO: to remove
 
-abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable {
+abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable, ICurveLendSplitterToken {
     using SafeERC20 for IERC20;
 
     uint256 constant MAX_UINT = uint256(int256(-1));
@@ -100,6 +100,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
         }
         if (tokenAmounts.length != 0) {
             /// @dev Reduce length of tokenAmounts struct to not return useless 0
+            
             // solhint-disable-next-line no-inline-assembly
             assembly {
                 mstore(tokenAmounts, sub(mload(tokenAmounts), sub(rewardTokensLength, counter)))
@@ -118,7 +119,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
      * @param to        Receiver of the staked ERC20 token
      * @param amount    Amount of staked token
      */
-    function mint(address to, uint256 amount) external verifyLendSplitterCaller returns (uint256) {
+    function mint(address to, uint256 amount) external virtual verifyLendSplitterCaller returns (uint256) {
         /// @dev Mint will call _updateReward
         _mint(to, amount);
 
@@ -130,7 +131,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
      * @param from        Owner of the staked ERC20 token
      * @param amount      Amount to burn
      */
-    function burn(address from, uint256 amount) external verifyLendSplitterCaller {
+    function burn(address from, uint256 amount) external virtual verifyLendSplitterCaller {
         require(amount <= balanceOf(from), "NOT_ENOUGH_BALANCE");
         /// @dev Burn will call _updateReward
         _burn(from, amount);

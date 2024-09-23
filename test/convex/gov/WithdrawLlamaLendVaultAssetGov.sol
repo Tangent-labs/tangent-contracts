@@ -35,7 +35,9 @@ contract WithdrawLlamaLendVaultAssetGov is Test {
 
         vm.prank(testCommon.owner());
         // Create a market
-        splitter.createCvxMarket(PidCvxBooster.CRVUSD_CRV);
+        uint256[] memory pids = new uint256[](1);
+        pids[0] = PidCvxBooster.CRVUSD_CRV;
+        splitter.createCvxMarkets(pids);
 
         deal(address(LLAMALEND_VAULT_CRV), usr1, 100 ether);
         deal(address(LLAMALEND_VAULT_CRV), usr2, 100 ether);

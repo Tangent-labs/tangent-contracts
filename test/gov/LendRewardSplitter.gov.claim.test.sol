@@ -78,7 +78,7 @@ contract LendRewardSplitterGovClaimTest is Test {
     }
 
     function _deposit(ILlamaLendVault _llamaLendVault, address user, uint256 depositedAmount) internal {
-        address tokenIn = AddrClassicERC20.TOKEN_CRVUSD;
+        address tokenIn = address(AddrClassicERC20.TOKEN_CRVUSD);
         bool doDeposit = true;
         vm.stopPrank();
         vm.deal(user, 1 ether);

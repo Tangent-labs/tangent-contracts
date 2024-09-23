@@ -6,8 +6,9 @@ import {ICvxRewardToken} from "../../interfaces/externals/ICvxRewardToken.sol";
 import {ICvxBooster} from "../../interfaces/externals/ICvxBooster.sol";
 import {ILlamaLendVault} from "../../interfaces/externals/ILlamaLendVault.sol";
 import {ILendRewardSplitter} from "../../interfaces/internals/ILendRewardSplitter.sol";
+import {IgUSDCvx} from "../../interfaces/internals/IgUSDCvx.sol";
 
-contract gUSDCvx is CurveLendSplitterToken {
+contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
     using SafeERC20 for IERC20;
 
     ICvxBooster constant CVX_BOOSTER = ICvxBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
@@ -15,6 +16,8 @@ contract gUSDCvx is CurveLendSplitterToken {
     ICvxRewardToken public cvxRewardToken;
 
     address public scvUSD;
+
+    IERC20 public cvxVault;
 
     error OnlySCVUSDCaller(address caller);
 
@@ -42,6 +45,7 @@ contract gUSDCvx is CurveLendSplitterToken {
         lendRewardSplitter = _lendRewardSplitter;
         cvxRewardToken = _cvxRewardToken;
         scvUSD = _scvUSD;
+        cvxVault = _cvxVault;
 
         /// @dev Need this approval to the llamaLendVault on the CvxBooster
         _llamaLendVault.approve(address(CVX_BOOSTER), MAX_UINT);
@@ -66,28 +70,36 @@ contract gUSDCvx is CurveLendSplitterToken {
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function depositAndStake(ICvxRewardToken _cvxRewardToken, uint256 pid, uint256 depositAmount) external verifyLendSplitterCaller returns (uint256) {
-        CVX_BOOSTER.deposit(pid, depositAmount, false);
-        _cvxRewardToken.stakeAll();
-        return depositAmount;
+    function stakeAll(uint256 pid) external verifyLendSplitterCaller {
+        _stakeAll(pid);
     }
 
-    function depositNoStake(IERC20 _cvxVault, uint256 pid, uint256 depositAmount) external verifyLendSplitterCaller returns (uint256) {
-        uint256 balanceBefore = _cvxVault.balanceOf(address(this));
-        CVX_BOOSTER.deposit(pid, depositAmount, false);
-        depositAmount = _cvxVault.balanceOf(address(this)) - balanceBefore;
+    function mint(address receiver, uint256 amount, uint256 pid, bool isStake) external verifyLendSplitterCaller returns (uint256) {
+        _mint(receiver, amount);
 
-        return depositAmount;
+        if (isStake) {
+            _stakeAll(pid);
+        }
+
+        return amount;
+    }
+
+    function _stakeAll(uint256 pid) internal {
+        CVX_BOOSTER.depositAll(pid, true);
     }
 
     function withdraw(
         uint256 amount,
         address receiver,
         ILendRewardSplitter.CVX_TOKEN_TYPE outType,
+        uint256 _pid,
         ILlamaLendVault llamaVault
     ) external verifyLendSplitterCaller {
-        /// @dev We withdraw the Llamalend vault asset on this contract
-        cvxRewardToken.withdrawAndUnwrap(amount, false);
+        uint256 llamaVaultBalance = llamaVault.balanceOf(address(this));
+
+        if (llamaVaultBalance < amount) {
+            cvxRewardToken.withdrawAndUnwrap(amount - llamaVaultBalance, false);
+        }
 
         /// @dev The user claimed the LlamaLend vault asset so we transfer it to him directly
         if (outType == ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset) {
@@ -115,8 +127,12 @@ contract gUSDCvx is CurveLendSplitterToken {
         if (msg.sender != scvUSD) {
             revert OnlySCVUSDCaller(msg.sender);
         }
+        uint256 llamaVaultBalance = llamaVault.balanceOf(address(this));
 
-        cvxRewardToken.withdrawAndUnwrap(shares, false);
+        if (llamaVaultBalance < shares) {
+            shares -= llamaVaultBalance;
+            cvxRewardToken.withdrawAndUnwrap(shares - llamaVaultBalance, false);
+        }
 
         llamaVault.redeem(shares, msg.sender);
     }

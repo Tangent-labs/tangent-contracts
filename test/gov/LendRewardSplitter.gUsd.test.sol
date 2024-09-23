@@ -1,4 +1,6 @@
 import {Test, console} from "forge-std/Test.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 import {LendRewardSplitterTestCommon} from "../LendRewardSplitter.common.test.sol";
 import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
 import {CurveLendSplitterToken} from "../../src/tokens/CurveLendSplitterToken.sol";
@@ -26,12 +28,7 @@ contract LendRewardSplittergUsdTest is Test {
     function test_revertWhen_MintCallByUser() external {
         address user = makeAddr("user1");
         vm.startPrank(user);
-        vm.expectRevert(
-            abi.encodeWithSelector(
-                CurveLendSplitterToken.NotLendRewardSplitter.selector,
-                user
-            )
-        );
+        vm.expectRevert(abi.encodeWithSelector(CurveLendSplitterToken.NotLendRewardSplitter.selector, user));
         gUSDImplem.mint(user, 1000 ether);
         vm.stopPrank();
     }
@@ -39,7 +36,7 @@ contract LendRewardSplittergUsdTest is Test {
     function test_revertWhen_BurnCallByUser() external {
         // User 2 deposit
         uint256 depositAmount = 50 ether;
-        address tokenIn = AddrClassicERC20.TOKEN_CRVUSD;
+        IERC20 tokenIn = AddrClassicERC20.TOKEN_CRVUSD;
         address user2 = testCommon.getUser(2, tokenIn);
         testCommon.deposit(depositAmount, true, true, tokenIn);
         vm.stopPrank();

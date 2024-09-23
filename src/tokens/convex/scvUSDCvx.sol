@@ -4,13 +4,14 @@ pragma solidity ^0.8.24;
 import "../CurveLendSplitterToken.sol";
 
 import {IgUSDCvx} from "../../interfaces/internals/IgUSDCvx.sol";
+import {IscvUSD} from "../../interfaces/internals/IscvUSD.sol";
 import {ILlamaLendVault} from "../../interfaces/externals/ILlamaLendVault.sol";
 
-contract scvUSDCvx is CurveLendSplitterToken {
+contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
     using SafeERC20 for IERC20;
     IgUSDCvx public gUSD;
     ILlamaLendVault public llamaLendVault;
-    address public cvxRewardToken;
+    IERC20 public cvxRewardToken;
 
     error OnlySCVUSDCaller(address caller);
 
@@ -35,7 +36,7 @@ contract scvUSDCvx is CurveLendSplitterToken {
 
         lendRewardSplitter = _lendRewardSplitter;
         llamaLendVault = _llamaLendVault;
-        cvxRewardToken = _cvxRewardToken;
+        cvxRewardToken = IERC20(_cvxRewardToken);
 
         IERC20 crvUsd = IERC20(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
         rewardTokens.push(crvUsd);
@@ -48,6 +49,10 @@ contract scvUSDCvx is CurveLendSplitterToken {
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    function getTotalStaked() external returns (uint256) {
+        cvxRewardToken.balanceOf(address(gUSD)) + llamaLendVault.balanceOf(address(gUSD));
+    }
+
     /**
      * @notice Process Stable Rewards (only for scvUSD)
      * @dev Claim rewards from the splitter share  and stream it for the holders of scvUSD.
@@ -56,13 +61,14 @@ contract scvUSDCvx is CurveLendSplitterToken {
     function processRewards() external {
         IgUSDCvx _gUSD = gUSD;
         ILlamaLendVault _llamaLendVault = llamaLendVault;
-
         /// @dev We need to keep enough share to back the stableSupply and the assetPart of the govSupply, we withdraw the reward share from the gUSD
         _gUSD.claimSCVUSDRewards(
-            IERC20(cvxRewardToken).balanceOf(address(_gUSD)) - totalSupply() - _llamaLendVault.convertToAssets(_gUSD.totalSupply()),
+            cvxRewardToken.balanceOf(address(_gUSD)) +
+                _llamaLendVault.balanceOf(address(_gUSD)) -
+                totalSupply() -
+                _llamaLendVault.convertToAssets(_gUSD.totalSupply()),
             _llamaLendVault
         );
-
         _processRewards();
     }
 

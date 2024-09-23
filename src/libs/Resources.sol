@@ -20,12 +20,12 @@ library AddrGlobal {
 
 library AddrClassicERC20 {
     // Tokens
-    address constant TOKEN_CRVUSD = 0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E;
-    address constant TOKEN_SDT = 0x73968b9a57c6E53d41345FD57a6E6ae27d6CDB2F;
-    address constant TOKEN_CRV = 0xD533a949740bb3306d119CC777fa900bA034cd52;
-    address constant TOKEN_CVX = 0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B;
-    address constant TOKEN_USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    address constant TOKEN_AAVE = 0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9;
+    IERC20 constant TOKEN_CRVUSD = IERC20(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
+    IERC20 constant TOKEN_SDT = IERC20(0x73968b9a57c6E53d41345FD57a6E6ae27d6CDB2F);
+    IERC20 constant TOKEN_CRV = IERC20(0xD533a949740bb3306d119CC777fa900bA034cd52);
+    IERC20 constant TOKEN_CVX = IERC20(0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B);
+    IERC20 constant TOKEN_USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+    IERC20 constant TOKEN_AAVE = IERC20(0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9);
 }
 
 library AddrSdtGauges {
@@ -61,6 +61,7 @@ library AddrSdtVaults {
 
 library AddrCvxRewardTokens {
     ICvxRewardToken constant CRVUSD_CRV = ICvxRewardToken(0x4bf2d8484474170bff8a8c34475be3d87dFF28cA);
+    ICvxRewardToken constant CRVUSD_LEVERAGE_WETH = ICvxRewardToken(0xcE2E915Dd0530E66Cfc34b7421E9A93F09A9A6b5);
     ICvxRewardToken constant CRVUSD_TBTC = ICvxRewardToken(0x57e94F41E596FC8315B20321156421c20CdC93f9);
     ICvxRewardToken constant CRVUSD_SUSDE = ICvxRewardToken(0xED2a17704bC5D5a7c5d256228333026B76A1732e);
     ICvxRewardToken constant CRVUSD_WETH = ICvxRewardToken(0xADde9073d897743E7004115Fa2452cC959FBF28a);
@@ -69,13 +70,16 @@ library AddrCvxRewardTokens {
 
 library AddrCvxVaultTokens {
     IERC20 constant CRVUSD_CRV = ICvxRewardToken(0xf0ac58AF1ca98aFce29fAe456E853688ab9d41E2);
+    IERC20 constant CRVUSD_LEVERAGE_WETH = ICvxRewardToken(0xd6Ab4Ca1fb1D3993db4d37b04621D28B669b671E);
 }
 
 library PidCvxBooster {
     //NORMAL
     uint256 constant CRVUSD_CRV = 325;
+    uint256 constant CRVUSD_LEVERAGE_WETH = 365;
     uint256 constant CRVUSD_TBTC = 328;
     uint256 constant CRVUSD_SUSDE = 361;
-    uint256 constant CRVUSD_WETH = 365;
     uint256 constant CRVUSD_WSTETH = 364;
 }
+
+

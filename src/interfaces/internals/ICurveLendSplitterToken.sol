@@ -20,11 +20,7 @@ interface ICurveLendSplitterToken is IERC20 {
 
     function getAndUpdateRewards(address account) external returns (ICommonStruct.TokenAmount[] memory);
 
-    function rewardData(IERC20) external view returns (Reward memory);
+    function claimableRewards(address account) external view returns (ICommonStruct.TokenAmount[] memory);
 
-    function addReward(IERC20 _rewardToken) external;
-
-    function notifyRewardAmount(IERC20 _rewardToken, uint256 _reward) external;
-
-    function notifyRewards(IERC20[] memory _rewardTokens, uint256[] memory _rewards) external;
+    function processRewards() external;
 }
