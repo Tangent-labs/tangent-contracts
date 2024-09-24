@@ -38,6 +38,7 @@ library AddrLlamaLendVaults {
     // LlamaLend crvUSD Vaults (cvcrvUSD)
     ILlamaLendVault constant CRVUSD_CRV = ILlamaLendVault(0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA);
     ILlamaLendVault constant CRVUSD_LEVERAGE_WETH = ILlamaLendVault(0x8fb1c7AEDcbBc1222325C39dd5c1D2d23420CAe3);
+    ILlamaLendVault constant CRVUSD_LEVERAGE_WBTC = ILlamaLendVault(0xccd37EB6374Ae5b1f0b85ac97eFf14770e0D0063);
 }
 
 library AddrSdtVaults {
@@ -66,11 +67,14 @@ library AddrCvxRewardTokens {
     ICvxRewardToken constant CRVUSD_SUSDE = ICvxRewardToken(0xED2a17704bC5D5a7c5d256228333026B76A1732e);
     ICvxRewardToken constant CRVUSD_WETH = ICvxRewardToken(0xADde9073d897743E7004115Fa2452cC959FBF28a);
     ICvxRewardToken constant CRVUSD_WSTETH = ICvxRewardToken(0xbe3C3Fd181af6B99CC1bb9b0Ee065318aDFc4c96);
+    ICvxRewardToken constant CRVUSD_LEVERAGE_WBTC = ICvxRewardToken(0xfe382f1Bf78e6D6012cB38C284Fe123ec9821966);
 }
 
 library AddrCvxVaultTokens {
     IERC20 constant CRVUSD_CRV = ICvxRewardToken(0xf0ac58AF1ca98aFce29fAe456E853688ab9d41E2);
     IERC20 constant CRVUSD_LEVERAGE_WETH = ICvxRewardToken(0xd6Ab4Ca1fb1D3993db4d37b04621D28B669b671E);
+    IERC20 constant CRVUSD_LEVERAGE_WBTC = ICvxRewardToken(0xDF2Cf819DBC1E5a5774eE760D2678330cf4665e2);
+
 }
 
 library PidCvxBooster {
@@ -80,6 +84,7 @@ library PidCvxBooster {
     uint256 constant CRVUSD_TBTC = 328;
     uint256 constant CRVUSD_SUSDE = 361;
     uint256 constant CRVUSD_WSTETH = 364;
+    uint256 constant CRVUSD_LEVERAGE_WBTC = 344;
 }
 
 

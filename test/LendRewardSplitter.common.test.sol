@@ -173,11 +173,8 @@ contract LendRewardSplitterTestCommon is Test {
     function getUser(uint256 index, IERC20 token, uint256 amount) public returns (address user) {
         user = makeAddr(string.concat("user", vm.toString((index))));
         vm.deal(user, 10 ether);
-        if (address(token) == address(AddrSdtVaults.CRVUSD_CRV)) {
-            token = IERC20(address(liquidityGauge));
-        }
         deal(address(token), user, amount);
-        vm.startPrank(user);
+        vm.prank(user);
         token.approve(address(splitter), MAX_UINT);
     }
 

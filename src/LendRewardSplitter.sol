@@ -303,11 +303,15 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                 /// @dev For gUSD, we mint 1:1 from crvUSD,
                 // we use the curveLendVault.convertToAssets to calculate the amount.
                 depositAmount = llamaVault.convertToAssets(depositAmount);
+                console.log("depositAmount", depositAmount );
                 depositAmount = gUSD.mint(msg.sender, depositAmount, cvxPidPerLlamaVault[llamaVault], false);
+                console.log("depositAmount", depositAmount );
+
             }
         }
 
         /// @dev Requires that some tokens are deposited
+
         if (depositAmount == 0) {
             revert Errors.ZeroAmount();
         }

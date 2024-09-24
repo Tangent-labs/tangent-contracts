@@ -49,7 +49,7 @@ contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function getTotalStaked() external returns (uint256) {
+    function getTotalStaked() external view returns  (uint256) {
         cvxRewardToken.balanceOf(address(gUSD)) + llamaLendVault.balanceOf(address(gUSD));
     }
 

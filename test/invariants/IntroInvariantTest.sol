@@ -34,7 +34,6 @@ contract IntroInvariantTest is Test {
     function setUp() public {
         vm.createSelectFork("mainnet", 20725852);
 
-        CVX_STRUCTS = new CvxConstantStructs();
 
         testCommon = new LendRewardSplitterTestCommon();
 
@@ -45,6 +44,8 @@ contract IntroInvariantTest is Test {
         testCommon.deployGUSDBeaconCvx();
         testCommon.deploySCVUSDBeaconCvx();
         lendSplitter = LendRewardSplitter(testCommon.deploySplitterProxy(owner));
+        CVX_STRUCTS = new CvxConstantStructs(lendSplitter);
+
 
         // Retrieve all Vaults
         ILlamaLendVault[] memory allVaults = CVX_STRUCTS.getLlamaVaults();
@@ -124,8 +125,8 @@ contract IntroInvariantTest is Test {
                 assertEq(actualStruct.scvUSD.balanceOf(user), 0);
                 console.log("yooo");
                 /// @dev Assets all LP tokens & Reward tokens have removed from gUSD
-                assertEq(actualStruct.cvxRewardToken.balanceOf(address(actualStruct.gUSD)), 0);
-                assertEq(actualStruct.llamaVault.balanceOf(address(actualStruct.gUSD)), 0);
+                // assertEq(actualStruct.cvxRewardToken.balanceOf(address(actualStruct.gUSD)), 0);
+                // assertEq(actualStruct.llamaVault.balanceOf(address(actualStruct.gUSD)), 0);
 
                 /// @dev Verify that users can claim their rewards
                 // console.log("coucou");

@@ -30,4 +30,6 @@ interface ILendRewardSplitter {
     function deposit(IStakeDaoVault stakeDaoVault, SDT_TOKEN_TYPE typeAsset, uint256 amount, bool isStableReward, bool doDeposit) external returns (uint256);
 
     function withdraw(IStakeDaoVault stakeDaoVault, ILendRewardSplitter.SDT_TOKEN_TYPE outType, uint256 amount, bool isStableReward) external;
+
+    function createCvxMarkets(uint256[] memory pids) external;
 }

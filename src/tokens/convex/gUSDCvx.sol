@@ -96,7 +96,7 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
         ILlamaLendVault llamaVault
     ) external verifyLendSplitterCaller {
         uint256 llamaVaultBalance = llamaVault.balanceOf(address(this));
-
+        console.log(llamaVaultBalance, amount);
         if (llamaVaultBalance < amount) {
             cvxRewardToken.withdrawAndUnwrap(amount - llamaVaultBalance, false);
         }
@@ -123,6 +123,7 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
     }
 
     function claimSCVUSDRewards(uint256 shares, ILlamaLendVault llamaVault) external {
+
         /// @dev Only scvUSD can claim this function
         if (msg.sender != scvUSD) {
             revert OnlySCVUSDCaller(msg.sender);

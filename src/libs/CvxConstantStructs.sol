@@ -15,9 +15,13 @@ import {ICvxBooster} from "../interfaces/externals/ICvxBooster.sol";
 import {ICvxRewardToken} from "../interfaces/externals/ICvxRewardToken.sol";
 import {IgUSDCvx} from "../interfaces/internals/IgUSDCvx.sol";
 import {IscvUSD} from "../interfaces/internals/IscvUSD.sol";
+
+import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
+
 import "./Resources.sol";
 
 contract CvxConstantStructs is StdCheats, StdUtils, Test {
+    LendRewardSplitter splitter;
     ILlamaLendVault[] llamaVaultArray;
     mapping(ILlamaLendVault => CvxStruct) public structsMap;
 
@@ -31,9 +35,12 @@ contract CvxConstantStructs is StdCheats, StdUtils, Test {
         IscvUSD scvUSD;
     }
 
-    constructor() {
+    constructor(LendRewardSplitter _splitter) {
+        splitter = _splitter;
         llamaVaultArray.push(AddrLlamaLendVaults.CRVUSD_CRV);
         llamaVaultArray.push(AddrLlamaLendVaults.CRVUSD_LEVERAGE_WETH);
+        llamaVaultArray.push(AddrLlamaLendVaults.CRVUSD_LEVERAGE_WBTC);
+
 
         structsMap[AddrLlamaLendVaults.CRVUSD_CRV] = CvxStruct({
             llamaVault: AddrLlamaLendVaults.CRVUSD_CRV,
@@ -53,6 +60,26 @@ contract CvxConstantStructs is StdCheats, StdUtils, Test {
             gUSD: IgUSDCvx(address(0)),
             scvUSD: IscvUSD(address(0))
         });
+        structsMap[AddrLlamaLendVaults.CRVUSD_LEVERAGE_WBTC] = CvxStruct({
+            llamaVault: AddrLlamaLendVaults.CRVUSD_LEVERAGE_WBTC,
+            pid: PidCvxBooster.CRVUSD_LEVERAGE_WBTC,
+            cvxRewardToken: AddrCvxRewardTokens.CRVUSD_LEVERAGE_WBTC,
+            cvxVaultToken: AddrCvxVaultTokens.CRVUSD_LEVERAGE_WBTC,
+            lendAsset: AddrClassicERC20.TOKEN_CRVUSD,
+            gUSD: IgUSDCvx(address(0)),
+            scvUSD: IscvUSD(address(0))
+        });
+    }
+
+    function createAndGetRandomMarket() public returns (CvxStruct memory) {
+        CvxStruct memory cvxStruct = getStruct(pickRandomVault());
+        uint256[] memory pids = new uint256[](1);
+        pids[0]= cvxStruct.pid;
+        vm.prank(splitter.owner());
+        splitter.createCvxMarkets(pids);
+        cvxStruct.gUSD = splitter.gUSDCvxPerLlamaVault(cvxStruct.llamaVault);
+        cvxStruct.scvUSD = splitter.scvUSDCvxPerLlamaVault(cvxStruct.llamaVault);
+        return cvxStruct;
     }
 
     function pickRandomVault() public returns (ILlamaLendVault) {
