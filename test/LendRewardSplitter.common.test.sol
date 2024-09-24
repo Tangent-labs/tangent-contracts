@@ -153,7 +153,7 @@ contract LendRewardSplitterTestCommon is Test {
         vm.label(address(AddrCvxVaultTokens.CRVUSD_CRV), "CVX_VAULT_CRV_CRVUSD");
         vm.label(address(AddrCvxRewardTokens.CRVUSD_CRV), "CVX_REWARD_TOKEN_CRV_CRVUSD");
 
-        vm.label(address(AddrGlobal.CRVUSD_CONTROLLER), "CRVUSD_CONTROLLER");
+        // vm.label(address(AddrGlobal.CRVUSD_CONTROLLER), "CRVUSD_CONTROLLER");
     }
 
     function deposit(uint256 amount, bool isStableReward, bool doDeposit, IERC20 tokenIn) public returns (uint256) {

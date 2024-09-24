@@ -13,9 +13,9 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 library AddrGlobal {
     ICvxBooster constant CVX_BOOSTER = ICvxBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
-    address constant CRVUSD_CONTROLLER = 0xEdA215b7666936DEd834f76f3fBC6F323295110A;
     address constant CRVUSD_AMM = 0xafca625321Df8D6A068bDD8F1585d489D2acF11b;
     address constant CURVE_ROUTER = 0x16C6521Dff6baB339122a0FE25a9116693265353;
+    address constant CVX_VOTER_PROXY = 0x989AEb4d175e16225E39E87d0D97A3360524AD80;
 }
 
 library AddrClassicERC20 {
@@ -26,6 +26,18 @@ library AddrClassicERC20 {
     IERC20 constant TOKEN_CVX = IERC20(0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B);
     IERC20 constant TOKEN_USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     IERC20 constant TOKEN_AAVE = IERC20(0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9);
+}
+
+library AddrCrvController {
+    address constant CRVUSD_CRV = 0xEdA215b7666936DEd834f76f3fBC6F323295110A;
+    address constant CRVUSD_LEVERAGE_WETH = 0x23F5a668A9590130940eF55964ead9787976f2CC;
+    address constant CRVUSD_LEVERAGE_WBTC = 0xcaD85b7fe52B1939DCEebEe9bCf0b2a5Aa0cE617;
+}
+
+library AddrCrvGauges {
+    IERC20 constant CRVUSD_CRV = IERC20(0x49887dF6fE905663CDB46c616BfBfBB50e85a265);
+    IERC20 constant CRVUSD_LEVERAGE_WETH = IERC20(0xF3F6D6d412a77b680ec3a5E35EbB11BbEC319739);
+    IERC20 constant CRVUSD_LEVERAGE_WBTC = IERC20(0x7dCB252f7Ea2B8dA6fA59C79EdF63f793C8b63b6);
 }
 
 library AddrSdtGauges {
@@ -74,7 +86,6 @@ library AddrCvxVaultTokens {
     IERC20 constant CRVUSD_CRV = ICvxRewardToken(0xf0ac58AF1ca98aFce29fAe456E853688ab9d41E2);
     IERC20 constant CRVUSD_LEVERAGE_WETH = ICvxRewardToken(0xd6Ab4Ca1fb1D3993db4d37b04621D28B669b671E);
     IERC20 constant CRVUSD_LEVERAGE_WBTC = ICvxRewardToken(0xDF2Cf819DBC1E5a5774eE760D2678330cf4665e2);
-
 }
 
 library PidCvxBooster {
@@ -86,5 +97,3 @@ library PidCvxBooster {
     uint256 constant CRVUSD_WSTETH = 364;
     uint256 constant CRVUSD_LEVERAGE_WBTC = 344;
 }
-
-

@@ -269,7 +269,6 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         bool isZap
     ) internal returns (uint256 depositAmount) {
         depositAmount = amount;
-        ICvxRewardToken cvxRewardToken = cvxRewardTokenPerLlamaVault[llamaVault];
         IgUSDCvx gUSD = gUSDCvxPerLlamaVault[llamaVault];
 
         if (inType == ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset) {
@@ -303,10 +302,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                 /// @dev For gUSD, we mint 1:1 from crvUSD,
                 // we use the curveLendVault.convertToAssets to calculate the amount.
                 depositAmount = llamaVault.convertToAssets(depositAmount);
-                console.log("depositAmount", depositAmount );
                 depositAmount = gUSD.mint(msg.sender, depositAmount, cvxPidPerLlamaVault[llamaVault], false);
-                console.log("depositAmount", depositAmount );
-
             }
         }
 
