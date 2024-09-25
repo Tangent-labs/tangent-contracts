@@ -82,7 +82,7 @@ contract ProcessGovRewards is ConvexMarketContext {
 
         // ACTIONS
         lendAsset.approve(address(splitter), 100 ether);
-        splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, false, true);
+        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, false, true);
         skip(2 weeks);
         gUSD.processRewards();
         // Ensure that second process of reward is failing because all CRV rewards have been already processed

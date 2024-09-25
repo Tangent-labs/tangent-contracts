@@ -85,11 +85,9 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
         ICommonStruct.TokenAmount[] memory tokenAmounts = new ICommonStruct.TokenAmount[](rewardTokensLength);
         uint256 counter;
         for (uint256 tokenIndex; tokenIndex < rewardTokensLength; ) {
-
-
             IERC20 _rewardToken = rewardTokens[tokenIndex];
             uint256 reward = rewards[_address][_rewardToken];
-            
+
             if (reward > 0) {
                 rewards[_address][_rewardToken] = 0;
                 tokenAmounts[counter++] = ICommonStruct.TokenAmount({token: _rewardToken, amount: reward});
@@ -102,7 +100,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
         }
         if (tokenAmounts.length != 0) {
             /// @dev Reduce length of tokenAmounts struct to not return useless 0
-            
+
             // solhint-disable-next-line no-inline-assembly
             assembly {
                 mstore(tokenAmounts, sub(mload(tokenAmounts), sub(rewardTokensLength, counter)))
@@ -181,7 +179,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
      */
     function _updateReward(address _account) internal {
         uint256 userBal = balanceOf(_account);
-        
+
         uint256 rewardLength = rewardTokens.length;
         for (uint256 i; i < rewardLength; ) {
             IERC20 token = rewardTokens[i];
@@ -242,7 +240,6 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
                     uint256 leftover = remaining * rData.rewardRate;
                     rData.rewardRate = (rewardToProcess + leftover) / REWARDS_DURATION;
                 }
-                console.log("NEW REWARD RATE", rData.rewardRate );
 
                 rData.lastUpdateTime = uint128(block.timestamp);
                 rData.periodFinish = uint128(block.timestamp + REWARDS_DURATION);

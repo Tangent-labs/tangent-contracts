@@ -1,177 +1,113 @@
-// import {Test, console} from "forge-std/Test.sol";
-// import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-// import {DeployContext} from "../../DeployContext.sol";
-// import {LendRewardSplitter} from "../../../src/LendRewardSplitter.sol";
-// import {IStakeDaoVault} from "../../../src/interfaces/externals/IStakeDaoVault.sol";
-// import {ILendRewardSplitter} from "../../../src/interfaces/internals/ILendRewardSplitter.sol";
-// import {ICvxRewardToken} from "../../../src/interfaces/externals/ICvxRewardToken.sol";
-// import {ICurveLendSplitterToken} from "../../../src/interfaces/internals/ICurveLendSplitterToken.sol";
-// import {CurveLendSplitterToken} from "../../../src/tokens/CurveLendSplitterToken.sol";
+// SPDX-License-Identifier: UNKNOWN
+import "../ConvexMarketContext.sol";
 
-// import {gUSDCvx} from "../../../src/tokens/convex/gUSDCvx.sol";
-// import "../../../src/libs/Resources.sol";
+contract DepositLendAssetStable is ConvexMarketContext {
+    function setUp() public {
+        deployBaseContracts();
+        setUpSingleRandomMarket();
+    }
 
-// contract DepositLendAssetStable is DeployContext {
-//     function setUp() public {
-//         deployBaseContracts();
+    function test_deposit_lend_asset_and_doDeposit() external {
+        uint256 amountIn = 100 ether;
+        // PREPARE
+        address usr = makeAddr("User");
+        deal(address(lendAsset), usr, amountIn);
+        vm.startPrank(usr);
 
-//         vm.prank(owner);
-//         uint256[] memory pids = new uint256[](1);
-//         pids[0] = PidCvxBooster.CRVUSD_CRV;
-//         splitter.createCvxMarkets(pids);
-//     }
+        uint256 usrLendAssetBalanceBfr = lendAsset.balanceOf(usr);
+        uint256 gUSDRewardTokenBfr = cvxRewardToken.balanceOf(address(gUSD));
+        uint256 usrGUSDBalanceBfr = gUSD.balanceOf(usr);
+        uint256 usrSCVUSDBalanceBfr = scvUSD.balanceOf(usr);
+        uint256 sharesConverted = llamaVault.convertToShares(amountIn);
 
-//     function test_deposit_lend_asset_and_doDeposit() external {
-//         // PREPARE
-//         LendRewardSplitter _splitter = splitter;
-//         ICurveLendSplitterToken gUSD = _splitter.gUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
-//         ICurveLendSplitterToken scvUSD = _splitter.scvUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
+        // ACTIONS
+        lendAsset.approve(address(splitter), amountIn);
+        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amountIn, true, true);
 
-//         address usr = makeAddr("User");
-//         deal(address(AddrClassicERC20.TOKEN_CRVUSD), usr, 100 ether);
-//         vm.startPrank(usr);
+        // VERIFY
+        assertEq(usrLendAssetBalanceBfr - lendAsset.balanceOf(usr), amountIn, "User sent crvUSD");
+        assertEq(cvxRewardToken.balanceOf(address(gUSD)) - gUSDRewardTokenBfr, sharesConverted, "CvxReward assets received by gUSD");
+        assertEq(scvUSD.balanceOf(usr) - usrSCVUSDBalanceBfr, sharesConverted, "scvUSD is sent to user");
+        assertEq(gUSD.balanceOf(usr) - usrGUSDBalanceBfr, 0, "No gUSD should be minted");
+    }
 
-//         uint256 usrLendAssetBalanceBfr = IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr);
+    function test_deposit_lend_asset_and_no_doDeposit() external {
+        uint256 amountIn = 200 ether;
 
-//         uint256 rewardTokenCvxVaultBfr = AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(AddrCvxRewardTokens.CRVUSD_CRV));
-//         uint256 totalSupplyCvxVaultBefore = AddrCvxVaultTokens.CRVUSD_CRV.totalSupply();
+        // PREPARE
+        address usr = makeAddr("User");
+        deal(address(lendAsset), usr, amountIn);
+        vm.startPrank(usr);
 
-//         uint256 gUSDRewardTokenBfr = AddrCvxRewardTokens.CRVUSD_CRV.balanceOf(address(gUSD));
+        uint256 usrLendAssetBalanceBfr = lendAsset.balanceOf(usr);
 
-//         uint256 usrGUSDBalanceBfr = gUSD.balanceOf(usr);
-//         uint256 usrSCVUSDBalanceBfr = scvUSD.balanceOf(usr);
+        uint256 gUSDRewardTokenBalanceBfr = cvxRewardToken.balanceOf(address(gUSD));
 
-//         uint256 sharesConverted = AddrLlamaLendVaults.CRVUSD_CRV.convertToShares(100 ether);
+        uint256 usrGUSDBalanceBfr = gUSD.balanceOf(usr);
+        uint256 usrSCVUSDBalanceBfr = scvUSD.balanceOf(usr);
 
-//         // ACTIONS
-//         IERC20(address(AddrClassicERC20.TOKEN_CRVUSD)).approve(address(_splitter), 100 ether);
-//         _splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, true, true);
+        uint256 sharesConverted = llamaVault.convertToShares(amountIn);
 
-//         // VERIFY
+        // ACTIONS
+        lendAsset.approve(address(splitter), amountIn);
+        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amountIn, true, false);
 
-//         // 100 crvUSD sent by usr
-//         assertEq(usrLendAssetBalanceBfr - IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr), 100 ether);
-//         // "sharesConverted" CvxVault assets created
-//         assertEq(AddrCvxVaultTokens.CRVUSD_CRV.totalSupply() - totalSupplyCvxVaultBefore, sharesConverted);
-//         // "sharesConverted" CvxVault assets received by the CvxReward
-//         assertEq(AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(AddrCvxRewardTokens.CRVUSD_CRV)) - rewardTokenCvxVaultBfr, sharesConverted);
-//         // "sharesConverted" CvxReward assets received by the gUSD
-//         assertEq(AddrCvxRewardTokens.CRVUSD_CRV.balanceOf(address(gUSD)) - gUSDRewardTokenBfr, sharesConverted);
+        // VERIFY
 
-//         // An amount of scvUSD is minted to the user
-//         assertEq(scvUSD.balanceOf(usr) - usrSCVUSDBalanceBfr, sharesConverted);
+        // 100 crvUSD sent by usr
+        assertEq(usrLendAssetBalanceBfr - lendAsset.balanceOf(usr), amountIn);
 
-//         // No gUSD minted for the user as we are in "stable only" mode
-//         assertEq(gUSD.balanceOf(usr) - usrGUSDBalanceBfr, 0);
-//     }
+        // An amount of scvUSD is minted to the user equivalent to the shares he put
+        assertEq(scvUSD.balanceOf(usr) - usrSCVUSDBalanceBfr, sharesConverted);
 
-//     function test_deposit_lend_asset_and_no_doDeposit() external {
-//         // PREPARE
-//         LendRewardSplitter _splitter = splitter;
-//         ICurveLendSplitterToken gUSD = _splitter.gUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
-//         ICurveLendSplitterToken scvUSD = _splitter.scvUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
+        // No gUSD is minted to the user
+        assertEq(gUSD.balanceOf(usr) - usrGUSDBalanceBfr, 0);
 
-//         address usr = makeAddr("User");
-//         deal(address(AddrClassicERC20.TOKEN_CRVUSD), usr, 200 ether);
-//         vm.startPrank(usr);
+        // No CvxReward assets are given to gUSD because  not staking
+        assertEq(cvxRewardToken.balanceOf(address(gUSD)) - gUSDRewardTokenBalanceBfr, 0);
+    }
 
-//         uint256 usrLendAssetBalanceBfr = IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr);
+    function test_deposit_lend_asset_with_doDeposit_then_deposit_without_doDeposit() external {
+        // PREPARE
+        address usr = makeAddr("User");
+        deal(address(lendAsset), usr, 200 ether);
+        vm.startPrank(usr);
 
-//         uint256 gUSDCvxVaultBfr = AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(gUSD));
-//         uint256 cvxRewardVaultBfr = AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(AddrCvxRewardTokens.CRVUSD_CRV));
+        // ACTIONS
+        lendAsset.approve(address(splitter), 200 ether);
+        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, true, false);
 
-//         uint256 gUSDRewardTokenBalanceBfr = AddrCvxRewardTokens.CRVUSD_CRV.balanceOf(address(gUSD));
+        // PREPARE
 
-//         uint256 usrGUSDBalanceBfr = gUSD.balanceOf(usr);
-//         uint256 usrSCVUSDBalanceBfr = scvUSD.balanceOf(usr);
+        uint256 usrLendAssetBalanceBfr = lendAsset.balanceOf(usr);
 
-//         uint256 sharesConverted = AddrLlamaLendVaults.CRVUSD_CRV.convertToShares(100 ether);
+        uint256 usrRewardTokenBfr = cvxRewardToken.balanceOf(usr);
+        uint256 gUSDRewardTokenBalanceBfr = cvxRewardToken.balanceOf(address(gUSD));
 
-//         // ACTIONS
-//         IERC20(address(AddrClassicERC20.TOKEN_CRVUSD)).approve(address(_splitter), 200 ether);
-//         _splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, true, false);
+        uint256 sharesConverted = llamaVault.convertToShares(100 ether);
 
-//         // VERIFY
+        uint256 usrGUSDBalanceBfr = gUSD.balanceOf(usr);
+        uint256 usrSCVUSDBalanceBfr = scvUSD.balanceOf(usr);
 
-//         // 100 crvUSD sent by usr
-//         assertEq(usrLendAssetBalanceBfr - IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr), 100 ether);
+        // ACTIONS
 
-//         // "sharesConverted" CvxVault tokens received by gUSD
-//         assertEq(AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(gUSD)) - gUSDCvxVaultBfr, sharesConverted);
+        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, true, true);
 
-//         // An amount of scvUSD is minted to the user equivalent to the shares he put
-//         assertEq(scvUSD.balanceOf(usr) - usrSCVUSDBalanceBfr, sharesConverted);
+        // VERIFY
 
-//         // No gUSD is minted to the user
-//         assertEq(gUSD.balanceOf(usr) - usrGUSDBalanceBfr, 0);
+        // 100 llamaLendVault assets sent by the user
+        assertEq(usrLendAssetBalanceBfr - lendAsset.balanceOf(usr), 100 ether);
 
-//         // No CvxVault assets are given to CvxReward because not staking
-//         assertEq(cvxRewardVaultBfr - AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(AddrCvxRewardTokens.CRVUSD_CRV)), 0);
+        // "2 * sharesConverted" cvxReward assets received by gUSD
+        assertEq(cvxRewardToken.balanceOf(address(gUSD)) - gUSDRewardTokenBalanceBfr, sharesConverted * 2);
 
-//         // No CvxReward assets are given to gUSD because  not staking
-//         assertEq(AddrCvxRewardTokens.CRVUSD_CRV.balanceOf(address(gUSD)) - gUSDRewardTokenBalanceBfr, 0);
-//     }
+        // An amount of scvUSD is minted to the user equivalent to the shares he put
+        assertEq(scvUSD.balanceOf(usr) - usrSCVUSDBalanceBfr, sharesConverted);
 
-//     function test_deposit_lend_asset_with_doDeposit_then_deposit_without_doDeposit() external {
-//         // PREPARE
-//         LendRewardSplitter _splitter = splitter;
-//         ICurveLendSplitterToken gUSD = _splitter.gUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
-//         ICurveLendSplitterToken scvUSD = _splitter.scvUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
+        // No gUSD is minted to the user
+        assertEq(gUSD.balanceOf(usr) - usrGUSDBalanceBfr, 0);
 
-//         address usr = makeAddr("User");
-//         deal(address(AddrClassicERC20.TOKEN_CRVUSD), usr, 200 ether);
-//         vm.startPrank(usr);
-
-//         // ACTIONS
-//         IERC20(address(AddrClassicERC20.TOKEN_CRVUSD)).approve(address(_splitter), 200 ether);
-//         _splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, true, false);
-
-//         // PREPARE
-
-//         uint256 usrLendAssetBalanceBfr = IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr);
-
-//         uint256 usrCvxVaultBfr = AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(usr);
-//         uint256 gUSDCvxVaultBfr = AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(gUSD));
-//         uint256 cvxRewardVaultBfr = AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(AddrCvxRewardTokens.CRVUSD_CRV));
-
-//         uint256 usrRewardTokenBfr = AddrCvxRewardTokens.CRVUSD_CRV.balanceOf(usr);
-//         uint256 gUSDRewardTokenBalanceBfr = AddrCvxRewardTokens.CRVUSD_CRV.balanceOf(address(gUSD));
-
-//         uint256 sharesConverted = AddrLlamaLendVaults.CRVUSD_CRV.convertToShares(100 ether);
-
-//         uint256 usrGUSDBalanceBfr = gUSD.balanceOf(usr);
-//         uint256 usrSCVUSDBalanceBfr = scvUSD.balanceOf(usr);
-
-//         // ACTIONS
-
-//         _splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, true, true);
-
-//         // VERIFY
-
-//         // 100 llamaLendVault assets sent by the user
-//         assertEq(usrLendAssetBalanceBfr - IERC20(AddrClassicERC20.TOKEN_CRVUSD).balanceOf(usr), 100 ether);
-
-//         // "sharesConverted" cvxVault assets sent by gUSD
-//         assertEq(gUSDCvxVaultBfr - AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(gUSD)), sharesConverted);
-
-//         // "sharesConverted" cvxVault received by cvxReward
-//         assertEq(gUSDCvxVaultBfr - AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(gUSD)), sharesConverted);
-
-//         // "2 * sharesConverted" cvxVault assets received by CvxReward ( 100 that was previously staked + 100 from the actual deposit )
-//         assertEq(AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(address(AddrCvxRewardTokens.CRVUSD_CRV)) - cvxRewardVaultBfr, sharesConverted * 2);
-
-//         // "2 * sharesConverted" cvxReward assets received by gUSD
-//         assertEq(AddrCvxRewardTokens.CRVUSD_CRV.balanceOf(address(gUSD)) - gUSDRewardTokenBalanceBfr, sharesConverted * 2);
-
-//         // An amount of scvUSD is minted to the user equivalent to the shares he put
-//         assertEq(scvUSD.balanceOf(usr) - usrSCVUSDBalanceBfr, sharesConverted);
-
-//         // No gUSD is minted to the user
-//         assertEq(gUSD.balanceOf(usr) - usrGUSDBalanceBfr, 0);
-
-//         // No CvxReward asset is given to the user
-//         assertEq(usrRewardTokenBfr - AddrCvxRewardTokens.CRVUSD_CRV.balanceOf(usr), 0);
-//         // No CvxVault assets is given to the user
-//         assertEq(usrCvxVaultBfr - AddrCvxVaultTokens.CRVUSD_CRV.balanceOf(usr), 0);
-//     }
-// }
+        // No CvxReward asset is given to the user
+        assertEq(usrRewardTokenBfr - cvxRewardToken.balanceOf(usr), 0);
+    }
+}
