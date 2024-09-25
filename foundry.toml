@@ -33,12 +33,12 @@ forkito = 'http://127.0.0.1:8545'
 
 [fuzz]
 runs = 256
-# depth = 9
-# fuzz_runs = 2
+# depth = 200
+# fuzz_runs = 10
 
 [invariant]
-runs = 20
-depth = 10
+runs = 50
+depth = 200
 dictionary_weight = 80
 preserve_state = true
 fail_on_revert = true

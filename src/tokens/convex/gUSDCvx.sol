@@ -96,7 +96,6 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
         ILlamaLendVault llamaVault
     ) external verifyLendSplitterCaller {
         uint256 llamaVaultBalance = llamaVault.balanceOf(address(this));
-        console.log(llamaVaultBalance, amount);
         if (llamaVaultBalance < amount) {
             cvxRewardToken.withdrawAndUnwrap(amount - llamaVaultBalance, false);
         }
@@ -131,10 +130,11 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
         uint256 llamaVaultBalance = llamaVault.balanceOf(address(this));
 
         if (llamaVaultBalance < shares) {
-            shares -= llamaVaultBalance;
             cvxRewardToken.withdrawAndUnwrap(shares - llamaVaultBalance, false);
         }
 
         llamaVault.redeem(shares, msg.sender);
+        // console.log("sharesToClaim",shares );
+        // console.log("caca", llamaVault.balanceOf(address(this)));
     }
 }

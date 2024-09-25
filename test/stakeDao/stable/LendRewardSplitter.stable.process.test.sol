@@ -1,6 +1,6 @@
 // import {Test, console} from "forge-std/Test.sol";
 // import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-// import {LendRewardSplitterTestCommon} from "../LendRewardSplitter.common.test.sol";
+// import {DeployContext} from "../DeployContext.sol";
 // import {scvUSDSdt} from "../../src/tokens/stakeDao/scvUSDSdt.sol";
 // import {gUSDSdt} from "../../src/tokens/stakeDao/gUSDSdt.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
@@ -12,7 +12,7 @@
 
 // contract LendRewardSplitterStableProcessTest is Test {
 //     LendRewardSplitter splitter;
-//     LendRewardSplitterTestCommon testCommon;
+//     DeployContext testCommon;
 
 //     ILlamaLendVault constant LLAMALEND_VAULT_CRV = AddrLlamaLendVaults.CRVUSD_CRV;
 //     IStakeDaoVault constant STAKE_DAO_VAULT_CRV = AddrSdtVaults.CRVUSD_CRV;
@@ -22,7 +22,7 @@
 //     gUSDSdt public gUSD;
 
 //     function setUp() public {
-//         testCommon = new LendRewardSplitterTestCommon();
+//         testCommon = new DeployContext();
 //         testCommon.fork();
 //         testCommon.setUpSplitter();
 //         splitter = testCommon.splitter();

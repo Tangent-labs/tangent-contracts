@@ -4,4 +4,6 @@ import {ICurveLendSplitterToken} from "../internals/ICurveLendSplitterToken.sol"
 
 interface IscvUSD is ICurveLendSplitterToken {
     function setGUSD(address _gUSD) external;
+
+    function getStreamableShares() external view returns(uint256);
 }

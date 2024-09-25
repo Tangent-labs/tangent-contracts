@@ -10,7 +10,7 @@ import {ILlamaLendVault} from "../../interfaces/externals/ILlamaLendVault.sol";
 contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
     using SafeERC20 for IERC20;
     IgUSDCvx public gUSD;
-    ILlamaLendVault public llamaLendVault;
+    ILlamaLendVault public llamaVault;
     IERC20 public cvxRewardToken;
 
     error OnlySCVUSDCaller(address caller);
@@ -28,14 +28,14 @@ contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
         string memory _name,
         string memory _symbol,
         ILendRewardSplitter _lendRewardSplitter,
-        ILlamaLendVault _llamaLendVault,
+        ILlamaLendVault _llamaVault,
         address _cvxRewardToken
     ) external initializer {
         __ERC20_init(_name, _symbol);
         _transferOwnership(msg.sender);
 
         lendRewardSplitter = _lendRewardSplitter;
-        llamaLendVault = _llamaLendVault;
+        llamaVault = _llamaVault;
         cvxRewardToken = IERC20(_cvxRewardToken);
 
         IERC20 crvUsd = IERC20(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
@@ -50,7 +50,14 @@ contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function getTotalStaked() external view returns  (uint256) {
-        cvxRewardToken.balanceOf(address(gUSD)) + llamaLendVault.balanceOf(address(gUSD));
+        cvxRewardToken.balanceOf(address(gUSD)) + llamaVault.balanceOf(address(gUSD));
+    }
+
+    function getStreamableShares() external view returns (uint256){
+         return cvxRewardToken.balanceOf(address(gUSD)) +
+                llamaVault.balanceOf(address(gUSD)) -
+                totalSupply() -
+                llamaVault.convertToShares(gUSD.totalSupply());
     }
 
     /**
@@ -60,14 +67,14 @@ contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
      */
     function processRewards() external {
         IgUSDCvx _gUSD = gUSD;
-        ILlamaLendVault _llamaLendVault = llamaLendVault;
+        ILlamaLendVault _llamaVault = llamaVault;
         /// @dev We need to keep enough share to back the stableSupply and the assetPart of the govSupply, we withdraw the reward share from the gUSD
         _gUSD.claimSCVUSDRewards(
             cvxRewardToken.balanceOf(address(_gUSD)) +
-                _llamaLendVault.balanceOf(address(_gUSD)) -
+                _llamaVault.balanceOf(address(_gUSD)) -
                 totalSupply() -
-                _llamaLendVault.convertToAssets(_gUSD.totalSupply()),
-            _llamaLendVault
+                _llamaVault.convertToShares(gUSD.totalSupply()),
+            _llamaVault
         );
         _processRewards();
     }

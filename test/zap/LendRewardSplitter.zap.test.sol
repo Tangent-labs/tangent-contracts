@@ -1,6 +1,6 @@
 // import {Test, console} from "forge-std/Test.sol";
 // import {ICrvPoolPlain} from "../../src/interfaces/externals/ICrvPoolPlain.sol";
-// import {LendRewardSplitterTestCommon} from "../LendRewardSplitter.common.test.sol";
+// import {DeployContext} from "../DeployContext.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
 // import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // import {ICurveRouter} from "../../src/interfaces/externals/ICurveRouter.sol";
@@ -21,10 +21,10 @@
 //     IStakeDaoVault constant SDT_VAULT_CRV = AddrSdtVaults.CRVUSD_CRV;
 
 //     LendRewardSplitter splitter;
-//     LendRewardSplitterTestCommon testCommon;
+//     DeployContext testCommon;
 
 //     function setUp() public {
-//         testCommon = new LendRewardSplitterTestCommon();
+//         testCommon = new DeployContext();
 //         testCommon.fork();
 //         testCommon.setUpSplitter();
 //         splitter = testCommon.splitter();

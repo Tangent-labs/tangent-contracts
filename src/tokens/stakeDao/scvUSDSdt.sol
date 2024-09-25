@@ -68,6 +68,10 @@ contract scvUSDSdt is CurveLendSplitterToken, IscvUSD {
         _processRewards();
     }
 
+    function getStreamableShares() external view returns (uint256){
+         return 0;
+    }
+
     function setGUSD(address _gUSD) external verifyLendSplitterCaller {
         gUSD = IgUSDSdt(_gUSD);
     }

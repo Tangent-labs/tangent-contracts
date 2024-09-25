@@ -1,17 +1,17 @@
 // import {Test, console} from "forge-std/Test.sol";
 
 // import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-// import {LendRewardSplitterTestCommon} from "../LendRewardSplitter.common.test.sol";
+// import {DeployContext} from "../DeployContext.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
 // import {ILendRewardSplitter} from "../../src/interfaces/internals/ILendRewardSplitter.sol";
 // import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20} from "../../src/libs/Resources.sol";
 
 // contract LendRewardSplitterStableWithdrawTest is Test {
 //     LendRewardSplitter splitter;
-//     LendRewardSplitterTestCommon testCommon;
+//     DeployContext testCommon;
 
 //     function setUp() public {
-//         testCommon = new LendRewardSplitterTestCommon();
+//         testCommon = new DeployContext();
 //         testCommon.fork();
 //         testCommon.setUpSplitter();
 //         splitter = testCommon.splitter();

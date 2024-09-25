@@ -1,23 +1,6 @@
-import {Test, console} from "forge-std/Test.sol";
-import {LendRewardSplitterTestCommon} from "../../LendRewardSplitter.common.test.sol";
-import {LendRewardSplitter} from "../../../src/LendRewardSplitter.sol";
-import {IStakeDaoVault} from "../../../src/interfaces/externals/IStakeDaoVault.sol";
-import {ILendRewardSplitter} from "../../../src/interfaces/internals/ILendRewardSplitter.sol";
-import {ICvxRewardToken} from "../../../src/interfaces/externals/ICvxRewardToken.sol";
-import {ICurveLendSplitterToken} from "../../../src/interfaces/internals/ICurveLendSplitterToken.sol";
+import "../ConvexMarketContext.sol";
 
-import {CurveLendSplitterToken} from "../../../src/tokens/CurveLendSplitterToken.sol";
-
-import {gUSDCvx} from "../../../src/tokens/convex/gUSDCvx.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, AddrCvxRewardTokens, PidCvxBooster, AddrCvxVaultTokens} from "../../../src/libs/Resources.sol";
-
-contract ProcessGovRewards is Test {
-    LendRewardSplitter splitter;
-    LendRewardSplitterTestCommon testCommon = new LendRewardSplitterTestCommon();
-
-    gUSDCvx gUSD;
+contract ProcessGovRewards is ConvexMarketContext {
     ICurveLendSplitterToken.Fees[] feePercentage;
 
     struct Fees {
@@ -26,16 +9,8 @@ contract ProcessGovRewards is Test {
     }
 
     function setUp() public {
-        testCommon = new LendRewardSplitterTestCommon();
-        testCommon.fork();
-        testCommon.setUpSplitter();
-        splitter = testCommon.splitter();
-
-        vm.prank(testCommon.owner());
-        uint256[] memory pids = new uint256[](1);
-        pids[0] = PidCvxBooster.CRVUSD_CRV;
-        splitter.createCvxMarkets(pids);
-        gUSD = gUSDCvx(address(splitter.gUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV)));
+        deployBaseContracts();
+        setUpSingleRandomMarket();
 
         (uint128 processorFeePercentageCrv, uint128 daoFeePercentageCrv) = gUSD.fees(0);
         (uint128 processorFeePercentageCvx, uint128 daoFeePercentageCvx) = gUSD.fees(1);
@@ -45,27 +20,26 @@ contract ProcessGovRewards is Test {
 
     function test_process_governance_rewards() external {
         // PREPARE
-        LendRewardSplitter _splitter = splitter;
         address processor = makeAddr("Processor");
-        deal(address(AddrClassicERC20.TOKEN_CRVUSD), processor, 100 ether);
+        deal(address(lendAsset), processor, 100 ether);
         vm.startPrank(processor);
 
-        uint256 deltaBalanceCrvSplitter = IERC20(AddrClassicERC20.TOKEN_CRV).balanceOf(address(_splitter));
-        uint256 deltaBalanceCvxSplitter = IERC20(AddrClassicERC20.TOKEN_CVX).balanceOf(address(_splitter));
+        uint256 deltaBalanceCrvSplitter = IERC20(AddrClassicERC20.TOKEN_CRV).balanceOf(address(splitter));
+        uint256 deltaBalanceCvxSplitter = IERC20(AddrClassicERC20.TOKEN_CVX).balanceOf(address(splitter));
 
         uint256 deltaBalanceCrvProcessor = IERC20(AddrClassicERC20.TOKEN_CRV).balanceOf(processor);
         uint256 deltaBalanceCvxProcessor = IERC20(AddrClassicERC20.TOKEN_CVX).balanceOf(processor);
 
         // ACTIONS
-        IERC20(AddrClassicERC20.TOKEN_CRVUSD).approve(address(_splitter), 100 ether);
-        _splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, false, true);
+        lendAsset.approve(address(splitter), 100 ether);
+        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, false, true);
         skip(1 weeks);
         gUSD.processRewards();
 
         // VERIFY
 
-        deltaBalanceCrvSplitter = IERC20(AddrClassicERC20.TOKEN_CRV).balanceOf(address(_splitter)) - deltaBalanceCrvSplitter;
-        deltaBalanceCvxSplitter = IERC20(AddrClassicERC20.TOKEN_CVX).balanceOf(address(_splitter)) - deltaBalanceCvxSplitter;
+        deltaBalanceCrvSplitter = IERC20(AddrClassicERC20.TOKEN_CRV).balanceOf(address(splitter)) - deltaBalanceCrvSplitter;
+        deltaBalanceCvxSplitter = IERC20(AddrClassicERC20.TOKEN_CVX).balanceOf(address(splitter)) - deltaBalanceCvxSplitter;
 
         deltaBalanceCrvProcessor = IERC20(AddrClassicERC20.TOKEN_CRV).balanceOf(processor) - deltaBalanceCrvProcessor;
         deltaBalanceCvxProcessor = IERC20(AddrClassicERC20.TOKEN_CVX).balanceOf(processor) - deltaBalanceCvxProcessor;
@@ -102,14 +76,13 @@ contract ProcessGovRewards is Test {
 
     function test_process_governance_rewards_with_nothing_to_claim() external {
         // PREPARE
-        LendRewardSplitter _splitter = splitter;
         address processor = makeAddr("Processor");
-        deal(address(AddrClassicERC20.TOKEN_CRVUSD), processor, 100 ether);
+        deal(address(lendAsset), processor, 100 ether);
         vm.startPrank(processor);
 
         // ACTIONS
-        IERC20(AddrClassicERC20.TOKEN_CRVUSD).approve(address(_splitter), 100 ether);
-        _splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, false, true);
+        lendAsset.approve(address(splitter), 100 ether);
+        splitter.depositCvx(AddrLlamaLendVaults.CRVUSD_CRV, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, false, true);
         skip(2 weeks);
         gUSD.processRewards();
         // Ensure that second process of reward is failing because all CRV rewards have been already processed

@@ -68,7 +68,6 @@ contract CurveLend is Test {
         curveVault = ILlamaLendVault(CURVE_CRVUSD_CRV);
         crvUSDController = ICrvUSDController(curveVault.controller());
 
-        console.log(stakeDaoVault.token(), curveVault.borrowed_token());
     }
 
     function travelDay(uint256 dayToAdd) internal {

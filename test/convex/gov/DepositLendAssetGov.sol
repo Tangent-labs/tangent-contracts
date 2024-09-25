@@ -1,54 +1,9 @@
-import {Test, console} from "forge-std/Test.sol";
-import {LendRewardSplitterTestCommon} from "../../LendRewardSplitter.common.test.sol";
-import {LendRewardSplitter} from "../../../src/LendRewardSplitter.sol";
-import {IStakeDaoVault} from "../../../src/interfaces/externals/IStakeDaoVault.sol";
-import {ILendRewardSplitter} from "../../../src/interfaces/internals/ILendRewardSplitter.sol";
-import {ICvxRewardToken} from "../../../src/interfaces/externals/ICvxRewardToken.sol";
-import {ICurveLendSplitterToken} from "../../../src/interfaces/internals/ICurveLendSplitterToken.sol";
+import "../ConvexMarketContext.sol";
 
-import {CurveLendSplitterToken} from "../../../src/tokens/CurveLendSplitterToken.sol";
-
-import {gUSDCvx} from "../../../src/tokens/convex/gUSDCvx.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "../../../src/libs/CvxConstantStructs.sol";
-
-import "../../../src/libs/Resources.sol";
-
-contract DepositLendAssetGov is Test {
-    LendRewardSplitter splitter;
-    LendRewardSplitterTestCommon testCommon = new LendRewardSplitterTestCommon();
-
-    CvxConstantStructs CVX_STRUCTS;
-    CvxConstantStructs.CvxStruct vaultStruct;
-
-    ILlamaLendVault llamaVault;
-    uint256 pid;
-    IERC20 crvGauge;
-    ICvxRewardToken cvxRewardToken;
-    IERC20 cvxVaultToken;
-    IERC20 lendAsset;
-    IgUSDCvx gUSD;
-    IscvUSD scvUSD;
-    address crvController;
-
+contract DepositLendAssetGov is ConvexMarketContext {
     function setUp() public {
-        testCommon = new LendRewardSplitterTestCommon();
-        testCommon.fork();
-        testCommon.setUpSplitter();
-        splitter = testCommon.splitter();
-
-        CVX_STRUCTS = new CvxConstantStructs(splitter);
-        vaultStruct = CVX_STRUCTS.createAndGetRandomMarket();
-
-        llamaVault = vaultStruct.llamaVault;
-        pid = vaultStruct.pid;
-        crvGauge = vaultStruct.crvGauge;
-        crvController = vaultStruct.crvController;
-        cvxRewardToken = vaultStruct.cvxRewardToken;
-        cvxVaultToken = vaultStruct.cvxVaultToken;
-        lendAsset = vaultStruct.lendAsset;
-        gUSD = vaultStruct.gUSD;
-        scvUSD = vaultStruct.scvUSD;
+        deployBaseContracts();
+        setUpSingleRandomMarket();
     }
 
     function test_deposit_lend_asset_and_doDeposit(uint120 amountIn) external {
