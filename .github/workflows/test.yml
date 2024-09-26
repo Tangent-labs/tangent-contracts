@@ -19,8 +19,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
@@ -29,7 +27,7 @@ jobs:
 
       - name: Install dependencies with Forge
         run: |
-          forge install OpenZeppelin/openzeppelin-foundry-upgrades --no-git
+          forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-foundry-upgrades OpenZeppelin/openzeppelin-contracts-upgradeable --no-git
 
       - name: Run Forge build
         run: |
@@ -39,5 +37,5 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test -vvv
+          forge test
         id: test
