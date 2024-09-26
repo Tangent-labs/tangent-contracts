@@ -70,10 +70,6 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function stakeAll(uint256 pid) external verifyLendSplitterCaller {
-        _stakeAll(pid);
-    }
-
     function mint(address receiver, uint256 amount, uint256 pid, bool isStake) external verifyLendSplitterCaller returns (uint256) {
         _mint(receiver, amount);
 
@@ -84,31 +80,38 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
         return amount;
     }
 
+    function stakeAll(uint256 pid) external {
+        _stakeAll(pid);
+    }
+
     function _stakeAll(uint256 pid) internal {
         CVX_BOOSTER.depositAll(pid, true);
     }
 
     function withdraw(
-        uint256 amount,
+        uint256 sharesToWithdraw,
         address receiver,
         ILendRewardSplitter.CVX_TOKEN_TYPE outType,
-        uint256 _pid,
         ILlamaLendVault llamaVault
     ) external verifyLendSplitterCaller {
-        uint256 llamaVaultBalance = llamaVault.balanceOf(address(this));
-        if (llamaVaultBalance < amount) {
-            cvxRewardToken.withdrawAndUnwrap(amount - llamaVaultBalance, false);
+        uint256 shareBalance = llamaVault.balanceOf(address(this));
+        if (shareBalance < sharesToWithdraw) {
+            cvxRewardToken.withdrawAndUnwrap(sharesToWithdraw - shareBalance, false);
         }
 
         /// @dev The user claimed the LlamaLend vault asset so we transfer it to him directly
         if (outType == ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset) {
-            llamaVault.transfer(receiver, amount);
+            llamaVault.transfer(receiver, sharesToWithdraw);
         }
         /// @dev User claims the lent asset so we redeem it from the the LlamaLend vault
         else {
-            llamaVault.redeem(amount, receiver);
+            llamaVault.redeem(sharesToWithdraw, receiver);
         }
     }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                    REWARD PROCESS
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
      * @notice Claim and process the governance rewards
@@ -121,20 +124,22 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
         _processRewards();
     }
 
-    function claimSCVUSDRewards(uint256 shares, ILlamaLendVault llamaVault) external {
-
+    /**
+     * @notice Function called by scvUSD
+     * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
+     *      Anyone can trigger this function and will be incentivized with a processor fee.
+     */
+    function claimSCVUSDRewards(uint256 sharesToClaim, ILlamaLendVault llamaVault) external {
         /// @dev Only scvUSD can claim this function
         if (msg.sender != scvUSD) {
             revert OnlySCVUSDCaller(msg.sender);
         }
-        uint256 llamaVaultBalance = llamaVault.balanceOf(address(this));
+        uint256 sharesBalance = llamaVault.balanceOf(address(this));
 
-        if (llamaVaultBalance < shares) {
-            cvxRewardToken.withdrawAndUnwrap(shares - llamaVaultBalance, false);
+        if (sharesBalance < sharesToClaim) {
+            cvxRewardToken.withdrawAndUnwrap(sharesToClaim - sharesBalance, false);
         }
 
-        llamaVault.redeem(shares, msg.sender);
-        // console.log("sharesToClaim",shares );
-        // console.log("caca", llamaVault.balanceOf(address(this)));
+        llamaVault.redeem(sharesToClaim, msg.sender);
     }
 }

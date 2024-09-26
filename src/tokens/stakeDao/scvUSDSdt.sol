@@ -51,6 +51,18 @@ contract scvUSDSdt is CurveLendSplitterToken, IscvUSD {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
+     * @notice Mint staked tokens
+     * @param to        Receiver of the staked ERC20 token
+     * @param amount    Amount of staked token
+     */
+    function mint(address to, uint256 amount) external verifyLendSplitterCaller returns (uint256) {
+        /// @dev Mint will call _updateReward
+        _mint(to, amount);
+
+        return amount;
+    }
+
+    /**
      * @notice Process Stable Rewards (only for scvUSD)
      * @dev Claim rewards from the splitter share  and stream it for the holders of scvUSD.
      *   Anyone can trigger this function and will be incentivized by a processor fee.
@@ -68,8 +80,8 @@ contract scvUSDSdt is CurveLendSplitterToken, IscvUSD {
         _processRewards();
     }
 
-    function getStreamableShares() external view returns (uint256){
-         return 0;
+    function getStreamableShares() external view returns (uint256) {
+        return 0;
     }
 
     function setGUSD(address _gUSD) external verifyLendSplitterCaller {

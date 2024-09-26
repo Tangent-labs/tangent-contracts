@@ -9,7 +9,7 @@ interface IgUSDCvx is ICurveLendSplitterToken {
 
     function mint(address receiver, uint256 amount, uint256 pid, bool isStake) external returns (uint256);
 
-    function withdraw(uint256 amount, address receiver, ILendRewardSplitter.CVX_TOKEN_TYPE outType, uint256 pid, ILlamaLendVault llamaVault) external;
+    function withdraw(uint256 amount, address receiver, ILendRewardSplitter.CVX_TOKEN_TYPE outType, ILlamaLendVault llamaVault) external;
 
     function claimSCVUSDRewards(uint256 shares, ILlamaLendVault llamaVault) external;
 }

@@ -21,22 +21,21 @@ contract WithdrawLlamaLendVaultAssetGov is ConvexMarketContext {
 
         uint256 usrLendAssetBalanceBfr = lendAsset.balanceOf(usr2);
 
-
         // ACTIONS
         splitter.withdrawCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, gUSD.balanceOf(usr2), false);
 
         // VERIFY
-        assertApproxEqRel(lendAsset.balanceOf(usr2) - usrLendAssetBalanceBfr , amountLendAssetDeposited, 1e5);
-
+        assertApproxEqRel(lendAsset.balanceOf(usr2) - usrLendAssetBalanceBfr, amountLendAssetDeposited, 1e5);
 
         assertEq(cvxRewardToken.balanceOf(address(gUSD)), scvUSD.getStreamableShares());
-
-
-
     }
 
-    function test_withdraw_llamalend_vault_asset(uint256 sharesDeposited1, uint256 sharesDeposited2, uint256 amountDepositedUsr2, uint256 withdrawnAmount1) external {
-
+    function test_withdraw_llamalend_vault_asset(
+        uint256 sharesDeposited1,
+        uint256 sharesDeposited2,
+        uint256 amountDepositedUsr2,
+        uint256 withdrawnAmount1
+    ) external {
         /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-==-=-=-==-=-=-==-=-=-=
                 DO 2 deposits in order to have some LLAMA LP and CVX REWARD TOKENS
         =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-==-=-=-==-=-=-==-=-=-= */
@@ -45,15 +44,13 @@ contract WithdrawLlamaLendVaultAssetGov is ConvexMarketContext {
         amountDepositedUsr2 = bound(amountDepositedUsr2, 1e16, 5e24);
         // Performs a deposit with LendASset
 
-        uint256 initialLendAssetEquivalent = dealLlamaVaultAsset(llamaVault, usr1, sharesDeposited1) +
-            dealLlamaVaultAsset(llamaVault, usr1, sharesDeposited2);
+        uint256 initialLendAssetEquivalent = dealLlamaVaultAsset(llamaVault, usr1, sharesDeposited1) + dealLlamaVaultAsset(llamaVault, usr1, sharesDeposited2);
         deal(address(lendAsset), usr2, amountDepositedUsr2);
 
         vm.startPrank(usr1);
         llamaVault.approve(address(splitter), UINT256_MAX);
         splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, sharesDeposited1, false, true);
         splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, sharesDeposited2, false, false);
-
 
         uint256 shareDepositedUsr2 = llamaVault.convertToShares(amountDepositedUsr2);
         vm.stopPrank();
@@ -155,10 +152,7 @@ contract WithdrawLlamaLendVaultAssetGov is ConvexMarketContext {
 
         crvUsdClaimedUser2 = lendAsset.balanceOf(usr2);
         splitter.withdrawCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, scvUSD.balanceOf(usr2), true);
-        assertApproxEqRel(lendAsset.balanceOf(usr2) - crvUsdClaimedUser2 , _amountDepositedUsr2, 1e16);
+        assertApproxEqRel(lendAsset.balanceOf(usr2) - crvUsdClaimedUser2, _amountDepositedUsr2, 1e16);
         // assertApproxEqRel(crvUsdClaimedUser2, _amountDepositedUsr2, 50e15);
-
     }
-
-
 }

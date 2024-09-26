@@ -28,7 +28,7 @@ import {IgUSDSdt} from "./interfaces/internals/IgUSDSdt.sol";
 import {IscvUSD} from "./interfaces/internals/IscvUSD.sol";
 import "forge-std/console.sol"; //TODO: to remove
 
-contract LendRewardSplitter is Ownable2StepUpgradeable {
+contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
     using SafeERC20 for IERC20;
     using SafeERC20 for ILlamaLendVault;
     using SafeERC20 for IStakeDaoVault;
@@ -72,7 +72,6 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     event DepositCvx(address indexed account, bool isStableReward, ILendRewardSplitter.CVX_TOKEN_TYPE outType, uint256 amount);
     event WithdrawCvx(address indexed account, bool isStableReward, ILendRewardSplitter.CVX_TOKEN_TYPE outType, uint256 amount);
     event ToggleZapToken(address erc20, bool newState);
-
 
     error NoRewardsToClaimFromContract(address contractAddr);
     error IncorretRewardLength(uint256 rewardLengthInParam, uint256 realRewardLength);
@@ -172,85 +171,87 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         /// @dev Continue deposit.
         if (isCvx) {
             return _depositCvx(llamaLendVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit, true);
-        } else {
-            return _depositSdt(llamaLendVault, ILendRewardSplitter.SDT_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit, true);
         }
+
+        // else {
+        //     return _depositSdt(llamaLendVault, ILendRewardSplitter.SDT_TOKEN_TYPE.LendAsset, lendAssetAmount, isStableReward, doDeposit, true);
+        // }
     }
 
-    function depositSdt(
-        ILlamaLendVault llamaVault,
-        ILendRewardSplitter.SDT_TOKEN_TYPE inType,
-        uint256 amount,
-        bool isStableReward,
-        bool doDeposit
-    ) external returns (uint256 depositAmount) {
-        return _depositSdt(llamaVault, inType, amount, isStableReward, doDeposit, false);
-    }
+    // function depositSdt(
+    //     ILlamaLendVault llamaVault,
+    //     ILendRewardSplitter.SDT_TOKEN_TYPE inType,
+    //     uint256 amount,
+    //     bool isStableReward,
+    //     bool doDeposit
+    // ) external returns (uint256 depositAmount) {
+    //     return _depositSdt(llamaVault, inType, amount, isStableReward, doDeposit, false);
+    // }
 
-    /**
-     *  @notice Deposit asset into the Convergence splitter contract in order to get one part of the reawrd from the lend contract.
-     *  @param inType Type of token to in with with 3 steps  LendAsset >  LendCurveAsset >  LendStakeDaoAsset
-     *  @param amount Amount  of {inType} token to deposit.
-     *  @param isStableReward bool  IF isStableReward == true THEN you want the stable part of the reward  ELSE you want the gauge part of the reward.
-     *  @param doDeposit bool  IF doDeposit == true THEN  all the pending asset will be deposited in stakeValut.
-     *  @return depositAmount Staked amount eligible to rewards.
-     */
-    function _depositSdt(
-        ILlamaLendVault llamaVault,
-        ILendRewardSplitter.SDT_TOKEN_TYPE inType,
-        uint256 amount,
-        bool isStableReward,
-        bool doDeposit,
-        bool isZap
-    ) internal returns (uint256 depositAmount) {
-        depositAmount = amount;
-        ISdtLiquidityGauge stakeDaoGauge = sdtGaugePerLlamaVault[llamaVault];
-        address gUSD = address(gUSDSdtPerLlamaVault[llamaVault]);
+    // /**
+    //  *  @notice Deposit asset into the Convergence splitter contract in order to get one part of the reawrd from the lend contract.
+    //  *  @param inType Type of token to in with with 3 steps  LendAsset >  LendCurveAsset >  LendStakeDaoAsset
+    //  *  @param amount Amount  of {inType} token to deposit.
+    //  *  @param isStableReward bool  IF isStableReward == true THEN you want the stable part of the reward  ELSE you want the gauge part of the reward.
+    //  *  @param doDeposit bool  IF doDeposit == true THEN  all the pending asset will be deposited in stakeValut.
+    //  *  @return depositAmount Staked amount eligible to rewards.
+    //  */
+    // function _depositSdt(
+    //     ILlamaLendVault llamaVault,
+    //     ILendRewardSplitter.SDT_TOKEN_TYPE inType,
+    //     uint256 amount,
+    //     bool isStableReward,
+    //     bool doDeposit,
+    //     bool isZap
+    // ) internal returns (uint256 depositAmount) {
+    //     depositAmount = amount;
+    //     ISdtLiquidityGauge stakeDaoGauge = sdtGaugePerLlamaVault[llamaVault];
+    //     address gUSD = address(gUSDSdtPerLlamaVault[llamaVault]);
 
-        /// @dev User enter staking with the StakeDao Gauge Asset
-        if (inType == ILendRewardSplitter.SDT_TOKEN_TYPE.SdtGaugeAsset) {
-            stakeDaoGauge.safeTransferFrom(msg.sender, address(this), amount);
-        }
-        /// @dev User enter with the Llamalend Vault asset or the Lent asset
-        else {
-            /// @dev User enter with the Llamalend Vault asset
-            if (inType == ILendRewardSplitter.SDT_TOKEN_TYPE.LlamalendVaultAsset) {
-                /// @dev Transfer the vault asset from LlamaLend
-                llamaVault.safeTransferFrom(msg.sender, address(this), amount);
-            }
-            /// @dev User enter with the lent asset
-            else {
-                if (!isZap) {
-                    /// @dev User enter with the lent asset
-                    lentAssetPerLlamaVault[llamaVault].safeTransferFrom(msg.sender, address(this), amount);
-                }
+    //     /// @dev User enter staking with the StakeDao Gauge Asset
+    //     if (inType == ILendRewardSplitter.SDT_TOKEN_TYPE.SdtGaugeAsset) {
+    //         stakeDaoGauge.safeTransferFrom(msg.sender, address(this), amount);
+    //     }
+    //     /// @dev User enter with the Llamalend Vault asset or the Lent asset
+    //     else {
+    //         /// @dev User enter with the Llamalend Vault asset
+    //         if (inType == ILendRewardSplitter.SDT_TOKEN_TYPE.LlamalendVaultAsset) {
+    //             /// @dev Transfer the vault asset from LlamaLend
+    //             llamaVault.safeTransferFrom(msg.sender, address(this), amount);
+    //         }
+    //         /// @dev User enter with the lent asset
+    //         else {
+    //             if (!isZap) {
+    //                 /// @dev User enter with the lent asset
+    //                 lentAssetPerLlamaVault[llamaVault].safeTransferFrom(msg.sender, address(this), amount);
+    //             }
 
-                /// @dev Deposit in curveLend.
-                depositAmount = llamaVault.deposit(amount, address(this));
-            }
+    //             /// @dev Deposit in curveLend.
+    //             depositAmount = llamaVault.deposit(amount, address(this));
+    //         }
 
-            uint256 balanceBefore = stakeDaoGauge.balanceOf(gUSD);
-            sdtVaultPerLlamaVault[llamaVault].deposit(gUSD, depositAmount, doDeposit);
-            depositAmount = stakeDaoGauge.balanceOf(gUSD) - balanceBefore;
-        }
+    //         uint256 balanceBefore = stakeDaoGauge.balanceOf(gUSD);
+    //         sdtVaultPerLlamaVault[llamaVault].deposit(gUSD, depositAmount, doDeposit);
+    //         depositAmount = stakeDaoGauge.balanceOf(gUSD) - balanceBefore;
+    //     }
 
-        if (isStableReward) {
-            /// @dev For scvUSD, we mint 1:1 from cvcrvUSD.
-            scvUSDSdtPerLlamaVault[llamaVault].mint(msg.sender, depositAmount);
-        } else {
-            /// @dev For gUSD, we mint 1:1 from crvUSD,
-            // we use the curveLendVault.convertToAssets to calculate the amount.
-            depositAmount = llamaVault.convertToAssets(depositAmount);
-            gUSDSdtPerLlamaVault[llamaVault].mint(msg.sender, depositAmount);
-        }
+    //     if (isStableReward) {
+    //         /// @dev For scvUSD, we mint 1:1 from cvcrvUSD.
+    //         scvUSDSdtPerLlamaVault[llamaVault].mint(msg.sender, depositAmount);
+    //     } else {
+    //         /// @dev For gUSD, we mint 1:1 from crvUSD,
+    //         // we use the curveLendVault.convertToAssets to calculate the amount.
+    //         depositAmount = llamaVault.convertToAssets(depositAmount);
+    //         gUSDSdtPerLlamaVault[llamaVault].mint(msg.sender, depositAmount);
+    //     }
 
-        /// @dev Requires that some tokens are deposited
-        if (depositAmount == 0) {
-            revert Errors.ZeroAmount();
-        }
+    //     /// @dev Requires that some tokens are deposited
+    //     if (depositAmount == 0) {
+    //         revert Errors.ZeroAmount();
+    //     }
 
-        emit DepositSdt(msg.sender, isStableReward, inType, depositAmount);
-    }
+    //     emit DepositSdt(msg.sender, isStableReward, inType, depositAmount);
+    // }
 
     function depositCvx(
         ILlamaLendVault llamaVault,
@@ -319,32 +320,32 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                         WITHDRAW
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    /**
-     *  @notice Withdraw assets from  the Convergence splitter contract.
-     *  @param outType Type of token you want to in with with 4 steps  LendAsset >  LendCurveAsset.
-     *  @param amount Amount  of {gUSD|scvUsd} token you want to withdraw.
-     *  @param isStableReward  If isStableReward == true THEN   scvUsd of user is used   ELSE  gUSD of user is used.
-     */
-    function withdrawSdt(ILlamaLendVault llamaVault, ILendRewardSplitter.SDT_TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
-        /// @dev We check the prerequesite.
-        require(amount != 0, Errors.ZeroAmount());
+    // /**
+    //  *  @notice Withdraw assets from  the Convergence splitter contract.
+    //  *  @param outType Type of token you want to in with with 4 steps  LendAsset >  LendCurveAsset.
+    //  *  @param amount Amount  of {gUSD|scvUsd} token you want to withdraw.
+    //  *  @param isStableReward  If isStableReward == true THEN   scvUsd of user is used   ELSE  gUSD of user is used.
+    //  */
+    // function withdrawSdt(ILlamaLendVault llamaVault, ILendRewardSplitter.SDT_TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
+    //     /// @dev We check the prerequesite.
+    //     require(amount != 0, Errors.ZeroAmount());
 
-        IgUSDSdt gUSD = IgUSDSdt(address(gUSDSdtPerLlamaVault[llamaVault]));
+    //     IgUSDSdt gUSD = IgUSDSdt(address(gUSDSdtPerLlamaVault[llamaVault]));
 
-        uint256 shareAmount = amount;
-        if (isStableReward) {
-            /// @dev We burn the corresponding token.
-            scvUSDSdtPerLlamaVault[llamaVault].burn(msg.sender, amount);
-        } else {
-            /// @dev We burn the corresponding token.
-            gUSD.burn(msg.sender, amount);
-            shareAmount = llamaVault.convertToShares(amount);
-        }
-        require(shareAmount != 0, Errors.ZeroAmount());
-        gUSD.withdraw(shareAmount, msg.sender, outType, llamaVault, sdtVaultPerLlamaVault[llamaVault]);
+    //     uint256 shareAmount = amount;
+    //     if (isStableReward) {
+    //         /// @dev We burn the corresponding token.
+    //         scvUSDSdtPerLlamaVault[llamaVault].burn(msg.sender, amount);
+    //     } else {
+    //         /// @dev We burn the corresponding token.
+    //         gUSD.burn(msg.sender, amount);
+    //         shareAmount = llamaVault.convertToShares(amount);
+    //     }
+    //     require(shareAmount != 0, Errors.ZeroAmount());
+    //     gUSD.withdraw(shareAmount, msg.sender, outType, llamaVault, sdtVaultPerLlamaVault[llamaVault]);
 
-        emit WithdrawSdt(msg.sender, isStableReward, outType, amount);
-    }
+    //     emit WithdrawSdt(msg.sender, isStableReward, outType, amount);
+    // }
 
     /**
      *  @notice Withdraw assets from  the Convergence splitter contract.
@@ -359,17 +360,17 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         IgUSDCvx gUSD = gUSDCvxPerLlamaVault[llamaVault];
 
-        uint256 amountToWithdraw = amount;
+        uint256 sharesToWithdraw = amount;
         if (isStableReward) {
             /// @dev We burn the corresponding token.
             scvUSDCvxPerLlamaVault[llamaVault].burn(msg.sender, amount);
         } else {
             /// @dev We burn the corresponding token.
             gUSD.burn(msg.sender, amount);
-            amountToWithdraw = llamaVault.convertToShares(amount);
+            sharesToWithdraw = llamaVault.convertToShares(amount);
         }
 
-        gUSD.withdraw(amountToWithdraw, msg.sender, outType, cvxPidPerLlamaVault[llamaVault], llamaVault);
+        gUSD.withdraw(sharesToWithdraw, msg.sender, outType, llamaVault);
 
         emit WithdrawCvx(msg.sender, isStableReward, outType, amount);
     }
@@ -495,60 +496,60 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
                             OWNER
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    /**
-     * @notice Create a new Market through a StakeDao vault (only for collatered vaults).
-     *         Deploy on the fly the corresponding streamed tokens: scvUSD (stable) & gUSD (governance)
-     * @param stakeDaoVault Address of the vault of StakeDao
-     */
-    function createSdtMarket(IStakeDaoVault stakeDaoVault) external onlyOwner {
-        require(SCVUSDBeaconSdt != address(0), "BEACON_0");
-        require(GUSDBeaconSdt != address(0), "BEACON_0");
+    // /**
+    //  * @notice Create a new Market through a StakeDao vault (only for collatered vaults).
+    //  *         Deploy on the fly the corresponding streamed tokens: scvUSD (stable) & gUSD (governance)
+    //  * @param stakeDaoVault Address of the vault of StakeDao
+    //  */
+    // function createSdtMarket(IStakeDaoVault stakeDaoVault) external onlyOwner {
+    //     require(SCVUSDBeaconSdt != address(0), "BEACON_0");
+    //     require(GUSDBeaconSdt != address(0), "BEACON_0");
 
-        ILlamaLendVault _llamaLendVault = ILlamaLendVault(stakeDaoVault.token());
-        require(address(sdtVaultPerLlamaVault[_llamaLendVault]) == address(0), "MARKET_ALREADY_EXIST");
+    //     ILlamaLendVault _llamaLendVault = ILlamaLendVault(stakeDaoVault.token());
+    //     require(address(sdtVaultPerLlamaVault[_llamaLendVault]) == address(0), "MARKET_ALREADY_EXIST");
 
-        require(address(_llamaLendVault) != address(0), "CURVE_LEND_0");
+    //     require(address(_llamaLendVault) != address(0), "CURVE_LEND_0");
 
-        IERC20 _lendAsset = IERC20(_llamaLendVault.asset());
-        ISdtLiquidityGauge _liquidityGauge = ISdtLiquidityGauge(stakeDaoVault.liquidityGauge());
+    //     IERC20 _lendAsset = IERC20(_llamaLendVault.asset());
+    //     ISdtLiquidityGauge _liquidityGauge = ISdtLiquidityGauge(stakeDaoVault.liquidityGauge());
 
-        /// @dev Deploy scvUSD (beaconProxy)
-        scvUSDSdt _scvUSD = scvUSDSdt(
-            address(
-                new BeaconProxy(
-                    SCVUSDBeaconSdt,
-                    //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
-                    abi.encodeCall(scvUSDSdt.initialize, ("Stable USD/CRV", "scvUSD-CRV", address(this), address(_liquidityGauge), _llamaLendVault))
-                )
-            )
-        );
+    //     /// @dev Deploy scvUSD (beaconProxy)
+    //     scvUSDSdt _scvUSD = scvUSDSdt(
+    //         address(
+    //             new BeaconProxy(
+    //                 SCVUSDBeaconSdt,
+    //                 //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
+    //                 abi.encodeCall(scvUSDSdt.initialize, ("Stable USD/CRV", "scvUSD-CRV", address(this), address(_liquidityGauge), _llamaLendVault))
+    //             )
+    //         )
+    //     );
 
-        /// @dev Deploy gUSD (beaconProxy)
-        gUSDSdt _gUSD = gUSDSdt(
-            address(
-                new BeaconProxy(
-                    GUSDBeaconSdt,
-                    //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
-                    abi.encodeCall(gUSDSdt.initialize, ("Governance USD/CRV", "gUSD-CRV", address(this), _liquidityGauge, stakeDaoVault, address(_scvUSD)))
-                )
-            )
-        );
-        _scvUSD.setGUSD(address(_gUSD));
+    //     /// @dev Deploy gUSD (beaconProxy)
+    //     gUSDSdt _gUSD = gUSDSdt(
+    //         address(
+    //             new BeaconProxy(
+    //                 GUSDBeaconSdt,
+    //                 //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
+    //                 abi.encodeCall(gUSDSdt.initialize, ("Governance USD/CRV", "gUSD-CRV", address(this), _liquidityGauge, stakeDaoVault, address(_scvUSD)))
+    //             )
+    //         )
+    //     );
+    //     _scvUSD.setGUSD(address(_gUSD));
 
-        /// @dev Approve the lend asset to be spent by the corresponding LlamaLendVault in order to get LlamaLend LP
-        _lendAsset.approve(address(_llamaLendVault), MAX_UINT);
-        /// @dev Approve the LlamaLend LP to be spent by the stakeDao Vault
-        _llamaLendVault.approve(address(stakeDaoVault), MAX_UINT);
+    //     /// @dev Approve the lend asset to be spent by the corresponding LlamaLendVault in order to get LlamaLend LP
+    //     _lendAsset.approve(address(_llamaLendVault), MAX_UINT);
+    //     /// @dev Approve the LlamaLend LP to be spent by the stakeDao Vault
+    //     _llamaLendVault.approve(address(stakeDaoVault), MAX_UINT);
 
-        sdtVaultPerLlamaVault[_llamaLendVault] = stakeDaoVault;
-        sdtGaugePerLlamaVault[_llamaLendVault] = _liquidityGauge;
-        lentAssetPerLlamaVault[_llamaLendVault] = _lendAsset;
-        scvUSDSdtPerLlamaVault[_llamaLendVault] = _scvUSD;
-        gUSDSdtPerLlamaVault[_llamaLendVault] = _gUSD;
+    //     sdtVaultPerLlamaVault[_llamaLendVault] = stakeDaoVault;
+    //     sdtGaugePerLlamaVault[_llamaLendVault] = _liquidityGauge;
+    //     lentAssetPerLlamaVault[_llamaLendVault] = _lendAsset;
+    //     scvUSDSdtPerLlamaVault[_llamaLendVault] = _scvUSD;
+    //     gUSDSdtPerLlamaVault[_llamaLendVault] = _gUSD;
 
-        isLendSplitterToken[address(_scvUSD)] = true;
-        isLendSplitterToken[address(_gUSD)] = true;
-    }
+    //     isLendSplitterToken[address(_scvUSD)] = true;
+    //     isLendSplitterToken[address(_gUSD)] = true;
+    // }
 
     /**
      * @notice Create several new Market through a Convex vault.

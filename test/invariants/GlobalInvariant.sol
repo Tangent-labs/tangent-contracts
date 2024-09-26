@@ -74,30 +74,30 @@ contract GlobalInvariant is ConvexMarketContext {
 
             try actualStruct.scvUSD.processRewards() {} catch {}
             try actualStruct.gUSD.processRewards() {} catch {}
+            // Let the rewards stream fully
+            skip(7 days);
             for (uint256 userIndex; userIndex < users.length; userIndex++) {
                 address user = users[userIndex];
                 vm.startPrank(user);
 
+                /// @dev Verify that users can claim their rewards
+                ICommonStruct.TokenAmount[] memory claimableGUSD = actualStruct.gUSD.claimableRewards(user);
+                for (uint256 index; index < claimableGUSD.length; index++) {
+                    if (claimableGUSD[index].amount != 0) {
+                        splitter.claimSimple(address(actualStruct.gUSD), user);
+                        break;
+                    }
+                }
+                ICommonStruct.TokenAmount[] memory claimableSCVUSD = actualStruct.scvUSD.claimableRewards(user);
+                for (uint256 index; index < claimableSCVUSD.length; index++) {
+                    if (claimableSCVUSD[index].amount != 0) {
+                        splitter.claimSimple(address(actualStruct.scvUSD), user);
+                        break;
+                    }
+                }
+
                 uint256 gUSDBal = actualStruct.gUSD.balanceOf(user);
                 uint256 scvUSDBal = actualStruct.scvUSD.balanceOf(user);
-
-                // ICommonStruct.TokenAmount[] memory claimableGUSD = gUSD.claimableRewards(user);
-                // for (uint256 index; index < claimableGUSD.length; index++) {
-                //     if (claimableGUSD[index].amount != 0) {
-                //         console.log("aaa");
-                //         splitter.claimSimple(address(actualStruct.gUSD), user);
-                //         break;
-                //     }
-                // }
-                // ICommonStruct.TokenAmount[] memory claimableSCVUSD = scvUSD.claimableRewards(user);
-                // for (uint256 index; index < claimableSCVUSD.length; index++) {
-                //     if (claimableSCVUSD[index].amount != 0) {
-                //         console.log("yoooo");
-                //         splitter.claimSimple(address(actualStruct.scvUSD), user);
-                //         break;
-                //     }
-                // }
-
                 /// @dev Verify that users can withdraw their deposits
                 if (gUSDBal != 0) {
                     splitter.withdrawCvx(actualVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, gUSDBal, false);
@@ -110,9 +110,6 @@ contract GlobalInvariant is ConvexMarketContext {
                 assertEq(actualStruct.gUSD.balanceOf(user), 0, "gUSD balance of user is empty");
                 assertEq(actualStruct.scvUSD.balanceOf(user), 0, "scvUSD balance of user is empty");
                 vm.stopPrank();
-
-                /// @dev Verify that users can claim their rewards
-                console.log("coucou");
             }
             assertEq(actualStruct.gUSD.totalSupply(), 0);
             assertEq(actualStruct.scvUSD.totalSupply(), 0);

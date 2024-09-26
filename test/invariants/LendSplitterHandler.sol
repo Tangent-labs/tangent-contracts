@@ -27,7 +27,7 @@ contract LendSplitterHandler is CommonBase, StdCheats, StdUtils {
 
     function depositCvx(
         ILlamaLendVault _llamaVault,
-        uint8 inTypeNumber,
+        uint256 inTypeNumber,
         uint256 amount,
         bool isStableReward,
         bool doDeposit
@@ -45,7 +45,7 @@ contract LendSplitterHandler is CommonBase, StdCheats, StdUtils {
             balanceBefore = gUSD.balanceOf(msg.sender);
         }
         // Bound input type & amount
-        inTypeNumber = 0;
+        inTypeNumber = bound(inTypeNumber, 0, 1);
         IERC20 tokenIn;
         if (inTypeNumber == 0) {
             amount = bound(amount, 1e16, 10_000_000 ether);
@@ -75,7 +75,7 @@ contract LendSplitterHandler is CommonBase, StdCheats, StdUtils {
         skip(bound(vm.randomUint(), 0, 24) * 3_600);
     }
 
-    function withdrawCvx(ILlamaLendVault _llamaVault, uint8 outType, uint256 amount, bool isStableReward) public {
+    function withdrawCvx(ILlamaLendVault _llamaVault, uint256 outType, uint256 amount, bool isStableReward, bool isDeposited) public {
         _llamaVault = CVX_STRUCTS.pickRandomVault();
         IgUSDCvx gUSD = splitter.gUSDCvxPerLlamaVault(_llamaVault);
         IscvUSD scvUSD = splitter.scvUSDCvxPerLlamaVault(_llamaVault);
@@ -93,12 +93,13 @@ contract LendSplitterHandler is CommonBase, StdCheats, StdUtils {
         if (balanceBefore == 0) {
             uint256 randomIsDeposit;
             randomIsDeposit = bound(randomIsDeposit, 0, 1);
-            depositCvx(_llamaVault, outType, amount, isStableReward, randomIsDeposit == 1 ? true : false);
+            depositCvx(_llamaVault, outType, amount, isStableReward, isDeposited);
             return;
         }
 
         // Bound input type & amount
-        outType = 0;
+        outType = bound(outType, 0, 1);
+
         IERC20 tokenIn;
         if (outType == 0) {
             amount = bound(amount, 1, balanceBefore);

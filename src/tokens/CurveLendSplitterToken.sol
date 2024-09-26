@@ -115,18 +115,6 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
-     * @notice Mint staked tokens
-     * @param to        Receiver of the staked ERC20 token
-     * @param amount    Amount of staked token
-     */
-    function mint(address to, uint256 amount) external virtual verifyLendSplitterCaller returns (uint256) {
-        /// @dev Mint will call _updateReward
-        _mint(to, amount);
-
-        return amount;
-    }
-
-    /**
      * @notice Burn staked token
      * @param from        Owner of the staked ERC20 token
      * @param amount      Amount to burn

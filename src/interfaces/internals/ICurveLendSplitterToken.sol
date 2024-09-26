@@ -14,8 +14,6 @@ interface ICurveLendSplitterToken is IERC20 {
         uint128 daoFeePercentage;
     }
 
-    function mint(address to, uint256 amount) external returns (uint256);
-
     function burn(address from, uint256 amount) external;
 
     function getAndUpdateRewards(address account) external returns (ICommonStruct.TokenAmount[] memory);

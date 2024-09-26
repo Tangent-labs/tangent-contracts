@@ -49,31 +49,39 @@ contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function getTotalStaked() external view returns  (uint256) {
+    /**
+     * @notice Mint scvUSD, only callable during deposit process from _depositCVX
+     * @param to        Receiver of the scvUSD
+     * @param amount    Amount of scvUSD to mint
+     */
+    function mint(address to, uint256 amount) external verifyLendSplitterCaller returns (uint256) {
+        /// @dev Mint will call _updateReward
+        _mint(to, amount);
+        return amount;
+    }
+
+    function getTotalStaked() external view returns (uint256) {
         cvxRewardToken.balanceOf(address(gUSD)) + llamaVault.balanceOf(address(gUSD));
     }
 
-    function getStreamableShares() external view returns (uint256){
-         return cvxRewardToken.balanceOf(address(gUSD)) +
-                llamaVault.balanceOf(address(gUSD)) -
-                totalSupply() -
-                llamaVault.convertToShares(gUSD.totalSupply());
+    function getStreamableShares() external view returns (uint256) {
+        IgUSDCvx _gUSD = gUSD;
+        ILlamaLendVault _llamaVault = llamaVault;
+        return
+            cvxRewardToken.balanceOf(address(_gUSD)) + _llamaVault.balanceOf(address(_gUSD)) - totalSupply() - _llamaVault.convertToShares(_gUSD.totalSupply());
     }
 
     /**
-     * @notice Process Stable Rewards (only for scvUSD)
-     * @dev Claim rewards from the splitter share  and stream it for the holders of scvUSD.
-     *   Anyone can trigger this function and will be incentivized by a processor fee.
+     * @notice Process the rewards for scvUSD
+     * @dev Redeem the shares left by gUSD stakers in lendAsset.
+     *      Anyone can trigger this function and will be incentivized by a processor fee.
      */
     function processRewards() external {
         IgUSDCvx _gUSD = gUSD;
         ILlamaLendVault _llamaVault = llamaVault;
         /// @dev We need to keep enough share to back the stableSupply and the assetPart of the govSupply, we withdraw the reward share from the gUSD
         _gUSD.claimSCVUSDRewards(
-            cvxRewardToken.balanceOf(address(_gUSD)) +
-                _llamaVault.balanceOf(address(_gUSD)) -
-                totalSupply() -
-                _llamaVault.convertToShares(gUSD.totalSupply()),
+            cvxRewardToken.balanceOf(address(_gUSD)) + _llamaVault.balanceOf(address(_gUSD)) - totalSupply() - _llamaVault.convertToShares(gUSD.totalSupply()),
             _llamaVault
         );
         _processRewards();
