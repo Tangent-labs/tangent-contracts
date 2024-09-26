@@ -27,6 +27,7 @@ contract DeployContext is Test {
 
     address public owner = makeAddr("Owner");
     address public ownerGauge = makeAddr("ownerGauge");
+    address public feeTreasury = makeAddr("feeTreasury");
     LendRewardSplitter public splitter;
     address public gUSDBeaconSdt;
     address public scvUSDBeaconSdt;
@@ -114,7 +115,7 @@ contract DeployContext is Test {
                 new TransparentUpgradeableProxy(
                     address(new LendRewardSplitter()),
                     proxyAdmin,
-                    abi.encodeCall(LendRewardSplitter.initialize, (ownerToSet, gUSDBeaconSdt, scvUSDBeaconSdt, gUSDBeaconCvx, scvUSDBeaconCvx))
+                    abi.encodeCall(LendRewardSplitter.initialize, (ownerToSet,feeTreasury, gUSDBeaconSdt, scvUSDBeaconSdt, gUSDBeaconCvx, scvUSDBeaconCvx))
                 )
             )
         );

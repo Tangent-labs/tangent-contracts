@@ -46,6 +46,8 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     address public GUSDBeaconCvx;
     address public SCVUSDBeaconCvx;
 
+    address public feeTreasury;
+
     mapping(IERC20 => uint256) public daoFeeForToken;
 
     mapping(ILlamaLendVault => IERC20) public lentAssetPerLlamaVault;
@@ -71,6 +73,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     event WithdrawCvx(address indexed account, bool isStableReward, ILendRewardSplitter.CVX_TOKEN_TYPE outType, uint256 amount);
     event ToggleZapToken(address erc20, bool newState);
 
+
     error NoRewardsToClaimFromContract(address contractAddr);
     error IncorretRewardLength(uint256 rewardLengthInParam, uint256 realRewardLength);
     error NoRewardToMultiClaim();
@@ -78,6 +81,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
     error NotACurveSplitterToken(address contractAddr);
     error AlreadyCreatedCvxMarket(uint256 pid);
 
+    error CallerNotFeeTreasury();
     error CallerNotLendSplitterToken();
     error NotLendAssetRoute(address token);
     error NotAllowedInToken(address token);
@@ -92,11 +96,13 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
     function initialize(
         address _owner,
+        address _feeTreasury,
         address _gUSDBeaconSdt,
         address _scvUSDBeaconSdt,
         address _gUSDBeaconCvx,
         address _scvUSDBeaconCvx
     ) external initializer {
+        feeTreasury = _feeTreasury;
         GUSDBeaconSdt = _gUSDBeaconSdt;
         SCVUSDBeaconSdt = _scvUSDBeaconSdt;
         GUSDBeaconCvx = _gUSDBeaconCvx;
@@ -134,12 +140,10 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         {
             address lentAsset = address(lentAssetPerLlamaVault[llamaLendVault]);
             /// @dev Check that the end route is the llenAsset of the market.
-            for (uint256 routeIndex = 0; routeIndex < routes.length; ) {
+            for (uint256 routeIndex = 1; routeIndex < routes.length; ) {
                 /// @dev when we find the first 0x0, this is the end of the route.
                 if (routes[routeIndex] == address(0)) {
-                    if (routeIndex > 1 && routes[routeIndex - 1] != lentAsset) {
-                        revert NotLendAssetRoute(routes[routeIndex - 1]);
-                    }
+                    require(routes[routeIndex - 1] == lentAsset, NotLendAssetRoute(routes[routeIndex - 1]));
                     break;
                 }
                 unchecked {
@@ -151,9 +155,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         /// @dev if not ETH deposit , we tranfer the token to this contract,and allow the router to move it.
         if (msg.value == 0) {
-            if (!allowedZapToken[tokenIn]) {
-                revert NotAllowedInToken(tokenIn);
-            }
+            require(allowedZapToken[tokenIn], NotAllowedInToken(tokenIn));
             IERC20(tokenIn).safeTransferFrom(msg.sender, address(this), inAmount);
         }
 
@@ -308,9 +310,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
 
         /// @dev Requires that some tokens are deposited
 
-        if (depositAmount == 0) {
-            revert Errors.ZeroAmount();
-        }
+        require(depositAmount != 0, Errors.ZeroAmount());
 
         emit DepositCvx(msg.sender, isStableReward, inType, depositAmount);
     }
@@ -327,9 +327,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      */
     function withdrawSdt(ILlamaLendVault llamaVault, ILendRewardSplitter.SDT_TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
         /// @dev We check the prerequesite.
-        if (amount == 0) {
-            revert Errors.ZeroAmount();
-        }
+        require(amount != 0, Errors.ZeroAmount());
 
         IgUSDSdt gUSD = IgUSDSdt(address(gUSDSdtPerLlamaVault[llamaVault]));
 
@@ -342,7 +340,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
             gUSD.burn(msg.sender, amount);
             shareAmount = llamaVault.convertToShares(amount);
         }
-
+        require(shareAmount != 0, Errors.ZeroAmount());
         gUSD.withdraw(shareAmount, msg.sender, outType, llamaVault, sdtVaultPerLlamaVault[llamaVault]);
 
         emit WithdrawSdt(msg.sender, isStableReward, outType, amount);
@@ -385,15 +383,11 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      *  @param account The address having the rewards to claim on
      */
     function claimSimple(address lendSplitterToken, address account) external {
-        if (!isLendSplitterToken[lendSplitterToken]) {
-            revert NotACurveSplitterToken(lendSplitterToken);
-        }
+        require(isLendSplitterToken[lendSplitterToken], NotACurveSplitterToken(lendSplitterToken));
 
         ICommonStruct.TokenAmount[] memory tokenAmounts = ICurveLendSplitterToken(lendSplitterToken).getAndUpdateRewards(account);
 
-        if (tokenAmounts.length == 0) {
-            revert NoRewardToSimpleClaim();
-        }
+        require(tokenAmounts.length != 0, NoRewardToSimpleClaim());
 
         for (uint256 erc20Id; erc20Id < tokenAmounts.length; ) {
             tokenAmounts[erc20Id].token.safeTransfer(account, tokenAmounts[erc20Id].amount);
@@ -418,15 +412,14 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
         /// @dev Iterates through all of the vaults
         for (uint256 lendSplitterTokenIndex; lendSplitterTokenIndex < lendTokensLength; ) {
             address lendSplitterToken = lendSplitterTokens[lendSplitterTokenIndex];
-            if (!isLendSplitterToken[lendSplitterToken]) {
-                revert NotACurveSplitterToken(lendSplitterToken);
-            }
-            /// @dev gUSD rewards
+            /// @dev User input verification
+            require(isLendSplitterToken[lendSplitterToken], NotACurveSplitterToken(lendSplitterToken));
+
+            /// @dev Get and update the amount of rewards to claim
             ICommonStruct.TokenAmount[] memory tokenAmountsToClaim = ICurveLendSplitterToken(lendSplitterToken).getAndUpdateRewards(account);
             /// @dev If the rewards returned by the gUSD is an empty array,
-            if (tokenAmountsToClaim.length == 0) {
-                revert NoRewardsToClaimFromContract(address(lendSplitterToken));
-            }
+            require(tokenAmountsToClaim.length != 0, NoRewardsToClaimFromContract(address(lendSplitterToken)));
+
             /// @dev Iterates over all erc20 received from the claim on the gUSD
             for (uint256 tokenIndex; tokenIndex < tokenAmountsToClaim.length; ) {
                 IERC20 erc20 = tokenAmountsToClaim[tokenIndex].token;
@@ -573,9 +566,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
             ILlamaLendVault _llamaLendVault = ILlamaLendVault(_llamaLendVaultAddr);
             ICvxRewardToken rewardToken = ICvxRewardToken(rewardTokenAddr);
 
-            if (cvxPidPerLlamaVault[_llamaLendVault] != 0) {
-                revert AlreadyCreatedCvxMarket(pid);
-            }
+            require(cvxPidPerLlamaVault[_llamaLendVault] == 0, AlreadyCreatedCvxMarket(pid));
             require(address(rewardToken) != address(0), "REWARD_TOKEN_0");
 
             IERC20 _lendAsset = IERC20(_llamaLendVault.asset());
@@ -641,7 +632,8 @@ contract LendRewardSplitter is Ownable2StepUpgradeable {
      * @notice Withdraw all the balance of the desired fees token and erase the corresponding storage.
      * @param tokens IERC20 array to withdraw
      */
-    function withdrawFees(IERC20[] calldata tokens) external onlyOwner {
+    function withdrawFees(IERC20[] calldata tokens) external {
+        require(msg.sender == feeTreasury, CallerNotFeeTreasury());
         for (uint256 erc20Id; erc20Id < tokens.length; ) {
             IERC20 erc20 = tokens[erc20Id];
             uint256 daoFeeToken = daoFeeForToken[erc20];
