@@ -27,10 +27,6 @@ jobs:
         with:
           version: nightly
 
-      - name: Install dependencies with Forge
-        run: |
-          forge install OpenZeppelin/openzeppelin-contracts-upgradeable OpenZeppelin/openzeppelin-foundry-upgrades --no-git
-
       - name: Run Forge build
         run: |
           forge --version

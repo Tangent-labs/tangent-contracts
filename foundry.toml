@@ -6,7 +6,7 @@ ast = true
 build_info = true
 libs = ["lib"]
 extra_output = ["storageLayout"]
-solc = "0.8.25"
+solc = "0.8.27"
 evm_version = "cancun"
 ignored_error_codes = [
     3420, # pragma-solidity
@@ -15,9 +15,7 @@ ignored_error_codes = [
     3860, # Disable the specific warning code 3860 in tests
 ]
 
-fs_permissions = [
-    { access = "read-write", path = "./" }
-]
+fs_permissions = [{ access = "read-write", path = "./" }]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 
 remappings = [
@@ -25,9 +23,23 @@ remappings = [
     "@tests/=./tests/",
     "@openzeppelin/=lib/openzeppelin-contracts",
     "@openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable",
-    "@openzeppelin-foundry-upgrades/=lib/openzeppelin-foundry-upgrades/src/"
+    "@openzeppelin-foundry-upgrades/=lib/openzeppelin-foundry-upgrades/src/",
 ]
-
 
 [rpc_endpoints]
 mainnet = 'https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy'
+forkito = 'http://127.0.0.1:8545'
+
+[fuzz]
+runs = 256
+# depth = 200
+# fuzz_runs = 10
+
+[invariant]
+runs = 50
+depth = 200
+dictionary_weight = 80
+preserve_state = true
+fail_on_revert = true
+# shrink_run_limit = 1
+# fuzz_runs = 2

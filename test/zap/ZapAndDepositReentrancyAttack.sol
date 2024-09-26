@@ -2,9 +2,10 @@
 pragma solidity ^0.8.0;
 
 import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
+import {ILlamaLendVault} from "../../src/interfaces/externals/ILlamaLendVault.sol";
 
 contract ZapAndDepositReentrancyAttack {
-    LendRewardSplitter target; 
+    LendRewardSplitter target;
     bool public hasReentered = false;
 
     constructor(address _target) {
@@ -12,9 +13,10 @@ contract ZapAndDepositReentrancyAttack {
     }
 
     function startAttack(
-        address _stakeDaoVault,
+        ILlamaLendVault _llamaLendVault,
         uint256 _inAmount,
         uint256 _minLendAssetAmount,
+        bool isCvx,
         bool _isStableReward,
         bool _doDeposit,
         address[11] memory _routes,
@@ -23,9 +25,10 @@ contract ZapAndDepositReentrancyAttack {
     ) public payable {
         // Trigger zapAndDeposit function
         target.zapAndDeposit{value: msg.value}(
-            _stakeDaoVault,
+            _llamaLendVault,
             _inAmount,
             _minLendAssetAmount,
+            isCvx,
             _isStableReward,
             _doDeposit,
             _routes,

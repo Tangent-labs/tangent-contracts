@@ -2,12 +2,13 @@
 
 import "../lib/forge-std/src/Test.sol";
 import {IERC20} from "../lib/forge-std/src/interfaces/IERC20.sol";
-import {ICurveLendVault} from "../src/interfaces/ICurveLendVault.sol";
-import {IStakeDaoVault} from "../src/interfaces/IStakeDaoVault.sol";
-import {ISDLiquidityGauge} from "../src/interfaces/ISDLiquidityGauge.sol";
-import {ICrvUSDController} from "../src/interfaces/ICrvUSDController.sol";
+import {ILlamaLendVault} from "../src/interfaces/externals/ILlamaLendVault.sol";
+import {IStakeDaoVault} from "../src/interfaces/externals/IStakeDaoVault.sol";
+import {ISdtLiquidityGauge} from "../src/interfaces/externals/ISdtLiquidityGauge.sol";
+import {ICrvUSDController} from "../src/interfaces/externals/ICrvUSDController.sol";
 import {CsvMaker} from "./CsvMaker.sol";
 import {DecimalsString} from "./DecimalsString.sol";
+
 //source :  https://etherscan.io/tx/0x15af2ec72371090dde0da81e7c6c069afb35c259470d57df14f49fad729acfdd
 
 contract CurveLend is Test {
@@ -33,8 +34,8 @@ contract CurveLend is Test {
     address STAKEDAO_CRVUSD_CRV = 0xfa6D40573082D797CB3cC378c0837fB90eB043e5;
 
     IStakeDaoVault stakeDaoVault;
-    ICurveLendVault curveVault;
-    ISDLiquidityGauge gaugeV4;
+    ILlamaLendVault curveVault;
+    ISdtLiquidityGauge gaugeV4;
     ICrvUSDController crvUSDController;
 
     uint256 currentDay = 0;
@@ -63,11 +64,10 @@ contract CurveLend is Test {
         vm.label(0x90F79bf6EB2c4f870365E785982E1f101E93b906, "freddy");
 
         stakeDaoVault = IStakeDaoVault(STAKEDAO_CRVUSD_CRV);
-        gaugeV4 = ISDLiquidityGauge(stakeDaoVault.liquidityGauge());
-        curveVault = ICurveLendVault(CURVE_CRVUSD_CRV);
+        gaugeV4 = ISdtLiquidityGauge(stakeDaoVault.liquidityGauge());
+        curveVault = ILlamaLendVault(CURVE_CRVUSD_CRV);
         crvUSDController = ICrvUSDController(curveVault.controller());
 
-        console.log(stakeDaoVault.token(), curveVault.borrowed_token());
     }
 
     function travelDay(uint256 dayToAdd) internal {
@@ -152,9 +152,7 @@ contract CurveLend is Test {
         //displayState("deposited  curveVault", users[user]);
         stakeDaoVault.deposit(users[user], amountOut, false);
         //displayState("deposited stakeDaoVault", users[user]);
-        actions.push(
-            SupplyActionData(user, assetType, curveVault.pricePerShare(), "deposit", amount, amountOut, currentDay)
-        );
+        actions.push(SupplyActionData(user, assetType, curveVault.pricePerShare(), "deposit", amount, amountOut, currentDay));
         actionsLength++;
         displayState(string.concat(user, " deposited ", amount.toDecimalString(18, false)));
         vm.stopPrank();
@@ -179,17 +177,7 @@ contract CurveLend is Test {
         uint256 balanceAfter = IERC20(TOKEN_crvUSD).balanceOf(users[user]);
 
         // displayBalance(users[user]);
-        actions.push(
-            SupplyActionData(
-                user,
-                assetType,
-                curveVault.pricePerShare(),
-                "withdraw",
-                balanceAfter - balanceBefore,
-                amountOutStake,
-                currentDay
-            )
-        );
+        actions.push(SupplyActionData(user, assetType, curveVault.pricePerShare(), "withdraw", balanceAfter - balanceBefore, amountOutStake, currentDay));
         actionsLength++;
         displayState(string.concat(user, " withdraw ", (balanceAfter - balanceBefore).toDecimalString(18, false)));
         vm.stopPrank();
