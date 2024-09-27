@@ -354,9 +354,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
      *  @param isStableReward  If isStableReward == true THEN   scvUsd of user is used   ELSE  gUSD of user is used.
      */
     function withdrawCvx(ILlamaLendVault llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE outType, uint256 amount, bool isStableReward) public {
-        if (amount == 0) {
-            revert Errors.ZeroAmount();
-        }
+        require(amount != 0, Errors.ZeroAmount());
 
         IgUSDCvx gUSD = gUSDCvxPerLlamaVault[llamaVault];
 
@@ -439,10 +437,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
                     ++tokenIndex;
                 }
             }
-
-            if (rewardLength != actualErc20Index) {
-                revert IncorretRewardLength(rewardLength, actualErc20Index);
-            }
+            require(rewardLength == actualErc20Index, IncorretRewardLength(rewardLength, actualErc20Index));
 
             unchecked {
                 ++lendSplitterTokenIndex;
@@ -466,10 +461,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
                 ++tokenIndex;
             }
         }
-
-        if (!isSomethingToClaim) {
-            revert NoRewardToMultiClaim();
-        }
+        require(isSomethingToClaim, NoRewardToMultiClaim());
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -481,9 +473,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
      * @param tokenAmounts array of token to used to increment fees
      */
     function incrementDaoFees(ICommonStruct.TokenAmount[] memory tokenAmounts) external {
-        if (!isLendSplitterToken[msg.sender]) {
-            revert CallerNotLendSplitterToken();
-        }
+        require(isLendSplitterToken[msg.sender], CallerNotLendSplitterToken());
         for (uint256 erc20Id; erc20Id < tokenAmounts.length; ) {
             daoFeeForToken[tokenAmounts[erc20Id].token] += tokenAmounts[erc20Id].amount;
             unchecked {
@@ -580,7 +570,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
                         //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
                         abi.encodeCall(
                             scvUSDCvx.initialize,
-                            ("Stable USD/CRV", "scvUSD-CRV", ILendRewardSplitter(address(this)), _llamaLendVault, address(rewardToken))
+                            (owner(), "Stable USD/CRV", "scvUSD-CRV", ILendRewardSplitter(address(this)), _llamaLendVault, address(rewardToken))
                         )
                     )
                 )
@@ -595,6 +585,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
                         abi.encodeCall(
                             gUSDCvx.initialize,
                             (
+                                owner(),
                                 "Governance USD/CRV",
                                 "gUSD-CRV",
                                 ILendRewardSplitter(address(this)),

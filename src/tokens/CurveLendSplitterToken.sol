@@ -64,9 +64,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
 
     modifier verifyLendSplitterCaller() {
         /// @dev Requires the lendRewardSplitter is the caller of this function
-        if (msg.sender != address(lendRewardSplitter)) {
-            revert NotLendRewardSplitter(msg.sender);
-        }
+        require(msg.sender == address(lendRewardSplitter), NotLendRewardSplitter(msg.sender));
         _;
     }
 
@@ -240,9 +238,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
             }
         }
 
-        if (!isSomeRewardToProcess) {
-            revert NothingToProcess();
-        }
+        require(isSomeRewardToProcess, NothingToProcess());
 
         /// @dev Update DAO fees on the splitter contract
         lendRewardSplitter.incrementDaoFees(daoFeesToUpdate);
@@ -314,9 +310,8 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
      * @param _newRewardToken rewards percentage value
      */
     function addNewReward(IERC20 _newRewardToken, ICurveLendSplitterToken.Fees calldata _newFees) external onlyOwner {
-        if (rewardData[_newRewardToken].lastUpdateTime != 0) {
-            revert RewardAlreadyAdded(_newRewardToken);
-        }
+        /// @dev If lastUpdateTime is equal to 0, it means the token is not already added as a reward
+        require(rewardData[_newRewardToken].lastUpdateTime == 0, RewardAlreadyAdded(_newRewardToken));
 
         rewardTokens.push(_newRewardToken);
         rewardData[_newRewardToken].lastUpdateTime = uint128(block.timestamp);
@@ -330,9 +325,8 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
      */
     function setFees(ICurveLendSplitterToken.Fees[] calldata _newFees) external onlyOwner {
         uint256 newFeesLength = _newFees.length;
-        if (newFeesLength != rewardTokens.length) {
-            revert WrongFeesPercetageLength(newFeesLength, rewardTokens.length);
-        }
+        require(newFeesLength == rewardTokens.length, WrongFeesPercetageLength(newFeesLength, rewardTokens.length));
+
         for (uint256 feeIndex; feeIndex < newFeesLength; ) {
             fees[feeIndex] = _newFees[feeIndex];
             unchecked {
@@ -347,9 +341,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
      * @param _tokenAmount Amount to transfer
      */
     function recoverToken(IERC20 _tokenAddress, uint256 _tokenAmount) external onlyOwner {
-        if (rewardData[_tokenAddress].lastUpdateTime != 0) {
-            revert CantWithdrawRewardToken(_tokenAddress);
-        }
+        require(rewardData[_tokenAddress].lastUpdateTime == 0, CantWithdrawRewardToken(_tokenAddress));
 
         _tokenAddress.safeTransfer(msg.sender, _tokenAmount);
         emit Recovered(_tokenAddress, _tokenAmount);

@@ -97,9 +97,7 @@ contract gUSDSdt is CurveLendSplitterToken, IgUSDSdt {
 
     function claimSCVUSDRewards(uint256 shares, ILlamaLendVault llamaVault) external {
         /// @dev Only scvUSD can claim this function
-        if (msg.sender != scvUSD) {
-            revert OnlySCVUSDCaller(msg.sender);
-        }
+        require(msg.sender == scvUSD, OnlySCVUSDCaller(msg.sender));
 
         /// @dev Withdraw the LlamaLend LP tokens from StakeDao
         stakeDaoVault.withdraw(shares);

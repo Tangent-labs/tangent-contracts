@@ -12,7 +12,7 @@ contract gUSDCvxReverts is ConvexMarketContext {
         vm.prank(usr);
 
         vm.expectRevert(abi.encodeWithSelector(Initializable.InvalidInitialization.selector));
-        gUSD.initialize("test", "test", splitter, cvxRewardToken, llamaVault, cvxVaultToken, address(scvUSD));
+        gUSD.initialize(usr, "test", "test", splitter, cvxRewardToken, llamaVault, cvxVaultToken, address(scvUSD));
     }
 
     function test_mint_callable_only_by_lendSplitter() external {

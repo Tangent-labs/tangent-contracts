@@ -25,6 +25,7 @@ contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
 
     /// @notice initialize function
     function initialize(
+        address _owner,
         string memory _name,
         string memory _symbol,
         ILendRewardSplitter _lendRewardSplitter,
@@ -32,7 +33,7 @@ contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
         address _cvxRewardToken
     ) external initializer {
         __ERC20_init(_name, _symbol);
-        _transferOwnership(msg.sender);
+        _transferOwnership(_owner);
 
         lendRewardSplitter = _lendRewardSplitter;
         llamaVault = _llamaVault;

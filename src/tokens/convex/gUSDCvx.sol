@@ -31,6 +31,7 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
 
     /// @notice initialize function
     function initialize(
+        address _owner,
         string memory _name,
         string memory _symbol,
         ILendRewardSplitter _lendRewardSplitter,
@@ -40,7 +41,7 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
         address _scvUSD
     ) external initializer {
         __ERC20_init(_name, _symbol);
-        _transferOwnership(msg.sender);
+        _transferOwnership(_owner);
 
         lendRewardSplitter = _lendRewardSplitter;
         cvxRewardToken = _cvxRewardToken;
@@ -95,7 +96,9 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
         ILlamaLendVault llamaVault
     ) external verifyLendSplitterCaller {
         uint256 shareBalance = llamaVault.balanceOf(address(this));
+        /// @dev Verify that all there are enough LlamaLend LP on the contract
         if (shareBalance < sharesToWithdraw) {
+            /// @dev If not enough are on the contract, we need to withdraw the difference from Convex
             cvxRewardToken.withdrawAndUnwrap(sharesToWithdraw - shareBalance, false);
         }
 
@@ -131,9 +134,8 @@ contract gUSDCvx is CurveLendSplitterToken, IgUSDCvx {
      */
     function claimSCVUSDRewards(uint256 sharesToClaim, ILlamaLendVault llamaVault) external {
         /// @dev Only scvUSD can claim this function
-        if (msg.sender != scvUSD) {
-            revert OnlySCVUSDCaller(msg.sender);
-        }
+        require(msg.sender == scvUSD, OnlySCVUSDCaller(msg.sender));
+
         uint256 sharesBalance = llamaVault.balanceOf(address(this));
 
         if (sharesBalance < sharesToClaim) {
