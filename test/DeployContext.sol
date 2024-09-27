@@ -4,6 +4,8 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
+
+import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import {CurveLendSplitterToken} from "../src/tokens/CurveLendSplitterToken.sol";
 
 import {gUSDSdt} from "../src/tokens/stakeDao/gUSDSdt.sol";
@@ -19,8 +21,7 @@ import {ILlamaLendVault} from "../src/interfaces/externals/ILlamaLendVault.sol";
 import {ILendRewardSplitter} from "../src/interfaces/internals/ILendRewardSplitter.sol";
 import {ICurveLendSplitterToken} from "../src/interfaces/internals/ICurveLendSplitterToken.sol";
 import {ICommonStruct} from "../src/interfaces/internals/ICommonStruct.sol";
-import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, AddrGlobal, AddrCvxVaultTokens, AddrCvxRewardTokens} from "../src/libs/Resources.sol";
-import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
+import "../src/libs/Resources.sol";
 
 contract DeployContext is Test {
     uint256 public MAX_UINT = uint256(int256(-1));
@@ -115,14 +116,12 @@ contract DeployContext is Test {
                 new TransparentUpgradeableProxy(
                     address(new LendRewardSplitter()),
                     proxyAdmin,
-                    abi.encodeCall(LendRewardSplitter.initialize, (ownerToSet,feeTreasury, gUSDBeaconSdt, scvUSDBeaconSdt, gUSDBeaconCvx, scvUSDBeaconCvx))
+                    abi.encodeCall(LendRewardSplitter.initialize, (ownerToSet, feeTreasury, gUSDBeaconSdt, scvUSDBeaconSdt, gUSDBeaconCvx, scvUSDBeaconCvx))
                 )
             )
         );
         return splitter;
     }
-
-
 
     function _takesGaugeOnwershipAndSetDistributor(ISdtLiquidityGauge _sdtLiquidityGauge) public {
         vm.deal(ownerGauge, 10 ether);

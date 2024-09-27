@@ -2,7 +2,6 @@
 pragma solidity ^0.8.24;
 import "forge-std/console.sol";
 import "forge-std/Test.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {StdUtils} from "forge-std/StdUtils.sol";
 
@@ -13,11 +12,12 @@ import {ISdtLiquidityGauge} from "../../src/interfaces/externals/ISdtLiquidityGa
 import {ICvxBooster} from "../../src/interfaces/externals/ICvxBooster.sol";
 import {ICvxRewardToken} from "../../src/interfaces/externals/ICvxRewardToken.sol";
 
-import  "../../src/LendRewardSplitter.sol";
-import  "../../src/tokens/convex/gUSDCvx.sol";
+import "../../src/LendRewardSplitter.sol";
+import "../../src/tokens/convex/gUSDCvx.sol";
 import "../../src/tokens/convex/scvUSDCvx.sol";
 
 import "../../src/libs/Resources.sol";
+
 import "../DeployContext.sol";
 
 contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
@@ -28,18 +28,20 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
     ILlamaLendVault llamaVault;
     uint256 pid;
     IERC20 crvGauge;
+    address crvAmm;
     ICvxRewardToken cvxRewardToken;
     IERC20 cvxVaultToken;
     IERC20 lendAsset;
     gUSDCvx gUSD;
     scvUSDCvx scvUSD;
-    address crvController;
+    ICrvUSDController crvController;
 
     struct CvxStruct {
         ILlamaLendVault llamaVault;
         uint256 pid;
         IERC20 crvGauge;
-        address crvController;
+        ICrvUSDController crvController;
+        address crvAmm;
         ICvxRewardToken cvxRewardToken;
         IERC20 cvxVaultToken;
         IERC20 lendAsset;
@@ -57,6 +59,7 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
             pid: PidCvxBooster.CRVUSD_CRV,
             crvGauge: AddrCrvGauges.CRVUSD_CRV,
             crvController: AddrCrvController.CRVUSD_CRV,
+            crvAmm: AddrCrvAmm.CRVUSD_CRV,
             cvxRewardToken: AddrCvxRewardTokens.CRVUSD_CRV,
             cvxVaultToken: AddrCvxVaultTokens.CRVUSD_CRV,
             lendAsset: AddrClassicERC20.TOKEN_CRVUSD,
@@ -68,6 +71,7 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
             pid: PidCvxBooster.CRVUSD_LEVERAGE_WETH,
             crvGauge: AddrCrvGauges.CRVUSD_LEVERAGE_WETH,
             crvController: AddrCrvController.CRVUSD_LEVERAGE_WETH,
+            crvAmm: AddrCrvAmm.CRVUSD_LEVERAGE_WETH,
             cvxRewardToken: AddrCvxRewardTokens.CRVUSD_LEVERAGE_WETH,
             cvxVaultToken: AddrCvxVaultTokens.CRVUSD_LEVERAGE_WETH,
             lendAsset: AddrClassicERC20.TOKEN_CRVUSD,
@@ -79,6 +83,7 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
             pid: PidCvxBooster.CRVUSD_LEVERAGE_WBTC,
             crvGauge: AddrCrvGauges.CRVUSD_LEVERAGE_WBTC,
             crvController: AddrCrvController.CRVUSD_LEVERAGE_WBTC,
+            crvAmm: AddrCrvAmm.CRVUSD_LEVERAGE_WBTC,
             cvxRewardToken: AddrCvxRewardTokens.CRVUSD_LEVERAGE_WBTC,
             cvxVaultToken: AddrCvxVaultTokens.CRVUSD_LEVERAGE_WBTC,
             lendAsset: AddrClassicERC20.TOKEN_CRVUSD,
@@ -94,11 +99,24 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
         pid = vaultStruct.pid;
         crvGauge = vaultStruct.crvGauge;
         crvController = vaultStruct.crvController;
+        crvAmm = vaultStruct.crvAmm;
         cvxRewardToken = vaultStruct.cvxRewardToken;
         cvxVaultToken = vaultStruct.cvxVaultToken;
         lendAsset = vaultStruct.lendAsset;
         gUSD = vaultStruct.gUSD;
         scvUSD = vaultStruct.scvUSD;
+
+        string memory collateralSymbol = IERC20Metadata(llamaVault.collateral_token()).symbol();
+
+        vm.label(address(llamaVault), string.concat("LLAMA_VAULT_", collateralSymbol));
+        vm.label(address(crvGauge), string.concat("CRV_GAUGE_", collateralSymbol));
+        vm.label(address(crvController), string.concat("CRV_CONTROLLER_", collateralSymbol));
+        vm.label(address(crvAmm), string.concat("CRV_AMM_", collateralSymbol));
+        vm.label(address(cvxRewardToken), string.concat("CVX_REWARD_TOKEN_", collateralSymbol));
+        vm.label(address(cvxVaultToken), string.concat("CVX_VAULT_TOKEN_", collateralSymbol));
+        vm.label(address(lendAsset), "CRVUSD");
+        vm.label(address(gUSD), string.concat("GUSD_", collateralSymbol));
+        vm.label(address(scvUSD), string.concat("SCVUSD_", collateralSymbol));
     }
 
     function createAndGetRandomMarket() public returns (CvxStruct memory) {

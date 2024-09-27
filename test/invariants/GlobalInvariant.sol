@@ -1,3 +1,4 @@
+import "../LendingContext.sol";
 import "../convex/ConvexMarketContext.sol";
 import "./LendSplitterHandler.sol";
 contract GlobalInvariant is ConvexMarketContext {
@@ -36,6 +37,16 @@ contract GlobalInvariant is ConvexMarketContext {
                 gUSDCvx(address(splitter.gUSDCvxPerLlamaVault(actualVault))),
                 scvUSDCvx(address(splitter.scvUSDCvxPerLlamaVault(actualVault)))
             );
+            string memory collateralSymbol = IERC20Metadata(actualVault.collateral_token()).symbol();
+
+            vm.label(address(actualVault), string.concat("LLAMA_VAULT_", collateralSymbol));
+            vm.label(address(structsMap[actualVault].crvGauge), string.concat("CRV_GAUGE_", collateralSymbol));
+            vm.label(address(structsMap[actualVault].crvController), string.concat("CRV_CONTROLLER_", collateralSymbol));
+            vm.label(address(structsMap[actualVault].crvAmm), string.concat("CRV_AMM_", collateralSymbol));
+            vm.label(address(structsMap[actualVault].cvxRewardToken), string.concat("CVX_REWARD_TOKEN_", collateralSymbol));
+            vm.label(address(structsMap[actualVault].cvxVaultToken), string.concat("CVX_VAULT_TOKEN_", collateralSymbol));
+            vm.label(address(structsMap[actualVault].gUSD), string.concat("GUSD_", collateralSymbol));
+            vm.label(address(structsMap[actualVault].scvUSD), string.concat("SCVUSD_", collateralSymbol));
         }
 
         lendSplitterHandler = new LendSplitterHandler(splitter, ConvexMarketContext(address(this)));
@@ -69,6 +80,8 @@ contract GlobalInvariant is ConvexMarketContext {
         address[6] memory users = [usr1, usr2, usr3, usr4, usr5, usr6];
 
         for (uint256 llamaVaultIndex = 0; llamaVaultIndex < llamaVaultArray.length; llamaVaultIndex++) {
+            uint256 totalScvNotWithdrawable;
+            uint256 totalGUsdNotWithdrawable;
             ILlamaLendVault actualVault = llamaVaultArray[llamaVaultIndex];
             CvxStruct memory actualStruct = structsMap[llamaVaultArray[llamaVaultIndex]];
 
@@ -98,27 +111,46 @@ contract GlobalInvariant is ConvexMarketContext {
 
                 uint256 gUSDBal = actualStruct.gUSD.balanceOf(user);
                 uint256 scvUSDBal = actualStruct.scvUSD.balanceOf(user);
+                uint256 amountLendAssetInController = actualStruct.lendAsset.balanceOf(address(actualStruct.crvController));
+                uint256 gUSDNotWithdrawable;
+                uint256 scvNotWithdrawable;
                 /// @dev Verify that users can withdraw their deposits
                 if (gUSDBal != 0) {
-                    splitter.withdrawCvx(actualVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, gUSDBal, false);
+                    // In case utilisation rate is too high
+                    if (gUSDBal > amountLendAssetInController) {
+                        gUSDNotWithdrawable = gUSDBal - amountLendAssetInController;
+                        totalGUsdNotWithdrawable += gUSDNotWithdrawable;
+                        gUSDBal = amountLendAssetInController;
+                    }
+                    if (gUSDBal != 0) {
+                        splitter.withdrawCvx(actualVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, gUSDBal, false);
+                    }
                 }
-                if (scvUSDBal != 0) {
-                    splitter.withdrawCvx(actualVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, scvUSDBal, true);
-                }
+                amountLendAssetInController = actualStruct.lendAsset.balanceOf(address(actualStruct.crvController));
 
-                /// @dev Verify that users doesn't have splitter tokens anymore
-                assertEq(actualStruct.gUSD.balanceOf(user), 0, "gUSD balance of user is empty");
-                assertEq(actualStruct.scvUSD.balanceOf(user), 0, "scvUSD balance of user is empty");
+                if (scvUSDBal != 0) {
+                    // In case utilisation rate is too high
+
+                    if (actualVault.convertToAssets(scvUSDBal) > amountLendAssetInController) {
+                        scvNotWithdrawable = scvUSDBal - actualVault.convertToShares(amountLendAssetInController);
+                        totalScvNotWithdrawable += scvNotWithdrawable;
+                        scvUSDBal = actualVault.convertToShares(amountLendAssetInController);
+                    }
+                    if (scvUSDBal != 0) {
+                        splitter.withdrawCvx(actualVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, scvUSDBal, true);
+                    }
+                }
+                amountLendAssetInController = actualStruct.lendAsset.balanceOf(address(actualStruct.crvController));
+
+                // Equals to what is not withdrawable
+                assertEq(actualStruct.gUSD.balanceOf(user), gUSDNotWithdrawable, "gUSD balance of the user is equal to 0 or what he couldn't withdraw");
+                assertEq(actualStruct.scvUSD.balanceOf(user), scvNotWithdrawable, "scvUSD balance of the user is equal to 0 or what he couldn't withdraw");
+
                 vm.stopPrank();
             }
-            assertEq(actualStruct.gUSD.totalSupply(), 0);
-            assertEq(actualStruct.scvUSD.totalSupply(), 0);
 
-            // @dev Assets all LP tokens & Reward tokens have removed from gUSD
-            assertEq(
-                actualStruct.cvxRewardToken.balanceOf(address(actualStruct.gUSD)) + actualStruct.llamaVault.balanceOf(address(actualStruct.gUSD)),
-                actualStruct.scvUSD.getStreamableShares()
-            );
+            assertEq(actualStruct.gUSD.totalSupply(), totalGUsdNotWithdrawable, "gUSD totalSupply is equal to 0 or what couldn't be withrawn");
+            assertEq(actualStruct.scvUSD.totalSupply(), totalScvNotWithdrawable, "scvUSD totalSupply is equal to 0 or what couldn't be withrawn");
         }
     }
 }

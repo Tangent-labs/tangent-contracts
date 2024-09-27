@@ -15,7 +15,7 @@ contract DepositLendAssetGov is ConvexMarketContext {
         vm.startPrank(usr);
         // CRVUSD
         uint256 balanceOfUserCrvUSD = lendAsset.balanceOf(usr);
-        uint256 balanceOfCRVUSDControllerCrvUSD = lendAsset.balanceOf(crvController);
+        uint256 balanceOfCRVUSDControllerCrvUSD = lendAsset.balanceOf(address(crvController));
         // LLAMALEND
         uint256 totalSupplyLlamaLp = llamaVault.totalSupply();
         uint256 balOfGUSDLlamaLp = llamaVault.balanceOf(address(gUSD));
@@ -38,7 +38,7 @@ contract DepositLendAssetGov is ConvexMarketContext {
         // 100 crvUSD sent by usr
         assertEq(balanceOfUserCrvUSD - lendAsset.balanceOf(usr), amountIn);
         // 100 crvUSD received on CRVUSD Controller
-        assertEq(lendAsset.balanceOf(crvController) - balanceOfCRVUSDControllerCrvUSD, amountIn);
+        assertEq(lendAsset.balanceOf(address(crvController)) - balanceOfCRVUSDControllerCrvUSD, amountIn);
 
         // LlamaLend LP is minted ( totalSupply )
         assertEq(llamaVault.totalSupply() - totalSupplyLlamaLp, sharesConverted);
@@ -66,7 +66,7 @@ contract DepositLendAssetGov is ConvexMarketContext {
         vm.startPrank(usr);
         // CRVUSD
         uint256 balanceOfUserCrvUSD = lendAsset.balanceOf(usr);
-        uint256 balanceOfCRVUSDControllerCrvUSD = lendAsset.balanceOf(crvController);
+        uint256 balanceOfCRVUSDControllerCrvUSD = lendAsset.balanceOf(address(crvController));
         // LLAMALEND
         uint256 totalSupplyLlamaLp = llamaVault.totalSupply();
         uint256 balOfGUSDLlamaLp = llamaVault.balanceOf(address(gUSD));
@@ -89,7 +89,7 @@ contract DepositLendAssetGov is ConvexMarketContext {
         // amountIn crvUSD sent by usr
         assertEq(balanceOfUserCrvUSD - lendAsset.balanceOf(usr), amountIn);
         // amountIn crvUSD received on CRVUSD Controller
-        assertEq(lendAsset.balanceOf(crvController) - balanceOfCRVUSDControllerCrvUSD, amountIn);
+        assertEq(lendAsset.balanceOf(address(crvController)) - balanceOfCRVUSDControllerCrvUSD, amountIn);
 
         // LlamaLend LP is minted ( totalSupply )
         assertEq(llamaVault.totalSupply() - totalSupplyLlamaLp, sharesConverted);
@@ -120,7 +120,7 @@ contract DepositLendAssetGov is ConvexMarketContext {
 
         // CRVUSD
         uint256 balanceOfUserCrvUSD = lendAsset.balanceOf(usr);
-        uint256 balanceOfCRVUSDControllerCrvUSD = lendAsset.balanceOf(crvController);
+        uint256 balanceOfCRVUSDControllerCrvUSD = lendAsset.balanceOf(address(crvController));
         // LLAMALEND
         uint256 totalSupplyLlamaLp = llamaVault.totalSupply();
         uint256 balOfGUSDLlamaLp = llamaVault.balanceOf(address(gUSD));
@@ -152,7 +152,7 @@ contract DepositLendAssetGov is ConvexMarketContext {
         // 2 * amountIn crvUSD sent by usr
         assertEq(balanceOfUserCrvUSD - lendAsset.balanceOf(usr), 2 * _amountIn);
         // 2 * amountIn crvUSD received on CRVUSD Controller
-        assertEq(lendAsset.balanceOf(crvController) - balanceOfCRVUSDControllerCrvUSD, 2 * _amountIn);
+        assertEq(lendAsset.balanceOf(address(crvController)) - balanceOfCRVUSDControllerCrvUSD, 2 * _amountIn);
 
         // LlamaLend LP is minted ( totalSupply )
         assertEq(llamaVault.totalSupply() - totalSupplyLlamaLp, sharesConverted);
