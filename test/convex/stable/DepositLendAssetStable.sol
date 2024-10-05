@@ -22,7 +22,7 @@ contract DepositLendAssetStable is ConvexMarketContext {
 
         // ACTIONS
         lendAsset.approve(address(splitter), amountIn);
-        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amountIn, true, true);
+        splitter.depositSCVUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amountIn, false, true);
 
         // VERIFY
         assertEq(usrLendAssetBalanceBfr - lendAsset.balanceOf(usr), amountIn, "User sent crvUSD");
@@ -50,7 +50,7 @@ contract DepositLendAssetStable is ConvexMarketContext {
 
         // ACTIONS
         lendAsset.approve(address(splitter), amountIn);
-        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amountIn, true, false);
+        splitter.depositSCVUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amountIn, false, false);
 
         // VERIFY
 
@@ -75,7 +75,7 @@ contract DepositLendAssetStable is ConvexMarketContext {
 
         // ACTIONS
         lendAsset.approve(address(splitter), 200 ether);
-        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, true, false);
+        splitter.depositSCVUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, false, false);
 
         // PREPARE
 
@@ -91,7 +91,7 @@ contract DepositLendAssetStable is ConvexMarketContext {
 
         // ACTIONS
 
-        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, true, true);
+        splitter.depositSCVUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, false, true);
 
         // VERIFY
 

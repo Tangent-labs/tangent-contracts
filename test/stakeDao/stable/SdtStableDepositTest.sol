@@ -2,7 +2,7 @@
 // import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // import {DeployContext} from "../DeployContext.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-// import {ILlamaLendVault} from "../../src/interfaces/externals/ILlamaLendVault.sol";
+// import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
 // import {IStakeDaoVault} from "../../src/interfaces/externals/IStakeDaoVault.sol";
 // import {ILendRewardSplitter} from "../../src/interfaces/internals/ILendRewardSplitter.sol";
 // import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20} from "../../src/libs/Resources.sol";
@@ -11,7 +11,7 @@
 //     LendRewardSplitter splitter;
 //     DeployContext testCommon;
 
-//     ILlamaLendVault constant llamaVault = AddrLlamaLendVaults.CRVUSD_CRV; 
+//     ILlamaVault constant llamaVault = AddrLlamaLendVaults.CRVUSD_CRV; 
 
 //     function setUp() public {
 //         testCommon = new DeployContext();

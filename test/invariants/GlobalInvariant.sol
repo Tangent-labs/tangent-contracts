@@ -15,27 +15,27 @@ contract GlobalInvariant is ConvexMarketContext {
         deployBaseContracts();
 
         // Retrieve all Vaults
-        ILlamaLendVault[] memory allVaults = getLlamaVaults();
+        ILlamaVault[] memory allVaults = getLlamaVaults();
         uint256[] memory pids = new uint256[](allVaults.length);
 
         // Iterates through all vaults to create the pid array
         for (uint256 i; i < allVaults.length; i++) {
-            ILlamaLendVault actualVault = allVaults[i];
+            ILlamaVault actualVault = allVaults[i];
             // Retrieve all the information needed to create the new cvx Market
             pids[i] = structsMap[actualVault].pid;
         }
         vm.startPrank(owner);
         // Market creation
-        splitter.createCvxMarkets(pids);
+        splitter.createMarkets(pids);
 
         // Iterates through all vaults to setup gUSD & scvUSD in their corresponding struct
         for (uint256 i; i < allVaults.length; i++) {
-            ILlamaLendVault actualVault = allVaults[i];
+            ILlamaVault actualVault = allVaults[i];
             // Set the splitter token post market creation
             setSplitterTokens(
                 actualVault,
-                gUSDCvx(address(splitter.gUSDCvxPerLlamaVault(actualVault))),
-                scvUSDCvx(address(splitter.scvUSDCvxPerLlamaVault(actualVault)))
+                gUSDCvx(address(splitter.gUSDPerLlamaVault(actualVault))),
+                scvUSDCvx(address(splitter.scvUSDPerLlamaVault(actualVault)))
             );
             string memory collateralSymbol = IERC20Metadata(actualVault.collateral_token()).symbol();
 
@@ -82,11 +82,11 @@ contract GlobalInvariant is ConvexMarketContext {
         for (uint256 llamaVaultIndex = 0; llamaVaultIndex < llamaVaultArray.length; llamaVaultIndex++) {
             uint256 totalScvNotWithdrawable;
             uint256 totalGUsdNotWithdrawable;
-            ILlamaLendVault actualVault = llamaVaultArray[llamaVaultIndex];
+            ILlamaVault actualVault = llamaVaultArray[llamaVaultIndex];
             CvxStruct memory actualStruct = structsMap[llamaVaultArray[llamaVaultIndex]];
 
-            try actualStruct.scvUSD.processRewards() {} catch {}
-            try actualStruct.gUSD.processRewards() {} catch {}
+            try actualStruct.gUSD.processGovRewards() {} catch {}
+            try actualStruct.gUSD.processStableRewards() {} catch {}
             // Let the rewards stream fully
             skip(7 days);
             for (uint256 userIndex; userIndex < users.length; userIndex++) {
@@ -97,14 +97,14 @@ contract GlobalInvariant is ConvexMarketContext {
                 ICommonStruct.TokenAmount[] memory claimableGUSD = actualStruct.gUSD.claimableRewards(user);
                 for (uint256 index; index < claimableGUSD.length; index++) {
                     if (claimableGUSD[index].amount != 0) {
-                        splitter.claimSimple(address(actualStruct.gUSD), user);
+                        splitter.claimSimple(address(actualStruct.gUSD));
                         break;
                     }
                 }
                 ICommonStruct.TokenAmount[] memory claimableSCVUSD = actualStruct.scvUSD.claimableRewards(user);
                 for (uint256 index; index < claimableSCVUSD.length; index++) {
                     if (claimableSCVUSD[index].amount != 0) {
-                        splitter.claimSimple(address(actualStruct.scvUSD), user);
+                        splitter.claimSimple(address(actualStruct.scvUSD));
                         break;
                     }
                 }
@@ -123,7 +123,7 @@ contract GlobalInvariant is ConvexMarketContext {
                         gUSDBal = amountLendAssetInController;
                     }
                     if (gUSDBal != 0) {
-                        splitter.withdrawCvx(actualVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, gUSDBal, false);
+                        splitter.withdrawGUSD(actualVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, gUSDBal);
                     }
                 }
                 amountLendAssetInController = actualStruct.lendAsset.balanceOf(address(actualStruct.crvController));
@@ -137,7 +137,7 @@ contract GlobalInvariant is ConvexMarketContext {
                         scvUSDBal = actualVault.convertToShares(amountLendAssetInController);
                     }
                     if (scvUSDBal != 0) {
-                        splitter.withdrawCvx(actualVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, scvUSDBal, true);
+                        splitter.withdrawSCVUSD(actualVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, scvUSDBal, false);
                     }
                 }
                 amountLendAssetInController = actualStruct.lendAsset.balanceOf(address(actualStruct.crvController));

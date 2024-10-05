@@ -4,16 +4,16 @@
 // import {Test, console} from "forge-std/Test.sol";
 // import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-// import {CurveLendSplitterToken} from "../../src/tokens/CurveLendSplitterToken.sol";
+// import {SplitterToken} from "../../src/tokens/SplitterToken.sol";
 // import {gUSDSdt} from "../../src/tokens/stakeDao/gUSDSdt.sol";
 // import {scvUSDSdt} from "../../src/tokens/stakeDao/scvUSDSdt.sol";
 // import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20} from "../../src/libs/Resources.sol";
 // import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // import {IStakeDaoVault} from "../../src/interfaces/externals/IStakeDaoVault.sol";
-// import {ILlamaLendVault} from "../../src/interfaces/externals/ILlamaLendVault.sol";
+// import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
 // import {ISdtLiquidityGauge} from "../../src/interfaces/externals/ISdtLiquidityGauge.sol";
 // import {ILendRewardSplitter} from "../../src/interfaces/internals/ILendRewardSplitter.sol";
-// import {ICurveLendSplitterToken} from "../../src/interfaces/internals/ICurveLendSplitterToken.sol";
+// import {ISplitterToken} from "../../src/interfaces/internals/ISplitterToken.sol";
 // import {DeployContext} from "../DeployContext.sol";
 // import {ICommonStruct} from "../../src/interfaces/internals/ICommonStruct.sol";
 
@@ -28,7 +28,7 @@
 //     scvUSDSdt scvUSDImplem;
 //     gUSDSdt gUSDImplem;
 //     ISdtLiquidityGauge liquidityGauge;
-//     ILlamaLendVault curveLendVault;
+//     ILlamaVault curveLendVault;
 
 //     uint256 processorFeePercentageCrv;
 //     uint256 daoFeePercentageCrv;
@@ -79,7 +79,7 @@
 //     }
 
 //     function test_FailProcessGovRewardsWithNothingToClaim() external {
-//         vm.expectRevert(abi.encodeWithSelector(CurveLendSplitterToken.NothingToProcess.selector));
+//         vm.expectRevert(abi.encodeWithSelector(SplitterToken.NothingToProcess.selector));
 //         gUSDImplem.processRewards();
 //     }
 

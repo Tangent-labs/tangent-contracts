@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-import {ILlamaLendVault} from "../../src/interfaces/externals/ILlamaLendVault.sol";
+import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
 
 contract ZapAndDepositReentrancyAttack {
     LendRewardSplitter target;
@@ -13,11 +13,11 @@ contract ZapAndDepositReentrancyAttack {
     }
 
     function startAttack(
-        ILlamaLendVault _llamaLendVault,
+        ILlamaVault _llamaLendVault,
         uint256 _inAmount,
         uint256 _minLendAssetAmount,
-        bool isCvx,
         bool _isStableReward,
+        bool _isAutoCompound,
         bool _doDeposit,
         address[11] memory _routes,
         address[5] memory _pools,
@@ -28,8 +28,8 @@ contract ZapAndDepositReentrancyAttack {
             _llamaLendVault,
             _inAmount,
             _minLendAssetAmount,
-            isCvx,
             _isStableReward,
+            _isAutoCompound,
             _doDeposit,
             _routes,
             _pools,

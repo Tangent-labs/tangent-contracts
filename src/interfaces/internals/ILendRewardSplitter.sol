@@ -1,8 +1,8 @@
 import {ISdtLiquidityGauge} from "../externals/ISdtLiquidityGauge.sol";
-import {ILlamaLendVault} from "../externals/ILlamaLendVault.sol";
+import {ILlamaVault} from "../externals/ILlamaVault.sol";
 import {IStakeDaoVault} from "../externals/IStakeDaoVault.sol";
 
-import {ICurveLendSplitterToken} from "./ICurveLendSplitterToken.sol";
+import {ISplitterToken} from "./ISplitterToken.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ICommonStruct} from "../internals/ICommonStruct.sol";
 
@@ -27,5 +27,15 @@ interface ILendRewardSplitter {
 
     // function createSdtMarket(IStakeDaoVault stakeDaoVault) external;
 
-    function createCvxMarkets(uint256[] memory pids) external;
+    function createMarkets(uint256[] memory pids) external;
+
+    function claimSimple(address splitterToken) external;
+
+    function depositSCVUSD(
+        ILlamaVault llamaVault,
+        CVX_TOKEN_TYPE inputType,
+        uint256 lendAssetBalance,
+        bool isAutoCompound,
+        bool isDeposit
+    ) external returns (uint256);
 }

@@ -6,7 +6,7 @@ import "../src/libs/Resources.sol";
 contract LendingContext is Test {
     address[] borrowers;
 
-    function createLoan(ILlamaLendVault _llamaVault) public {
+    function createLoan(ILlamaVault _llamaVault) public {
         IERC20Metadata collat = IERC20Metadata(_llamaVault.collateral_token());
         ICrvUSDController crvController = ICrvUSDController(_llamaVault.controller());
         address newBorrower = makeAddr(string.concat("Borrower_", vm.toString(borrowers.length)));
@@ -38,7 +38,7 @@ contract LendingContext is Test {
         vm.stopPrank();
     }
 
-    function repay(ILlamaLendVault _llamaVault) public {
+    function repay(ILlamaVault _llamaVault) public {
         // If no borrow created, we cannot repay
         if (borrowers.length == 0) {
             return createLoan(_llamaVault);
@@ -63,7 +63,7 @@ contract LendingContext is Test {
         vm.stopPrank();
     }
 
-    function createLoanOrRepay(ILlamaLendVault _llamaVault) public {
+    function createLoanOrRepay(ILlamaVault _llamaVault) public {
         uint256 idAction = vm.randomUint();
         idAction = bound(idAction, 0, 1);
         if (idAction == 0) {

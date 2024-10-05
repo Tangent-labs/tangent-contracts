@@ -7,14 +7,14 @@ import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ILendRewardSplitter} from "../interfaces/internals/ILendRewardSplitter.sol";
-import {ICurveLendSplitterToken} from "../interfaces/internals/ICurveLendSplitterToken.sol";
+import {ISplitterToken} from "../interfaces/internals/ISplitterToken.sol";
 import {ICommonStruct} from "../interfaces/internals/ICommonStruct.sol";
 
 import {Errors} from "../libs/Errors.sol";
 
 import "forge-std/console.sol"; //TODO: to remove
 
-abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable, ICurveLendSplitterToken {
+abstract contract SplitterToken is ERC20Upgradeable, OwnableUpgradeable, ISplitterToken {
     using SafeERC20 for IERC20;
 
     uint256 constant MAX_UINT = uint256(int256(-1));
@@ -27,13 +27,13 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
     ILendRewardSplitter public lendRewardSplitter;
 
     /// @notice Fee percentages
-    ICurveLendSplitterToken.Fees[] public fees;
+    ISplitterToken.Fees[] public fees;
 
     /// @dev List of reward tokens
     IERC20[] public rewardTokens;
 
     /// @dev Reward data associated to a reward token
-    mapping(IERC20 => ICurveLendSplitterToken.Reward) public rewardData; // token => reward data
+    mapping(IERC20 => ISplitterToken.Reward) public rewardData; // token => reward data
 
     /// @dev Reward amount already sent to an user for a reward token
     mapping(address => mapping(IERC20 => uint256)) public userRewardPerTokenPaid; // user => reward token => amount
@@ -52,6 +52,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
     error CantWithdrawRewardToken(IERC20 erc20);
     error NothingToProcess();
     error RewardAlreadyAdded(IERC20 erc20);
+    error CantBurnThatMuchFor(address account);
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         MODIFIERS
@@ -106,21 +107,6 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
         }
 
         return tokenAmounts;
-    }
-
-    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                    EXTERNAL LENDSPLITTER
-   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    /**
-     * @notice Burn staked token
-     * @param from        Owner of the staked ERC20 token
-     * @param amount      Amount to burn
-     */
-    function burn(address from, uint256 amount) external virtual verifyLendSplitterCaller {
-        require(amount <= balanceOf(from), "NOT_ENOUGH_BALANCE");
-        /// @dev Burn will call _updateReward
-        _burn(from, amount);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -192,7 +178,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
 
         for (uint256 tokenIndex; tokenIndex < rewardTokensLength; ) {
             IERC20 rewardToken = _rewardTokens[tokenIndex];
-            ICurveLendSplitterToken.Fees memory feePercentage = fees[tokenIndex];
+            ISplitterToken.Fees memory feePercentage = fees[tokenIndex];
             uint256 rewardToProcess = rewardToken.balanceOf(address(this));
 
             if (rewardToProcess != 0) {
@@ -217,7 +203,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
                 }
                 require(rewardToProcess > 1e10 && rewardToProcess < 1e30, "INCORRECT_VALUE");
 
-                ICurveLendSplitterToken.Reward storage rData = rewardData[rewardToken];
+                ISplitterToken.Reward storage rData = rewardData[rewardToken];
 
                 if (block.timestamp >= rData.periodFinish) {
                     rData.rewardRate = rewardToProcess / REWARDS_DURATION;
@@ -309,7 +295,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
      * @notice Set the percentage of rewards to be sent to the splitter as a DAO fees.
      * @param _newRewardToken rewards percentage value
      */
-    function addNewReward(IERC20 _newRewardToken, ICurveLendSplitterToken.Fees calldata _newFees) external onlyOwner {
+    function addNewReward(IERC20 _newRewardToken, ISplitterToken.Fees calldata _newFees) external onlyOwner {
         /// @dev If lastUpdateTime is equal to 0, it means the token is not already added as a reward
         require(rewardData[_newRewardToken].lastUpdateTime == 0, RewardAlreadyAdded(_newRewardToken));
 
@@ -323,7 +309,7 @@ abstract contract CurveLendSplitterToken is ERC20Upgradeable, OwnableUpgradeable
      * @notice Set the percentage of rewards to be sent to the splitter as a DAO fees.
      * @param _newFees rewards percentage value
      */
-    function setFees(ICurveLendSplitterToken.Fees[] calldata _newFees) external onlyOwner {
+    function setFees(ISplitterToken.Fees[] calldata _newFees) external onlyOwner {
         uint256 newFeesLength = _newFees.length;
         require(newFeesLength == rewardTokens.length, WrongFeesPercetageLength(newFeesLength, rewardTokens.length));
 

@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {ICvxRewardToken} from "../interfaces/externals/ICvxRewardToken.sol";
 
 import {IStakeDaoVault} from "../interfaces/externals/IStakeDaoVault.sol";
-import {ILlamaLendVault} from "../interfaces/externals/ILlamaLendVault.sol";
+import {ILlamaVault} from "../interfaces/externals/ILlamaVault.sol";
 import {ISdtLiquidityGauge} from "../interfaces/externals/ISdtLiquidityGauge.sol";
 import {ICvxBooster} from "../interfaces/externals/ICvxBooster.sol";
 import {ICvxRewardToken} from "../interfaces/externals/ICvxRewardToken.sol";
@@ -53,9 +53,9 @@ library AddrSdtGauges {
 
 library AddrLlamaLendVaults {
     // LlamaLend crvUSD Vaults (cvcrvUSD)
-    ILlamaLendVault constant CRVUSD_CRV = ILlamaLendVault(0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA);
-    ILlamaLendVault constant CRVUSD_LEVERAGE_WETH = ILlamaLendVault(0x8fb1c7AEDcbBc1222325C39dd5c1D2d23420CAe3);
-    ILlamaLendVault constant CRVUSD_LEVERAGE_WBTC = ILlamaLendVault(0xccd37EB6374Ae5b1f0b85ac97eFf14770e0D0063);
+    ILlamaVault constant CRVUSD_CRV = ILlamaVault(0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA);
+    ILlamaVault constant CRVUSD_LEVERAGE_WETH = ILlamaVault(0x8fb1c7AEDcbBc1222325C39dd5c1D2d23420CAe3);
+    ILlamaVault constant CRVUSD_LEVERAGE_WBTC = ILlamaVault(0xccd37EB6374Ae5b1f0b85ac97eFf14770e0D0063);
 }
 
 library AddrSdtVaults {

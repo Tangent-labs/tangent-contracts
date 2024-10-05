@@ -15,17 +15,24 @@ contract scvUSDCvxReverts is ConvexMarketContext {
         scvUSD.initialize(usr, "test", "test", splitter, llamaVault, usr);
     }
 
-    function test_mint_callable_only_by_lendSplitter() external {
+    function test_mintSplitter_callable_only_by_lendSplitter() external {
         vm.prank(usr);
 
-        vm.expectRevert(abi.encodeWithSelector(CurveLendSplitterToken.NotLendRewardSplitter.selector, usr));
-        scvUSD.mint(usr, 100 ether);
+        vm.expectRevert(abi.encodeWithSelector(SplitterToken.NotLendRewardSplitter.selector, usr));
+        scvUSD.mintSplitter(usr, 100 ether);
+    }
+
+    function test_mintAutoCompound_callable_only_by_autoCompounder() external {
+        vm.prank(usr);
+
+        vm.expectRevert(abi.encodeWithSelector(scvUSDCvx.CallerNotAutoCompounder.selector, usr));
+        scvUSD.mintAutoCompound(100 ether);
     }
 
     function test_burn_callable_only_by_lendSplitter() external {
         vm.prank(usr);
 
-        vm.expectRevert(abi.encodeWithSelector(CurveLendSplitterToken.NotLendRewardSplitter.selector, usr));
+        vm.expectRevert(abi.encodeWithSelector(SplitterToken.NotLendRewardSplitter.selector, usr));
         scvUSD.burn(usr, 100 ether);
     }
 }

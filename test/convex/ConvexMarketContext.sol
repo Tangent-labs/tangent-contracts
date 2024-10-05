@@ -1,31 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "forge-std/console.sol";
-import "forge-std/Test.sol";
-import {StdCheats} from "forge-std/StdCheats.sol";
-import {StdUtils} from "forge-std/StdUtils.sol";
 
 import {ICvxRewardToken} from "../../src/interfaces/externals/ICvxRewardToken.sol";
 import {IStakeDaoVault} from "../../src/interfaces/externals/IStakeDaoVault.sol";
-import {ILlamaLendVault} from "../../src/interfaces/externals/ILlamaLendVault.sol";
+import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
 import {ISdtLiquidityGauge} from "../../src/interfaces/externals/ISdtLiquidityGauge.sol";
 import {ICvxBooster} from "../../src/interfaces/externals/ICvxBooster.sol";
 import {ICvxRewardToken} from "../../src/interfaces/externals/ICvxRewardToken.sol";
 
 import "../../src/LendRewardSplitter.sol";
-import "../../src/tokens/convex/gUSDCvx.sol";
-import "../../src/tokens/convex/scvUSDCvx.sol";
+import "../../src/tokens/gUSDCvx.sol";
+import "../../src/tokens/scvUSDCvx.sol";
+
+import "../../src/tokens/SplitterTokenComp.sol";
 
 import "../../src/libs/Resources.sol";
 
 import "../DeployContext.sol";
 
-contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
-    ILlamaLendVault[] llamaVaultArray;
-    mapping(ILlamaLendVault => CvxStruct) public structsMap;
+contract ConvexMarketContext is DeployContext {
+    ILlamaVault[] llamaVaultArray;
+    mapping(ILlamaVault => CvxStruct) public structsMap;
 
     CvxStruct vaultStruct;
-    ILlamaLendVault llamaVault;
+    ILlamaVault llamaVault;
     uint256 pid;
     IERC20 crvGauge;
     address crvAmm;
@@ -34,10 +32,11 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
     IERC20 lendAsset;
     gUSDCvx gUSD;
     scvUSDCvx scvUSD;
+    SplitterTokenComp scvUSDAutoCompound;
     ICrvUSDController crvController;
 
     struct CvxStruct {
-        ILlamaLendVault llamaVault;
+        ILlamaVault llamaVault;
         uint256 pid;
         IERC20 crvGauge;
         ICrvUSDController crvController;
@@ -47,6 +46,7 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
         IERC20 lendAsset;
         gUSDCvx gUSD;
         scvUSDCvx scvUSD;
+        SplitterTokenComp scvUSDAutoCompound;
     }
 
     constructor() {
@@ -64,7 +64,8 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
             cvxVaultToken: AddrCvxVaultTokens.CRVUSD_CRV,
             lendAsset: AddrClassicERC20.TOKEN_CRVUSD,
             gUSD: gUSDCvx(address(0)),
-            scvUSD: scvUSDCvx(address(0))
+            scvUSD: scvUSDCvx(address(0)),
+            scvUSDAutoCompound: SplitterTokenComp(address(0))
         });
         structsMap[AddrLlamaLendVaults.CRVUSD_LEVERAGE_WETH] = CvxStruct({
             llamaVault: AddrLlamaLendVaults.CRVUSD_LEVERAGE_WETH,
@@ -76,7 +77,8 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
             cvxVaultToken: AddrCvxVaultTokens.CRVUSD_LEVERAGE_WETH,
             lendAsset: AddrClassicERC20.TOKEN_CRVUSD,
             gUSD: gUSDCvx(address(0)),
-            scvUSD: scvUSDCvx(address(0))
+            scvUSD: scvUSDCvx(address(0)),
+            scvUSDAutoCompound: SplitterTokenComp(address(0))
         });
         structsMap[AddrLlamaLendVaults.CRVUSD_LEVERAGE_WBTC] = CvxStruct({
             llamaVault: AddrLlamaLendVaults.CRVUSD_LEVERAGE_WBTC,
@@ -88,7 +90,8 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
             cvxVaultToken: AddrCvxVaultTokens.CRVUSD_LEVERAGE_WBTC,
             lendAsset: AddrClassicERC20.TOKEN_CRVUSD,
             gUSD: gUSDCvx(address(0)),
-            scvUSD: scvUSDCvx(address(0))
+            scvUSD: scvUSDCvx(address(0)),
+            scvUSDAutoCompound: SplitterTokenComp(address(0))
         });
     }
 
@@ -105,6 +108,7 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
         lendAsset = vaultStruct.lendAsset;
         gUSD = vaultStruct.gUSD;
         scvUSD = vaultStruct.scvUSD;
+        scvUSDAutoCompound = vaultStruct.scvUSDAutoCompound;
 
         string memory collateralSymbol = IERC20Metadata(llamaVault.collateral_token()).symbol();
 
@@ -117,44 +121,71 @@ contract ConvexMarketContext is StdCheats, StdUtils, DeployContext {
         vm.label(address(lendAsset), "CRVUSD");
         vm.label(address(gUSD), string.concat("GUSD_", collateralSymbol));
         vm.label(address(scvUSD), string.concat("SCVUSD_", collateralSymbol));
+        vm.label(address(scvUSDAutoCompound), string.concat("SCVUSD_AUTOCOMP_", collateralSymbol));
     }
 
     function createAndGetRandomMarket() public returns (CvxStruct memory) {
+        // Pick a random vault and its related data
         CvxStruct memory cvxStruct = getStruct(pickRandomVault());
+
+        // Create param for createMarket
         uint256[] memory pids = new uint256[](1);
         pids[0] = cvxStruct.pid;
+
+        vm.recordLogs();
         vm.prank(owner);
-        splitter.createCvxMarkets(pids);
-        cvxStruct.gUSD = gUSDCvx(address(splitter.gUSDCvxPerLlamaVault(cvxStruct.llamaVault)));
-        cvxStruct.scvUSD = scvUSDCvx(address(splitter.scvUSDCvxPerLlamaVault(cvxStruct.llamaVault)));
+
+        splitter.createMarkets(pids);
+
+        // Retrieve the logs from createCvxMarket
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+
+        // The Event 'CreateCvxMarket' is the last of the transaction so we need to pick the last from the 'entries' list
+        Vm.Log memory createLog = entries[entries.length - 1];
+
+        (scvUSDCvx _scvUSD, SplitterTokenComp _scvUSDAutoCompound, gUSDCvx _gUSD) = abi.decode(createLog.data, (scvUSDCvx, SplitterTokenComp, gUSDCvx));
+        cvxStruct.gUSD = _gUSD;
+        cvxStruct.scvUSD = _scvUSD;
+        cvxStruct.scvUSDAutoCompound = _scvUSDAutoCompound;
         return cvxStruct;
     }
 
-    function pickRandomVault() public returns (ILlamaLendVault) {
+    function pickRandomVault() public returns (ILlamaVault) {
         uint256 randomIndex = vm.randomUint();
         randomIndex = bound(randomIndex, 0, llamaVaultArray.length - 1);
         return llamaVaultArray[randomIndex];
     }
 
-    function dealLlamaVaultAsset(ILlamaLendVault _llamaVault, address user, uint256 shareAmount) public returns (uint256) {
-        vm.startPrank(user);
+    function dealLlamaVaultAsset(ILlamaVault _llamaVault, address user, uint256 shareAmount) public returns (uint256) {
+        vm.startPrank(owner);
         uint256 assetAmount = _llamaVault.convertToAssets(shareAmount);
-        deal(_llamaVault.borrowed_token(), user, assetAmount + 1000 ether);
-        IERC20(_llamaVault.borrowed_token()).approve(address(_llamaVault), UINT256_MAX);
-        uint256 amountMinted = _llamaVault.mint(shareAmount);
+        IERC20 _lendAsset = IERC20(_llamaVault.borrowed_token());
+        deal(address(_lendAsset), owner, assetAmount + 1000 ether);
+        _lendAsset.approve(address(_llamaVault), UINT256_MAX);
+        uint256 amountMinted = _llamaVault.mint(shareAmount, user);
         vm.stopPrank();
         return amountMinted;
     }
 
-    function getStruct(ILlamaLendVault _llamaVault) public view returns (CvxStruct memory) {
+    function dealScvAsset(ILlamaVault _llamaVault, address user, uint256 shareAmount) public returns (uint256) {
+        dealLlamaVaultAsset(_llamaVault, user, shareAmount);
+
+        vm.startPrank(user);
+        _llamaVault.approve(address(splitter), MAX_UINT);
+        uint256 scvUSDReceived = splitter.depositSCVUSD(_llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareAmount, false, true);
+        vm.stopPrank();
+        return scvUSDReceived;
+    }
+
+    function getStruct(ILlamaVault _llamaVault) public view returns (CvxStruct memory) {
         return structsMap[_llamaVault];
     }
 
-    function getLlamaVaults() public view returns (ILlamaLendVault[] memory) {
+    function getLlamaVaults() public view returns (ILlamaVault[] memory) {
         return llamaVaultArray;
     }
 
-    function setSplitterTokens(ILlamaLendVault _llamaVault, gUSDCvx _gUSD, scvUSDCvx _scvUSD) public {
+    function setSplitterTokens(ILlamaVault _llamaVault, gUSDCvx _gUSD, scvUSDCvx _scvUSD) public {
         structsMap[_llamaVault].gUSD = _gUSD;
         structsMap[_llamaVault].scvUSD = _scvUSD;
     }

@@ -1,7 +1,6 @@
 import "../ConvexMarketContext.sol";
 
 contract ProcessStableConvex is ConvexMarketContext {
-
     uint256 processorFees;
     uint256 daoFees;
 
@@ -20,22 +19,22 @@ contract ProcessStableConvex is ConvexMarketContext {
         AddrClassicERC20.TOKEN_CRVUSD.approve(address(splitter), type(uint256).max);
 
         // Deposit for stable rewards
-        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amount, true, true);
+        splitter.depositSCVUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amount, false, true);
 
         // Deposit for governance rewards
-        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amount, false, true);
+        splitter.depositGUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amount, true);
 
         skip(100 days);
-        uint256 processableRewards = llamaVault.convertToAssets(scvUSD.getStreamableShares());
+        uint256 processableRewards = llamaVault.convertToAssets(gUSD.getStreamableShares());
 
-        uint256 processorRewards = processableRewards * processorFees / 100_000;
-        uint256 daoRewards = processableRewards * daoFees / 100_000;
+        uint256 processorRewards = (processableRewards * processorFees) / 100_000;
+        uint256 daoRewards = (processableRewards * daoFees) / 100_000;
         uint256 stakerRewards = processableRewards - processorRewards - daoRewards;
 
         uint256 userBalanceLendAsset = lendAsset.balanceOf(user);
         vm.stopPrank();
         vm.prank(processor);
-        scvUSD.processRewards();
+        gUSD.processStableRewards();
 
         assertEq(stakerRewards + daoRewards, lendAsset.balanceOf(address(splitter)), "Lend Asset amount is received by Splitter");
         assertEq(daoRewards, splitter.daoFeeForToken(lendAsset), "Dao fees incremented");
@@ -50,11 +49,9 @@ contract ProcessStableConvex is ConvexMarketContext {
 
         vm.prank(feeTreasury);
         splitter.withdrawFees(tokensToClaim);
-        
+
         assertEq(daoRewards, lendAsset.balanceOf(feeTreasury) - ownerBalanceLendAsset, "Processor received processor rewards");
         assertEq(daoRewards, splitterBalanceLendAsset - lendAsset.balanceOf(address(splitter)), "Splitter sent rewards");
         assertEq(splitter.daoFeeForToken(AddrClassicERC20.TOKEN_CRVUSD), 0, "Dao fee is reseted");
-
-
     }
 }

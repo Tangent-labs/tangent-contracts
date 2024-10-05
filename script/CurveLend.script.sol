@@ -2,7 +2,7 @@
 
 import "../lib/forge-std/src/Test.sol";
 import {IERC20} from "../lib/forge-std/src/interfaces/IERC20.sol";
-import {ILlamaLendVault} from "../src/interfaces/externals/ILlamaLendVault.sol";
+import {ILlamaVault} from "../src/interfaces/externals/ILlamaVault.sol";
 import {IStakeDaoVault} from "../src/interfaces/externals/IStakeDaoVault.sol";
 import {ISdtLiquidityGauge} from "../src/interfaces/externals/ISdtLiquidityGauge.sol";
 import {ICrvUSDController} from "../src/interfaces/externals/ICrvUSDController.sol";
@@ -34,7 +34,7 @@ contract CurveLend is Test {
     address STAKEDAO_CRVUSD_CRV = 0xfa6D40573082D797CB3cC378c0837fB90eB043e5;
 
     IStakeDaoVault stakeDaoVault;
-    ILlamaLendVault curveVault;
+    ILlamaVault curveVault;
     ISdtLiquidityGauge gaugeV4;
     ICrvUSDController crvUSDController;
 
@@ -65,9 +65,8 @@ contract CurveLend is Test {
 
         stakeDaoVault = IStakeDaoVault(STAKEDAO_CRVUSD_CRV);
         gaugeV4 = ISdtLiquidityGauge(stakeDaoVault.liquidityGauge());
-        curveVault = ILlamaLendVault(CURVE_CRVUSD_CRV);
+        curveVault = ILlamaVault(CURVE_CRVUSD_CRV);
         crvUSDController = ICrvUSDController(curveVault.controller());
-
     }
 
     function travelDay(uint256 dayToAdd) internal {

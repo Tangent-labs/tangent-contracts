@@ -3,10 +3,10 @@
 
 // import {DeployContext} from "../DeployContext.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-// import {CurveLendSplitterToken} from "../../src/tokens/CurveLendSplitterToken.sol";
+// import {SplitterToken} from "../../src/tokens/SplitterToken.sol";
 // import {gUSDSdt} from "../../src/tokens/stakeDao/gUSDSdt.sol";
 // import {ILendRewardSplitter} from "../../src/interfaces/internals/ILendRewardSplitter.sol";
-// import {ICurveLendSplitterToken} from "../../src/interfaces/internals/ICurveLendSplitterToken.sol";
+// import {ISplitterToken} from "../../src/interfaces/internals/ISplitterToken.sol";
 
 // import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20} from "../../src/libs/Resources.sol";
 
@@ -28,7 +28,7 @@
 //     function test_revertWhen_MintCallByUser() external {
 //         address user = makeAddr("user1");
 //         vm.startPrank(user);
-//         vm.expectRevert(abi.encodeWithSelector(CurveLendSplitterToken.NotLendRewardSplitter.selector, user));
+//         vm.expectRevert(abi.encodeWithSelector(SplitterToken.NotLendRewardSplitter.selector, user));
 //         gUSDImplem.mint(user, 1000 ether);
 //         vm.stopPrank();
 //     }

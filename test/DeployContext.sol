@@ -1,39 +1,41 @@
 import {Test} from "forge-std/Test.sol";
-import {LendRewardSplitter} from "../src/LendRewardSplitter.sol";
+
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 
 import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
-import {CurveLendSplitterToken} from "../src/tokens/CurveLendSplitterToken.sol";
+import {SplitterToken} from "../src/tokens/SplitterToken.sol";
 
-import {gUSDSdt} from "../src/tokens/stakeDao/gUSDSdt.sol";
-import {scvUSDSdt} from "../src/tokens/stakeDao/scvUSDSdt.sol";
-
-import {gUSDCvx} from "../src/tokens/convex/gUSDCvx.sol";
-import {scvUSDCvx} from "../src/tokens/convex/scvUSDCvx.sol";
-
+import {LendRewardSplitter} from "../src/LendRewardSplitter.sol";
+import {gUSDCvx} from "../src/tokens/gUSDCvx.sol";
+import {scvUSDCvx} from "../src/tokens/scvUSDCvx.sol";
+import {SplitterTokenComp} from "../src/tokens/SplitterTokenComp.sol";
 import {ISdtLiquidityGauge} from "../src/interfaces/externals/ISdtLiquidityGauge.sol";
 import {IStakeDaoVault} from "../src/interfaces/externals/IStakeDaoVault.sol";
-import {ILlamaLendVault} from "../src/interfaces/externals/ILlamaLendVault.sol";
+import {ILlamaVault} from "../src/interfaces/externals/ILlamaVault.sol";
 
 import {ILendRewardSplitter} from "../src/interfaces/internals/ILendRewardSplitter.sol";
-import {ICurveLendSplitterToken} from "../src/interfaces/internals/ICurveLendSplitterToken.sol";
+import {ISplitterToken} from "../src/interfaces/internals/ISplitterToken.sol";
 import {ICommonStruct} from "../src/interfaces/internals/ICommonStruct.sol";
 import "../src/libs/Resources.sol";
 
-contract DeployContext is Test {
+import {StdCheats} from "forge-std/StdCheats.sol";
+import {StdUtils} from "forge-std/StdUtils.sol";
+
+contract DeployContext is StdCheats, StdUtils, Test {
     uint256 public MAX_UINT = uint256(int256(-1));
 
     address public owner = makeAddr("Owner");
     address public ownerGauge = makeAddr("ownerGauge");
     address public feeTreasury = makeAddr("feeTreasury");
     LendRewardSplitter public splitter;
-    address public gUSDBeaconSdt;
-    address public scvUSDBeaconSdt;
+    // address public gUSDBeaconSdt;
+    // address public scvUSDBeaconSdt;
     address public gUSDBeaconCvx;
     address public scvUSDBeaconCvx;
+    address public scvUSDBeaconCompounder;
     address public proxyAdmin;
 
     /// @dev Validate Implementation (false if you don't want to "forge clean" at each modification)
@@ -43,10 +45,11 @@ contract DeployContext is Test {
         vm.createSelectFork("mainnet", 20725852);
         //Proxys
         deployProxyAdmin();
-        deployGUSDBeaconSdt();
-        deploySCVUSDBeaconSdt();
+        // deployGUSDBeaconSdt();
+        // deploySCVUSDBeaconSdt();
         deployGUSDBeaconCvx();
         deploySCVUSDBeaconCvx();
+        deployScvUSDCompounder();
         deploySplitterProxy(owner);
 
         vm.startPrank(owner);
@@ -63,26 +66,6 @@ contract DeployContext is Test {
 
     function deployProxyAdmin() public {
         proxyAdmin = address(new ProxyAdmin(owner));
-    }
-
-    function deployGUSDBeaconSdt() public returns (address) {
-        if (IS_VALIDATE_IMPLEM) {
-            Options memory opts;
-            Upgrades.validateImplementation("gUSDSdt.sol:gUSDSdt", opts);
-        }
-        //deploy
-        gUSDBeaconSdt = address(new UpgradeableBeacon(address(new gUSDSdt()), (owner)));
-        return scvUSDBeaconSdt;
-    }
-
-    function deploySCVUSDBeaconSdt() public returns (address) {
-        if (IS_VALIDATE_IMPLEM) {
-            Options memory opts;
-            Upgrades.validateImplementation("scvUSDSdt.sol:scvUSDSdt", opts);
-        }
-        //deploy
-        scvUSDBeaconSdt = address(new UpgradeableBeacon(address(new scvUSDSdt()), (owner)));
-        return scvUSDBeaconSdt;
     }
 
     function deployGUSDBeaconCvx() public returns (address) {
@@ -105,6 +88,16 @@ contract DeployContext is Test {
         return scvUSDBeaconCvx;
     }
 
+    function deployScvUSDCompounder() public returns (address) {
+        if (IS_VALIDATE_IMPLEM) {
+            Options memory opts;
+            Upgrades.validateImplementation("SplitterTokenComp.sol:SplitterTokenComp", opts);
+        }
+        //deploy
+        scvUSDBeaconCompounder = address(new UpgradeableBeacon(address(new SplitterTokenComp()), (owner)));
+        return scvUSDBeaconCompounder;
+    }
+
     function deploySplitterProxy(address ownerToSet) public returns (LendRewardSplitter) {
         if (IS_VALIDATE_IMPLEM) {
             Options memory opts;
@@ -116,7 +109,7 @@ contract DeployContext is Test {
                 new TransparentUpgradeableProxy(
                     address(new LendRewardSplitter()),
                     proxyAdmin,
-                    abi.encodeCall(LendRewardSplitter.initialize, (ownerToSet, feeTreasury, gUSDBeaconSdt, scvUSDBeaconSdt, gUSDBeaconCvx, scvUSDBeaconCvx))
+                    abi.encodeCall(LendRewardSplitter.initialize, (ownerToSet, feeTreasury, gUSDBeaconCvx, scvUSDBeaconCvx, scvUSDBeaconCompounder))
                 )
             )
         );
@@ -154,5 +147,18 @@ contract DeployContext is Test {
             }
         }
         vm.stopPrank();
+    }
+
+    function assertTransfers(Vm.Log[] memory logs, Transfers[] memory transfersToAssert) public {
+        // Sort all non Transfer logs
+        for (uint256 index = 0; index < array.length; index++) {
+            if (entries[index].topics[0] != keccak256("Transfer(address,uint256)")) {
+                // solhint-disable-next-line no-inline-assembly
+                assembly {
+                    /// @dev this reduce the length of the array to not return some useless 0 at the end
+                    mstore(logs, sub(mload(logs), 1))
+                }
+            }
+        }
     }
 }

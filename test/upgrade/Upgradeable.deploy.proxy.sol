@@ -2,7 +2,7 @@
 // pragma solidity ^0.8.24;
 
 // import {Test, console} from "forge-std/Test.sol";
-// import {CurveLendSplitterToken} from "../../src/tokens/CurveLendSplitterToken.sol";
+// import {SplitterToken} from "../../src/tokens/SplitterToken.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
 // import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 // import {BeaconProxy} from "@openzeppelin/contracts/proxy/beacon/BeaconProxy.sol";
@@ -37,10 +37,10 @@
 //         address proxyAdmin = address(new ProxyAdmin(owner));
 //         // //validate Implementation
 //         // Options memory opts;
-//         // Upgrades.validateImplementation("CurveLendSplitterToken.sol:CurveLendSplitterToken", opts);
+//         // Upgrades.validateImplementation("SplitterToken.sol:SplitterToken", opts);
 //         //deploy Implem & Proxy
 
-//         address upgradeableBeaconProxy = address(new UpgradeableBeacon(address(new CurveLendSplitterToken()), owner));
+//         address upgradeableBeaconProxy = address(new UpgradeableBeacon(address(new SplitterToken()), owner));
 //         console.log("upgradeableBeaconProxy", upgradeableBeaconProxy);
 //     }
 // }

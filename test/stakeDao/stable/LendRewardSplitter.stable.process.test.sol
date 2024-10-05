@@ -4,17 +4,17 @@
 // import {scvUSDSdt} from "../../src/tokens/stakeDao/scvUSDSdt.sol";
 // import {gUSDSdt} from "../../src/tokens/stakeDao/gUSDSdt.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-// import {CurveLendSplitterToken} from "../../src/tokens/CurveLendSplitterToken.sol";
+// import {SplitterToken} from "../../src/tokens/SplitterToken.sol";
 // import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20} from "../../src/libs/Resources.sol";
 // import {ISdtLiquidityGauge} from "../../src/interfaces/externals/ISdtLiquidityGauge.sol";
-// import {ILlamaLendVault} from "../../src/interfaces/externals/ILlamaLendVault.sol";
+// import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
 // import {IStakeDaoVault} from "../../src/interfaces/externals/IStakeDaoVault.sol";
 
 // contract LendRewardSplitterStableProcessTest is Test {
 //     LendRewardSplitter splitter;
 //     DeployContext testCommon;
 
-//     ILlamaLendVault constant LLAMALEND_VAULT_CRV = AddrLlamaLendVaults.CRVUSD_CRV;
+//     ILlamaVault constant LLAMALEND_VAULT_CRV = AddrLlamaLendVaults.CRVUSD_CRV;
 //     IStakeDaoVault constant STAKE_DAO_VAULT_CRV = AddrSdtVaults.CRVUSD_CRV;
 //     ISdtLiquidityGauge constant STAKE_DAO_GAUGE_CRV = AddrSdtGauges.CRVUSD_CRV;
 //     IERC20 constant CRVUSD = IERC20(AddrClassicERC20.TOKEN_CRVUSD);
@@ -37,7 +37,7 @@
 //     //     assertEq(CRVUSD.balanceOf(user3), 0);
 
 //     //     vm.startPrank(user3);
-//     //     vm.expectRevert(abi.encodeWithSelector(CurveLendSplitterToken.NothingToProcess.selector));
+//     //     vm.expectRevert(abi.encodeWithSelector(SplitterToken.NothingToProcess.selector));
 //     //     scvUSD.processRewards();
 //     //     vm.stopPrank();
 //     // }
@@ -77,7 +77,7 @@
 //         assertEq(splitter.daoFeeForToken(CRVUSD), expectedDaoFees, "DAO Fees Not detected");
 //     }
 
-//     function _getStableRewardToProcess(ILlamaLendVault llamaLendVault) internal view returns (uint256, uint256, uint256, uint256) {
+//     function _getStableRewardToProcess(ILlamaVault llamaLendVault) internal view returns (uint256, uint256, uint256, uint256) {
 //         // Count the share.
 //         uint256 shareReward = splitter.sdtGaugePerLlamaVault(llamaLendVault).balanceOf(address(gUSD)) -
 //             scvUSD.totalSupply() -

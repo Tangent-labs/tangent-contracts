@@ -2,11 +2,11 @@
 // import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // import {DeployContext} from "../DeployContext.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-// import {CurveLendSplitterToken} from "../../src/tokens/CurveLendSplitterToken.sol";
+// import {SplitterToken} from "../../src/tokens/SplitterToken.sol";
 // import {scvUSDSdt} from "../../src/tokens/stakeDao/scvUSDSdt.sol";
 // import {gUSDSdt} from "../../src/tokens/stakeDao/gUSDSdt.sol";
 // import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, AddrCvxRewardTokens, PidCvxBooster, AddrCvxVaultTokens} from "../../src/libs/Resources.sol";
-// import {ILlamaLendVault} from "../../src/interfaces/externals/ILlamaLendVault.sol";
+// import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
 // import {IStakeDaoVault} from "../../src/interfaces/externals/IStakeDaoVault.sol";
 // import {ISdtLiquidityGauge} from "../../src/interfaces/externals/ISdtLiquidityGauge.sol";
 // import {ICommonStruct} from "../../src/interfaces/internals/ICommonStruct.sol";
@@ -15,7 +15,7 @@
 //     LendRewardSplitter splitter;
 //     DeployContext testCommon;
 
-//     ILlamaLendVault constant LLAMALEND_VAULT_CRV = AddrLlamaLendVaults.CRVUSD_CRV;
+//     ILlamaVault constant LLAMALEND_VAULT_CRV = AddrLlamaLendVaults.CRVUSD_CRV;
 //     IStakeDaoVault constant STAKE_DAO_VAULT_CRV = AddrSdtVaults.CRVUSD_CRV;
 //     ISdtLiquidityGauge constant STAKE_DAO_GAUGE_CRV = AddrSdtGauges.CRVUSD_CRV;
 //     IERC20 constant CRVUSD = IERC20(AddrClassicERC20.TOKEN_CRVUSD);
@@ -106,7 +106,7 @@
 //         (address user1, address user2) = deposit();
 
 //         vm.prank(user1);
-//         vm.expectRevert(abi.encodeWithSelector(CurveLendSplitterToken.NotLendRewardSplitter.selector, user1));
+//         vm.expectRevert(abi.encodeWithSelector(SplitterToken.NotLendRewardSplitter.selector, user1));
 //         scvUSD.getAndUpdateRewards(user1);
 //     }
 

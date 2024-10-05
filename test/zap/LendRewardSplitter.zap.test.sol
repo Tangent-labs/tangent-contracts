@@ -6,7 +6,7 @@
 // import {ICurveRouter} from "../../src/interfaces/externals/ICurveRouter.sol";
 // import {IStakeDaoVault} from "../../src/interfaces/externals/IStakeDaoVault.sol";
 // import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, AddrGlobal} from "../../src/libs/Resources.sol";
-// import {ILlamaLendVault} from "../../src/interfaces/externals/ILlamaLendVault.sol";
+// import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
 // import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 // import {ZapAndDepositReentrancyAttack} from "./ZapAndDepositReentrancyAttack.sol";
 
@@ -17,7 +17,7 @@
 //     IERC20 constant CRVUSD = AddrClassicERC20.TOKEN_CRVUSD;
 //     IERC20 constant USDC = AddrClassicERC20.TOKEN_USDC;
 //     IERC20 constant AAVE = AddrClassicERC20.TOKEN_AAVE;
-//     ILlamaLendVault constant LLAMALEND_VAULT_CRV = AddrLlamaLendVaults.CRVUSD_CRV;
+//     ILlamaVault constant LLAMALEND_VAULT_CRV = AddrLlamaLendVaults.CRVUSD_CRV;
 //     IStakeDaoVault constant SDT_VAULT_CRV = AddrSdtVaults.CRVUSD_CRV;
 
 //     LendRewardSplitter splitter;
@@ -34,7 +34,7 @@
 //     //     (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForEth();
 //     //     testCommon.getUser(1, USDC, 2000 ether);
 //     //     vm.expectRevert(abi.encodeWithSelector(bytes4(keccak256("MarketNotExists(address)")), USDC));
-//     //     splitter.zapAndDeposit(ILlamaLendVault(USDC), 0, 0, false, true, true, routes, pools, swapParams); // USDC is not a market
+//     //     splitter.zapAndDeposit(ILlamaVault(USDC), 0, 0, false, true, true, routes, pools, swapParams); // USDC is not a market
 //     // }
 
 //     // function test_revertWhen_zapAndDepositWithNoAmount() public {

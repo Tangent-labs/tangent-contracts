@@ -4,7 +4,7 @@
 // import {DeployContext} from "../DeployContext.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
 // import {IStakeDaoVault} from "../../src/interfaces/externals/IStakeDaoVault.sol";
-// import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, ILlamaLendVault, ISdtLiquidityGauge} from "../../src/libs/Resources.sol";
+// import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, ILlamaVault, ISdtLiquidityGauge} from "../../src/libs/Resources.sol";
 
 // contract LendRewardSplitterGovDepositTest is Test {
 //     LendRewardSplitter splitter;
@@ -12,7 +12,7 @@
 //     DeployContext testCommon = new DeployContext();
 
 //     IERC20 constant CRVUSD = AddrClassicERC20.TOKEN_CRVUSD;
-//     ILlamaLendVault constant LLAMALEND_VAULT_CRVUSD = AddrLlamaLendVaults.CRVUSD_CRV;
+//     ILlamaVault constant LLAMALEND_VAULT_CRVUSD = AddrLlamaLendVaults.CRVUSD_CRV;
 //     ISdtLiquidityGauge constant STAKEDAO_GAUGE_CRVUSD = AddrSdtGauges.CRVUSD_CRV;
 //     ISdtVault constant STAKEDAO_GAUGE_CRVUSD = AddrSdtGauges.CRVUSD_CRV;
 //     function setUp() public {

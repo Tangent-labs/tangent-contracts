@@ -1,7 +1,7 @@
 // import {Test, console} from "forge-std/Test.sol";
 // import {DeployContext} from "../DeployContext.sol";
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-// import {CurveLendSplitterToken} from "../../src/tokens/CurveLendSplitterToken.sol";
+// import {SplitterToken} from "../../src/tokens/SplitterToken.sol";
 // import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20} from "../../src/libs/Resources.sol";
 // import {scvUSDSdt} from "../../src/tokens/stakeDao/scvUSDSdt.sol";
 

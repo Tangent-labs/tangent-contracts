@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNKNOWN 
+// SPDX-License-Identifier: UNKNOWN
 import "../ConvexMarketContext.sol";
 
 contract CreateConvexMarket is DeployContext {
@@ -10,13 +10,13 @@ contract CreateConvexMarket is DeployContext {
         vm.prank(owner);
         uint256[] memory pids = new uint256[](1);
         pids[0] = PidCvxBooster.CRVUSD_CRV;
-        splitter.createCvxMarkets(pids);
+        splitter.createMarkets(pids);
 
-        CurveLendSplitterToken gUSD = CurveLendSplitterToken(address(splitter.gUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV)));
-        CurveLendSplitterToken scvUSD = CurveLendSplitterToken(address(splitter.scvUSDCvxPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV)));
-        address cvxRewardToken = address(splitter.cvxRewardTokenPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV));
+        SplitterToken gUSD = SplitterToken(address(splitter.gUSDPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV)));
+        SplitterToken scvUSD = SplitterToken(address(splitter.scvUSDPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV)));
+        address cvxRewardToken = address(splitter.rewardTokenPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV));
         // Verify that all mappings are filled properly
-        assertEq(splitter.cvxPidPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV), PidCvxBooster.CRVUSD_CRV);
+        assertEq(splitter.pidPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV), PidCvxBooster.CRVUSD_CRV);
         assertEq(cvxRewardToken, address(AddrCvxRewardTokens.CRVUSD_CRV));
         assertNotEq(address(gUSD), address(0));
         assertNotEq(address(scvUSD), address(0));
@@ -31,9 +31,9 @@ contract CreateConvexMarket is DeployContext {
         uint256[] memory pids = new uint256[](1);
         pids[0] = PidCvxBooster.CRVUSD_CRV;
         vm.startPrank(owner);
-        splitter.createCvxMarkets(pids);
+        splitter.createMarkets(pids);
         vm.expectRevert(abi.encodeWithSelector(LendRewardSplitter.AlreadyCreatedCvxMarket.selector, PidCvxBooster.CRVUSD_CRV));
-        splitter.createCvxMarkets(pids);
+        splitter.createMarkets(pids);
     }
 
     function test_create_market_as_not_owner() external {
@@ -43,6 +43,6 @@ contract CreateConvexMarket is DeployContext {
         address usr = makeAddr("Test");
         vm.prank(usr);
         vm.expectRevert(abi.encodeWithSignature("OwnableUnauthorizedAccount(address)", usr));
-        splitter.createCvxMarkets(pids);
+        splitter.createMarkets(pids);
     }
 }

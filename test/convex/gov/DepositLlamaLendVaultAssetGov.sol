@@ -26,7 +26,7 @@ contract DepositLlamaLendVaultAssetGov is ConvexMarketContext {
 
         // ACTIONS
         llamaVault.approve(address(splitter), shareAmount);
-        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareAmount, false, true);
+        splitter.depositGUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareAmount, true);
 
         // VERIFY
         // 100 llamaLendVault transfered
@@ -62,7 +62,7 @@ contract DepositLlamaLendVaultAssetGov is ConvexMarketContext {
 
         // ACTIONS
         llamaVault.approve(address(splitter), shareAmount);
-        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareAmount, false, false);
+        splitter.depositGUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareAmount, false);
 
         // VERIFY
 
@@ -92,7 +92,7 @@ contract DepositLlamaLendVaultAssetGov is ConvexMarketContext {
         // ACTIONS
         llamaVault.approve(address(splitter), shareAmount1);
         console.log("Balance LlamaVault", llamaVault.balanceOf(usr));
-        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareAmount1, false, false);
+        splitter.depositGUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareAmount1, false);
 
         // PREPARE
 
@@ -104,7 +104,7 @@ contract DepositLlamaLendVaultAssetGov is ConvexMarketContext {
 
         // ACTIONS
         llamaVault.approve(address(splitter), shareAmount2);
-        splitter.depositCvx(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareAmount2, false, true);
+        splitter.depositGUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareAmount2, true);
 
         // VERIFY
 

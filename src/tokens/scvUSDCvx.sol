@@ -1,19 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "../CurveLendSplitterToken.sol";
+import "./SplitterToken.sol";
 
-import {IgUSDCvx} from "../../interfaces/internals/IgUSDCvx.sol";
-import {IscvUSD} from "../../interfaces/internals/IscvUSD.sol";
-import {ILlamaLendVault} from "../../interfaces/externals/ILlamaLendVault.sol";
+import {IgUSDCvx} from "../interfaces/internals/IgUSDCvx.sol";
+import {IscvUSD} from "../interfaces/internals/IscvUSD.sol";
+import {ILlamaVault} from "../interfaces/externals/ILlamaVault.sol";
 
-contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
+contract scvUSDCvx is SplitterToken, IscvUSD {
     using SafeERC20 for IERC20;
     IgUSDCvx public gUSD;
-    ILlamaLendVault public llamaVault;
+    ILlamaVault public llamaVault;
     IERC20 public cvxRewardToken;
+    address autoCompounder;
 
-    error OnlySCVUSDCaller(address caller);
+    error OnlyGUSDCaller(address caller);
+    error CallerNotAutoCompounder(address caller);
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CONSTRUCTOR & INITIALIZER
@@ -29,7 +31,7 @@ contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
         string memory _name,
         string memory _symbol,
         ILendRewardSplitter _lendRewardSplitter,
-        ILlamaLendVault _llamaVault,
+        ILlamaVault _llamaVault,
         address _cvxRewardToken
     ) external initializer {
         __ERC20_init(_name, _symbol);
@@ -43,7 +45,7 @@ contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
         rewardTokens.push(crvUsd);
         rewardData[crvUsd].lastUpdateTime = uint128(block.timestamp);
         rewardData[crvUsd].periodFinish = uint128(block.timestamp);
-        fees.push(ICurveLendSplitterToken.Fees({processorFeePercentage: 1_000, daoFeePercentage: 2_000}));
+        fees.push(ISplitterToken.Fees({processorFeePercentage: 1_000, daoFeePercentage: 2_000}));
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -55,40 +57,45 @@ contract scvUSDCvx is CurveLendSplitterToken, IscvUSD {
      * @param to        Receiver of the scvUSD
      * @param amount    Amount of scvUSD to mint
      */
-    function mint(address to, uint256 amount) external verifyLendSplitterCaller returns (uint256) {
+    function mintSplitter(address to, uint256 amount) external verifyLendSplitterCaller {
         /// @dev Mint will call _updateReward
         _mint(to, amount);
-        return amount;
-    }
-
-    function getTotalStaked() external view returns (uint256) {
-        cvxRewardToken.balanceOf(address(gUSD)) + llamaVault.balanceOf(address(gUSD));
-    }
-
-    function getStreamableShares() external view returns (uint256) {
-        IgUSDCvx _gUSD = gUSD;
-        ILlamaLendVault _llamaVault = llamaVault;
-        return
-            cvxRewardToken.balanceOf(address(_gUSD)) + _llamaVault.balanceOf(address(_gUSD)) - totalSupply() - _llamaVault.convertToShares(_gUSD.totalSupply());
     }
 
     /**
-     * @notice Process the rewards for scvUSD
-     * @dev Redeem the shares left by gUSD stakers in lendAsset.
-     *      Anyone can trigger this function and will be incentivized by a processor fee.
+     * @notice Mint scvUSD, only callable during deposit process from _depositCVX
+     * @param amount    Amount of scvUSD to mint
+     */
+    function mintAutoCompound(uint256 amount) external {
+        address _autoCompounder = autoCompounder;
+        require(msg.sender == _autoCompounder, CallerNotAutoCompounder(msg.sender));
+        /// @dev Mint will call _updateReward
+        _mint(_autoCompounder, amount);
+    }
+
+    /**
+     * @notice Burn staked token
+     * @param from        Owner of the staked ERC20 token
+     * @param amount      Amount to burn
+     */
+    function burn(address from, uint256 amount) external verifyLendSplitterCaller {
+        require(amount <= balanceOf(from), CantBurnThatMuchFor(from));
+        /// @dev Burn will call _updateReward
+        _burn(from, amount);
+    }
+
+    /**
+     * @notice Function called by s
+     * @dev Claim rewards in lendAsset from gUSD stakers that rennounced to their rewards from IR.
      */
     function processRewards() external {
-        IgUSDCvx _gUSD = gUSD;
-        ILlamaLendVault _llamaVault = llamaVault;
         /// @dev We need to keep enough share to back the stableSupply and the assetPart of the govSupply, we withdraw the reward share from the gUSD
-        _gUSD.claimSCVUSDRewards(
-            cvxRewardToken.balanceOf(address(_gUSD)) + _llamaVault.balanceOf(address(_gUSD)) - totalSupply() - _llamaVault.convertToShares(gUSD.totalSupply()),
-            _llamaVault
-        );
+        require(msg.sender == address(gUSD), OnlyGUSDCaller(msg.sender));
         _processRewards();
     }
 
-    function setGUSD(address _gUSD) external verifyLendSplitterCaller {
+    function setAutoCompoundAndGUSD(address _autoCompounder, address _gUSD) external verifyLendSplitterCaller {
         gUSD = IgUSDCvx(_gUSD);
+        autoCompounder = _autoCompounder;
     }
 }

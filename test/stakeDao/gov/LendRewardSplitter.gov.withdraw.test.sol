@@ -3,9 +3,9 @@
 // import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
 // import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20} from "../../src/libs/Resources.sol";
 // import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-// import {ILlamaLendVault} from "../../src/interfaces/externals/ILlamaLendVault.sol";
+// import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
 // import {ILendRewardSplitter} from "../../src/interfaces/internals/ILendRewardSplitter.sol";
-// import {ICurveLendSplitterToken} from "../../src/interfaces/internals/ICurveLendSplitterToken.sol";
+// import {ISplitterToken} from "../../src/interfaces/internals/ISplitterToken.sol";
 
 // contract LendRewardSplitterGovWithdrawTest is Test {
 //     LendRewardSplitter splitter;
@@ -23,7 +23,7 @@
 //         address tokenIn = address(AddrClassicERC20.TOKEN_CRVUSD);
 //         address user = testCommon.getUser(1, tokenIn);
 
-//         ICurveLendSplitterToken gUSD = splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
+//         ISplitterToken gUSD = splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
 
 //         // Check the initial.
 //         assertEq(testCommon.gUSDImplem().balanceOf(user), 0);
@@ -62,7 +62,7 @@
 //         // Setup.
 //         address tokenIn = address(AddrClassicERC20.TOKEN_CRVUSD);
 //         address user = testCommon.getUser(1, tokenIn);
-//         ICurveLendSplitterToken gUSD = splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
+//         ISplitterToken gUSD = splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
 
 //         // Check the initial.
 //         assertEq(gUSD.balanceOf(user), 0);
@@ -107,7 +107,7 @@
 //         // Setup.
 //         address tokenIn = address(AddrClassicERC20.TOKEN_CRVUSD);
 //         address user = testCommon.getUser(1, tokenIn);
-//         ICurveLendSplitterToken gUSD = splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
+//         ISplitterToken gUSD = splitter.gUSDSdtPerLlamaVault(AddrLlamaLendVaults.CRVUSD_CRV);
 
 //         // Check the initial.
 //         assertEq(gUSD.balanceOf(user), 0);
@@ -151,7 +151,7 @@
 //     }
 
 //     function test_withdraw_curveLendVaultSolo() external {
-//         ILlamaLendVault curveLendVault = testCommon.curveLendVault();
+//         ILlamaVault curveLendVault = testCommon.curveLendVault();
 //         IERC20 crvUSD = testCommon.crvUSD();
 //         uint256 depositAmount = 100 ether;
 //         address tokenIn = address(AddrClassicERC20.TOKEN_CRVUSD);

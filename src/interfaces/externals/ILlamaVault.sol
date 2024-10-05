@@ -2,7 +2,7 @@
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-interface ILlamaLendVault is IERC20 {
+interface ILlamaVault is IERC20 {
     function borrow_apr() external view returns (uint256);
 
     function lend_apr() external view returns (uint256);
