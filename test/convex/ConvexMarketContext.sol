@@ -18,7 +18,7 @@ import "../../src/libs/Resources.sol";
 
 import "../DeployContext.sol";
 
-contract ConvexMarketContext is DeployContext {
+contract ConvexMarketContext is DeployContext  {
     ILlamaVault[] llamaVaultArray;
     mapping(ILlamaVault => CvxStruct) public structsMap;
 

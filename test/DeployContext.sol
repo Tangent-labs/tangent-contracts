@@ -1,4 +1,3 @@
-import {Test} from "forge-std/Test.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
@@ -21,10 +20,16 @@ import {ISplitterToken} from "../src/interfaces/internals/ISplitterToken.sol";
 import {ICommonStruct} from "../src/interfaces/internals/ICommonStruct.sol";
 import "../src/libs/Resources.sol";
 
+import "forge-std/console.sol";
+
+import "forge-std/console.sol";
+import "forge-std/Test.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {StdUtils} from "forge-std/StdUtils.sol";
 
-contract DeployContext is StdCheats, StdUtils, Test {
+
+
+contract DeployContext is  StdCheats, StdUtils,Test {
     uint256 public MAX_UINT = uint256(int256(-1));
 
     address public owner = makeAddr("Owner");
@@ -148,17 +153,136 @@ contract DeployContext is StdCheats, StdUtils, Test {
         }
         vm.stopPrank();
     }
+    struct Transfers{
+        IERC20 erc20;
+        address from;
+        address to;
+        uint256 amount;
+    }
 
-    function assertTransfers(Vm.Log[] memory logs, Transfers[] memory transfersToAssert) public {
-        // Sort all non Transfer logs
-        for (uint256 index = 0; index < array.length; index++) {
-            if (entries[index].topics[0] != keccak256("Transfer(address,uint256)")) {
-                // solhint-disable-next-line no-inline-assembly
-                assembly {
-                    /// @dev this reduce the length of the array to not return some useless 0 at the end
-                    mstore(logs, sub(mload(logs), 1))
-                }
+    struct BalancesChange{
+        IERC20 erc20;
+        uint256 balFrom;
+        uint256 balTo;
+        address from;
+        address to;
+        uint256 amount;
+    }
+
+    function createBalancesChange(IERC20 erc20, address from, address to, uint256 amount) public view returns(BalancesChange memory){
+        return BalancesChange({
+            erc20 : erc20,
+            from : from,
+            to : to,
+            amount : amount,
+            balFrom : 0,
+            balTo:0
+        });
+    }
+
+
+
+    function getBalances(BalancesChange[] memory balChanges) public view returns(BalancesChange[] memory) {
+        for (uint256 index = 0; index < balChanges.length; index++) {
+            BalancesChange memory bal = balChanges[index];
+            IERC20 erc20 = bal.erc20;
+            // Mint 
+            if(bal.from == address(0)) {
+                bal.balFrom = erc20.totalSupply();
             }
+            else {
+                bal.balFrom = erc20.balanceOf(bal.from);
+
+            }
+            // Burn
+            if(bal.to == address(0)){
+                bal.balTo = erc20.totalSupply();
+            }
+            else{
+                bal.balTo = erc20.balanceOf(bal.to);
+            }
+        }
+        return balChanges;
+    }
+
+    function assertBalanceChanges(BalancesChange[] memory balChanges) public view returns(BalancesChange[] memory) {
+        for (uint256 index = 0; index < balChanges.length; index++) {
+            BalancesChange memory bal = balChanges[index];
+            IERC20 erc20 = bal.erc20;
+            // Mint 
+            if(bal.from == address(0)) {
+                assertEq(erc20.totalSupply() - bal.balFrom, bal.amount);
+            }
+            else {
+                assertEq(bal.balFrom - erc20.balanceOf(bal.from), bal.amount);
+            }
+            // Burn
+            if(bal.to == address(0)){
+                assertEq(bal.balTo - erc20.totalSupply(), bal.amount);
+            }
+            else{
+                assertEq(erc20.balanceOf(bal.to) - bal.balTo  , bal.amount);
+            }
+        }
+        return balChanges;
+    }
+
+
+
+    function assertTransfers(Vm.Log[] memory logss, Transfers[] memory transfersToAssert) public {
+        uint256 logsLength = logss.length;
+        console.log(logsLength);
+        for (uint256 index = 0; index < logss.length; ) {
+            uint256 len = logss.length;
+            if(len != 1){
+                logss[index] = logss[len - 1];
+                assembly {
+                    // Réduire la taille du tableau de 1
+                    mstore(logss, sub(len, 1))
+                 }
+            }
+            else {
+                index++;
+            }
+        }
+
+        // Converts all logs 
+        for (uint256 index = 0; index < logss.length; index++) {
+            Vm.Log memory logg = logss[index];
+            bytes32 key = keccak256(abi.encodePacked(logg.emitter, bytes32ToAddress(logg.topics[1]), bytes32ToAddress(logg.topics[2]), logg.data));
+            _tStoreBoolForBytes32(key, true);
+        }
+
+        // Verify all expect
+        for (uint256 i = 0; i < transfersToAssert.length; i++) {
+            Transfers memory t = transfersToAssert[i];
+            bytes32 aa = keccak256(abi.encodePacked(t.erc20, t.from, t.to, abi.encode(t.amount)));
+            assertEq(_tLoadBoolForBytes32(aa), true, string.concat("Transfer from ", vm.toString(t.from), " to ", vm.toString(t.to), " of amount : ", vm.toString(t.amount), " didn't occur"));
+        }
+
+
+        console.log(logss.length);
+        vm.stopPrank();
+    }
+
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                            INTERNALS
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    function bytes32ToAddress(bytes32 _bytes32) public view returns(address){
+        return address(uint160(uint256(_bytes32)));
+    }
+
+    function _tStoreBoolForBytes32(bytes32 location, bool value) private {
+        assembly {
+            tstore(location, value)
+        }
+    }
+
+    function _tLoadBoolForBytes32(bytes32 location) private view returns (bool value) {
+        assembly {
+            value := tload(location)
         }
     }
 }
