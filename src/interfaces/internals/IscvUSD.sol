@@ -1,11 +1,13 @@
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {ICurveLendSplitterToken} from "../internals/ICurveLendSplitterToken.sol";
+import {ISplitterToken} from "../internals/ISplitterToken.sol";
 
-interface IscvUSD is ICurveLendSplitterToken {
-    function mint(address to, uint256 amount) external returns (uint256);
+interface IscvUSD is ISplitterToken {
+    function mintSplitter(address to, uint256 amount) external;
 
-    function setGUSD(address _gUSD) external;
+    function mintAutoCompound(uint256 amount) external;
 
-    function getStreamableShares() external view returns (uint256);
+    function burn(address from, uint256 amount) external;
+
+    function processRewards() external;
 }

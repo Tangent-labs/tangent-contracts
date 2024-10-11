@@ -4,16 +4,15 @@ pragma solidity ^0.8.24;
 import {ICvxRewardToken} from "../interfaces/externals/ICvxRewardToken.sol";
 
 import {IStakeDaoVault} from "../interfaces/externals/IStakeDaoVault.sol";
-import {ILlamaLendVault} from "../interfaces/externals/ILlamaLendVault.sol";
+import {ILlamaVault} from "../interfaces/externals/ILlamaVault.sol";
 import {ISdtLiquidityGauge} from "../interfaces/externals/ISdtLiquidityGauge.sol";
 import {ICvxBooster} from "../interfaces/externals/ICvxBooster.sol";
 import {ICvxRewardToken} from "../interfaces/externals/ICvxRewardToken.sol";
-
+import {ICrvUSDController} from "../interfaces/externals/ICrvUSDController.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 library AddrGlobal {
     ICvxBooster constant CVX_BOOSTER = ICvxBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
-    address constant CRVUSD_AMM = 0xafca625321Df8D6A068bDD8F1585d489D2acF11b;
     address constant CURVE_ROUTER = 0x16C6521Dff6baB339122a0FE25a9116693265353;
     address constant CVX_VOTER_PROXY = 0x989AEb4d175e16225E39E87d0D97A3360524AD80;
 }
@@ -29,9 +28,15 @@ library AddrClassicERC20 {
 }
 
 library AddrCrvController {
-    address constant CRVUSD_CRV = 0xEdA215b7666936DEd834f76f3fBC6F323295110A;
-    address constant CRVUSD_LEVERAGE_WETH = 0x23F5a668A9590130940eF55964ead9787976f2CC;
-    address constant CRVUSD_LEVERAGE_WBTC = 0xcaD85b7fe52B1939DCEebEe9bCf0b2a5Aa0cE617;
+    ICrvUSDController constant CRVUSD_CRV = ICrvUSDController(0xEdA215b7666936DEd834f76f3fBC6F323295110A);
+    ICrvUSDController constant CRVUSD_LEVERAGE_WETH = ICrvUSDController(0x23F5a668A9590130940eF55964ead9787976f2CC);
+    ICrvUSDController constant CRVUSD_LEVERAGE_WBTC = ICrvUSDController(0xcaD85b7fe52B1939DCEebEe9bCf0b2a5Aa0cE617);
+}
+
+library AddrCrvAmm {
+    address constant CRVUSD_CRV = 0xafca625321Df8D6A068bDD8F1585d489D2acF11b;
+    address constant CRVUSD_LEVERAGE_WETH = 0x04b28CcF37828978140643525961D20099e63668;
+    address constant CRVUSD_LEVERAGE_WBTC = 0x8eeDE294459EFaFf55d580bc95C98306Ab03F0C8;
 }
 
 library AddrCrvGauges {
@@ -48,9 +53,9 @@ library AddrSdtGauges {
 
 library AddrLlamaLendVaults {
     // LlamaLend crvUSD Vaults (cvcrvUSD)
-    ILlamaLendVault constant CRVUSD_CRV = ILlamaLendVault(0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA);
-    ILlamaLendVault constant CRVUSD_LEVERAGE_WETH = ILlamaLendVault(0x8fb1c7AEDcbBc1222325C39dd5c1D2d23420CAe3);
-    ILlamaLendVault constant CRVUSD_LEVERAGE_WBTC = ILlamaLendVault(0xccd37EB6374Ae5b1f0b85ac97eFf14770e0D0063);
+    ILlamaVault constant CRVUSD_CRV = ILlamaVault(0xCeA18a8752bb7e7817F9AE7565328FE415C0f2cA);
+    ILlamaVault constant CRVUSD_LEVERAGE_WETH = ILlamaVault(0x8fb1c7AEDcbBc1222325C39dd5c1D2d23420CAe3);
+    ILlamaVault constant CRVUSD_LEVERAGE_WBTC = ILlamaVault(0xccd37EB6374Ae5b1f0b85ac97eFf14770e0D0063);
 }
 
 library AddrSdtVaults {
