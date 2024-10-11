@@ -16,9 +16,11 @@ import "../../src/tokens/SplitterTokenComp.sol";
 
 import "../../src/libs/Resources.sol";
 
-import "../DeployContext.sol";
-
-contract ConvexMarketContext is DeployContext  {
+import "./DeployContext.sol";
+import "./SpecialViews.sol";
+import "../utils/AssertERC20.sol";
+import "../utils/LowLevel.sol";
+contract ConvexMarketContext is DeployContext, AssertERC20, LowLevel, SpecialViews {
     ILlamaVault[] llamaVaultArray;
     mapping(ILlamaVault => CvxStruct) public structsMap;
 
@@ -96,6 +98,7 @@ contract ConvexMarketContext is DeployContext  {
     }
 
     function setUpSingleRandomMarket() public {
+        previewDeposits = new PreviewDeposits();
         vaultStruct = createAndGetRandomMarket();
 
         llamaVault = vaultStruct.llamaVault;
@@ -125,6 +128,8 @@ contract ConvexMarketContext is DeployContext  {
     }
 
     function createAndGetRandomMarket() public returns (CvxStruct memory) {
+        previewDeposits = new PreviewDeposits();
+        // console.log("Ici c'est la , ", previewDeposits.aa(), address(previewDeposits));
         // Pick a random vault and its related data
         CvxStruct memory cvxStruct = getStruct(pickRandomVault());
 
@@ -167,14 +172,119 @@ contract ConvexMarketContext is DeployContext  {
         return amountMinted;
     }
 
-    function dealScvAsset(ILlamaVault _llamaVault, address user, uint256 shareAmount) public returns (uint256) {
-        dealLlamaVaultAsset(_llamaVault, user, shareAmount);
+    function getAssetBeforeDeposit(ILlamaVault _llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE inType, address user, uint256 inAmount) public {
+        if (inType == ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset) {
+            deal(lendAsset, user, inAmount);
+            vm.prank(user);
+            lendAsset.approve(address(splitter), MAX_UINT);
+        } else {
+            dealLlamaVaultAsset(llamaVault, user, inAmount);
+            vm.prank(user);
+            _llamaVault.approve(address(splitter), MAX_UINT);
+        }
+    }
 
+    function depositSCVUSD(
+        ILendRewardSplitter.CVX_TOKEN_TYPE inType,
+        address user,
+        uint256 inAmount,
+        bool isAutoCompound,
+        bool isStake
+    ) public returns (uint256) {
+        getAssetBeforeDeposit(llamaVault, inType, user, inAmount);
         vm.startPrank(user);
-        _llamaVault.approve(address(splitter), MAX_UINT);
-        uint256 scvUSDReceived = splitter.depositSCVUSD(_llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareAmount, false, true);
+        uint256 scvUSDReceived = splitter.depositSCVUSD(llamaVault, inType, inAmount, isAutoCompound, isStake);
         vm.stopPrank();
         return scvUSDReceived;
+    }
+
+    function _prepareERC20TrackingDepositGUSD(
+        ILendRewardSplitter.CVX_TOKEN_TYPE inType,
+        address user,
+        uint256 inAmount,
+        bool isStake
+    ) public returns (uint256 fee) {
+        uint256 gUSDExpected;
+        uint256 lendAssetAmount;
+
+        uint256 llamaVaultAmount;
+        uint256 llamaVaultMinted;
+        uint256 llamaVaultReceivedByGauge;
+        uint256 llamaVaultReceivedByGUSD;
+
+        uint256 socFeePending = gUSD.socFeePending();
+
+        // Case deposit with the lend asset
+        if (inType == ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset) {
+            lendAssetAmount = inAmount;
+            (llamaVaultAmount, , fee, gUSDExpected) = previewDepositThenPreviewMint(llamaVault, lendAsset, gUSD, inAmount, isStake);
+            llamaVaultMinted = llamaVaultAmount;
+
+            verifyLostERC20(lendAsset, user, lendAssetAmount);
+            verifyReceiveERC20(lendAsset, address(crvController), lendAssetAmount);
+            verifyMintERC20(llamaVault, llamaVaultMinted);
+        }
+        // Case deposit with LlamaLendAsset
+        else {
+            llamaVaultAmount = inAmount;
+            uint256 a;
+            (a, fee) = getShareAmountAfterSociabilization(llamaVaultAmount, isStake);
+            gUSDExpected = llamaVault.convertToAssets(a);
+
+            verifyBalERC20NotChanging(lendAsset, user);
+            verifyBalERC20NotChanging(lendAsset, address(crvController));
+
+            verifySupplyERC20NotChanging(llamaVault);
+        }
+
+        // Case deposit with staking
+        if (isStake) {
+            llamaVaultReceivedByGauge = llamaVault.balanceOf(address(gUSD)) + llamaVaultAmount;
+            socFeePending = 0;
+            verifyLostERC20(llamaVault, address(gUSD), llamaVault.balanceOf(address(gUSD)));
+            verifyReceiveERC20(llamaVault, address(crvGauge), llamaVaultReceivedByGauge);
+
+            verifyMintERC20(cvxRewardToken, llamaVaultReceivedByGauge);
+            verifyReceiveERC20(cvxRewardToken, address(gUSD), llamaVaultReceivedByGauge);
+
+            verifyMintERC20(crvGauge, llamaVaultReceivedByGauge);
+            verifyReceiveERC20(crvGauge, address(AddrGlobal.CVX_VOTER_PROXY), llamaVaultReceivedByGauge);
+        }
+        // Case deposit without staking
+        else {
+            llamaVaultReceivedByGUSD = llamaVaultAmount;
+            socFeePending += fee;
+            verifyReceiveERC20(llamaVault, address(gUSD), llamaVaultReceivedByGUSD);
+            verifyBalERC20NotChanging(llamaVault, address(crvGauge));
+
+            verifySupplyERC20NotChanging(cvxRewardToken);
+            verifyBalERC20NotChanging(cvxRewardToken, address(gUSD));
+
+            verifySupplyERC20NotChanging(crvGauge);
+            verifyBalERC20NotChanging(crvGauge, address(AddrGlobal.CVX_VOTER_PROXY));
+        }
+
+        verifyMintERC20(gUSD, gUSDExpected);
+        verifyReceiveERC20(gUSD, user, gUSDExpected);
+    }
+
+    function depositGUSD(ILendRewardSplitter.CVX_TOKEN_TYPE inType, address user, uint256 inAmount, bool isStake) public returns (uint256) {
+        getAssetBeforeDeposit(llamaVault, inType, user, inAmount);
+        uint256 fee = _prepareERC20TrackingDepositGUSD(inType, user, inAmount, isStake);
+        uint256 socFeePending;
+        if (isStake) {
+            socFeePending = 0;
+        } else {
+            socFeePending = gUSD.socFeePending() + fee;
+        }
+
+        vm.startPrank(user);
+        uint256 gUSDReceived = splitter.depositGUSD(llamaVault, inType, inAmount, isStake);
+        vm.stopPrank();
+
+        assertEq(gUSD.socFeePending(), socFeePending, "Wrong socFeePending amount");
+        assertERC20Tracking();
+        return gUSDReceived;
     }
 
     function getStruct(ILlamaVault _llamaVault) public view returns (CvxStruct memory) {
@@ -188,5 +298,17 @@ contract ConvexMarketContext is DeployContext  {
     function setSplitterTokens(ILlamaVault _llamaVault, gUSDCvx _gUSD, scvUSDCvx _scvUSD) public {
         structsMap[_llamaVault].gUSD = _gUSD;
         structsMap[_llamaVault].scvUSD = _scvUSD;
+    }
+
+    function getShareAmountAfterSociabilization(uint256 sharesAmount, bool isStake) public view returns (uint256, uint256) {
+        uint256 feeTakenOrGiven;
+        if (isStake) {
+            feeTakenOrGiven = gUSD.socFeePending();
+            sharesAmount += feeTakenOrGiven;
+        } else {
+            feeTakenOrGiven = (sharesAmount * gUSD.socFeePercentage()) / gUSD.DENOMINATOR();
+            sharesAmount -= feeTakenOrGiven;
+        }
+        return (sharesAmount, feeTakenOrGiven);
     }
 }

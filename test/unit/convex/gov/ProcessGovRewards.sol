@@ -1,4 +1,4 @@
-import "../ConvexMarketContext.sol";
+import "../../../contexts/ConvexMarketContext.sol";
 
 contract ProcessGovRewards is ConvexMarketContext {
     ISplitterToken.Fees[] feePercentage;

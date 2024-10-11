@@ -1,9 +1,6 @@
-import "../convex/ConvexMarketContext.sol";
+import "../../contexts/ConvexMarketContext.sol";
 
 contract MintBurnAutoCompound is ConvexMarketContext {
-    address usr1 = makeAddr("User 1");
-    address usr2 = makeAddr("User 2");
-
     uint256 autoCompoundInitAmount = 1 ether;
 
     uint256 processorFeePercentage;
@@ -18,7 +15,7 @@ contract MintBurnAutoCompound is ConvexMarketContext {
         (processorFeePercentage, daoFeePercentage) = scvUSD.fees(0);
         DENOMINATOR = scvUSD.DENOMINATOR();
     }
-    function test_aa()external {
+    function test_aa() external {
         address u1 = makeAddr("U1");
         address u2 = makeAddr("U2");
 
@@ -28,18 +25,6 @@ contract MintBurnAutoCompound is ConvexMarketContext {
         // exp[0] = Transfers({erc20 : AddrClassicERC20.TOKEN_CRVUSD,from:u,to:u,amount:10000 });
 
         // vm.recordLogs();
-        vm.startPrank(u1);
-
-        BalancesChange[] memory balChanges = new BalancesChange[](1);
-        balChanges[0] = createBalancesChange(AddrClassicERC20.TOKEN_CRVUSD, u1, u2, 2000); 
-        
-        balChanges = getBalances(balChanges);
-
-
-        AddrClassicERC20.TOKEN_CRVUSD.transfer(u2, 1000);
-        AddrClassicERC20.TOKEN_CRVUSD.transfer(u2, 1000);
-
-        assertBalanceChanges(balChanges);
     }
 
     // function test_mint_scv_vault_asset() external {
@@ -48,7 +33,7 @@ contract MintBurnAutoCompound is ConvexMarketContext {
 
     //     dealLlamaVaultAsset(llamaVault, usr1, shareLlamaVault);
     //     dealLlamaVaultAsset(llamaVault, usr2, shareLlamaVault);
-    //     dealScvAsset(llamaVault, address(scvUSDAutoCompound), autoCompoundInitAmount);
+    //     depositSCVUSD(llamaVault, address(scvUSDAutoCompound), autoCompoundInitAmount);
 
     //     assertEq(lendAsset.balanceOf(address(scvUSDAutoCompound)), 0, "No lend asset on the autoCompound");
     //     assertEq(scvUSDAutoCompound.totalSupply(), 0, "Even after the donnation, the share of the vault is still 0");
@@ -123,11 +108,11 @@ contract MintBurnAutoCompound is ConvexMarketContext {
     //     assertEq(scvUSDAutoCompound.balanceOf(usr2), scvUSDAutoCompound.balanceOf(usr1), "Share in the autoCompounder are the same");
 
     //     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-    //             DONATES some SCVUSD 
+    //             DONATES some SCVUSD
     //     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     //     // DONATOR Donates and increase the index
-    //     dealScvAsset(llamaVault, address(scvUSDAutoCompound), shareLlamaVault);
+    //     depositSCVUSD(llamaVault, address(scvUSDAutoCompound), shareLlamaVault);
 
     //     assertEq(scvUSD.balanceOf(address(scvUSDAutoCompound)), shareLlamaVault * 3 + autoCompoundInitAmount, "Verify scvUSD balance of the autoCompounder");
 

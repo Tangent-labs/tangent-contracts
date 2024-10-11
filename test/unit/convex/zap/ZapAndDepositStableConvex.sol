@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNKNOWN
-import "../ConvexMarketContext.sol";
+import "../../../contexts/ConvexMarketContext.sol";
 
 contract ZapAndDepositStableConvex is ConvexMarketContext {
     // Make a fresh user.
@@ -45,6 +45,4 @@ contract ZapAndDepositStableConvex is ConvexMarketContext {
         uint256[5] memory emptyParams = [uint256(0), uint256(0), uint256(0), uint256(0), uint256(0)];
         swapParams = [[uint256(1), uint256(0), uint256(1), uint256(3), uint256(3)], emptyParams, emptyParams, emptyParams, emptyParams];
     }
-
-   
 }

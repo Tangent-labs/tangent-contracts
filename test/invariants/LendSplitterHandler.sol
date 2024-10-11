@@ -11,8 +11,8 @@ import "../../src/tokens/SplitterToken.sol";
 import "../../src/interfaces/externals/ILlamaVault.sol";
 import "../../src/interfaces/internals/ILendRewardSplitter.sol";
 import "../../src/libs/Resources.sol";
-import "../../test/convex/ConvexMarketContext.sol";
-import "../../test/LendingContext.sol";
+import "../contexts/ConvexMarketContext.sol";
+import "../contexts/LendingContext.sol";
 contract LendSplitterHandler is CommonBase, StdCheats, StdUtils, LendingContext {
     LendRewardSplitter private splitter;
     mapping(ILlamaVault => uint256) public sumsBalanceOfGUSD;

@@ -1,15 +1,8 @@
-import "../LendingContext.sol";
-import "../convex/ConvexMarketContext.sol";
+import "../contexts/LendingContext.sol";
+import "../contexts/ConvexMarketContext.sol";
 import "./LendSplitterHandler.sol";
 contract GlobalInvariant is ConvexMarketContext {
     LendSplitterHandler private lendSplitterHandler;
-
-    address usr1 = makeAddr("User1");
-    address usr2 = makeAddr("User2");
-    address usr3 = makeAddr("User3");
-    address usr4 = makeAddr("User4");
-    address usr5 = makeAddr("User5");
-    address usr6 = makeAddr("User6");
 
     function setUp() public {
         deployBaseContracts();

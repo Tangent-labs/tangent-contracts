@@ -1,4 +1,4 @@
-import "../ConvexMarketContext.sol";
+import "../../../contexts/ConvexMarketContext.sol";
 
 contract ProcessStableConvex is ConvexMarketContext {
     uint256 processorFees;

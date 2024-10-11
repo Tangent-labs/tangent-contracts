@@ -71,7 +71,7 @@ contract SplitterTokenComp is ERC4626Upgradeable, OwnableUpgradeable {
     }
 
     function burnSplitter(address from, uint256 shares) external virtual verifyLendSplitterCaller returns (uint256) {
-        uint256 assets = previewRedeem(shares);
+        uint256 assets = convertToAssets(shares);
         _burn(from, shares);
         return assets;
     }
@@ -81,10 +81,10 @@ contract SplitterTokenComp is ERC4626Upgradeable, OwnableUpgradeable {
     }
 
     function convertFromAutoCompToLendAsset(uint256 shares) external view returns (uint256) {
-        return llamaVault.previewRedeem(previewRedeem(shares));
+        return llamaVault.convertToAssets(convertToAssets(shares));
     }
 
     function convertFromLendAssetToAutoComp(uint256 lendAssetAmount) external view returns (uint256) {
-        return previewDeposit(llamaVault.previewDeposit(lendAssetAmount));
+        return convertToShares(llamaVault.convertToShares(lendAssetAmount));
     }
 }

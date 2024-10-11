@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import "../convex/ConvexMarketContext.sol";
+import "../../contexts/ConvexMarketContext.sol";
 
 contract SplitterTokenReverts is ConvexMarketContext {
     address usr = makeAddr("User");

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {LendRewardSplitter} from "../../src/LendRewardSplitter.sol";
-import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
+import {LendRewardSplitter} from "../../../src/LendRewardSplitter.sol";
+import {ILlamaVault} from "../../../src/interfaces/externals/ILlamaVault.sol";
 
 contract ZapAndDepositReentrancyAttack {
     LendRewardSplitter target;

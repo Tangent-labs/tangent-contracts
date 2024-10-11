@@ -12,4 +12,9 @@ interface IgUSDCvx is ISplitterToken {
     function withdraw(uint256 amount, address receiver, ILendRewardSplitter.CVX_TOKEN_TYPE outType, ILlamaVault llamaVault) external returns (uint256);
 
     function burn(address from, uint256 amount, ILendRewardSplitter.CVX_TOKEN_TYPE outType, ILlamaVault llamaVault) external returns (uint256);
+
+    function sociabilizationAndStakeAll(uint256 sharesAmount, bool isStake, uint256 pid) external returns (uint256);
+
+    function socFeePercentage() external view returns (uint256);
+    function socFeePending() external view returns (uint256);
 }

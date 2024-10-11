@@ -17,4 +17,5 @@ interface ISplitterToken is IERC20 {
     function getAndUpdateRewards(address account) external returns (ICommonStruct.TokenAmount[] memory);
 
     function claimableRewards(address account) external view returns (ICommonStruct.TokenAmount[] memory);
+    function DENOMINATOR() external view returns (uint256);
 }

@@ -74,41 +74,45 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
         rewardData[cvx].periodFinish = uint128(block.timestamp);
         fees.push(ISplitterToken.Fees({processorFeePercentage: 1_000, daoFeePercentage: 2_000}));
 
-        socFeePercentage = 1_000; // 0.5%
+        socFeePercentage = 1_000; // 1%
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function mint(
-        address receiver,
-        uint256 sharesAmount,
-        ILlamaVault _llamaVault,
-        uint256 pid,
-        bool isStake
-    ) external verifyLendSplitterCaller returns (uint256 mintedAmount) {
-        // Faire le convertToAssets avec toutes les shares
+    function mint(address receiver, uint256 sharesAmount, ILlamaVault _llamaVault, uint256 pid, bool isStake) external returns (uint256) {
+        sharesAmount = _sociabilizationProcess(sharesAmount, isStake);
 
-        if (isStake) {
-            uint256 _socFeePending = socFeePending;
-            sharesAmount += _socFeePending;
-            mintedAmount = _llamaVault.convertToAssets(sharesAmount + _socFeePending);
-            delete socFeePending;
-        } else {
-            uint256 feeTaken = (sharesAmount * socFeePercentage) / DENOMINATOR;
-            socFeePending += feeTaken;
-            sharesAmount -= feeTaken;
-            mintedAmount = _llamaVault.convertToAssets(sharesAmount);
-        }
+        uint256 mintedAmount = _llamaVault.convertToAssets(sharesAmount);
 
         _mint(receiver, mintedAmount);
 
         if (isStake) {
             _stakeAll(pid);
         }
-
         return mintedAmount;
+    }
+
+    function _sociabilizationProcess(uint256 sharesAmount, bool isStake) internal returns (uint256) {
+        if (isStake) {
+            uint256 _socFeePending = socFeePending;
+            sharesAmount += _socFeePending;
+            delete socFeePending;
+        } else {
+            uint256 feeTaken = (sharesAmount * socFeePercentage) / DENOMINATOR;
+            socFeePending += feeTaken;
+            sharesAmount -= feeTaken;
+        }
+        return sharesAmount;
+    }
+
+    function sociabilizationAndStakeAll(uint256 sharesAmount, bool isStake, uint256 pid) public verifyLendSplitterCaller returns (uint256) {
+        uint256 sharesAfterSociabilization = _sociabilizationProcess(sharesAmount, isStake);
+        if (isStake) {
+            _stakeAll(pid);
+        }
+        return sharesAfterSociabilization;
     }
 
     function stakeAll(uint256 pid) external {
@@ -116,7 +120,7 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
     }
 
     function _stakeAll(uint256 pid) internal {
-        CVX_BOOSTER.depositAll(pid, true);
+        CVX_BOOSTER.deposit(pid, llamaVault.balanceOf(address(this)) - socFeePending, true);
     }
 
     function burn(
@@ -147,11 +151,12 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
         ILendRewardSplitter.CVX_TOKEN_TYPE outType,
         ILlamaVault _llamaVault
     ) internal returns (uint256) {
-        uint256 shareBalance = _llamaVault.balanceOf(address(this));
+        uint256 shareAvailable = _llamaVault.balanceOf(address(this)) - socFeePending;
+
         /// @dev Verify that all there are enough LlamaLend LP on the contract
-        if (shareBalance < sharesToWithdraw) {
+        if (shareAvailable < sharesToWithdraw) {
             /// @dev If not enough are on the contract, we need to withdraw the difference from Convex
-            cvxRewardToken.withdrawAndUnwrap(sharesToWithdraw - shareBalance, false);
+            cvxRewardToken.withdrawAndUnwrap(sharesToWithdraw - shareAvailable, false);
         }
 
         /// @dev The user claimed the LlamaLend vault asset so we transfer it to him directly
@@ -201,13 +206,17 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
     }
 
     function getTotalStaked() external view returns (uint256) {
-        cvxRewardToken.balanceOf(address(this)) + llamaVault.balanceOf(address(this));
+        return cvxRewardToken.balanceOf(address(this)) + llamaVault.balanceOf(address(this));
     }
 
     function getStreamableShares() external view returns (uint256) {
         ILlamaVault _llamaVault = llamaVault;
         return
-            cvxRewardToken.balanceOf(address(this)) + _llamaVault.balanceOf(address(this)) - scvUSD.totalSupply() - _llamaVault.convertToShares(totalSupply());
+            cvxRewardToken.balanceOf(address(this)) +
+            _llamaVault.balanceOf(address(this)) -
+            scvUSD.totalSupply() -
+            _llamaVault.previewWithdraw(totalSupply()) -
+            socFeePending;
     }
 
     /**

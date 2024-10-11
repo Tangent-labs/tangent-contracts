@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-import "../ConvexMarketContext.sol";
+import "../../../contexts/ConvexMarketContext.sol";
 
 contract scvUSDCvxReverts is ConvexMarketContext {
     address usr = makeAddr("User");

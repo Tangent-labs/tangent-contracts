@@ -228,7 +228,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
         ILendRewardSplitter.CVX_TOKEN_TYPE inType,
         uint256 amount,
         bool isAutoCompound,
-        bool doDeposit,
+        bool isStake,
         bool isZap
     ) internal returns (uint256 mintedAmount) {
         IgUSDCvx gUSD = gUSDPerLlamaVault[llamaVault];
@@ -236,16 +236,14 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
         /// @dev Deposit the 'in' token and retrieve Llama Lend LP. Returns the amount of Llama LP deposited or minted so the amount of shares.
         mintedAmount = _depositTransfer(llamaVault, inType, gUSD, amount, isZap);
 
+        mintedAmount = gUSD.sociabilizationAndStakeAll(mintedAmount, isStake, pidPerLlamaVault[llamaVault]);
+
         /// @dev We mint 1 scvUSD per share of LlamaVault LP represented by "mintedAmount". We don't have to convert anything here.
         if (isAutoCompound) {
             scvUSDAutoCompoundPerLlamaVault[llamaVault].mintSplitter(msg.sender, mintedAmount, scvUSD);
         } else {
             /// @dev We mint the scvUSD to the message.sender
             scvUSD.mintSplitter(msg.sender, mintedAmount);
-        }
-
-        if (doDeposit) {
-            gUSD.stakeAll(pidPerLlamaVault[llamaVault]);
         }
 
         /// @dev Requires that some tokens are deposited
@@ -272,7 +270,6 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
                 /// @dev Transfer the lend asset on the splitter
                 lentAssetPerLlamaVault[llamaVault].safeTransferFrom(msg.sender, address(this), amount);
             }
-
             /// @dev Deposit the lendAsset in the LlamalendVault and returns the amount of vault LP minted.
             return llamaVault.deposit(amount, address(gUSD));
         }
