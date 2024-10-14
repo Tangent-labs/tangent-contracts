@@ -26,7 +26,7 @@ contract ProcessStableConvex is TestWrapper {
         uint256 daoRewards = (processableRewards * daoFees) / 100_000;
         uint256 stakerRewards = processableRewards - processorRewards - daoRewards;
 
-        uint256 userBalanceLendAsset = lendAsset.balanceOf(usr1);
+        uint256 userBalanceLendAsset = llamaVault.balanceOf(usr1);
 
         gUSD.processStableRewards(processor);
 
@@ -36,16 +36,16 @@ contract ProcessStableConvex is TestWrapper {
 
         // Withdraw the fees
         IERC20[] memory tokensToClaim = new IERC20[](1);
-        tokensToClaim[0] = AddrClassicERC20.TOKEN_CRVUSD;
+        tokensToClaim[0] = llamaVault;
 
-        uint256 ownerBalanceLendAsset = lendAsset.balanceOf(owner);
-        uint256 splitterBalanceLendAsset = lendAsset.balanceOf(address(splitter));
+        uint256 ownerBalanceLendAsset = llamaVault.balanceOf(owner);
+        uint256 splitterBalanceLendAsset = llamaVault.balanceOf(address(splitter));
 
         vm.prank(feeTreasury);
         splitter.withdrawFees(tokensToClaim);
 
-        assertEq(daoRewards, lendAsset.balanceOf(feeTreasury) - ownerBalanceLendAsset, "Processor received processor rewards");
-        assertEq(daoRewards, splitterBalanceLendAsset - lendAsset.balanceOf(address(splitter)), "Splitter sent rewards");
+        assertEq(daoRewards, llamaVault.balanceOf(feeTreasury) - ownerBalanceLendAsset, "Processor received processor rewards");
+        assertEq(daoRewards, splitterBalanceLendAsset - llamaVault.balanceOf(address(splitter)), "Splitter sent rewards");
         assertEq(splitter.daoFeeForToken(AddrClassicERC20.TOKEN_CRVUSD), 0, "Dao fee is reseted");
     }
 }
