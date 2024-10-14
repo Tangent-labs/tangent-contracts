@@ -1,8 +1,7 @@
-import "../../../contexts/ConvexMarketContext.sol";
-
+import "../../../contexts/TestWrapper.sol";
 import "../../../chainview/PreviewDeposits.sol";
 
-contract DepositGUSD is ConvexMarketContext {
+contract DepositGUSD is TestWrapper {
     function setUp() public {
         deployBaseContracts();
         setUpSingleRandomMarket();

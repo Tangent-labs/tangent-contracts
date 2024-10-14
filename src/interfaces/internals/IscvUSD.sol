@@ -9,5 +9,5 @@ interface IscvUSD is ISplitterToken {
 
     function burn(address from, uint256 amount) external;
 
-    function processRewards() external;
+    function processRewards(address receiverProcessorRewards) external;
 }

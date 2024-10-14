@@ -253,13 +253,11 @@ contract AssertERC20 is Test {
         _assertBalanceChanges();
     }
 
-    function _assertEqOrAbsOrRel(uint256 realAmount, uint256 expectedAmount, uint256 deltaAbs, uint256 deltaRel, string memory reason) internal {
+    function _assertEqOrAbsOrRel(uint256 realAmount, uint256 expectedAmount, uint256 deltaAbs, uint256 deltaRel, string memory reason) internal pure {
         if (deltaAbs != 0) {
             assertApproxEqAbs(realAmount, expectedAmount, deltaAbs, reason);
         } else if (deltaRel != 0) {
             assertApproxEqRel(realAmount, expectedAmount, deltaRel, reason);
-        } else if (realAmount == 0) {
-            assertEq(realAmount, 0, reason);
         } else {
             assertEq(realAmount, expectedAmount, reason);
         }

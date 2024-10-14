@@ -15,17 +15,6 @@ contract MintBurnAutoCompound is ConvexMarketContext {
         (processorFeePercentage, daoFeePercentage) = scvUSD.fees(0);
         DENOMINATOR = scvUSD.DENOMINATOR();
     }
-    function test_aa() external {
-        address u1 = makeAddr("U1");
-        address u2 = makeAddr("U2");
-
-        deal(address(AddrClassicERC20.TOKEN_CRVUSD), u1, 2000);
-
-        // Transfers[] memory exp = new Transfers[](1);
-        // exp[0] = Transfers({erc20 : AddrClassicERC20.TOKEN_CRVUSD,from:u,to:u,amount:10000 });
-
-        // vm.recordLogs();
-    }
 
     // function test_mint_scv_vault_asset() external {
     //     uint256 assetIn = 1_000 ether;

@@ -168,7 +168,7 @@ abstract contract SplitterToken is ERC20Upgradeable, OwnableUpgradeable, ISplitt
         }
     }
 
-    function _processRewards() internal {
+    function _processRewards(address receiverProcessorRewards) internal {
         /// @dev Reward tokens updated
         IERC20[] memory _rewardTokens = rewardTokens;
         uint256 rewardTokensLength = _rewardTokens.length;
@@ -189,7 +189,7 @@ abstract contract SplitterToken is ERC20Upgradeable, OwnableUpgradeable, ISplitt
 
                 /// @dev Send rewards to processor
                 if (processorFees != 0) {
-                    rewardToken.safeTransfer(msg.sender, processorFees);
+                    rewardToken.safeTransfer(receiverProcessorRewards, processorFees);
                     rewardToProcess -= processorFees;
                 }
 

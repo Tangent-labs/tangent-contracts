@@ -34,6 +34,8 @@ contract DeployContext is StdCheats, StdUtils, Test {
     address usr5 = makeAddr("User5");
     address usr6 = makeAddr("User6");
 
+    address processor = makeAddr("Processor");
+
     uint256 public MAX_UINT = uint256(int256(-1));
 
     address public owner = makeAddr("Owner");
