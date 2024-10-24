@@ -17,8 +17,9 @@ contract TestWrapper is ConvexMarketContext {
         getAssetBeforeDeposit(llamaVault, inType, user, inAmount);
         (llamaVaultMinted, scvUSDReceived) = _prepareERC20TrackingDepositSCVUSD(inType, user, inAmount, isAutoCompound, isStake);
 
-        vm.prank(user);
-        uint256 scvUSDReceived = splitter.depositSCVUSD(llamaVault, inType, inAmount, isAutoCompound, isStake);
+        vm.startPrank(user);
+        scvUSDReceived = splitter.depositSCVUSD(llamaVault, inType, inAmount, isAutoCompound, isStake);
+        vm.stopPrank();
 
         assertERC20Tracking();
     }
@@ -30,7 +31,6 @@ contract TestWrapper is ConvexMarketContext {
         bool isAutoCompound,
         bool isStake
     ) public returns (uint256 llamaVaultAmount, uint256 scvUSDExpected) {
-        uint256 scvUSDExpected;
         uint256 llamaVaultIn;
         uint256 llamaVaultMinted;
         uint256 socFeePending = gUSD.socFeePending();
@@ -54,11 +54,25 @@ contract TestWrapper is ConvexMarketContext {
         } else {
             _verifySociabilisation(llamaVaultAmount, scvUSDExpected);
         }
+
+        if (isAutoCompound) {
+            verifyReceiveERC20(scvUSD, address(scvUSDAutoCompound), scvUSDExpected);
+            verifyBalERC20NotChanging(scvUSD, user);
+
+            uint256 expectedAutoComp = scvUSDAutoCompound.convertToShares(scvUSDExpected);
+            verifyMintERC20(scvUSDAutoCompound, expectedAutoComp);
+            verifyReceiveERC20(scvUSDAutoCompound, user, expectedAutoComp);
+        } else {
+            verifyReceiveERC20(scvUSD, user, scvUSDExpected);
+
+            verifySupplyERC20NotChanging(scvUSDAutoCompound);
+            verifyBalERC20NotChanging(scvUSDAutoCompound, user);
+        }
+
         verifySupplyERC20NotChanging(gUSD);
         verifyBalERC20NotChanging(gUSD, user);
 
         verifyMintERC20(scvUSD, scvUSDExpected);
-        verifyReceiveERC20(scvUSD, user, scvUSDExpected);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -123,6 +137,37 @@ contract TestWrapper is ConvexMarketContext {
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                       WITHDRAW gUSD
+   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    function withdrawGUSD(ILendRewardSplitter.CVX_TOKEN_TYPE outType, address user, uint256 outAmount) public {
+        verifyBurnERC20(gUSD, outAmount);
+        verifyLostERC20(gUSD, user, outAmount);
+
+        if (outType == ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset) {
+            verifyReceiveERC20(lendAsset, user, llamaVault.convertToAssets(llamaVault.convertToShares(outAmount)));
+        } else {
+            verifyReceiveERC20(llamaVault, user, llamaVault.convertToShares(outAmount));
+        }
+
+        vm.prank(user);
+        splitter.withdrawGUSD(llamaVault, outType, outAmount);
+
+        assertERC20Tracking();
+    }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                       WITHDRAW scvUSD
+   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    function withdrawSCVUSD(ILendRewardSplitter.CVX_TOKEN_TYPE outType, address user, uint256 outAmount, bool isAutoCompound) public {
+        vm.prank(user);
+        splitter.withdrawSCVUSD(llamaVault, outType, outAmount, isAutoCompound);
+
+        assertERC20Tracking();
+    }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                        ERC20 VERIFIES
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
@@ -165,7 +210,6 @@ contract TestWrapper is ConvexMarketContext {
     }
 
     function _verifySociabilisation(uint256 llamaVaultIn, uint256 llamaVaultAfterFees) internal {
-        console.log(llamaVaultIn, llamaVaultAfterFees);
         verifyReceiveERC20(llamaVault, address(gUSD), llamaVaultIn);
         verifyBalERC20NotChanging(llamaVault, address(crvGauge));
 

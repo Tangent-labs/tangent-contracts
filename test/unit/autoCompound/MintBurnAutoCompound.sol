@@ -1,6 +1,6 @@
-import "../../contexts/ConvexMarketContext.sol";
+import "../../contexts/TestWrapper.sol";
 
-contract MintBurnAutoCompound is ConvexMarketContext {
+contract MintBurnAutoCompound is TestWrapper {
     uint256 autoCompoundInitAmount = 1 ether;
 
     uint256 processorFeePercentage;
@@ -20,12 +20,13 @@ contract MintBurnAutoCompound is ConvexMarketContext {
         uint256 assetIn = 1_000 ether;
         uint256 shareLlamaVault = llamaVault.previewDeposit(assetIn);
 
-        dealLlamaVaultAsset(llamaVault, usr1, shareLlamaVault);
-        dealLlamaVaultAsset(llamaVault, usr2, shareLlamaVault);
-        depositSCVUSD(llamaVault, address(scvUSDAutoCompound), autoCompoundInitAmount);
+        depositSCVUSD(ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, usr1, autoCompoundInitAmount, false, true);
 
-        assertEq(lendAsset.balanceOf(address(scvUSDAutoCompound)), 0, "No lend asset on the autoCompound");
-        assertEq(scvUSDAutoCompound.totalSupply(), 0, "Even after the donnation, the share of the vault is still 0");
+        vm.prank(usr1);
+        scvUSD.transfer(address(scvUSDAutoCompound), autoCompoundInitAmount);
+
+        assertEq(llamaVault.balanceOf(address(scvUSDAutoCompound)), 0, "No llamaVaultAsset asset on the autoCompound");
+        assertEq(scvUSDAutoCompound.totalSupply(), 0, "Even after the donnation, the total share of the vault is still 0");
 
         deal(address(lendAsset), usr1, assetIn * 2);
 
@@ -33,18 +34,13 @@ contract MintBurnAutoCompound is ConvexMarketContext {
 
         uint256 autoCompoundBalUsr1 = scvUSDAutoCompound.balanceOf(usr1);
 
-        vm.startPrank(usr1);
-
         /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         Deposit GUSD with USER 1
         =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-        // Approve to spend LlamaVault LP
-        lendAsset.approve(address(splitter), MAX_UINT);
-
         uint256 gUSDToMint = llamaVault.convertToAssets(llamaVault.convertToShares(assetIn * 2));
         // USER 1 Deposit some gUSD to generate yield
-        splitter.depositGUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, assetIn * 2, true);
+        depositGUSD(ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, usr1, assetIn * 2, true);
 
         assertEq(gUSD.balanceOf(usr1), gUSDToMint, "Mints the correct amount of gUSD");
 
@@ -54,38 +50,29 @@ contract MintBurnAutoCompound is ConvexMarketContext {
 
         autoCompoundBalUsr1 = scvUSDAutoCompound.balanceOf(usr1);
         uint256 autoCompoundShareToMint = scvUSDAutoCompound.convertToShares(shareLlamaVault);
-        // Approve to spend LlamaVault LP
-        llamaVault.approve(address(splitter), MAX_UINT);
 
         // Get scvUSD
-        splitter.depositSCVUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareLlamaVault, true, true);
+        depositSCVUSD(ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, usr1, shareLlamaVault, true, true);
 
-        assertEq(llamaVault.balanceOf(usr1), 0, "All LlamaVault LP taken from user 1");
-        assertEq(scvUSD.balanceOf(usr1), 0, "No scvUSD minted to the usr1");
         assertEq(scvUSD.balanceOf(address(scvUSDAutoCompound)), shareLlamaVault + autoCompoundInitAmount, "Verify scvUSD balance of the autoCompounder");
 
         assertEq(scvUSDAutoCompound.totalSupply(), scvUSDAutoCompound.balanceOf(usr1), "Balance of the only user equals to the totalSupply of the vault");
 
         assertEq(scvUSDAutoCompound.balanceOf(usr1), autoCompoundShareToMint, "Cayapou");
 
-        vm.stopPrank();
-
         expectedShareAutoComp = scvUSDAutoCompound.convertToShares(shareLlamaVault);
 
-        vm.startPrank(usr2);
-
         /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                Deposit scvUSD with USER 2 without AUTOCOMPOUND
+            Deposit scvUSD with USER 2 without AUTOCOMPOUND
         =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-        llamaVault.approve(address(splitter), MAX_UINT);
 
         // Get scvUSD
-        splitter.depositSCVUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, shareLlamaVault, false, true);
+        depositSCVUSD(ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, usr2, shareLlamaVault, false, true);
 
         /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                 Stake scvUSD in Autocompouund with User 2
         =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
+        vm.startPrank(usr2);
         scvUSD.approve(address(scvUSDAutoCompound), MAX_UINT);
         // Stake scvUSD
         scvUSDAutoCompound.deposit(shareLlamaVault, usr2);
@@ -97,11 +84,13 @@ contract MintBurnAutoCompound is ConvexMarketContext {
         assertEq(scvUSDAutoCompound.balanceOf(usr2), scvUSDAutoCompound.balanceOf(usr1), "Share in the autoCompounder are the same");
 
         /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                DONATES some SCVUSD
+                        DONATES some SCVUSD
         =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
         // DONATOR Donates and increase the index
-        depositSCVUSD(llamaVault, address(scvUSDAutoCompound), shareLlamaVault);
+        depositSCVUSD(ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, usr2, shareLlamaVault, false, true);
+        vm.prank(usr2);
+        scvUSD.transfer(address(scvUSDAutoCompound), shareLlamaVault);
 
         assertEq(scvUSD.balanceOf(address(scvUSDAutoCompound)), shareLlamaVault * 3 + autoCompoundInitAmount, "Verify scvUSD balance of the autoCompounder");
 
@@ -113,28 +102,26 @@ contract MintBurnAutoCompound is ConvexMarketContext {
         // Remove processorFees
         valueFarmed = (valueFarmed * (DENOMINATOR - processorFeePercentage)) / DENOMINATOR;
 
-        gUSD.processStableRewards(); // Process the rewards of the scvUSD
+        vm.prank(processor);
+        gUSD.processStableRewards(processor); // Process the rewards of the scvUSD
 
-        assertApproxEqRel(lendAsset.balanceOf(address(splitter)), valueFarmed, 2e16, "Value farmed by gUSD has to be accurate");
-
-        console.log("value Farmed", valueFarmed);
+        assertApproxEqRel(llamaVault.convertToAssets(llamaVault.balanceOf(address(splitter))), valueFarmed, 2e16, "Value farmed by gUSD has to be accurate");
 
         // Let all reward stream
         skip(8 days);
 
         // Remove all fees from the splitter for easier calculation
         IERC20[] memory tokensToClaim = new IERC20[](1);
-        tokensToClaim[0] = AddrClassicERC20.TOKEN_CRVUSD;
+        tokensToClaim[0] = llamaVault;
 
         vm.prank(splitter.feeTreasury());
         splitter.withdrawFees(tokensToClaim);
 
         // Do the indexation of the autocompounder
 
-        uint256 balanceSplitterBefore = lendAsset.balanceOf(address(splitter));
+        uint256 expectedSCVUSD = llamaVault.balanceOf(address(splitter));
         uint256 scvUSDBalanceAutoCompoundBefore = scvUSD.balanceOf(address(scvUSDAutoCompound));
 
-        uint256 expectedSCVUSD = llamaVault.convertToShares(balanceSplitterBefore);
         vm.prank(owner);
         scvUSDAutoCompound.indexation();
 
@@ -145,7 +132,7 @@ contract MintBurnAutoCompound is ConvexMarketContext {
             "Right amounf of scvUSD deposited on the Vault"
         );
 
-        assertApproxEqAbs(lendAsset.balanceOf(address(splitter)), 10 ** 7, 10 ** 7, "Verify almost no more crvUSD are on the splitter");
+        assertApproxEqAbs(llamaVault.balanceOf(address(splitter)), 10 ** 7, 10 ** 7, "Verify almost no more crvUSD are on the splitter");
 
         /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     USER 1 WITHDRAWS from AUTOCOMPOUNDER
@@ -175,10 +162,8 @@ contract MintBurnAutoCompound is ConvexMarketContext {
 
         vm.stopPrank();
 
-        // vm.startPrank(usr1);
-        // splitter.withdrawGUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, gUSD.balanceOf(usr1));
-        // vm.stopPrank();
-        // assertApproxEqAbs(llamaVault.balanceOf(usr1), 1_500 ether, 300, "Retrieve more llamaLendVault");
+        withdrawGUSD(ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, usr1, gUSD.balanceOf(usr1));
+        // assertApproxEqAbs(lendAsset.balanceOf(usr1), 1_500 ether, 300, "Retrieve more llamaLendVault");
 
         // uint256 user1FullAssets = scvUSDAutoCompound.maxWithdraw(usr1);
         // uint256 user2FullAssets = scvUSDAutoCompound.maxWithdraw(usr2);

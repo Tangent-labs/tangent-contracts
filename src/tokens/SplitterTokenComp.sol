@@ -43,18 +43,18 @@ contract SplitterTokenComp is ERC4626Upgradeable, OwnableUpgradeable {
 
     /// @notice initialize function
     function initialize(address _owner, IERC20 _asset, ILendRewardSplitter _splitter, ILlamaVault _llamaVault) external initializer {
-        __ERC4626_init(_llamaVault);
+        __ERC4626_init(_asset);
         __ERC20_init("Vault Compound", "CVP");
         splitter = _splitter;
         llamaVault = _llamaVault;
         _llamaVault.approve(address(splitter), MAX_UINT);
         _transferOwnership(_owner);
     }
-ù
+
     function indexation() external onlyOwner {
         ILendRewardSplitter _splitter = splitter;
         ILlamaVault _llamaVault = llamaVault;
-        _splitter.claimSimple(_llamaVault);
+        _splitter.claimSimple(asset());
         _splitter.depositSCVUSD(_llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, _llamaVault.balanceOf(address(this)), false, true);
     }
 
