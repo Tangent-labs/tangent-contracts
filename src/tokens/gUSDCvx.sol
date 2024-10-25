@@ -81,7 +81,13 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function mint(address receiver, uint256 sharesAmount, ILlamaVault _llamaVault, uint256 pid, bool isStake) external returns (uint256) {
+    function mint(
+        address receiver,
+        uint256 sharesAmount,
+        ILlamaVault _llamaVault,
+        uint256 pid,
+        bool isStake
+    ) external verifyLendSplitterCaller returns (uint256) {
         sharesAmount = _sociabilizationProcess(sharesAmount, isStake);
 
         uint256 mintedAmount = _llamaVault.convertToAssets(sharesAmount);
@@ -92,6 +98,14 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
             _stakeAll(pid);
         }
         return mintedAmount;
+    }
+
+    function sociabilizationAndStakeAll(uint256 sharesAmount, bool isStake, uint256 pid) public verifyLendSplitterCaller returns (uint256) {
+        uint256 sharesAfterSociabilization = _sociabilizationProcess(sharesAmount, isStake);
+        if (isStake) {
+            _stakeAll(pid);
+        }
+        return sharesAfterSociabilization;
     }
 
     function _sociabilizationProcess(uint256 sharesAmount, bool isStake) internal returns (uint256) {
@@ -105,14 +119,6 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
             sharesAmount -= feeTaken;
         }
         return sharesAmount;
-    }
-
-    function sociabilizationAndStakeAll(uint256 sharesAmount, bool isStake, uint256 pid) public verifyLendSplitterCaller returns (uint256) {
-        uint256 sharesAfterSociabilization = _sociabilizationProcess(sharesAmount, isStake);
-        if (isStake) {
-            _stakeAll(pid);
-        }
-        return sharesAfterSociabilization;
     }
 
     function stakeAll(uint256 pid) external {

@@ -1,6 +1,7 @@
-// import "../../contexts/ConvexMarketContext.sol";
+// // SPDX-License-Identifier: MIT
+// import "../../../contexts/TestWrapper.sol";
 
-// contract SociabilizationProcess is ConvexMarketContext {
+// contract SociabilizationProcess is TestWrapper {
 //     uint256 socFeePercentage;
 //     uint256 socFeePending;
 

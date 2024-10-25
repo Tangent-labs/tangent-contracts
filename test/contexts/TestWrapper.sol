@@ -144,6 +144,9 @@ contract TestWrapper is ConvexMarketContext {
         verifyBurnERC20(gUSD, outAmount);
         verifyLostERC20(gUSD, user, outAmount);
 
+        verifySupplyERC20NotChanging(scvUSD);
+        verifyBalERC20NotChanging(scvUSD, user);
+
         if (outType == ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset) {
             verifyReceiveERC20(lendAsset, user, llamaVault.convertToAssets(llamaVault.convertToShares(outAmount)));
         } else {
@@ -161,6 +164,45 @@ contract TestWrapper is ConvexMarketContext {
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function withdrawSCVUSD(ILendRewardSplitter.CVX_TOKEN_TYPE outType, address user, uint256 outAmount, bool isAutoCompound) public {
+        uint256 burntSCVUSD = outAmount;
+        if (isAutoCompound) {
+            burntSCVUSD = scvUSDAutoCompound.convertToAssets(outAmount);
+
+            verifyBurnERC20(scvUSDAutoCompound, outAmount);
+            verifyLostERC20(scvUSDAutoCompound, user, outAmount);
+
+            verifyBurnERC20(scvUSD, burntSCVUSD);
+            verifyLostERC20(scvUSD, address(scvUSDAutoCompound), burntSCVUSD);
+        } else {
+            verifyBurnERC20(scvUSD, burntSCVUSD);
+            verifyLostERC20(scvUSD, user, burntSCVUSD);
+
+            verifySupplyERC20NotChanging(scvUSDAutoCompound);
+            verifyBalERC20NotChanging(scvUSDAutoCompound, user);
+        }
+
+        verifySupplyERC20NotChanging(gUSD);
+        verifyBalERC20NotChanging(gUSD, user);
+
+        if (outType == ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset) {
+            verifyReceiveERC20(lendAsset, user, llamaVault.convertToAssets(burntSCVUSD));
+
+            // Verify that llamaVault LP is burnt
+            verifyBurnERC20(llamaVault, burntSCVUSD);
+            uint256 sharesAvailable = llamaVault.balanceOf(address(gUSD)) - gUSD.socFeePending();
+
+            // If enough on gUSD to don't unstake anything from convex
+            if (sharesAvailable >= burntSCVUSD) {
+                    verifyLostERC20(llamaVault, address(gUSD), burntSCVUSD);
+            }
+            // Else we need to unstake some llamaVault from the convex staking
+            else {
+                verifyLostERC20(llamaVault, address(crvGauge), burntSCVUSD);
+            }
+        } else {
+            verifyReceiveERC20(llamaVault, user, burntSCVUSD);
+        }
+
         vm.prank(user);
         splitter.withdrawSCVUSD(llamaVault, outType, outAmount, isAutoCompound);
 

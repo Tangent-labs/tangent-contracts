@@ -17,7 +17,8 @@ import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
 import {ILendRewardSplitter} from "../../src/interfaces/internals/ILendRewardSplitter.sol";
 import {ISplitterToken} from "../../src/interfaces/internals/ISplitterToken.sol";
 import {ICommonStruct} from "../../src/interfaces/internals/ICommonStruct.sol";
-import "../../src/libs/Resources.sol";
+import "../../src/libs/ResourcesGlobal.sol";
+import "../../src/libs/ResourcesYieldSplitter.sol";
 
 import "forge-std/console.sol";
 

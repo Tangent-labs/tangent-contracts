@@ -14,8 +14,8 @@ import "../../src/tokens/scvUSDCvx.sol";
 
 import "../../src/tokens/SplitterTokenComp.sol";
 
-import "../../src/libs/Resources.sol";
-
+import "../../src/libs/ResourcesGlobal.sol";
+import "../../src/libs/ResourcesYieldSplitter.sol";
 import "./DeployContext.sol";
 import "./SpecialViews.sol";
 import "../utils/AssertERC20.sol";
