@@ -8,7 +8,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "hh-node": "npx hardhat node --fork https://rpc.ankr.com/eth",
+    "dapp-setup": "npx hardhat run hardhat/dappSetup/run-setup-booster.ts --network localhost"
   },
   "author": "",
   "license": "ISC",

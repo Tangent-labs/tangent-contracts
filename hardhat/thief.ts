@@ -3,7 +3,7 @@ import { GlobalHelper } from "./GlobalHelper";
 
 import { Signer, toQuantity } from "ethers";
 
-interface TokenAmounts {
+export interface TokenAmounts {
   token: {
     slotBalance: number;
     address: string;
