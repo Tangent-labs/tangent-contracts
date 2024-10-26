@@ -1,6 +1,6 @@
-import "../../../contexts/ConvexMarketContext.sol";
+import "../../../contexts/TestWrapper.sol";
 
-contract ProcessStableConvex is ConvexMarketContext {
+contract ProcessStableConvex is TestWrapper {
     uint256 processorFees;
     uint256 daoFees;
 
@@ -10,48 +10,42 @@ contract ProcessStableConvex is ConvexMarketContext {
         (processorFees, daoFees) = scvUSD.fees(0);
     }
 
-    function test_nominal() external {
-        uint256 amount = 100 ether;
-        address user = makeAddr("USER");
-        address processor = makeAddr("PROCESSOR");
-        deal(address(lendAsset), user, amount * 1000);
-        vm.startPrank(user);
-        AddrClassicERC20.TOKEN_CRVUSD.approve(address(splitter), type(uint256).max);
+    function test_nominal(uint120 amountIn) external {
+        vm.assume(amountIn > 100 ether);
 
-        // Deposit for stable rewards
-        splitter.depositSCVUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amount, false, true);
+        // Deposit for Stable rewards
+        depositSCVUSD(ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, usr1, amountIn, false, true);
 
         // Deposit for governance rewards
-        splitter.depositGUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, amount, true);
+        depositGUSD(ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, usr1, amountIn, true);
 
-        skip(100 days);
-        uint256 processableRewards = llamaVault.convertToAssets(gUSD.getStreamableShares());
+        skip(182 days);
+        uint256 processableRewards = gUSD.getStreamableShares();
 
         uint256 processorRewards = (processableRewards * processorFees) / 100_000;
         uint256 daoRewards = (processableRewards * daoFees) / 100_000;
         uint256 stakerRewards = processableRewards - processorRewards - daoRewards;
 
-        uint256 userBalanceLendAsset = lendAsset.balanceOf(user);
-        vm.stopPrank();
-        vm.prank(processor);
-        gUSD.processStableRewards();
+        uint256 userBalanceLendAsset = llamaVault.balanceOf(usr1);
 
-        assertEq(stakerRewards + daoRewards, lendAsset.balanceOf(address(splitter)), "Lend Asset amount is received by Splitter");
-        assertEq(daoRewards, splitter.daoFeeForToken(lendAsset), "Dao fees incremented");
-        assertEq(processorRewards, lendAsset.balanceOf(processor), "Processor received processor rewards");
+        gUSD.processStableRewards(processor);
+
+        assertEq(processableRewards - processorRewards, llamaVault.balanceOf(address(splitter)), "Lend Asset amount is received by Splitter");
+        assertEq(daoRewards, splitter.daoFeeForToken(llamaVault), "Dao fees incremented");
+        assertEq(processorRewards, llamaVault.balanceOf(processor), "Processor received processor rewards");
 
         // Withdraw the fees
         IERC20[] memory tokensToClaim = new IERC20[](1);
-        tokensToClaim[0] = AddrClassicERC20.TOKEN_CRVUSD;
+        tokensToClaim[0] = llamaVault;
 
-        uint256 ownerBalanceLendAsset = lendAsset.balanceOf(owner);
-        uint256 splitterBalanceLendAsset = lendAsset.balanceOf(address(splitter));
+        uint256 ownerBalanceLendAsset = llamaVault.balanceOf(owner);
+        uint256 splitterBalanceLendAsset = llamaVault.balanceOf(address(splitter));
 
         vm.prank(feeTreasury);
         splitter.withdrawFees(tokensToClaim);
 
-        assertEq(daoRewards, lendAsset.balanceOf(feeTreasury) - ownerBalanceLendAsset, "Processor received processor rewards");
-        assertEq(daoRewards, splitterBalanceLendAsset - lendAsset.balanceOf(address(splitter)), "Splitter sent rewards");
+        assertEq(daoRewards, llamaVault.balanceOf(feeTreasury) - ownerBalanceLendAsset, "Processor received processor rewards");
+        assertEq(daoRewards, splitterBalanceLendAsset - llamaVault.balanceOf(address(splitter)), "Splitter sent rewards");
         assertEq(splitter.daoFeeForToken(AddrClassicERC20.TOKEN_CRVUSD), 0, "Dao fee is reseted");
     }
 }

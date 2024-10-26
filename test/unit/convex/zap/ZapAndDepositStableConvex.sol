@@ -14,8 +14,8 @@ contract ZapAndDepositStableConvex is ConvexMarketContext {
 
         // Do the zapAndDeposit
         (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) = _getSwapParamsForEth();
-        uint256 expected = ICurveRouter(0x16C6521Dff6baB339122a0FE25a9116693265353).get_dy(routes, swapParams, 1 ether, pools);
-        splitter.zapAndDeposit{value: 1 ether}(llamaVault, 0, 0, true, true, true, routes, pools, swapParams);
+        uint256 expected = ICurveRouter(AddrGlobal.CURVE_ROUTER).get_dy(routes, swapParams, 1 ether, pools);
+        splitter.zapAndDeposit{value: 1 ether}(llamaVault, 0, 0, true, false, true, routes, pools, swapParams);
         vm.stopPrank();
         assertEq(scvUSD.balanceOf(user), llamaVault.convertToShares(expected));
     }

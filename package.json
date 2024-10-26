@@ -1,0 +1,26 @@
+{
+  "name": "llamalend-yield-splitter",
+  "version": "1.0.0",
+  "description": "## Install dependencies",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "hh-node": "npx hardhat node --fork https://rpc.ankr.com/eth",
+    "dapp-setup": "npx hardhat run hardhat/dappSetup/run-setup-booster.ts --network localhost"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "convergence-defi-tools": "git://github.com/Convergence-fi/convergence-defi-tools.git#main",
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@nomicfoundation/hardhat-foundry": "^1.1.2",
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "ethers": "^6.13.4"
+  },
+  "dependencies": {
+    "hardhat": "^2.22.15"
+  }
+}

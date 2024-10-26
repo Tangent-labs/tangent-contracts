@@ -1,7 +1,7 @@
 import "../contexts/LendingContext.sol";
-import "../contexts/ConvexMarketContext.sol";
+import "../contexts/TestWrapper.sol";
 import "./LendSplitterHandler.sol";
-contract GlobalInvariant is ConvexMarketContext {
+contract GlobalInvariant is TestWrapper {
     LendSplitterHandler private lendSplitterHandler;
 
     function setUp() public {
@@ -78,8 +78,8 @@ contract GlobalInvariant is ConvexMarketContext {
             ILlamaVault actualVault = llamaVaultArray[llamaVaultIndex];
             CvxStruct memory actualStruct = structsMap[llamaVaultArray[llamaVaultIndex]];
 
-            try actualStruct.gUSD.processGovRewards() {} catch {}
-            try actualStruct.gUSD.processStableRewards() {} catch {}
+            try actualStruct.gUSD.processGovRewards(processor) {} catch {}
+            try actualStruct.gUSD.processStableRewards(processor) {} catch {}
             // Let the rewards stream fully
             skip(7 days);
             for (uint256 userIndex; userIndex < users.length; userIndex++) {

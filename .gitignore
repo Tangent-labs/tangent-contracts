@@ -21,3 +21,8 @@ docs/
 # Dotenv file
 .env
 lcov.info
+
+node_modules
+cache_hardhat
+artifacts
+typechain-types

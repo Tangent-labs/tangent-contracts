@@ -41,10 +41,9 @@ contract scvUSDCvx is SplitterToken, IscvUSD {
         llamaVault = _llamaVault;
         cvxRewardToken = IERC20(_cvxRewardToken);
 
-        IERC20 crvUsd = IERC20(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
-        rewardTokens.push(crvUsd);
-        rewardData[crvUsd].lastUpdateTime = uint128(block.timestamp);
-        rewardData[crvUsd].periodFinish = uint128(block.timestamp);
+        rewardTokens.push(_llamaVault);
+        rewardData[_llamaVault].lastUpdateTime = uint128(block.timestamp);
+        rewardData[_llamaVault].periodFinish = uint128(block.timestamp);
         fees.push(ISplitterToken.Fees({processorFeePercentage: 1_000, daoFeePercentage: 2_000}));
     }
 
@@ -88,10 +87,10 @@ contract scvUSDCvx is SplitterToken, IscvUSD {
      * @notice Function called by s
      * @dev Claim rewards in lendAsset from gUSD stakers that rennounced to their rewards from IR.
      */
-    function processRewards() external {
+    function processRewards(address receiverProcessorRewards) external {
         /// @dev We need to keep enough share to back the stableSupply and the assetPart of the govSupply, we withdraw the reward share from the gUSD
         require(msg.sender == address(gUSD), OnlyGUSDCaller(msg.sender));
-        _processRewards();
+        _processRewards(receiverProcessorRewards);
     }
 
     function setAutoCompoundAndGUSD(address _autoCompounder, address _gUSD) external verifyLendSplitterCaller {

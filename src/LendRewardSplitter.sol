@@ -469,7 +469,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
                     new BeaconProxy(
                         autoCompoundBeacon,
                         //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
-                        abi.encodeCall(SplitterTokenComp.initialize, (owner(), _scvUSD, ILendRewardSplitter(address(this)), _llamaVault, _lendAsset))
+                        abi.encodeCall(SplitterTokenComp.initialize, (owner(), _scvUSD, ILendRewardSplitter(address(this)), _llamaVault))
                     )
                 )
             );

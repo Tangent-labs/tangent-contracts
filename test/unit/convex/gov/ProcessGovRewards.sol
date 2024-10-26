@@ -1,6 +1,7 @@
-import "../../../contexts/ConvexMarketContext.sol";
+// SPDX-License-Identifier: MIT
+import "../../../contexts/TestWrapper.sol";
 
-contract ProcessGovRewards is ConvexMarketContext {
+contract ProcessGovRewards is TestWrapper {
     ISplitterToken.Fees[] feePercentage;
 
     struct Fees {
@@ -20,9 +21,6 @@ contract ProcessGovRewards is ConvexMarketContext {
 
     function test_process_governance_rewards() external {
         // PREPARE
-        address processor = makeAddr("Processor");
-        deal(address(lendAsset), processor, 100 ether);
-        vm.startPrank(processor);
 
         uint256 deltaBalanceCrvSplitter = IERC20(AddrClassicERC20.TOKEN_CRV).balanceOf(address(splitter));
         uint256 deltaBalanceCvxSplitter = IERC20(AddrClassicERC20.TOKEN_CVX).balanceOf(address(splitter));
@@ -31,10 +29,12 @@ contract ProcessGovRewards is ConvexMarketContext {
         uint256 deltaBalanceCvxProcessor = IERC20(AddrClassicERC20.TOKEN_CVX).balanceOf(processor);
 
         // ACTIONS
-        lendAsset.approve(address(splitter), 100 ether);
-        splitter.depositGUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, true);
+
+        depositGUSD(ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, usr1, 100 ether, true);
         skip(1 weeks);
-        gUSD.processGovRewards();
+
+        vm.prank(usr1);
+        gUSD.processGovRewards(processor);
 
         // VERIFY
 
@@ -75,18 +75,11 @@ contract ProcessGovRewards is ConvexMarketContext {
     }
 
     function test_process_governance_rewards_with_nothing_to_claim() external {
-        // PREPARE
-        address processor = makeAddr("Processor");
-        deal(address(lendAsset), processor, 100 ether);
-        vm.startPrank(processor);
-
-        // ACTIONS
-        lendAsset.approve(address(splitter), 100 ether);
-        splitter.depositGUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, 100 ether, true);
+        depositGUSD(ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, processor, 100 ether, true);
         skip(2 weeks);
-        gUSD.processGovRewards();
+        gUSD.processGovRewards(processor);
         // Ensure that second process of reward is failing because all CRV rewards have been already processed
         vm.expectRevert(abi.encodeWithSelector(SplitterToken.NothingToProcess.selector));
-        gUSD.processGovRewards();
+        gUSD.processGovRewards(processor);
     }
 }

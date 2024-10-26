@@ -19,8 +19,6 @@ contract SplitterTokenComp is ERC4626Upgradeable, OwnableUpgradeable {
 
     ILendRewardSplitter public splitter;
 
-    IERC20 public lendAsset;
-
     ILlamaVault public llamaVault;
 
     error NotLendRewardSplitter(address _address);
@@ -44,22 +42,20 @@ contract SplitterTokenComp is ERC4626Upgradeable, OwnableUpgradeable {
     }
 
     /// @notice initialize function
-    function initialize(address _owner, IERC20 _asset, ILendRewardSplitter _splitter, ILlamaVault _llamaVault, IERC20 _lendAsset) external initializer {
+    function initialize(address _owner, IERC20 _asset, ILendRewardSplitter _splitter, ILlamaVault _llamaVault) external initializer {
         __ERC4626_init(_asset);
         __ERC20_init("Vault Compound", "CVP");
         splitter = _splitter;
-        lendAsset = _lendAsset;
         llamaVault = _llamaVault;
-
-        lendAsset.approve(address(splitter), MAX_UINT);
-
+        _llamaVault.approve(address(splitter), MAX_UINT);
         _transferOwnership(_owner);
     }
 
     function indexation() external onlyOwner {
         ILendRewardSplitter _splitter = splitter;
+        ILlamaVault _llamaVault = llamaVault;
         _splitter.claimSimple(asset());
-        _splitter.depositSCVUSD(llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LendAsset, lendAsset.balanceOf(address(this)), false, true);
+        _splitter.depositSCVUSD(_llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset, _llamaVault.balanceOf(address(this)), false, true);
     }
 
     function mintSplitter(address receiver, uint256 assets, IscvUSD scvUSD) external verifyLendSplitterCaller returns (uint256) {

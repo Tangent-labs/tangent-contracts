@@ -16,5 +16,6 @@ interface IgUSDCvx is ISplitterToken {
     function sociabilizationAndStakeAll(uint256 sharesAmount, bool isStake, uint256 pid) external returns (uint256);
 
     function socFeePercentage() external view returns (uint256);
+
     function socFeePending() external view returns (uint256);
 }

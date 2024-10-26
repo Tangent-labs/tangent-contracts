@@ -17,7 +17,8 @@ import {ILlamaVault} from "../../src/interfaces/externals/ILlamaVault.sol";
 import {ILendRewardSplitter} from "../../src/interfaces/internals/ILendRewardSplitter.sol";
 import {ISplitterToken} from "../../src/interfaces/internals/ISplitterToken.sol";
 import {ICommonStruct} from "../../src/interfaces/internals/ICommonStruct.sol";
-import "../../src/libs/Resources.sol";
+import "../../src/libs/ResourcesGlobal.sol";
+import "../../src/libs/ResourcesYieldSplitter.sol";
 
 import "forge-std/console.sol";
 
@@ -33,6 +34,8 @@ contract DeployContext is StdCheats, StdUtils, Test {
     address usr4 = makeAddr("User4");
     address usr5 = makeAddr("User5");
     address usr6 = makeAddr("User6");
+
+    address processor = makeAddr("Processor");
 
     uint256 public MAX_UINT = uint256(int256(-1));
 

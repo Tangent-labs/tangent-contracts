@@ -81,7 +81,13 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
                         EXTERNALS USER
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function mint(address receiver, uint256 sharesAmount, ILlamaVault _llamaVault, uint256 pid, bool isStake) external returns (uint256) {
+    function mint(
+        address receiver,
+        uint256 sharesAmount,
+        ILlamaVault _llamaVault,
+        uint256 pid,
+        bool isStake
+    ) external verifyLendSplitterCaller returns (uint256) {
         sharesAmount = _sociabilizationProcess(sharesAmount, isStake);
 
         uint256 mintedAmount = _llamaVault.convertToAssets(sharesAmount);
@@ -92,6 +98,14 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
             _stakeAll(pid);
         }
         return mintedAmount;
+    }
+
+    function sociabilizationAndStakeAll(uint256 sharesAmount, bool isStake, uint256 pid) public verifyLendSplitterCaller returns (uint256) {
+        uint256 sharesAfterSociabilization = _sociabilizationProcess(sharesAmount, isStake);
+        if (isStake) {
+            _stakeAll(pid);
+        }
+        return sharesAfterSociabilization;
     }
 
     function _sociabilizationProcess(uint256 sharesAmount, bool isStake) internal returns (uint256) {
@@ -105,14 +119,6 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
             sharesAmount -= feeTaken;
         }
         return sharesAmount;
-    }
-
-    function sociabilizationAndStakeAll(uint256 sharesAmount, bool isStake, uint256 pid) public verifyLendSplitterCaller returns (uint256) {
-        uint256 sharesAfterSociabilization = _sociabilizationProcess(sharesAmount, isStake);
-        if (isStake) {
-            _stakeAll(pid);
-        }
-        return sharesAfterSociabilization;
     }
 
     function stakeAll(uint256 pid) external {
@@ -178,13 +184,13 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
      * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
      *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
-    function processGovRewards() external {
+    function processGovRewards(address receiverProcessorRewards) external {
         /// @dev Claim rewards on behalf
         cvxRewardToken.getReward();
-        _processRewards();
+        _processRewards(receiverProcessorRewards);
     }
 
-    function processStableRewards() external returns (uint256 lendAssetDistributed) {
+    function processStableRewards(address receiverProcessorRewards) external returns (uint256) {
         /// @dev Only scvUSD can call this function
 
         ICvxRewardToken _cvxRewardToken = cvxRewardToken;
@@ -201,8 +207,9 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
             _cvxRewardToken.withdrawAndUnwrap(sharesToClaim - sharesBalance, false);
         }
 
-        lendAssetDistributed = _llamaVault.redeem(sharesToClaim, address(_scvUSD));
-        scvUSD.processRewards();
+        _llamaVault.transfer(address(_scvUSD), sharesToClaim);
+        scvUSD.processRewards(receiverProcessorRewards);
+        return sharesToClaim;
     }
 
     function getTotalStaked() external view returns (uint256) {
@@ -215,7 +222,7 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
             cvxRewardToken.balanceOf(address(this)) +
             _llamaVault.balanceOf(address(this)) -
             scvUSD.totalSupply() -
-            _llamaVault.previewWithdraw(totalSupply()) -
+            _llamaVault.convertToShares(totalSupply()) -
             socFeePending;
     }
 
