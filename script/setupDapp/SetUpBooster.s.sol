@@ -5,11 +5,7 @@ import "forge-std/Test.sol";
 import "../../src/libs/ResourcesGlobal.sol";
 import "../../src/libs/ResourcesBooster.sol";
 contract SetUpBooster is MainSetup, Test {
-    event Aa();
-    function run() public {
-        vm.chainId(31337);
-        vm.rpcUrl("http://127.0.0.1:8545");
-
+    function setUp() public {
         IERC20[12] memory erc20s = [
             AddrClassicERC20.TOKEN_CRV,
             AddrClassicERC20.TOKEN_BAL,
@@ -25,6 +21,9 @@ contract SetUpBooster is MainSetup, Test {
             AddrBooster.SD_FXN_GAUGE
         ];
 
+        console.log("balance my ass", AddrClassicERC20.TOKEN_CRV.balanceOf(user0));
+        console.log("allow my ass", AddrBooster.SD_CRV_GAUGE.allowance(user0, address(AddrBooster.SD_BAL_STAKING)));
+
         for (uint256 userIndex; userIndex < pkUsers.length; userIndex++) {
             address user = pkUsers[userIndex].user;
             deal(user, 100 ether);
@@ -32,17 +31,19 @@ contract SetUpBooster is MainSetup, Test {
             uint256 pk = pkUsers[userIndex].pk;
             console.log("Ma balance 1", user.balance);
 
-            vm.startBroadcast(pk);
-
-            // // Gives ERC20 to all users
-            // for (uint256 erc20Index; erc20Index < erc20s.length; erc20Index++) {
-            //     deal(address(erc20s[erc20Index]), user, 1_000_000 ether);
-            // }
+            // Gives ERC20 to all users
+            for (uint256 erc20Index; erc20Index < erc20s.length; erc20Index++) {
+                uint256 amount = 1000 ether;
+                uint256 balancesOfSlot = 12;
+                bytes32 storagePosition = keccak256(abi.encodePacked(user, balancesOfSlot));
+                vm.makePersistent(address(erc20s[erc20Index]));
+                vm.store(address(erc20s[erc20Index]), storagePosition, bytes32(amount));
+            }
 
             console.log("Ma balance 2", user.balance);
             AddrBooster.SD_CRV_GAUGE.approve(address(AddrBooster.SD_BAL_STAKING), 1_000_000 ether);
-            vm.stopBroadcast();
         }
-        emit Aa();
     }
+
+    function test_oo() public {}
 }
