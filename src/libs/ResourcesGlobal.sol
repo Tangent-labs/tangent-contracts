@@ -2,6 +2,8 @@
 pragma solidity ^0.8.24;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import {IAggregatorV3} from "../interfaces/externals/Chainlink/IAggregatorV3.sol";
+
 library AddrClassicERC20 {
     // Tokens
     IERC20 constant TOKEN_CRVUSD = IERC20(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
@@ -11,6 +13,15 @@ library AddrClassicERC20 {
     IERC20 constant TOKEN_USDC = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     IERC20 constant TOKEN_AAVE = IERC20(0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9);
     IERC20 constant TOKEN_BAL = IERC20(0xba100000625a3754423978a60c9317c58a424e3D);
+    IERC20 constant TOKEN_80_BAL_20_ETH = IERC20(0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56);
     IERC20 constant TOKEN_PENDLE = IERC20(0x5Ea630e00D6eE438d3deA1556A110359ACdc10A9);
     IERC20 constant TOKEN_FXN = IERC20(0xe19d1c837B8A1C83A56cD9165b2c0256D39653aD);
+    IERC20 constant TOKEN_DOLA = IERC20(0x865377367054516e17014CcdED1e7d814EDC9ce4);
+}
+
+library AddrChainlinkOracle {
+    // Tokens
+    IAggregatorV3 constant CRVUSD = IAggregatorV3(0xEEf0C605546958c1f899b6fB336C20671f9cD49F);
+    IAggregatorV3 constant USDC = IAggregatorV3(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
+    IAggregatorV3 constant USDT = IAggregatorV3(0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
 }

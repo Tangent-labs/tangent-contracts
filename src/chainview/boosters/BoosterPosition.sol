@@ -3,16 +3,16 @@ pragma solidity ^0.8.27;
 
 import {BalancesAllowances} from "../BalancesAllowances.sol";
 
-import {ISdtStaking} from "../../interfaces/internals/oldCvg/ISdtStaking.sol";
-import {ISdtStakingManager} from "../../interfaces/internals/oldCvg/ISdtStakingManager.sol";
+import {ISdtStaking} from "../../interfaces/internals/CVG/ISdtStaking.sol";
+import {ISdtStakingManager} from "../../interfaces/internals/CVG/ISdtStakingManager.sol";
+import {ISdtUtilities} from "../../interfaces/internals/CVG/ISdtUtilities.sol";
 import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract BoosterPosition {
-
-
     ISdtStakingManager public constant STAKING_MANAGER = ISdtStakingManager(0x7319662aD7D7ce2d1595073EA042B723F6d0dc48);
+    ISdtUtilities public constant SDT_UTILITIES = ISdtUtilities(0xD861Ff854206d0Db64f1C0f3108f59576A5CCc04);
 
     struct PositionData {
         uint256 tokenId;

@@ -2,10 +2,10 @@
 
 import "../lib/forge-std/src/Test.sol";
 import {IERC20} from "../lib/forge-std/src/interfaces/IERC20.sol";
-import {ILlamaVault} from "../src/interfaces/externals/ILlamaVault.sol";
-import {IStakeDaoVault} from "../src/interfaces/externals/IStakeDaoVault.sol";
-import {ISdtLiquidityGauge} from "../src/interfaces/externals/ISdtLiquidityGauge.sol";
-import {ICrvUSDController} from "../src/interfaces/externals/ICrvUSDController.sol";
+import {ILlamaVault} from "../src/interfaces/externals/LLamaLend/ILlamaVault.sol";
+import {IStakeDaoVault} from "../src/interfaces/externals/StakeDao/IStakeDaoVault.sol";
+import {ISdtLiquidityGauge} from "../src/interfaces/externals/StakeDao/ISdtLiquidityGauge.sol";
+import {ICrvUSDController} from "../src/interfaces/externals/LlamaLend/ICrvUSDController.sol";
 import {CsvMaker} from "./CsvMaker.sol";
 import {DecimalsString} from "./DecimalsString.sol";
 
