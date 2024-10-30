@@ -26,7 +26,6 @@ contract BoosterPosition {
 
     function getPositionsForOneStaking(
         ISdtStaking sdtStaking,
-        uint256 cycleId,
         ISdtStakingManager.TokenStaking[] memory allTokensOwned
     ) public view returns (PositionData[] memory) {
         PositionData[] memory positionsData = new PositionData[](allTokensOwned.length);
@@ -36,11 +35,7 @@ contract BoosterPosition {
             if (allTokensOwned[i].stakingContract == sdtStaking) {
                 (, ICommonStruct.TokenAmount[] memory tokensClaimable) = sdtStaking.getAllClaimableAmounts(tokenId);
 
-                positionsData[counter] = PositionData({
-                    tokenId: tokenId,
-                    deposited: sdtStaking.tokenInfoByCycle(cycleId, tokenId).amountStaked,
-                    tokensClaimable: tokensClaimable
-                });
+                positionsData[counter] = PositionData({tokenId: tokenId, deposited: sdtStaking.tokenTotalStaked(tokenId), tokensClaimable: tokensClaimable});
                 counter++;
             } else {
                 // solhint-disable-next-line no-inline-assembly
@@ -63,10 +58,9 @@ contract BoosterPosition {
 
     function getMergedPosition(
         ISdtStaking sdtStaking,
-        uint256 cycleId,
         ISdtStakingManager.TokenStaking[] memory allTokensOwned
     ) public returns (PositionData[] memory, MergedPositionData memory) {
-        PositionData[] memory positions = getPositionsForOneStaking(sdtStaking, cycleId, allTokensOwned);
+        PositionData[] memory positions = getPositionsForOneStaking(sdtStaking, allTokensOwned);
         ICommonStruct.TokenAmount[] memory allTokensClaimable;
         if (positions.length == 0) {
             allTokensClaimable = new ICommonStruct.TokenAmount[](0);

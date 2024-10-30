@@ -64,7 +64,12 @@ contract BoosterOutExpected {
             uint256 incentiveAmount = operator.incentiveToken();
             return (amountIn + incentiveAmount, 0, incentiveAmount);
         } else {
-            uint256 feePercentage = operator.lockIncentivePercent();
+            uint256 feePercentage;
+            try operator.lockIncentive() returns (uint256 f) {
+                feePercentage = f;
+            } catch {
+                feePercentage = operator.lockIncentivePercent();
+            }
             uint256 feeAmount = (amountIn * feePercentage) / 10_000;
 
             return (amountIn - feeAmount, feePercentage, feeAmount);

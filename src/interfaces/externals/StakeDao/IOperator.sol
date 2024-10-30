@@ -6,6 +6,7 @@ interface IOperator {
     function deposit(uint256 amount, bool isLock, bool isStake, address receiver) external;
 
     function lockIncentivePercent() external view returns (uint256);
+    function lockIncentive() external view returns (uint256);
 
     function incentiveToken() external view returns (uint256);
 }

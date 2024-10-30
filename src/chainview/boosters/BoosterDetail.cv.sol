@@ -92,7 +92,7 @@ contract BoosterDetail is BoosterPosition, BalancesAllowances {
         ISdtStakingManager.TokenStaking[] memory allPositions = getAllOwnedPositions(user);
         uint256 nextCycle = staking.stakingCycle() + 1;
 
-        (PositionData[] memory positionsDetails, MergedPositionData memory mergedPos) = getMergedPosition(staking, nextCycle, allPositions);
+        (PositionData[] memory positionsDetails, MergedPositionData memory mergedPos) = getMergedPosition(staking, allPositions);
 
         return
             BoosterDetailOut({

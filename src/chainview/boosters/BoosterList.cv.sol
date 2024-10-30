@@ -79,7 +79,7 @@ contract BoosterList is BoosterPosition, BalancesAllowances {
     function _getBoosterRowConnected(ISdtStaking sdtStaking, ISdtStakingManager.TokenStaking[] memory allPositions) public returns (BoosterRow memory) {
         uint256 nextCycle = sdtStaking.stakingCycle() + 1;
 
-        (, MergedPositionData memory mergedPos) = getMergedPosition(sdtStaking, nextCycle, allPositions);
+        (, MergedPositionData memory mergedPos) = getMergedPosition(sdtStaking, allPositions);
 
         return
             BoosterRow({
