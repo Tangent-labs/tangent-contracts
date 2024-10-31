@@ -15,7 +15,7 @@ import {Errors} from "../../libs/Errors.sol";
 
 import "forge-std/console.sol"; //TODO: to remove
 
-contract SplitterTokenComp is ERC4626Upgradeable, OwnableUpgradeable, ISplitterTokenComp {
+contract SplitterTokenComp is ISplitterTokenComp, ERC4626Upgradeable, OwnableUpgradeable {
     uint256 constant MAX_UINT = uint256(int256(-1));
 
     ILendRewardSplitter public splitter;
@@ -75,6 +75,14 @@ contract SplitterTokenComp is ERC4626Upgradeable, OwnableUpgradeable, ISplitterT
 
     function _decimalsOffset() internal pure override returns (uint8) {
         return 0;
+    }
+
+    function convertToShares(uint256 assets) public view override(ERC4626Upgradeable, ISplitterTokenComp) returns (uint256) {
+        return _convertToShares(assets, Math.Rounding.Floor);
+    }
+
+    function convertToAssets(uint256 shares) public view override(ERC4626Upgradeable, ISplitterTokenComp) returns (uint256) {
+        return _convertToAssets(shares, Math.Rounding.Floor);
     }
 
     function convertFromAutoCompToLendAsset(uint256 shares) external view returns (uint256) {

@@ -51,7 +51,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
     mapping(ILlamaVault => IERC20) public vaultPerLlamaVault;
     mapping(ILlamaVault => IgUSDCvx) public gUSDPerLlamaVault;
     mapping(ILlamaVault => IscvUSD) public scvUSDPerLlamaVault;
-    mapping(ILlamaVault => ISplitterComp) public scvUSDAutoCompoundPerLlamaVault;
+    mapping(ILlamaVault => ISplitterTokenComp) public scvUSDAutoCompoundPerLlamaVault;
 
     /// @dev Gives the amount of fee that DAO can withdraw for an ERC20
     mapping(IERC20 => uint256) public daoFeeForToken;
@@ -311,7 +311,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
 
         /// @dev If the withdraw is from the autocompounder
         if (isAutoCompound) {
-            SplitterTokenComp _autCompound = scvUSDAutoCompoundPerLlamaVault[llamaVault];
+            ISplitterTokenComp _autCompound = scvUSDAutoCompoundPerLlamaVault[llamaVault];
             /// @dev We burn the amount of share from the autoCompounder
             /// @dev Also replace 'amount' by the amount of scvUSD equivalent
             amount = _autCompound.burnSplitter(msg.sender, amount);
