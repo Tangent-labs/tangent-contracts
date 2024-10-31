@@ -26,9 +26,9 @@ contract LlamaSplitDetail is LlamaSplitChainviewCommon, BalancesAllowances {
 
     function _getDetail(address user, ISplitterToken splitterToken) public view returns (OutputLlamaSplitDetail memory) {
         if (user == address(0)) {
-            return OutputLlamaSplitDetail({obas: new OutputBalanceAllowances[](0), detail: _getRowNotConnected(splitterToken)});
+            return OutputLlamaSplitDetail({obas: new OutputBalanceAllowances[](0), detail: _getRowNotConnected(splitterToken, _getCrvUSDPrice())});
         } else {
-            return OutputLlamaSplitDetail({obas: _getBalAllow(user, splitterToken), detail: _getRowConnected(user, splitterToken)});
+            return OutputLlamaSplitDetail({obas: _getBalAllow(user, splitterToken), detail: _getRowConnected(user, splitterToken, _getCrvUSDPrice())});
         }
     }
 

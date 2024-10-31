@@ -5,6 +5,8 @@ import {ILlamaVault} from "../../externals/LlamaLend/ILlamaVault.sol";
 import {IStakeDaoVault} from "../../externals/StakeDao/IStakeDaoVault.sol";
 
 import {ISplitterToken} from "./ISplitterToken.sol";
+import {ISplitterTokenComp} from "./ISplitterTokenComp.sol";
+import {IgUSDCvx} from "./IgUSDCvx.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ICommonStruct} from "../ICommonStruct.sol";
 
@@ -34,6 +36,9 @@ interface ILendRewardSplitter {
     function claimSimple(address splitterToken) external;
 
     function lentAssetPerLlamaVault(ILlamaVault llamaVault) external view returns (IERC20);
+    function gUSDPerLlamaVault(ILlamaVault llamaVault) external view returns (IgUSDCvx);
+
+    function scvUSDAutoCompoundPerLlamaVault(ILlamaVault) external view returns (ISplitterTokenComp);
 
     function depositSCVUSD(
         ILlamaVault llamaVault,

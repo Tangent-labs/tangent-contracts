@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ILendRewardSplitter} from "../../interfaces/internals/LendSplitter/ILendRewardSplitter.sol";
 import {ISplitterToken} from "../../interfaces/internals/LendSplitter/ISplitterToken.sol";
+import {ISplitterTokenComp} from "../../interfaces/internals/LendSplitter/ISplitterTokenComp.sol";
 import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 import {ILlamaVault} from "../../interfaces/externals/LlamaLend/ILlamaVault.sol";
 import {IscvUSD} from "../../interfaces/internals/LendSplitter/IscvUSD.sol";
@@ -14,7 +15,7 @@ import {Errors} from "../../libs/Errors.sol";
 
 import "forge-std/console.sol"; //TODO: to remove
 
-contract SplitterTokenComp is ERC4626Upgradeable, OwnableUpgradeable {
+contract SplitterTokenComp is ERC4626Upgradeable, OwnableUpgradeable, ISplitterTokenComp {
     uint256 constant MAX_UINT = uint256(int256(-1));
 
     ILendRewardSplitter public splitter;

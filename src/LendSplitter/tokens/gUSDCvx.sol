@@ -107,8 +107,7 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
 
     function _sociabilizationProcess(uint256 sharesAmount, bool isStake) internal returns (uint256) {
         if (isStake) {
-            uint256 _socFeePending = socFeePending;
-            sharesAmount += _socFeePending;
+            sharesAmount += socFeePending;
             delete socFeePending;
         } else {
             uint256 feeTaken = (sharesAmount * socFeePercentage) / DENOMINATOR;

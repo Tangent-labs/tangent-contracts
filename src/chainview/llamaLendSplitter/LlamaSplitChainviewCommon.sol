@@ -5,30 +5,46 @@ import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {ISplitterToken} from "../../interfaces/internals/LendSplitter/ISplitterToken.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IAggregatorV3} from "../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 
 contract LlamaSplitChainviewCommon {
     struct LlamaSplitRow {
-        uint256 totalStaked;
-        uint256 userStaked;
-        ICommonStruct.TokenAmount[] tokensClaimable;
+        uint256 totalStakedAmount;
+        uint256 totalStakedDollar;
+        uint256 userStakedAmount;
+        uint256 userStakedDollar;
         bool isProcessed;
+        ICommonStruct.TokenAmount[] tokensClaimable;
+    }
+    function _getCrvUSDPrice() public view returns (uint256) {
+        IAggregatorV3 crvUSDOracle = IAggregatorV3(0xEEf0C605546958c1f899b6fB336C20671f9cD49F);
+        (, int256 crvUsdPrice, , , ) = crvUSDOracle.latestRoundData();
+
+        return uint256(crvUsdPrice) * 10 ** (18 - crvUSDOracle.decimals());
     }
 
-    function _getRowNotConnected(ISplitterToken splitterToken) public view returns (LlamaSplitRow memory) {
+    function _getRowNotConnected(ISplitterToken splitterToken, uint256 crvUSDPrice) public view returns (LlamaSplitRow memory) {
+        uint256 totalStakedAmount = splitterToken.totalSupply();
         return
             LlamaSplitRow({
-                totalStaked: splitterToken.totalSupply(),
-                userStaked: 0,
+                totalStakedAmount: totalStakedAmount,
+                totalStakedDollar: (totalStakedAmount * crvUSDPrice) / 10 ** 18,
+                userStakedAmount: 0,
+                userStakedDollar: 0,
                 tokensClaimable: new ICommonStruct.TokenAmount[](0),
                 isProcessed: _getIsProcessed(splitterToken)
             });
     }
 
-    function _getRowConnected(address user, ISplitterToken splitterToken) public view returns (LlamaSplitRow memory) {
+    function _getRowConnected(address user, ISplitterToken splitterToken, uint256 crvUSDPrice) public view returns (LlamaSplitRow memory) {
+        uint256 totalStakedAmount = splitterToken.totalSupply();
+        uint256 userStakedAmount = splitterToken.balanceOf(user);
         return
             LlamaSplitRow({
-                totalStaked: splitterToken.totalSupply(),
-                userStaked: splitterToken.balanceOf(user),
+                totalStakedAmount: splitterToken.totalSupply(),
+                totalStakedDollar: (totalStakedAmount * crvUSDPrice) / 10 ** 18,
+                userStakedAmount: userStakedAmount,
+                userStakedDollar: (userStakedAmount * crvUSDPrice) / 10 ** 18,
                 tokensClaimable: splitterToken.claimableRewards(user),
                 isProcessed: _getIsProcessed(splitterToken)
             });

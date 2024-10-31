@@ -20,6 +20,7 @@ import {ISplitterToken} from "../interfaces/internals/LendSplitter/ISplitterToke
 import {ILendRewardSplitter} from "../interfaces/internals/LendSplitter/ILendRewardSplitter.sol";
 import {IgUSDCvx} from "../interfaces/internals/LendSplitter/IgUSDCvx.sol";
 import {IscvUSD} from "../interfaces/internals/LendSplitter/IscvUSD.sol";
+import {ISplitterTokenComp} from "../interfaces/internals/LendSplitter/ISplitterTokenComp.sol";
 
 import {ICvxBooster} from "../interfaces/externals/Convex/ICvxBooster.sol";
 import {ICvxRewardToken} from "../interfaces/externals/Convex/ICvxRewardToken.sol";
@@ -50,7 +51,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
     mapping(ILlamaVault => IERC20) public vaultPerLlamaVault;
     mapping(ILlamaVault => IgUSDCvx) public gUSDPerLlamaVault;
     mapping(ILlamaVault => IscvUSD) public scvUSDPerLlamaVault;
-    mapping(ILlamaVault => SplitterTokenComp) public scvUSDAutoCompoundPerLlamaVault;
+    mapping(ILlamaVault => ISplitterComp) public scvUSDAutoCompoundPerLlamaVault;
 
     /// @dev Gives the amount of fee that DAO can withdraw for an ERC20
     mapping(IERC20 => uint256) public daoFeeForToken;
