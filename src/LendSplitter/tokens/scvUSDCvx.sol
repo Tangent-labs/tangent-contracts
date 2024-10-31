@@ -5,12 +5,11 @@ import "./SplitterToken.sol";
 
 import {IgUSDCvx} from "../../interfaces/internals/LendSplitter/IgUSDCvx.sol";
 import {IscvUSD} from "../../interfaces/internals/LendSplitter/IscvUSD.sol";
-import {ILlamaVault} from "../../interfaces/externals/LlamaLend/ILlamaVault.sol";
 
 contract scvUSDCvx is SplitterToken, IscvUSD {
     using SafeERC20 for IERC20;
     IgUSDCvx public gUSD;
-    ILlamaVault public llamaVault;
+
     IERC20 public cvxRewardToken;
     address autoCompounder;
 

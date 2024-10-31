@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 interface ICVX1 {
     function CVX() external view returns (address);
     function CVX_CRV() external view returns (address);

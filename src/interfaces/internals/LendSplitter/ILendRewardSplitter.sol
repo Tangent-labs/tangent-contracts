@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 import {ISdtLiquidityGauge} from "../../externals/StakeDao/ISdtLiquidityGauge.sol";
 import {ILlamaVault} from "../../externals/LlamaLend/ILlamaVault.sol";
 import {IStakeDaoVault} from "../../externals/StakeDao/IStakeDaoVault.sol";
@@ -30,6 +32,8 @@ interface ILendRewardSplitter {
     function createMarkets(uint256[] memory pids) external;
 
     function claimSimple(address splitterToken) external;
+
+    function lentAssetPerLlamaVault(ILlamaVault llamaVault) external view returns (IERC20);
 
     function depositSCVUSD(
         ILlamaVault llamaVault,

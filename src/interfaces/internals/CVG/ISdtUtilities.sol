@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 interface ISdtUtilities {
     function acceptOwnership() external;
     function convertAndStakeCvgSdt(uint256 _tokenId, uint256 _cvgSdtAmount, uint256 _minCvgSdtAmountReceivedDuringSwap, uint256 _sdtAmount) external;

@@ -4,7 +4,6 @@ pragma solidity ^0.8.24;
 import "./SplitterToken.sol";
 import {ICvxRewardToken} from "../../interfaces/externals/Convex/ICvxRewardToken.sol";
 import {ICvxBooster} from "../../interfaces/externals/Convex/ICvxBooster.sol";
-import {ILlamaVault} from "../../interfaces/externals/LlamaLend/ILlamaVault.sol";
 import {ILendRewardSplitter} from "../../interfaces/internals/LendSplitter/ILendRewardSplitter.sol";
 import {IgUSDCvx} from "../../interfaces/internals/LendSplitter/IgUSDCvx.sol";
 import {IscvUSD} from "../../interfaces/internals/LendSplitter/IscvUSD.sol";
@@ -13,8 +12,6 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
     using SafeERC20 for IERC20;
 
     ICvxBooster constant CVX_BOOSTER = ICvxBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
-
-    ILlamaVault public llamaVault;
 
     ICvxRewardToken public cvxRewardToken;
 
@@ -51,10 +48,10 @@ contract gUSDCvx is SplitterToken, IgUSDCvx {
         _transferOwnership(_owner);
 
         lendRewardSplitter = _lendRewardSplitter;
+        llamaVault = _llamaVault;
         cvxRewardToken = _cvxRewardToken;
         scvUSD = _scvUSD;
         cvxVault = _cvxVault;
-        llamaVault = _llamaVault;
 
         /// @dev Need this approval to the llamaLendVault on the CvxBooster
         _llamaVault.approve(address(CVX_BOOSTER), MAX_UINT);

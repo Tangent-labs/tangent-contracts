@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {BalancesAllowances} from "../BalancesAllowances.sol";
-import {BoosterPosition} from "./BoosterPosition.sol";
-
 import {ISdtUtilities} from "../../interfaces/internals/CVG/ISdtUtilities.sol";
 import {ISdtStaking} from "../../interfaces/internals/CVG/ISdtStaking.sol";
 import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
@@ -15,11 +12,6 @@ import {IOperator} from "../../interfaces/externals/StakeDao/IOperator.sol";
 import {ISdAsset} from "../../interfaces/externals/StakeDao/ISdAsset.sol";
 
 import {AddrBooster} from "../../libs/ResourcesBooster.sol";
-import {AddrClassicERC20} from "../../libs/ResourcesGlobal.sol";
-
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import "forge-std/console.sol";
 
 contract BoosterOutExpected {
     ISdtUtilities public constant SDT_UTILITIES = ISdtUtilities(0xD861Ff854206d0Db64f1C0f3108f59576A5CCc04);

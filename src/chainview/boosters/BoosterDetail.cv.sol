@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 import {BalancesAllowances} from "../BalancesAllowances.sol";
-import {BoosterPosition} from "./BoosterPosition.sol";
+import {SdtPosition} from "../SdtPosition.sol";
 
 import {ISdtStaking} from "../../interfaces/internals/CVG/ISdtStaking.sol";
 import {ISdtStakingManager} from "../../interfaces/internals/CVG/ISdtStakingManager.sol";
@@ -12,9 +12,7 @@ import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 import {AddrBooster} from "../../libs/ResourcesBooster.sol";
 import {AddrClassicERC20} from "../../libs/ResourcesGlobal.sol";
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-contract BoosterDetail is BoosterPosition, BalancesAllowances {
+contract BoosterDetail is SdtPosition, BalancesAllowances {
     struct OutputBoosterDetail {
         OutputBalanceAllowances[] obas;
         BoosterDetailOut boosterDetail;

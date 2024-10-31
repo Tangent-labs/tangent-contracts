@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ICvxRewardToken} from "../../externals/Convex/ICvxRewardToken.sol";
 import {ILlamaVault} from "../../externals/LlamaLend/ILlamaVault.sol";

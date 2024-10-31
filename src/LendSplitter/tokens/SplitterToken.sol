@@ -10,6 +10,8 @@ import {ILendRewardSplitter} from "../../interfaces/internals/LendSplitter/ILend
 import {ISplitterToken} from "../../interfaces/internals/LendSplitter/ISplitterToken.sol";
 import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 
+import {ILlamaVault} from "../../interfaces/externals/LlamaLend/ILlamaVault.sol";
+
 import {Errors} from "../../libs/Errors.sol";
 
 import "forge-std/console.sol"; //TODO: to remove
@@ -23,6 +25,8 @@ abstract contract SplitterToken is ERC20Upgradeable, OwnableUpgradeable, ISplitt
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
 
     uint256 public constant DENOMINATOR = 100_000;
+
+    ILlamaVault public llamaVault;
 
     ILendRewardSplitter public lendRewardSplitter;
 

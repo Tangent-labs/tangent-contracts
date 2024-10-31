@@ -1,4 +1,8 @@
-interface ICvgCVX {
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+interface ICvgCVX is IERC20 {
     function CRV() external view returns (address);
     function CVG() external view returns (address);
     function CVX() external view returns (address);

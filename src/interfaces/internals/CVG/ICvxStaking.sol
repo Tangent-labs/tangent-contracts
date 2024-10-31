@@ -1,4 +1,19 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+import {ICommonStruct} from "./../ICommonStruct.sol";
+
 interface ICvxStaking {
+    struct AccountInfos {
+        uint256 amountStaked;
+        uint256 pendingStaked;
+    }
+    struct CycleInfo {
+        uint256 cvgRewardsAmount;
+        uint256 totalStaked;
+        bool isCvxProcessed;
+    }
+
+    function cycleInfo(uint256 cycleId) external view returns (CycleInfo memory);
     function CVG() external view returns (address);
     function CVX() external view returns (address);
     function acceptOwnership() external;
@@ -17,11 +32,11 @@ interface ICvxStaking {
     function cvx1() external view returns (address);
     function cvxRewardDistributor() external view returns (address);
     function cvxRewardsByCycle(uint256, uint256) external view returns (address token, uint256 amount);
-    function cycleInfo(uint256) external view returns (uint256 cvgRewardsAmount, uint256 totalStaked, bool isCvxProcessed);
     function decimals() external view returns (uint256);
     function deposit(uint256 amountIn, uint8 inTokenType, uint256 minCvgCvxAmountOut, uint256 minCvxAmountOut, bool isLock) external;
     function depositCvxRush(uint256 cvxAmountIn, uint256 minCvxAmountOut, bool isLock, uint256 tokenIdCvxRush) external;
     function depositPaused() external view returns (bool);
+    function getAllClaimableAmounts(address user) external view returns (uint256, ICommonStruct.TokenAmount[] memory);
 
     function getHistoryLengthForAccount(address account) external view returns (uint256);
 
