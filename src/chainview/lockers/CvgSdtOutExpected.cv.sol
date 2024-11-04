@@ -11,7 +11,7 @@ import {ICrvPoolPlain} from "../../interfaces/externals/Curve/ICrvPoolPlain.sol"
 import {IOperator} from "../../interfaces/externals/StakeDao/IOperator.sol";
 import {ISdAsset} from "../../interfaces/externals/StakeDao/ISdAsset.sol";
 
-import {AddrBooster} from "../../libs/ResourcesBooster.sol";
+import {AddrBooster} from "../../libs/resources/ResourcesBooster.sol";
 
 contract CvgSdtOutExpected {
     ISdtUtilities public constant SDT_UTILITIES = ISdtUtilities(0xD861Ff854206d0Db64f1C0f3108f59576A5CCc04);

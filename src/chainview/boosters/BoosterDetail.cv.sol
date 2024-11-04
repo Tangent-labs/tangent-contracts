@@ -9,8 +9,8 @@ import {ISdtStakingManager} from "../../interfaces/internals/CVG/ISdtStakingMana
 
 import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 
-import {AddrBooster} from "../../libs/ResourcesBooster.sol";
-import {AddrClassicERC20} from "../../libs/ResourcesGlobal.sol";
+import {AddrBooster} from "../../libs/resources/ResourcesBooster.sol";
+import {AddrClassicERC20} from "../../libs/resources/ResourcesGlobal.sol";
 
 contract BoosterDetail is SdtPosition, BalancesAllowances {
     struct OutputBoosterDetail {

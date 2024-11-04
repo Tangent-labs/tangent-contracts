@@ -10,8 +10,8 @@ import "../../../src/LendSplitter/LendRewardSplitter.sol";
 import "../../../src/LendSplitter/tokens/SplitterToken.sol";
 import "../../../src/interfaces/externals/LlamaLend/ILlamaVault.sol";
 import "../../../src/interfaces/internals/LendSplitter/ILendRewardSplitter.sol";
-import "../../../src/libs/ResourcesGlobal.sol";
-import "../../../src/libs/ResourcesYieldSplitter.sol";
+import "../../../src/libs/resources/ResourcesGlobal.sol";
+import "../../../src/libs/resources/ResourcesYieldSplitter.sol";
 import "../contexts/ConvexMarketContext.sol";
 import "../contexts/LendingContext.sol";
 contract LendSplitterHandler is CommonBase, StdCheats, StdUtils, LendingContext {

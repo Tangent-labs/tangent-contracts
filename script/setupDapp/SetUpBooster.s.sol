@@ -2,8 +2,8 @@ import {MainSetup} from "./MainSetup.s.sol";
 
 import "forge-std/Test.sol";
 
-import "../../src/libs/ResourcesGlobal.sol";
-import "../../src/libs/ResourcesBooster.sol";
+import "../../src/libs/resources/ResourcesGlobal.sol";
+import "../../src/libs/resources/ResourcesBooster.sol";
 contract SetUpBooster is MainSetup, Test {
     function setUp() public {
         IERC20[12] memory erc20s = [

@@ -13,8 +13,8 @@ import "../../../src/LendSplitter/tokens/scvUSDCvx.sol";
 
 import "../../../src/LendSplitter/tokens/SplitterTokenComp.sol";
 
-import "../../../src/libs/ResourcesGlobal.sol";
-import "../../../src/libs/ResourcesYieldSplitter.sol";
+import "../../../src/libs/resources/ResourcesGlobal.sol";
+import "../../../src/libs/resources/ResourcesYieldSplitter.sol";
 import "./DeployContext.sol";
 import "./SpecialViews.sol";
 import "../../utils/AssertERC20.sol";

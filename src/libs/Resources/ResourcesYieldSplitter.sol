@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-
-import {ICvxRewardToken} from "../interfaces/externals/Convex/ICvxRewardToken.sol";
-
-import {IStakeDaoVault} from "../interfaces/externals/StakeDao/IStakeDaoVault.sol";
-import {ILlamaVault} from "../interfaces/externals/LlamaLend/ILlamaVault.sol";
-import {ISdtLiquidityGauge} from "../interfaces/externals/StakeDao/ISdtLiquidityGauge.sol";
-import {ICvxBooster} from "../interfaces/externals/Convex/ICvxBooster.sol";
-import {ICvxRewardToken} from "../interfaces/externals/Convex/ICvxRewardToken.sol";
-import {ICrvUSDController} from "../interfaces/externals/LlamaLend/ICrvUSDController.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ICvxRewardToken} from "../../interfaces/externals/Convex/ICvxRewardToken.sol";
+
+import {IStakeDaoVault} from "../../interfaces/externals/StakeDao/IStakeDaoVault.sol";
+import {ILlamaVault} from "../../interfaces/externals/LlamaLend/ILlamaVault.sol";
+import {ISdtLiquidityGauge} from "../../interfaces/externals/StakeDao/ISdtLiquidityGauge.sol";
+import {ICvxBooster} from "../../interfaces/externals/Convex/ICvxBooster.sol";
+import {ICvxRewardToken} from "../../interfaces/externals/Convex/ICvxRewardToken.sol";
+import {ICrvUSDController} from "../../interfaces/externals/LlamaLend/ICrvUSDController.sol";
 
 library AddrGlobal {
     ICvxBooster constant CVX_BOOSTER = ICvxBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
@@ -75,6 +74,8 @@ library AddrCvxRewardTokens {
     ICvxRewardToken constant CRVUSD_WETH = ICvxRewardToken(0xADde9073d897743E7004115Fa2452cC959FBF28a);
     ICvxRewardToken constant CRVUSD_WSTETH = ICvxRewardToken(0xbe3C3Fd181af6B99CC1bb9b0Ee065318aDFc4c96);
     ICvxRewardToken constant CRVUSD_LEVERAGE_WBTC = ICvxRewardToken(0xfe382f1Bf78e6D6012cB38C284Fe123ec9821966);
+
+    ICvxRewardToken constant CRVUSD_USDC_LP = ICvxRewardToken(0x44D8FaB7CD8b7877D5F79974c2F501aF6E65AbBA);
 }
 
 library AddrCvxVaultTokens {

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {ISdtStaking} from "../interfaces/internals/CVG/ISdtStaking.sol";
-import {ICvxStaking} from "../interfaces/internals/CVG/ICvxStaking.sol";
-import {ICvgCVX} from "../interfaces/internals/CVG/ICvgCVX.sol";
+import {ISdtStaking} from "../../interfaces/internals/CVG/ISdtStaking.sol";
+import {ICvxStaking} from "../../interfaces/internals/CVG/ICvxStaking.sol";
+import {ICvgCVX} from "../../interfaces/internals/CVG/ICvgCVX.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 library AddrBooster {

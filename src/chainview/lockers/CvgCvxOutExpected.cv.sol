@@ -11,7 +11,7 @@ import {ICrvPoolPlain} from "../../interfaces/externals/Curve/ICrvPoolPlain.sol"
 import {IOperator} from "../../interfaces/externals/StakeDao/IOperator.sol";
 import {ISdAsset} from "../../interfaces/externals/StakeDao/ISdAsset.sol";
 
-import {AddrBooster} from "../../libs/ResourcesBooster.sol";
+import {AddrBooster} from "../../libs/resources/ResourcesBooster.sol";
 
 contract CvgCvxOutExpected {
     ICrvPoolPlain cvgCVX1Lp = ICrvPoolPlain(0xc50E191F703FB3160fC15d8b168A8c740fec3666);

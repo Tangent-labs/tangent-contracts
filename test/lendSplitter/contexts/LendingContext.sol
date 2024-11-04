@@ -1,8 +1,8 @@
 import {Test} from "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "../../../src/libs/ResourcesGlobal.sol";
-import "../../../src/libs/ResourcesYieldSplitter.sol";
+import "../../../src/libs/resources/ResourcesGlobal.sol";
+import "../../../src/libs/resources/ResourcesYieldSplitter.sol";
 
 contract LendingContext is Test {
     address[] borrowers;
