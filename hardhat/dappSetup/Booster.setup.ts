@@ -72,7 +72,10 @@ export class BoosterSetup extends MainSetup {
             await this.sdPENDLEGauge.connect(user).deposit(ethers.parseEther("1000"));
 
             await this.PENDLE.connect(user).approve(this.sdtUtilities, this.erc20Minted);
-            await this.sdtUtilities.connect(user).convertAndStakeSdAsset(0, this.SD_PENDLE_STAKING, 0, 0, 0, this.erc20Minted - gaugeAmount, false);
+
+            await this.sdtUtilities
+                .connect(user)
+                .convertAndStakeSdAsset(0, this.SD_PENDLE_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
 
             // FXN
 
@@ -80,7 +83,7 @@ export class BoosterSetup extends MainSetup {
             await this.sdFXNGauge.connect(user).deposit(ethers.parseEther("1000"));
 
             await this.sdFXN.connect(user).approve(this.sdtUtilities, this.erc20Minted);
-            await this.sdtUtilities.connect(user).convertAndStakeSdAsset(0, this.SD_FXN_STAKING, 0, 0, this.erc20Minted - gaugeAmount, 0, false);
+            await this.sdtUtilities.connect(user).convertAndStakeSdAsset(0, this.SD_FXN_STAKING, 0, 0, ethers.parseEther("500"), 0, false);
 
             // BAL
 
@@ -88,7 +91,9 @@ export class BoosterSetup extends MainSetup {
             await this.sdBALGauge.connect(user).deposit(ethers.parseEther("1000"));
 
             await this._80Bal_20ETH.connect(user).approve(this.sdtUtilities, this.erc20Minted);
-            await this.sdtUtilities.connect(user).convertAndStakeSdAsset(0, this.SD_BAL_STAKING, 0, 0, 0, this.erc20Minted - gaugeAmount, false);
+            await this.sdtUtilities
+                .connect(user)
+                .convertAndStakeSdAsset(0, this.SD_BAL_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
         }
     }
 }
