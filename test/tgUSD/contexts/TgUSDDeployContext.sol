@@ -36,8 +36,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20 {
 
     address processor = makeAddr("Processor");
 
- 
-
     address public owner = makeAddr("Owner");
     address public ownerGauge = makeAddr("ownerGauge");
     address public feeTreasury = makeAddr("feeTreasury");

@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ICvxRewardToken} from "../../interfaces/externals/Convex/ICvxRewardToken.sol";
+
+import {IStakeDaoVault} from "../../interfaces/externals/StakeDao/IStakeDaoVault.sol";
+import {ILlamaVault} from "../../interfaces/externals/LlamaLend/ILlamaVault.sol";
+import {ISdtLiquidityGauge} from "../../interfaces/externals/StakeDao/ISdtLiquidityGauge.sol";
+import {ICvxBooster} from "../../interfaces/externals/Convex/ICvxBooster.sol";
+import {ICvxRewardToken} from "../../interfaces/externals/Convex/ICvxRewardToken.sol";
+import {ICrvUSDController} from "../../interfaces/externals/LlamaLend/ICrvUSDController.sol";
 
 import {IStakeDaoVault} from "../../interfaces/externals/StakeDao/IStakeDaoVault.sol";
 import {ILlamaVault} from "../../interfaces/externals/LlamaLend/ILlamaVault.sol";
