@@ -13,13 +13,15 @@ import "../../../src/LendSplitter/tokens/scvUSDCvx.sol";
 
 import "../../../src/LendSplitter/tokens/SplitterTokenComp.sol";
 
-import "../../../src/libs/resources/ResourcesGlobal.sol";
-import "../../../src/libs/resources/ResourcesYieldSplitter.sol";
+import "../../../src/libs/Resources/ResourcesGlobal.sol";
+import "../../../src/libs/Resources/ResourcesYieldSplitter.sol";
+import "../../../src/libs/Resources/ResourcesConvex.sol";
+
 import "./DeployContext.sol";
 import "./SpecialViews.sol";
-import "../../utils/AssertERC20.sol";
+
 import "../../utils/LowLevel.sol";
-contract ConvexMarketContext is DeployContext, AssertERC20, LowLevel, SpecialViews {
+contract ConvexMarketContext is DeployContext, LowLevel, SpecialViews {
     ILlamaVault[] llamaVaultArray;
     mapping(ILlamaVault => CvxStruct) public structsMap;
 

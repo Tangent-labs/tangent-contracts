@@ -113,7 +113,6 @@ contract CurveLend is Test {
         uint256 balanceBefore = stakeDaoVault.balanceOf(jim);
         stakeDaoVault.transferFrom(jhon, jim, 2 ether);
         uint256 balanceAfter = stakeDaoVault.balanceOf(jim);
-        console.log(balanceBefore, balanceAfter);
     }
 
     function run() public {

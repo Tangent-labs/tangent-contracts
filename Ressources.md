@@ -1,4 +1,3 @@
-
 # Existing contract
 
 ## StakeDao deposit usecase
@@ -145,7 +144,7 @@ https://lend.curve.fi/#/ethereum
 
 ## Documentation
 
-- https://resources.curve.fi/lending/overview/
+- https://Resources.curve.fi/lending/overview/
 
 ## Data
 

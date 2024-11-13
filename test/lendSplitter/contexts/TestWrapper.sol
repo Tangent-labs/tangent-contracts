@@ -193,7 +193,7 @@ contract TestWrapper is ConvexMarketContext {
 
             // If enough on gUSD to don't unstake anything from convex
             if (sharesAvailable >= burntSCVUSD) {
-                    verifyLostERC20(llamaVault, address(gUSD), burntSCVUSD);
+                verifyLostERC20(llamaVault, address(gUSD), burntSCVUSD);
             }
             // Else we need to unstake some llamaVault from the convex staking
             else {
@@ -236,7 +236,7 @@ contract TestWrapper is ConvexMarketContext {
         verifyReceiveERC20(cvxRewardToken, address(gUSD), llamaLpToStakeOnConvex);
 
         verifyMintERC20(crvGauge, llamaLpToStakeOnConvex);
-        verifyReceiveERC20(crvGauge, address(AddrGlobal.CVX_VOTER_PROXY), llamaLpToStakeOnConvex);
+        verifyReceiveERC20(crvGauge, address(AddrCvxGlobal.CVX_BOOSTER), llamaLpToStakeOnConvex);
     }
 
     function _verifyStakingOnConvex(uint256 llamaVaultAmount) internal {
@@ -248,7 +248,7 @@ contract TestWrapper is ConvexMarketContext {
         verifyReceiveERC20(cvxRewardToken, address(gUSD), llamaLpToStakeOnConvex);
 
         verifyMintERC20(crvGauge, llamaLpToStakeOnConvex);
-        verifyReceiveERC20(crvGauge, address(AddrGlobal.CVX_VOTER_PROXY), llamaLpToStakeOnConvex);
+        verifyReceiveERC20(crvGauge, address(AddrCvxGlobal.CVX_BOOSTER), llamaLpToStakeOnConvex);
     }
 
     function _verifySociabilisation(uint256 llamaVaultIn, uint256 llamaVaultAfterFees) internal {
@@ -259,6 +259,6 @@ contract TestWrapper is ConvexMarketContext {
         verifyBalERC20NotChanging(cvxRewardToken, address(gUSD));
 
         verifySupplyERC20NotChanging(crvGauge);
-        verifyBalERC20NotChanging(crvGauge, address(AddrGlobal.CVX_VOTER_PROXY));
+        verifyBalERC20NotChanging(crvGauge, address(AddrCvxGlobal.CVX_BOOSTER));
     }
 }

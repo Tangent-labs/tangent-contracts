@@ -17,8 +17,9 @@ import {ILlamaVault} from "../../../src/interfaces/externals/LlamaLend/ILlamaVau
 import {ILendRewardSplitter} from "../../../src/interfaces/internals/LendSplitter/ILendRewardSplitter.sol";
 import {ISplitterToken} from "../../../src/interfaces/internals/LendSplitter/ISplitterToken.sol";
 import {ICommonStruct} from "../../../src/interfaces/internals/ICommonStruct.sol";
-import "../../../src/libs/resources/ResourcesGlobal.sol";
-import "../../../src/libs/resources/ResourcesYieldSplitter.sol";
+import "../../../src/libs/Resources/ResourcesGlobal.sol";
+import "../../../src/libs/Resources/ResourcesYieldSplitter.sol";
+import "../../../src/libs/Resources/ResourcesConvex.sol";
 
 import "forge-std/console.sol";
 
@@ -27,7 +28,9 @@ import "forge-std/Test.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {StdUtils} from "forge-std/StdUtils.sol";
 
-contract DeployContext is StdCheats, StdUtils, Test {
+import "../../utils/AssertERC20.sol";
+
+contract DeployContext is StdCheats, StdUtils, AssertERC20 {
     address usr1 = makeAddr("User1");
     address usr2 = makeAddr("User2");
     address usr3 = makeAddr("User3");
@@ -36,8 +39,6 @@ contract DeployContext is StdCheats, StdUtils, Test {
     address usr6 = makeAddr("User6");
 
     address processor = makeAddr("Processor");
-
-    uint256 public MAX_UINT = uint256(int256(-1));
 
     address public owner = makeAddr("Owner");
     address public ownerGauge = makeAddr("ownerGauge");
@@ -69,7 +70,7 @@ contract DeployContext is StdCheats, StdUtils, Test {
         //labelizing
         vm.label(address(splitter), "SPLITTER");
         vm.label(address(AddrClassicERC20.TOKEN_CRVUSD), "crvUSD");
-        vm.label(address(AddrGlobal.CVX_BOOSTER), "CVX_BOOSTER");
+        vm.label(address(AddrCvxGlobal.CVX_BOOSTER), "CVX_BOOSTER");
     }
 
     function deployProxyAdmin() public {
