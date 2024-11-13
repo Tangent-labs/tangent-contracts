@@ -2,12 +2,14 @@
 pragma solidity ^0.8.24;
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
+import "../../interfaces/internals/tgUSD/IPriceOracle.sol";
+
 import "../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 
 import "forge-std/console.sol";
 
-contract CurveStableLPOracle {
+contract CurveStableLPOracle is IPriceOracle {
     mapping(address => uint256) curveLPType;
 
     IERC20Metadata coin0;
@@ -50,7 +52,7 @@ contract CurveStableLPOracle {
         return a;
     }
 
-    function getLPPrice() external view returns (uint256) {
+    function latestAnswer() external view returns (uint256) {
         (, int256 a0, , uint256 lastUpdate0, ) = coin0Oracle.latestRoundData();
         (, int256 a1, , uint256 lastUpdate1, ) = coin1Oracle.latestRoundData();
 

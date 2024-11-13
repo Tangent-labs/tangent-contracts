@@ -4,7 +4,6 @@
 
 ```
 forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-contracts OpenZeppelin/openzeppelin-contracts-upgradeable OpenZeppelin/openzeppelin-foundry-upgrades --no-git
-
 ```
 
 ## update foundry
@@ -20,6 +19,12 @@ for more info : https://book.getfoundry.sh/reference/forge/forge-test
 ```
 forge test --match-contract  LendRewardSplitterTest  -vvv --fail-fast
 forge test --match-test testWith -vvv --fail-fast
+```
+
+To run all tests in a folder :
+
+```
+forge test --match-path test/tgUSD/*.t.sol
 ```
 
 **-v** : for the `--verbosity` part you can use up to 5 v from `-v` to `-vvvvv`

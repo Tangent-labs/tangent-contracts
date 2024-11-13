@@ -8,8 +8,6 @@ import "../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 import "forge-std/console.sol";
 
 contract CurveStableLPOracleWithAssembly {
-    bytes4 constant selectorGetVirtualPrice = bytes4(keccak256("get_virtual_price()"));
-
     mapping(address => uint256) curveLPType;
 
     IERC20Metadata coin0;
@@ -60,6 +58,7 @@ contract CurveStableLPOracleWithAssembly {
         uint256 _coin1OracleDecimals;
 
         uint256 virtualPrice;
+        bytes4 selectorGetVirtualPrice = bytes4(keccak256("get_virtual_price()"));
         assembly {
             _aggreg0 := and(sload(3), 0x000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
 

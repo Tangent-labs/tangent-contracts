@@ -51,7 +51,6 @@ export class BoosterSetup extends MainSetup {
         this.SD_BAL_STAKING = await ethers.getContractAt("ISdtStaking", "0xAf5b3f4A0b4dc334dB7137E5584E0e971E5e4962");
     }
 
-    // CRV
     async stake() {
         const gaugeAmount = ethers.parseEther("1000");
         for (let i = 0; i < this.users.length; i++) {
@@ -60,11 +59,14 @@ export class BoosterSetup extends MainSetup {
             await this.sdCRV.connect(user).approve(this.sdCRVGauge, ethers.parseEther("10000"));
             await this.sdCRVGauge.connect(user).deposit(gaugeAmount);
 
-            await this.CRV.connect(user).approve(this.sdtUtilities, this.erc20Minted);
+            await this.CRV.connect(user).approve(this.sdtUtilities, ethers.MaxUint256);
             await this.sdCRV.connect(user).approve(this.sdtUtilities, this.erc20Minted);
             await this.sdCRVGauge.connect(user).approve(this.SD_CRV_STAKING, this.erc20Minted);
 
             await this.SD_CRV_STAKING.connect(user).deposit(0, ethers.parseEther("500"), user);
+            await this.sdtUtilities
+                .connect(user)
+                .convertAndStakeSdAsset(0, this.SD_CRV_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
 
             // PENDLE
 

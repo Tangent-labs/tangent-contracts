@@ -15,7 +15,6 @@ ignored_error_codes = [
     3860, # Disable the specific warning code 3860 in tests
 ]
 
-
 fs_permissions = [{ access = "read-write", path = "./" }]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
 
@@ -25,6 +24,9 @@ remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts",
     "@openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable",
     "@openzeppelin-foundry-upgrades/=lib/openzeppelin-foundry-upgrades/src/",
+    '@layerzerolabs/oft-evm/=lib/devtools/packages/oft-evm/',
+    '@layerzerolabs/oapp-evm/=lib/devtools/packages/oapp-evm/',
+    '@layerzerolabs/lz-evm-protocol-v2/=lib/layerzero-v2/packages/layerzero-v2/evm/protocol',
 ]
 
 [rpc_endpoints]

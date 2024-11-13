@@ -10,7 +10,7 @@ import {ISdtStakingManager} from "../../interfaces/internals/CVG/ISdtStakingMana
 
 import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 
-import {AddrBooster} from "../../libs/resources/ResourcesBooster.sol";
+import {AddrBooster} from "../../libs/Resources/ResourcesBooster.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 

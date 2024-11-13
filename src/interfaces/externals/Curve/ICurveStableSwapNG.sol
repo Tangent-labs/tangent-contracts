@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-interface ICurveStableSwapNG {
+
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+interface ICurveStableSwapNG is IERC20Metadata {
     function exchange(int128 i, int128 j, uint256 _dx, uint256 _min_dy) external returns (uint256);
     function exchange(int128 i, int128 j, uint256 _dx, uint256 _min_dy, address _receiver) external returns (uint256);
     function exchange_received(int128 i, int128 j, uint256 _dx, uint256 _min_dy) external returns (uint256);
     function exchange_received(int128 i, int128 j, uint256 _dx, uint256 _min_dy, address _receiver) external returns (uint256);
-    function add_liquidity(uint256[2] memory _amounts, uint256 _min_mint_amount) external returns (uint256);
-    function add_liquidity(uint256[2] memory _amounts, uint256 _min_mint_amount, address _receiver) external returns (uint256);
+    function add_liquidity(uint256[] memory _amounts, uint256 _min_mint_amount) external returns (uint256);
+    function add_liquidity(uint256[] memory _amounts, uint256 _min_mint_amount, address _receiver) external returns (uint256);
     function remove_liquidity_one_coin(uint256 _burn_amount, int128 i, uint256 _min_received) external returns (uint256);
     function remove_liquidity_one_coin(uint256 _burn_amount, int128 i, uint256 _min_received, address _receiver) external returns (uint256);
     function remove_liquidity_imbalance(uint256[] memory _amounts, uint256 _max_burn_amount) external returns (uint256);
@@ -20,12 +22,12 @@ interface ICurveStableSwapNG {
         address _receiver,
         bool _claim_admin_fees
     ) external returns (uint256[2] memory);
-    
+
     function withdraw_admin_fees() external;
     function last_price(uint256 i) external view returns (uint256);
     function ema_price(uint256 i) external view returns (uint256);
     function get_p(uint256 i) external view returns (uint256);
-    function price_oracle(uint256 i) external view returns (uint256);
+    function price_oracle() external view returns (uint256);
     function D_oracle() external view returns (uint256);
     function transfer(address _to, uint256 _value) external returns (bool);
     function transferFrom(address _from, address _to, uint256 _value) external returns (bool);
