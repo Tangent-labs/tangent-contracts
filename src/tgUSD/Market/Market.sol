@@ -170,6 +170,10 @@ abstract contract Market is Ownable, IMarket {
         (uint256 newDebtIndex, ) = _checkointIR();
 
         uint256 newCollatAmount = collateralBalances[msg.sender] - amountToWithdraw;
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
         /// @dev Verify that the newDebt of the loan is not over the maximum borrrowable
         require(_maxBorrowable(newCollatAmount) >= _positionDebt(msg.sender, newDebtIndex), PositionDebtTooHigh());
 

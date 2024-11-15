@@ -125,9 +125,7 @@ abstract contract MarketRewards is Market, IMarketRewards {
 
     function withdraw(uint256 lpToWithdraw) external updateReward(address(0)) {
         _withdraw(lpToWithdraw);
-        console.log("PIPI");
         totalCollateral -= lpToWithdraw;
-        console.log("POPO");
         _postWithdraw(lpToWithdraw);
     }
 
