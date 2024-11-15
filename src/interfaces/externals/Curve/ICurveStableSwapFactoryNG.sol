@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 interface ICurveStableSwapFactoryNG {
     function find_pool_for_coins(address _from, address _to) external view returns (address);
     function find_pool_for_coins(address _from, address _to, uint256 i) external view returns (address);

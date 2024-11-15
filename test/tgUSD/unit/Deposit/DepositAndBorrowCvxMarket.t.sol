@@ -12,7 +12,6 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
     HDepositConvexCrvLP public hDeposit;
     HBorrow public hBorrow;
     function setUp() public {
-        deployBaseContracts();
         collatToken = AddrCurveStableLP.CRVUSD_USDC;
         market = deployConvexCurveLPMarket(collatToken);
 

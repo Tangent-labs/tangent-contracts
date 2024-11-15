@@ -10,7 +10,7 @@
 //     ICurveStableSwapNG lp = AddrCurveStableLP.CRVUSD_USDC;
 //     ICvxRewardToken rewardToken = AddrCvxRewardTokens.CRVUSD_USDC_LP;
 
-//     uint256 poolId = PidCvxBooster.CRVUSD_USDC_LP;
+//     uint256 poolId = PidCvxCrvBooster.CRVUSD_USDC_LP;
 
 //     function setUp() public {
 //         deployBaseContracts();

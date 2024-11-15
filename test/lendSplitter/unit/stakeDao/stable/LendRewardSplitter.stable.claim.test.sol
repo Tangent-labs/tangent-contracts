@@ -5,7 +5,7 @@
 // import {SplitterToken} from "../../src/tokens/SplitterToken.sol";
 // import {scvUSDSdt} from "../../src/tokens/stakeDao/scvUSDSdt.sol";
 // import {gUSDSdt} from "../../src/tokens/stakeDao/gUSDSdt.sol";
-// import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, AddrCvxRewardTokens, PidCvxBooster, AddrCvxVaultTokens} from "../../src/libs/Resources.sol";
+// import {AddrLlamaLendVaults, AddrSdtVaults, AddrSdtGauges, AddrClassicERC20, AddrCvxRewardTokens, PidCvxCrvBooster, AddrCvxVaultTokens} from "../../src/libs/Resources.sol";
 // import {ILlamaVault} from "../../src/interfaces/externals/LlamaLend/ILlamaVault.sol";
 // import {IStakeDaoVault} from "../../src/interfaces/externals/StakeDao/IStakeDaoVault.sol";
 // import {ISdtLiquidityGauge} from "../../src/interfaces/externals/StakeDao/ISdtLiquidityGauge.sol";

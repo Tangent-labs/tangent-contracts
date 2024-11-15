@@ -170,10 +170,6 @@ abstract contract Market is Ownable, IMarket {
         (uint256 newDebtIndex, ) = _checkointIR();
 
         uint256 newCollatAmount = collateralBalances[msg.sender] - amountToWithdraw;
-<<<<<<< HEAD
-=======
-
->>>>>>> main
         /// @dev Verify that the newDebt of the loan is not over the maximum borrrowable
         require(_maxBorrowable(newCollatAmount) >= _positionDebt(msg.sender, newDebtIndex), PositionDebtTooHigh());
 
@@ -268,10 +264,13 @@ abstract contract Market is Ownable, IMarket {
 
     function repayAll(address account) external {
         uint256 userDebt = positionDebt(account);
+        console.log("userDebt", userDebt);
 
         (uint256 newDebtIndex, ) = _checkointIRRepay(userDebt);
 
         _updateDebts(account, 0, newDebtIndex);
+
+        console.log("userDebt", userDebt);
 
         /// @dev Mint tgUSD from the user
         tgUSD.burnFrom(msg.sender, userDebt);
@@ -364,6 +363,10 @@ abstract contract Market is Ownable, IMarket {
 
     function maxBorrowable(uint256 collatAmount) external view returns (uint256) {
         return _maxBorrowable(collatAmount);
+    }
+
+    function maxBorrowable(address account) external view returns (uint256) {
+        return _maxBorrowable(account);
     }
 
     function _maxBorrowable(uint256 collatAmount) internal view returns (uint256) {

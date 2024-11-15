@@ -59,7 +59,7 @@ contract ConvexMarketContext is DeployContext, LowLevel, SpecialViews {
 
         structsMap[AddrLlamaLendVaults.CRVUSD_CRV] = CvxStruct({
             llamaVault: AddrLlamaLendVaults.CRVUSD_CRV,
-            pid: PidCvxBooster.CRVUSD_CRV,
+            pid: PidCvxCrvBooster.CRVUSD_CRV,
             crvGauge: AddrCrvGauges.CRVUSD_CRV,
             crvController: AddrCrvController.CRVUSD_CRV,
             crvAmm: AddrCrvAmm.CRVUSD_CRV,
@@ -72,7 +72,7 @@ contract ConvexMarketContext is DeployContext, LowLevel, SpecialViews {
         });
         structsMap[AddrLlamaLendVaults.CRVUSD_LEVERAGE_WETH] = CvxStruct({
             llamaVault: AddrLlamaLendVaults.CRVUSD_LEVERAGE_WETH,
-            pid: PidCvxBooster.CRVUSD_LEVERAGE_WETH,
+            pid: PidCvxCrvBooster.CRVUSD_LEVERAGE_WETH,
             crvGauge: AddrCrvGauges.CRVUSD_LEVERAGE_WETH,
             crvController: AddrCrvController.CRVUSD_LEVERAGE_WETH,
             crvAmm: AddrCrvAmm.CRVUSD_LEVERAGE_WETH,
@@ -85,7 +85,7 @@ contract ConvexMarketContext is DeployContext, LowLevel, SpecialViews {
         });
         structsMap[AddrLlamaLendVaults.CRVUSD_LEVERAGE_WBTC] = CvxStruct({
             llamaVault: AddrLlamaLendVaults.CRVUSD_LEVERAGE_WBTC,
-            pid: PidCvxBooster.CRVUSD_LEVERAGE_WBTC,
+            pid: PidCvxCrvBooster.CRVUSD_LEVERAGE_WBTC,
             crvGauge: AddrCrvGauges.CRVUSD_LEVERAGE_WBTC,
             crvController: AddrCrvController.CRVUSD_LEVERAGE_WBTC,
             crvAmm: AddrCrvAmm.CRVUSD_LEVERAGE_WBTC,

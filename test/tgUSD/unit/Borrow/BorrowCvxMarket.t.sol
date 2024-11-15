@@ -14,7 +14,6 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
     uint256 minimumLoan;
     function setUp() public {
-        deployBaseContracts();
         collatToken = AddrCurveStableLP.CRVUSD_USDC;
         market = deployConvexCurveLPMarket(collatToken);
 
@@ -53,21 +52,25 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         assertEq(market.positionDebt(usr1), market.totalDebt());
 
-        address[] memory markets = new address[](1);
-        markets[0] = address(market);
-        irMinter.mintIR(markets);
+        irMinter.mintIR(Array.memoryAddress([address(market)]));
 
         assertEq(market.totalDebt(), market.lastDebt() + market.pendingInterests());
         assertEq(market.positionDebt(usr1), market.totalDebt());
 
         repayAmount = bound(repayAmount, 1, market.positionDebt(usr1) - market.minimumLoan());
 
-        uint256 user1Debt = market.positionDebt(usr1);
-        deal(address(tgUsd), usr1, 2_000_000 ether);
+        vm.startPrank(owner);
+        tgUsd.toggleMintersBurners(Array.memoryAddress([owner]));
+        tgUsd.mint(usr1, repayAmount);
+        vm.stopPrank();
 
         hBorrow.repay(usr1, repayAmount);
 
         skip(30);
+
+        vm.startPrank(owner);
+        tgUsd.mint(usr1, market.positionDebt(usr1));
+        vm.stopPrank();
 
         hBorrow.repayAll(usr1);
     }

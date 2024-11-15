@@ -13,7 +13,6 @@ contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
     uint256 minimumLoan;
 
     function setUp() public {
-        deployBaseContracts();
         collatToken = AddrCurveStableLP.CRVUSD_USDC;
         market = deployConvexCurveLPMarket(collatToken);
 

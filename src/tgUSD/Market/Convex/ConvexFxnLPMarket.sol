@@ -44,4 +44,15 @@ contract ConvexFxnLPMarket is MarketRewards {
 
         collatToken.transfer(msg.sender, lpToWithdraw);
     }
+
+    // /**
+    //  * @notice Claim and process the governance rewards
+    //  * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
+    //  *      Anyone can trigger this function and will be incentivized with a processor fee.
+    //  */
+    // function processRewards(address harvestFeeReceiver) external override {
+    //     /// @dev Claim rewards on behalf
+    //     cvxRewardToken.getReward();
+    //     _processRewards(harvestFeeReceiver);
+    // }
 }

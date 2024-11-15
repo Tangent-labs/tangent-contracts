@@ -13,16 +13,16 @@ import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.s
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
+import "../../../test/utils/Array.sol";
+
 import "../../../src/libs/Resources/ResourcesGlobal.sol";
 
 import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
-import "../../../src/tgUSD/Oracles/CurveStableLPOracle.sol";
 
 import "../../../src/tgUSD/Utilities/IRMinter.sol";
 import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
 import "../../../src/tgUSD/tokens/tgUSD.sol";
-import "../../../src/tgUSD/Oracles/tgUSDOracle.sol";
 
 import "../../utils/AssertERC20.sol";
 
@@ -42,8 +42,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20 {
 
     address public endpointAddressMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
 
-    tgUSDOracle public tgUsdOracle;
-
     ICurveStableSwapNG public tgUSDLp;
 
     tgUSD public tgUsd;
@@ -55,7 +53,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20 {
     /// @dev Validate Implementation (false if you don't want to "forge clean" at each modification)
     bool constant IS_VALIDATE_IMPLEM = false;
 
-    function deployBaseContracts() public {
+    constructor() {
         vm.createSelectFork("mainnet", 21093905);
 
         /// Deploy tgUSD
@@ -67,10 +65,15 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20 {
 
         /// Deploy and addLiquidity in tgUSD LP
         tgUSDLp = deployTgUSDLP();
-        /// Deploy tgUSD oracle price
-        tgUsdOracle = new tgUSDOracle(tgUSDLp, IPriceOracle(address(AddrChainlinkOracle.USDC)), 6);
+
+        tgUsd.toggleMintersBurners(Array.memoryAddress([address(irMinter)]));
 
         rewardAccumulator = new RewardAccumulator(owner, feeTreasury);
+
+        vm.label(address(tgUsd), "tgUSD");
+        vm.label(address(irMinter), "IRMinter");
+        vm.label(address(tgUSDLp), "LP tgUSD");
+        vm.label(address(rewardAccumulator), "RewardAccumulator");
     }
 
     function deployTgUSDLP() public returns (ICurveStableSwapNG) {
@@ -78,46 +81,26 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20 {
         deal(address(AddrClassicERC20.TOKEN_USDC), owner, 1_000_000 * 10 ** 6);
         vm.startPrank(owner);
 
-        address[] memory tokens = new address[](2);
-        tokens[0] = address(AddrClassicERC20.TOKEN_USDC);
-        tokens[1] = address(tgUsd);
-
-        uint8[] memory assetTypes = new uint8[](2);
-        assetTypes[0] = 0;
-        assetTypes[1] = 0;
-
-        bytes4[] memory methodIds = new bytes4[](2);
-        methodIds[0] = bytes4(0);
-        methodIds[1] = bytes4(0);
-
-        address[] memory oracles = new address[](2);
-        oracles[0] = address(0);
-        oracles[1] = address(0);
-
         ICurveStableSwapNG lpTgUSD = ICurveStableSwapNG(
             AddrCurveStableLP.STABLE_SWAP_FACTORY.deploy_plain_pool(
                 "tgUSD-USDC",
                 "tgUSD-USDC",
-                tokens,
+                Array.memoryAddress([address(AddrClassicERC20.TOKEN_USDC), address(tgUsd)]),
                 5000,
                 100000000,
                 0,
                 866,
                 0,
-                assetTypes,
-                methodIds,
-                oracles
+                Array.memoryUint8([uint8(0), uint8(0)]),
+                Array.memoryBytes4([bytes4(0), bytes4(0)]),
+                Array.memoryAddress([address(0), address(0)])
             )
         );
-
-        uint256[] memory amounts = new uint256[](2);
-        amounts[0] = uint256(1_000_000 * 10 ** 6);
-        amounts[1] = uint256(1_000_000 ether);
 
         AddrClassicERC20.TOKEN_USDC.approve(address(lpTgUSD), MAX_UINT);
         tgUsd.approve(address(lpTgUSD), MAX_UINT);
 
-        lpTgUSD.add_liquidity(amounts, uint256(0));
+        lpTgUSD.add_liquidity(Array.memoryUint256([uint256(1_000_000 * 10 ** 6), uint256(1_000_000 ether)]), uint256(0));
 
         return lpTgUSD;
     }
