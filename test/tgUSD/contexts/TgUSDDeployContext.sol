@@ -59,8 +59,9 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20 {
         vm.createSelectFork("mainnet", 21093905);
 
         /// Deploy tgUSD
-        tgUsd = new tgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"));
-        tgUsd.mint(owner, 1_000_000 ether);
+        tgUsd = new tgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"), owner);
+
+        deal(address(tgUsd), owner, 1_000_000 ether);
 
         irMinter = new IRMinter(owner, feeTreasury, tgUsd);
 

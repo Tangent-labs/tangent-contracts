@@ -1,34 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.22;
-import "forge-std/Test.sol";
+import "../Base/HandlerBase.sol";
 
-import "../../../src/tgUSD/Market/MarketRewards.sol";
-import "../../utils/AssertERC20.sol";
-
-contract HProcessRewards is AssertERC20 {
-    address public sender;
-    MarketRewards public marketRewards;
-
-    constructor(address _sender, MarketRewards _marketRewards) {
-        marketRewards = _marketRewards;
-        sender = _sender;
-    }
-
-    function setMsgSender(address _sender) external {
-        sender = _sender;
-    }
-
-    function setMarketRewards(MarketRewards _marketRewards) external {
-        marketRewards = _marketRewards;
-    }
-
-    function processRewards(address harvestFeeReceiver) external {
-        vm.startPrank(sender);
-        IERC20[] memory rewardTokens = marketRewards.getRewardTokens();
-        uint256 harvesterFeePercentage = marketRewards.harvesterFeePercentage();
-        IRewardAccumulator rewardAccumulator = marketRewards.rewardAccumulator();
-        uint256 rewardCut = marketRewards.rewardCutPercentage();
+contract HProcessRewards is HandlerBase {
+    constructor(address _sender, ConvexCrvLPMarket _market) HandlerBase(_sender, _market) {}
+    function processRewards(address harvestFeeReceiver) external handler {
+        IERC20[] memory rewardTokens = market.getRewardTokens();
+        uint256 harvesterFeePercentage = market.harvesterFeePercentage();
+        IRewardAccumulator rewardAccumulator = market.rewardAccumulator();
+        uint256 rewardCut = market.rewardCutPercentage();
 
         uint256[] memory receivedByHarvestor = new uint256[](rewardTokens.length);
         uint256[] memory receivedByAccumulator = new uint256[](rewardTokens.length);
@@ -42,7 +23,7 @@ contract HProcessRewards is AssertERC20 {
             rewardCuts[index] = rewardAccumulator.cutFeeForToken(rewardToken);
         }
 
-        marketRewards.processRewards(harvestFeeReceiver);
+        market.processRewards(harvestFeeReceiver);
 
         for (uint256 index; index < rewardTokens.length; index++) {
             IERC20 rewardToken = rewardTokens[index];
@@ -54,11 +35,9 @@ contract HProcessRewards is AssertERC20 {
             assertEq((totalClaimed * harvesterFeePercentage) / 100_000, receivedByHarvestor[index]);
 
             uint256 cutFee = (receivedByAccumulator[index] * rewardCut) / 100_000;
-            uint256 streamedRewards = receivedByAccumulator[index] - cutFee;
+            // uint256 streamedRewards = receivedByAccumulator[index] - cutFee;
 
             assertEq(rewardAccumulator.cutFeeForToken(rewardToken) - rewardCuts[index], cutFee);
         }
-
-        vm.stopPrank();
     }
 }

@@ -79,8 +79,8 @@ contract ConvexCurveContext is TgUSDDeployContext {
         markets[0] = _convexMarket;
 
         irMinter.toggleIRProducers(markets);
-
         rewardAccumulator.toggleMarketRewards(markets);
+        tgUsd.toggleMintersBurners(markets);
     }
 
     function giveCollateralToUsers(IERC20Metadata collat) public {
