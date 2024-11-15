@@ -15,9 +15,9 @@ contract GetLPPriceCurveStableSwap is TgUSDDeployContext {
     }
 
     // 80361
-    function test_price_crvUSD_USDC() external {
-        uint256 lpPriceStart = curveLPOracle.getLPPrice();
-    }
+    // function test_price_crvUSD_USDC() external {
+    //     uint256 lpPriceStart = curveLPOracle.getLPPrice();
+    // }
 
     // function test_exploit_price_crvUSD_USDC(uint256 amountInSwap, uint256 amount0Lp, uint256 amount1Lp) external {
     //     deal(address(coin0), usr1, 1_000_000_000_000 * 10 ** coin0.decimals());

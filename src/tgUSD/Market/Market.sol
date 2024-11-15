@@ -170,7 +170,10 @@ abstract contract Market is Ownable, IMarket {
         (uint256 newDebtIndex, ) = _checkointIR();
 
         uint256 newCollatAmount = collateralBalances[msg.sender] - amountToWithdraw;
+<<<<<<< HEAD
+=======
 
+>>>>>>> main
         /// @dev Verify that the newDebt of the loan is not over the maximum borrrowable
         require(_maxBorrowable(newCollatAmount) >= _positionDebt(msg.sender, newDebtIndex), PositionDebtTooHigh());
 
@@ -263,15 +266,27 @@ abstract contract Market is Ownable, IMarket {
         tgUSD.burnFrom(msg.sender, tgUSDToRepay);
     }
 
+    function repayAll(address account) external {
+        uint256 userDebt = positionDebt(account);
+
+        (uint256 newDebtIndex, ) = _checkointIRRepay(userDebt);
+
+        _updateDebts(account, 0, newDebtIndex);
+
+        /// @dev Mint tgUSD from the user
+        tgUSD.burnFrom(msg.sender, userDebt);
+    }
+
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     DEBT & IR CHECKPOINTS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function mintPendingInterests() external returns (uint256) {
+        require(msg.sender == irMinter, NotIRMinter());
         (uint256 newDebtIndex, ) = _checkointIR();
 
         _updateGlobalDebt(newDebtIndex);
-        require(msg.sender == irMinter, NotIRMinter());
+
         uint256 _mintableIterests = mintableInterests;
         delete mintableInterests;
         return _mintableIterests;

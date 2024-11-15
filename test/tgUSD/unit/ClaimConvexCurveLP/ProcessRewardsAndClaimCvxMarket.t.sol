@@ -1,8 +1,8 @@
 import "../../contexts/ConvexCurveContext.sol";
 
-import "../../handler/HProcessRewards.sol";
-import "../../handler/HDepositConvexCrvLP.sol";
-import "../../handler/HBorrow.sol";
+import "../../handler/Features/HProcessRewards.sol";
+import "../../handler/Features/HDepositConvexCrvLP.sol";
+import "../../handler/Features/HBorrow.sol";
 contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
