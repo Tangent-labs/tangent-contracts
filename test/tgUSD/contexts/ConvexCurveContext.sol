@@ -4,8 +4,15 @@ pragma solidity ^0.8.24;
 import "./OraclesContext.sol";
 
 import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
-
 import "../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
+
+import "../handler/Features/HProcessRewards.sol";
+import "../handler/Features/HBorrow.sol";
+import "../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
+import "../handler/Features/ConvexCrv/HWithdrawConvexCrvLP.sol";
+
+import "../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
+import "../handler/Features/ConvexFxn/HWithdrawConvexFxnLP.sol";
 
 contract ConvexCurveContext is OraclesContext {
     IMarket[] cvxCurveLPMarket;
@@ -39,6 +46,8 @@ contract ConvexCurveContext is OraclesContext {
         IERC20[] memory _rewardsCrvCvx = new IERC20[](2);
         _rewardsCrvCvx[0] = AddrClassicERC20.TOKEN_CRV;
         _rewardsCrvCvx[1] = AddrClassicERC20.TOKEN_CVX;
+        vm.label(address(AddrClassicERC20.TOKEN_CRV), "CRV");
+        vm.label(address(AddrClassicERC20.TOKEN_CVX), "CVX");
 
         cvxCurveLPMaps[address(AddrCurveStableLP.CRVUSD_USDC)] = ParamsInitConvexCurveLPMarket({
             collat: AddrCurveStableLP.CRVUSD_USDC,
@@ -49,7 +58,8 @@ contract ConvexCurveContext is OraclesContext {
         });
 
         IERC20[] memory _rewardsFxn = new IERC20[](1);
-        _rewardsCrvCvx[0] = AddrClassicERC20.TOKEN_FXN;
+        _rewardsFxn[0] = AddrClassicERC20.TOKEN_FXN;
+        vm.label(address(AddrClassicERC20.TOKEN_FXN), "FXN");
 
         cvxFxnLPMaps[address(AddrCurveStableLP.USDC_FXUSD)] = ParamsInitConvexFxnLPMarket({
             collat: AddrCurveStableLP.USDC_FXUSD,
@@ -62,7 +72,8 @@ contract ConvexCurveContext is OraclesContext {
     function deployConvexCurveLPMarket(IERC20Metadata collat) public returns (ConvexCrvLPMarket) {
         ParamsInitConvexCurveLPMarket memory initP = cvxCurveLPMaps[address(collat)];
 
-        require(address(initP.collat) != address(0), "NO_INIT_PARAMS_FOR_LP");
+        assertTrue(address(initP.collat) != address(0), "No init params for LP");
+        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
 
         /// Initialize reward tokens for the market
         ConvexCrvLPMarket convexMarket = new ConvexCrvLPMarket(
@@ -87,7 +98,8 @@ contract ConvexCurveContext is OraclesContext {
         toggleIrProducerAndRewardAccumulator(address(convexMarket));
         giveCollateralToUsers(collat);
 
-        vm.label(address(convexMarket), string.concat("Market ", collat.symbol()));
+        vm.label(address(collat), string.concat(collat.symbol()));
+        vm.label(address(convexMarket), string.concat("Market CvxCrv", collat.symbol()));
         vm.label(address(initP.cvxRewardToken), string.concat("CvxRewardToken ", collat.symbol()));
 
         return convexMarket;
@@ -96,7 +108,8 @@ contract ConvexCurveContext is OraclesContext {
     function deployConvexFxnLPMarket(IERC20Metadata collat) public returns (ConvexFxnLPMarket) {
         ParamsInitConvexFxnLPMarket memory initP = cvxFxnLPMaps[address(collat)];
 
-        require(address(initP.collat) != address(0), "NO_INIT_PARAMS_FOR_LP");
+        assertTrue(address(initP.collat) != address(0), "No init params for LP");
+        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
 
         /// Initialize reward tokens for the market
         ConvexFxnLPMarket convexMarket = new ConvexFxnLPMarket(
@@ -119,12 +132,16 @@ contract ConvexCurveContext is OraclesContext {
         toggleIrProducerAndRewardAccumulator(address(convexMarket));
         giveCollateralToUsers(collat);
 
+        vm.label(address(collat), string.concat(collat.symbol()));
+        vm.label(address(convexMarket), string.concat("Market CvxFxn ", collat.symbol()));
+        vm.label(address(AddrClassicERC20.TOKEN_FXN), "FXN");
+        vm.label(address(convexMarket.stakingProxyVault()), string.concat("StakingProxyVault ", collat.symbol()));
+
         return convexMarket;
     }
 
     function toggleIrProducerAndRewardAccumulator(address _convexMarket) public {
-        address[] memory markets = new address[](1);
-        markets[0] = _convexMarket;
+        address[] memory markets = Array.memoryAddress([_convexMarket]);
 
         irMinter.toggleIRProducers(markets);
         rewardAccumulator.toggleMarketRewards(markets);

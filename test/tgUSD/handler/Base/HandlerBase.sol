@@ -2,12 +2,12 @@
 pragma solidity ^0.8.22;
 
 import "../../../utils/AssertERC20.sol";
-import "../../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
+import "../../../../src/tgUSD/Market/Market.sol";
 abstract contract HandlerBase is AssertERC20 {
     address public sender;
-    ConvexCrvLPMarket public market;
+    Market public market;
 
-    constructor(address _sender, ConvexCrvLPMarket _market) {
+    constructor(address _sender, Market _market) {
         market = _market;
         sender = _sender;
     }
@@ -16,7 +16,7 @@ abstract contract HandlerBase is AssertERC20 {
         sender = _sender;
     }
 
-    function setMarketRewards(ConvexCrvLPMarket _market) external {
+    function setMarket(Market _market) external {
         market = _market;
     }
 

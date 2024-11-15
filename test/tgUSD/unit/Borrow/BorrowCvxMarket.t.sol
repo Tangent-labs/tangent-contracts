@@ -1,8 +1,6 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 import "../../contexts/ConvexCurveContext.sol";
-
-import "../../handler/Features/HProcessRewards.sol";
-import "../../handler/Features/HDepositConvexCrvLP.sol";
-import "../../handler/Features/HBorrow.sol";
 
 contract BorrowCvxMarket is ConvexCurveContext {
     ConvexCrvLPMarket public market;

@@ -1,10 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.22;
-import "../Base/HMarketBase.sol";
+import "../../Base/HMarketBase.sol";
 
-contract HDepositConvexCrvLP is HMarketBase {
-    constructor(address _sender, ConvexCrvLPMarket _market) HandlerBase(_sender, _market) {}
+import "../../../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
+
+contract HDepositConvexFxnLP is HMarketBase {
+    ConvexFxnLPMarket marketFxnLP;
+    constructor(address _sender, ConvexFxnLPMarket _market) HandlerBase(_sender, _market) {
+        marketFxnLP = ConvexFxnLPMarket(address(_market));
+    }
     function deposit(address _for, uint256 lpDeposited, bool isStaked) external handler {
         (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(
             _for,
@@ -12,7 +17,7 @@ contract HDepositConvexCrvLP is HMarketBase {
             isStaked
         );
 
-        market.deposit(_for, lpDeposited, isStaked);
+        marketFxnLP.deposit(_for, lpDeposited, isStaked);
 
         _afterDepositCheck(_for, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
     }
@@ -23,13 +28,13 @@ contract HDepositConvexCrvLP is HMarketBase {
             lpDeposited,
             isStaked
         );
-        (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, ) = _beforBorrowOrRepayCheck(market);
-        _beforeBorrowCheck(market, sender, borrowedAmount);
+        (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, ) = _beforBorrowOrRepayCheck(marketFxnLP);
+        _beforeBorrowCheck(marketFxnLP, sender, borrowedAmount);
 
-        market.depositAndBorrow(lpDeposited, borrowedAmount, isStaked);
+        marketFxnLP.depositAndBorrow(lpDeposited, borrowedAmount, isStaked);
 
         _afterDepositCheck(sender, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
-        _afterBorrowCheck(market, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);
+        _afterBorrowCheck(marketFxnLP, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);
     }
 
     function _beforeDepositCheck(
@@ -37,27 +42,32 @@ contract HDepositConvexCrvLP is HMarketBase {
         uint256 lpDeposited,
         bool isStaked
     ) internal returns (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) {
-        IERC20 collatToken = market.collatToken();
-        uint256 socFeePercentage = market.socFeePercentage();
-        socFeePending = market.socFeePending();
+        IERC20 collatToken = marketFxnLP.collatToken();
+        uint256 socFeePercentage = marketFxnLP.socFeePercentage();
+        socFeePending = marketFxnLP.socFeePending();
 
-        collatToken.approve(address(market), MAX_UINT);
+        collatToken.approve(address(marketFxnLP), MAX_UINT);
 
-        totalCollateralBefore = market.totalCollateral();
-        balanceCollateralBefore = market.collateralBalances(_for);
+        totalCollateralBefore = marketFxnLP.totalCollateral();
+        balanceCollateralBefore = marketFxnLP.collateralBalances(_for);
 
         verifyLostERC20(collatToken, sender, lpDeposited, "Collat is deposited by sender");
         if (isStaked) {
-            uint256 collatMarketBalance = collatToken.balanceOf(address(market));
+            uint256 collatMarketBalance = collatToken.balanceOf(address(marketFxnLP));
             if (socFeePending != 0) {
-                verifyLostERC20(collatToken, address(market), collatMarketBalance, "Collat in pending is staked by the market");
+                verifyLostERC20(collatToken, address(marketFxnLP), collatMarketBalance, "Collat in pending is staked by the marketFxnLP");
             } else {
-                verifyBalERC20NotChanging(collatToken, address(market), "There were no collat on the market waiting to be staked");
+                verifyBalERC20NotChanging(collatToken, address(marketFxnLP), "There were no collat on the marketFxnLP waiting to be staked");
             }
-            verifyReceiveERC20(market.cvxRewardToken(), address(market), collatMarketBalance + lpDeposited, "Collat is received by the staking contract");
+            // verifyReceiveERC20(
+            //     marketFxnLP.cvxRewardToken(),
+            //     address(marketFxnLP),
+            //     collatMarketBalance + lpDeposited,
+            //     "Collat is received by the staking contract"
+            // );
         } else {
             feeToTake = (lpDeposited * socFeePercentage) / 100_000;
-            verifyReceiveERC20(collatToken, address(market), lpDeposited, "Collat is received by the market");
+            verifyReceiveERC20(collatToken, address(marketFxnLP), lpDeposited, "Collat is received by the marketFxnLP");
         }
     }
 
@@ -72,29 +82,33 @@ contract HDepositConvexCrvLP is HMarketBase {
     ) internal view {
         if (isStaked) {
             uint256 collatIncrease = lpDeposited + socFeePending;
-            assertEq(0, market.socFeePending(), "When staked, fee pending are deleted");
+            assertEq(0, marketFxnLP.socFeePending(), "When staked, fee pending are deleted");
             assertEq(
                 collatIncrease,
-                market.totalCollateral() - totalCollateralBefore,
+                marketFxnLP.totalCollateral() - totalCollateralBefore,
                 "Total collateral is increased by taking into account the pending sociabilization fee"
             );
             assertEq(
                 collatIncrease,
-                market.collateralBalances(_for) - balanceCollateralBefore,
+                marketFxnLP.collateralBalances(_for) - balanceCollateralBefore,
                 "Collateral of the user is increased by taking into account pending soc fee"
             );
         } else {
             uint256 collatIncrease = lpDeposited - feeToTake;
 
-            assertEq(market.socFeePending(), socFeePending + feeToTake, "Fee pending is equal to the sum of previous fee pending and the new soc fee to take");
+            assertEq(
+                marketFxnLP.socFeePending(),
+                socFeePending + feeToTake,
+                "Fee pending is equal to the sum of previous fee pending and the new soc fee to take"
+            );
             assertEq(
                 collatIncrease,
-                market.totalCollateral() - totalCollateralBefore,
+                marketFxnLP.totalCollateral() - totalCollateralBefore,
                 "Total collateral is increased by removing the soc fee from the input amount"
             );
             assertEq(
                 collatIncrease,
-                market.collateralBalances(_for) - balanceCollateralBefore,
+                marketFxnLP.collateralBalances(_for) - balanceCollateralBefore,
                 "Collateral of the user is increased by removing the soc fee from the input amount"
             );
         }

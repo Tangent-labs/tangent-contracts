@@ -1,23 +1,21 @@
-import "../../contexts/ConvexCurveContext.sol";
-
-import "../../handler/Features/HProcessRewards.sol";
-import "../../handler/Features/HDepositConvexCrvLP.sol";
-import "../../handler/Features/HBorrow.sol";
-contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
-    ConvexCrvLPMarket public market;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+import "../../../contexts/ConvexCurveContext.sol";
+contract ProcessRewardsCvxFxnMarket is ConvexCurveContext {
+    ConvexFxnLPMarket public market;
     IERC20Metadata public collatToken;
 
     HProcessRewards public hRewards;
-    HDepositConvexCrvLP public hDeposit;
+    HDepositConvexFxnLP public hDeposit;
     HBorrow public hBorrow;
     uint256 minimumLoan;
 
     function setUp() public {
-        collatToken = AddrCurveStableLP.CRVUSD_USDC;
-        market = deployConvexCurveLPMarket(collatToken);
+        collatToken = AddrCurveStableLP.USDC_FXUSD;
+        market = deployConvexFxnLPMarket(collatToken);
 
         hRewards = new HProcessRewards(usr1, market);
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
+        hDeposit = new HDepositConvexFxnLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
         minimumLoan = market.minimumLoan();
     }
@@ -37,9 +35,7 @@ contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
 
         skip(15 days);
 
-        address[] memory markets = new address[](1);
-        markets[0] = address(market);
-        irMinter.mintIR(markets);
+        irMinter.mintIR(Array.memoryAddress([address(market)]));
         vm.stopPrank();
 
         hRewards.processRewards(usr2);

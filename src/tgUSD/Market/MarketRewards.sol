@@ -276,7 +276,7 @@ abstract contract MarketRewards is Market, IMarketRewards {
 
     function _processRewards(address harvestFeeReceiver) internal {
         uint256 rewardCut = rewardCutPercentage;
-        rewardCutPercentage = _calculateRewardCut(collatOracle.latestAnswer());
+        rewardCutPercentage = _calculateRewardCut(tgUSDOracle.latestAnswer());
         /// @dev Reward tokens updated
         IERC20[] memory _rewardTokens = rewardTokens;
         uint256 rewardTokensLength = _rewardTokens.length;

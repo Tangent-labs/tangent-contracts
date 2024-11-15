@@ -264,13 +264,10 @@ abstract contract Market is Ownable, IMarket {
 
     function repayAll(address account) external {
         uint256 userDebt = positionDebt(account);
-        console.log("userDebt", userDebt);
 
         (uint256 newDebtIndex, ) = _checkointIRRepay(userDebt);
 
         _updateDebts(account, 0, newDebtIndex);
-
-        console.log("userDebt", userDebt);
 
         /// @dev Mint tgUSD from the user
         tgUSD.burnFrom(msg.sender, userDebt);
