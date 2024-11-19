@@ -27,13 +27,15 @@ contract ConvexFxnLPMarket is MarketRewards {
         collatToken.approve(vaultAddress, MAX_UINT);
     }
 
-    function _postDeposit(IERC20 _collatToken, bool isStaked) internal override {
+    function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, uint256 lpStaked, bool isStaked) internal override {
+        totalCollateral += lpStaked;
+        _collatToken.transferFrom(msg.sender, address(this), lpDeposited);
         if (isStaked) {
             stakingProxyVault.deposit(_collatToken.balanceOf(address(this)), true);
         }
     }
 
-    function _postWithdraw(uint256 lpToWithdraw) internal override {
+    function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {
         uint256 lpAvailable = collatToken.balanceOf(address(this)) - socFeePending;
 
         /// @dev Verify that all there are enough LlamaLend LP on the contract
@@ -42,6 +44,17 @@ contract ConvexFxnLPMarket is MarketRewards {
             stakingProxyVault.withdraw(lpToWithdraw - lpAvailable);
         }
 
-        collatToken.transfer(msg.sender, lpToWithdraw);
+        collatToken.transfer(to, lpToWithdraw);
+    }
+
+    /**
+     * @notice Claim and process the governance rewards
+     * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
+     *      Anyone can trigger this function and will be incentivized with a processor fee.
+     */
+    function processRewards(address harvestFeeReceiver) external override {
+        /// @dev Claim rewards on behalf
+        stakingProxyVault.getReward();
+        _processRewards(harvestFeeReceiver);
     }
 }

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 interface ICvxBooster {
     function FEE_DENOMINATOR() external view returns (uint256);
 

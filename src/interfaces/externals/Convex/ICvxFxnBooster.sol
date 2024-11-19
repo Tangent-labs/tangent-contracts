@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 interface ICvxFxnBooster {
     function acceptPendingOwner() external;
     function addPool(address _implementation, address _stakingAddress, address _stakingToken) external;

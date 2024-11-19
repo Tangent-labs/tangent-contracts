@@ -28,8 +28,7 @@ library AddrCvxVaultTokens {
     IERC20 constant CRVUSD_LEVERAGE_WBTC = ICvxRewardToken(0xDF2Cf819DBC1E5a5774eE760D2678330cf4665e2);
 }
 
-library PidCvxBooster {
-    //NORMAL
+library PidCvxCrvBooster {
     uint256 constant CRVUSD_CRV = 325;
     uint256 constant CRVUSD_LEVERAGE_WETH = 365;
     uint256 constant CRVUSD_TBTC = 328;
@@ -38,4 +37,8 @@ library PidCvxBooster {
     uint256 constant CRVUSD_LEVERAGE_WBTC = 344;
 
     uint256 constant CRVUSD_USDC_LP = 182;
+}
+
+library PidCvxFxnBooster {
+    uint256 constant USDC_FXUSD_LP = 32;
 }

@@ -1,27 +1,48 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "./TgUSDDeployContext.sol";
+import "./OraclesContext.sol";
 
 import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
-contract ConvexCurveContext is TgUSDDeployContext {
+import "../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
+
+import "../../../src/tgUSD/Market/MarketNoRewards.sol";
+
+import "../handler/Features/HProcessRewards.sol";
+import "../handler/Features/HBorrow.sol";
+import "../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
+import "../handler/Features/ConvexCrv/HWithdrawConvexCrvLP.sol";
+
+import "../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
+import "../handler/Features/ConvexFxn/HWithdrawConvexFxnLP.sol";
+
+import "../handler/Features/NoRewards/HDepositNoRewards.sol";
+import "../handler/Features/NoRewards/HWithdrawNoRewards.sol";
+
+import "../../../src/interfaces/internals/tgUSD/IMarket.sol";
+
+contract ConvexCurveContext is OraclesContext {
     IMarket[] cvxCurveLPMarket;
     mapping(address => ParamsInitConvexCurveLPMarket) public cvxCurveLPMaps;
+    mapping(address => ParamsInitConvexFxnLPMarket) public cvxFxnLPMaps;
+
+    mapping(address => MarketInitSimplified) public noRewardsMaps;
 
     struct ParamsInitConvexCurveLPMarket {
-        ICurveStableSwapNG collat;
-        CurveStableLPOracleParams oracleParams;
         MarketInitSimplified marketInit;
         IERC20[] rewards;
         ICvxRewardToken cvxRewardToken;
         uint256 pid;
     }
 
-    struct CurveStableLPOracleParams {
-        IAggregatorV3 coin0Oracle;
-        IAggregatorV3 coin1Oracle;
+    struct ParamsInitConvexFxnLPMarket {
+        MarketInitSimplified marketInit;
+        IERC20[] rewards;
+        uint256 pid;
     }
+
     struct MarketInitSimplified {
+        IERC20Metadata collat;
         uint256 maxLTV;
         uint256 maxMarketDebt;
         uint256 liquidationThreshold;
@@ -29,33 +50,68 @@ contract ConvexCurveContext is TgUSDDeployContext {
     }
 
     constructor() {
-        // AddrCurveStableLP.CRVUSD_USDC
+        // Convex Curve - CRVUSD_USDC
         IERC20[] memory _rewardsCrvCvx = new IERC20[](2);
         _rewardsCrvCvx[0] = AddrClassicERC20.TOKEN_CRV;
         _rewardsCrvCvx[1] = AddrClassicERC20.TOKEN_CVX;
+        vm.label(address(AddrClassicERC20.TOKEN_CRV), "CRV");
+        vm.label(address(AddrClassicERC20.TOKEN_CVX), "CVX");
 
         cvxCurveLPMaps[address(AddrCurveStableLP.CRVUSD_USDC)] = ParamsInitConvexCurveLPMarket({
-            collat: AddrCurveStableLP.CRVUSD_USDC,
-            oracleParams: CurveStableLPOracleParams({coin0Oracle: AddrChainlinkOracle.CRVUSD, coin1Oracle: AddrChainlinkOracle.USDC}),
-            marketInit: MarketInitSimplified({maxLTV: 85_000, liquidationThreshold: 93_000, minimumLoan: 3_000 ether, maxMarketDebt: 1_000_000 ether}),
+            marketInit: MarketInitSimplified({
+                collat: AddrCurveStableLP.CRVUSD_USDC,
+                maxLTV: 85_000,
+                liquidationThreshold: 93_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether
+            }),
             rewards: _rewardsCrvCvx,
             cvxRewardToken: AddrCvxRewardTokens.CRVUSD_USDC_LP,
-            pid: PidCvxBooster.CRVUSD_USDC_LP
+            pid: PidCvxCrvBooster.CRVUSD_USDC_LP
+        });
+
+        // Convex FXN - USDC_FXUSD
+
+        IERC20[] memory _rewardsFxn = new IERC20[](1);
+        _rewardsFxn[0] = AddrClassicERC20.TOKEN_FXN;
+        vm.label(address(AddrClassicERC20.TOKEN_FXN), "FXN");
+
+        cvxFxnLPMaps[address(AddrCurveStableLP.USDC_FXUSD)] = ParamsInitConvexFxnLPMarket({
+            marketInit: MarketInitSimplified({
+                collat: AddrCurveStableLP.USDC_FXUSD,
+                maxLTV: 85_000,
+                liquidationThreshold: 93_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether
+            }),
+            rewards: _rewardsFxn,
+            pid: PidCvxFxnBooster.USDC_FXUSD_LP
+        });
+
+        // sDAI
+
+        noRewardsMaps[address(AddrClassicERC20.TOKEN_SDAI)] = MarketInitSimplified({
+            collat: AddrClassicERC20.TOKEN_SDAI,
+            maxLTV: 85_000,
+            liquidationThreshold: 93_000,
+            minimumLoan: 3_000 ether,
+            maxMarketDebt: 1_000_000 ether
         });
     }
 
     function deployConvexCurveLPMarket(IERC20Metadata collat) public returns (ConvexCrvLPMarket) {
         ParamsInitConvexCurveLPMarket memory initP = cvxCurveLPMaps[address(collat)];
 
-        require(address(initP.collat) != address(0), "NO_INIT_PARAMS_FOR_LP");
+        assertTrue(address(initP.marketInit.collat) != address(0), "No init params for LP");
+        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
 
         /// Initialize reward tokens for the market
         ConvexCrvLPMarket convexMarket = new ConvexCrvLPMarket(
             IMarket.MarketInit({
                 tgUSD: tgUsd,
-                tgUSDOracle: tgUsdOracle,
-                collatToken: initP.collat,
-                collatOracle: new CurveStableLPOracle(initP.collat, initP.oracleParams.coin0Oracle, initP.oracleParams.coin1Oracle),
+                tgUSDOracle: oracles[tgUsd],
+                collatToken: initP.marketInit.collat,
+                collatOracle: oracles[collat],
                 irMinter: address(irMinter),
                 maxLTV: initP.marketInit.maxLTV,
                 maxMarketDebt: initP.marketInit.maxMarketDebt,
@@ -67,16 +123,85 @@ contract ConvexCurveContext is TgUSDDeployContext {
             initP.cvxRewardToken,
             initP.pid
         );
+        assertEq(address(convexMarket.collatOracle()), address(oracles[collat]), "Collat oracle address setup");
 
         toggleIrProducerAndRewardAccumulator(address(convexMarket));
         giveCollateralToUsers(collat);
 
+        vm.label(address(collat), string.concat(collat.symbol()));
+        vm.label(address(convexMarket), string.concat("MarketCore CvxCrv", collat.symbol()));
+        vm.label(address(initP.cvxRewardToken), string.concat("CvxRewardToken ", collat.symbol()));
+
         return convexMarket;
     }
 
+    function deployConvexFxnLPMarket(IERC20Metadata collat) public returns (ConvexFxnLPMarket) {
+        ParamsInitConvexFxnLPMarket memory initP = cvxFxnLPMaps[address(collat)];
+
+        assertTrue(address(initP.marketInit.collat) != address(0), "No init params for LP");
+        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
+
+        /// Initialize reward tokens for the market
+        ConvexFxnLPMarket convexMarket = new ConvexFxnLPMarket(
+            IMarket.MarketInit({
+                tgUSD: tgUsd,
+                tgUSDOracle: oracles[tgUsd],
+                collatToken: initP.marketInit.collat,
+                collatOracle: oracles[collat],
+                irMinter: address(irMinter),
+                maxLTV: initP.marketInit.maxLTV,
+                maxMarketDebt: initP.marketInit.maxMarketDebt,
+                liquidationThreshold: initP.marketInit.liquidationThreshold,
+                minimumLoan: initP.marketInit.minimumLoan
+            }),
+            rewardAccumulator,
+            initP.rewards,
+            initP.pid
+        );
+
+        toggleIrProducerAndRewardAccumulator(address(convexMarket));
+        giveCollateralToUsers(collat);
+
+        vm.label(address(collat), string.concat(collat.symbol()));
+        vm.label(address(convexMarket), string.concat("MarketCore CvxFxn ", collat.symbol()));
+        vm.label(address(AddrClassicERC20.TOKEN_FXN), "FXN");
+        vm.label(address(convexMarket.stakingProxyVault()), string.concat("StakingProxyVault ", collat.symbol()));
+
+        return convexMarket;
+    }
+
+    function deployNoRewardsMarket(IERC20Metadata collat) public returns (MarketNoRewards) {
+        MarketInitSimplified memory initP = noRewardsMaps[address(collat)];
+
+        assertTrue(address(initP.collat) != address(0), "No init params for LP");
+        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
+
+        /// Initialize reward tokens for the market
+        MarketNoRewards marketNoRewards = new MarketNoRewards(
+            IMarket.MarketInit({
+                tgUSD: tgUsd,
+                tgUSDOracle: oracles[tgUsd],
+                collatToken: initP.collat,
+                collatOracle: oracles[collat],
+                irMinter: address(irMinter),
+                maxLTV: initP.maxLTV,
+                maxMarketDebt: initP.maxMarketDebt,
+                liquidationThreshold: initP.liquidationThreshold,
+                minimumLoan: initP.minimumLoan
+            })
+        );
+
+        toggleIrProducerAndRewardAccumulator(address(marketNoRewards));
+        giveCollateralToUsers(collat);
+
+        vm.label(address(collat), string.concat(collat.symbol()));
+        vm.label(address(marketNoRewards), string.concat("Market ", collat.symbol()));
+
+        return marketNoRewards;
+    }
+
     function toggleIrProducerAndRewardAccumulator(address _convexMarket) public {
-        address[] memory markets = new address[](1);
-        markets[0] = _convexMarket;
+        address[] memory markets = Array.memoryAddress([_convexMarket]);
 
         irMinter.toggleIRProducers(markets);
         rewardAccumulator.toggleMarketRewards(markets);

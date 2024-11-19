@@ -1,4 +1,6 @@
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 interface ICvxRewardToken is IERC20 {
     function addExtraReward(address _reward) external returns (bool);
@@ -59,7 +61,7 @@ interface ICvxRewardToken is IERC20 {
 
     function stakeFor(address _for, uint256 _amount) external returns (bool);
 
-    function stakingToken() external view returns (address);
+    function stakingToken() external view returns (IERC20Metadata);
 
     function totalSupply() external view returns (uint256);
 

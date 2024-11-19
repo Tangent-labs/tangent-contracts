@@ -19,6 +19,4 @@ interface IMarket {
         uint256 maxMarketDebt;
         uint256 minimumLoan;
     }
-
-    function mintPendingInterests() external returns (uint256);
 }

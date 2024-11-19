@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 interface IStakingProxyERC20 {
     function FEE_DENOMINATOR() external view returns (uint256);
     function deposit(uint256 _amount, bool _manage) external;

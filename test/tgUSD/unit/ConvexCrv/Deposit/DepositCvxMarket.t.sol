@@ -1,8 +1,6 @@
-import "../../contexts/ConvexCurveContext.sol";
-
-import "../../handler/Features/HProcessRewards.sol";
-import "../../handler/Features/HDepositConvexCrvLP.sol";
-import "../../handler/Features/HBorrow.sol";
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+import "../../../contexts/ConvexCurveContext.sol";
 
 contract DepositCvxMarket is ConvexCurveContext {
     ConvexCrvLPMarket public market;
@@ -12,7 +10,6 @@ contract DepositCvxMarket is ConvexCurveContext {
     HDepositConvexCrvLP public hDeposit;
     HBorrow public hBorrow;
     function setUp() public {
-        deployBaseContracts();
         collatToken = AddrCurveStableLP.CRVUSD_USDC;
         market = deployConvexCurveLPMarket(collatToken);
 
@@ -24,7 +21,7 @@ contract DepositCvxMarket is ConvexCurveContext {
     //
     function test_deposit_stake() external {
         verifyReceiveERC20(market.cvxRewardToken(), address(market), 100 ether, "Verify that market receives Cvx Reward tokens");
-        verifyBalERC20NotChanging(collatToken, address(market), "Verify that as staking, no LP are received by the Market");
+        verifyBalERC20NotChanging(collatToken, address(market), "Verify that as staking, no LP are received by the MarketCore");
         verifyLostERC20(collatToken, usr1, 100 ether, "Verify that user sent its LP");
 
         vm.startSnapshotGas("Deposit", "First deposit ever on the market and stake");

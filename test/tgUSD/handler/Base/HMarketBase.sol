@@ -5,7 +5,7 @@ import "./HandlerBase.sol";
 
 abstract contract HMarketBase is HandlerBase {
     function _beforBorrowOrRepayCheck(
-        Market _market
+        MarketCore _market
     ) internal view returns (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, uint256 mintableInterests) {
         mintableInterests = _market.mintableInterests();
         positionDebt = _market.positionDebt(sender);
@@ -24,13 +24,19 @@ abstract contract HMarketBase is HandlerBase {
         }
     }
 
-    function _beforeBorrowCheck(Market _market, address receiver, uint256 borrowedAmount) internal {
+    function _afterCheckpointGlobal(MarketCore _market, uint256 interests, uint256 newDebtIndex, uint256 mintableInterests) internal view {
+        assertEq(_market.debtIndex(), newDebtIndex, "New total debt index incremented");
+        assertEq(_market.mintableInterests(), mintableInterests + interests, "New interests increments mintableInterests");
+        assertEq(_market.blockLastIRTimestamp(), block.timestamp, "Last block IR changed has been updated");
+    }
+
+    function _beforeBorrowCheck(MarketCore _market, address receiver, uint256 borrowedAmount) internal {
         verifyMintERC20(_market.tgUSD(), borrowedAmount, "tgUSD are  minted");
         verifyReceiveERC20(_market.tgUSD(), receiver, borrowedAmount, "tgUSD borrowed is received by receiver");
     }
 
     function _afterBorrowCheck(
-        Market _market,
+        MarketCore _market,
         uint256 borrowedAmount,
         uint256 lastDebt,
         uint256 interests,
@@ -41,19 +47,13 @@ abstract contract HMarketBase is HandlerBase {
         assertEq(_market.positionDebtIndex(sender), ((positionDebt + borrowedAmount) * RAY) / newDebtIndex, "New position debt index updated");
     }
 
-    function _beforeRepayCheck(Market _market, uint256 repayedAmount) internal {
+    function _beforeRepayCheck(MarketCore _market, uint256 repayedAmount) internal {
         verifyLostERC20(_market.tgUSD(), sender, repayedAmount, "tgUSD repayed is burnt from sender");
         verifyBurnERC20(_market.tgUSD(), repayedAmount, "tgUSD repayed is burnt");
     }
 
-    function _afterCheckpointGlobal(Market _market, uint256 interests, uint256 newDebtIndex, uint256 mintableInterests) internal view {
-        assertEq(_market.debtIndex(), newDebtIndex, "New total debt index incremented");
-        assertEq(_market.mintableInterests(), mintableInterests + interests, "New interests increments mintableInterests");
-        assertEq(_market.blockLastIRTimestamp(), block.timestamp, "Last block IR changed has been updated");
-    }
-
     function _afterRepayCheck(
-        Market _market,
+        MarketCore _market,
         address account,
         uint256 repayedAmount,
         uint256 lastDebt,

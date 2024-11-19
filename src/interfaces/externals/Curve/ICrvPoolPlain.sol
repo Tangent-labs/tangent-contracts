@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 import "@openzeppelin/contracts/interfaces/IERC20Metadata.sol";
 
 interface ICrvPoolPlain is IERC20Metadata {

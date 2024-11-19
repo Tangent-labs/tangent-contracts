@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 interface ICurveRouter {
-    
     function exchange(
         address[11] calldata _route,
         uint256[5][5] calldata _swap_params,
@@ -15,5 +16,4 @@ interface ICurveRouter {
         uint256 _amount,
         address[5] calldata _pools
     ) external payable returns (uint256);
-
 }

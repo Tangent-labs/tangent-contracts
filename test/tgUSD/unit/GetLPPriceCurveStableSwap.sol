@@ -10,8 +10,6 @@ contract GetLPPriceCurveStableSwap is TgUSDDeployContext {
     function setUp() public {
         coin0 = IERC20Metadata(lp.coins(0));
         coin1 = IERC20Metadata(lp.coins(1));
-
-        deployBaseContracts();
     }
 
     // 80361
