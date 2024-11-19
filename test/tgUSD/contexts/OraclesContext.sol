@@ -5,7 +5,7 @@ import "./TgUSDDeployContext.sol";
 
 import "../../../src/tgUSD/Oracles/Curve/StablePriceOracleParams.sol";
 import "../../../src/tgUSD/Oracles/Curve/CurveStableLPOracle.sol";
-
+import "../../../src/tgUSD/Oracles/sDAIOracle.sol";
 contract OraclesContext is TgUSDDeployContext {
     mapping(IERC20 => IPriceOracle) public oracles;
 
@@ -36,5 +36,9 @@ contract OraclesContext is TgUSDDeployContext {
             oracles[AddrClassicERC20.TOKEN_FXUSD]
         );
         vm.label(address(oracles[AddrCurveStableLP.USDC_FXUSD]), "Oracle LP USDC/fxUSD");
+
+        // Oracle sDAI
+        oracles[AddrClassicERC20.TOKEN_SDAI] = new sDAIOracle(AddrChainlinkOracle.SDAI);
+        vm.label(address(oracles[AddrClassicERC20.TOKEN_SDAI]), "Oracle sDAI");
     }
 }

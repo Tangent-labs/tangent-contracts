@@ -2,21 +2,19 @@
 pragma solidity ^0.8.24;
 import "../../contexts/ConvexCurveContext.sol";
 
-contract BorrowCvxMarket is ConvexCurveContext {
-    ConvexCrvLPMarket public market;
+contract BorrowNoRewards is ConvexCurveContext {
+    MarketNoRewards public market;
     IERC20Metadata public collatToken;
 
-    HProcessRewards public hRewards;
-    HDepositConvexCrvLP public hDeposit;
+    HDepositNoRewards public hDeposit;
     HBorrow public hBorrow;
 
     uint256 minimumLoan;
     function setUp() public {
-        collatToken = AddrCurveStableLP.CRVUSD_USDC;
-        market = deployConvexCurveLPMarket(collatToken);
+        collatToken = AddrClassicERC20.TOKEN_SDAI;
+        market = deployNoRewardsMarket(collatToken);
 
-        hRewards = new HProcessRewards(usr1, market);
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
+        hDeposit = new HDepositNoRewards(usr1, market);
         hBorrow = new HBorrow(usr1, market);
         minimumLoan = market.minimumLoan();
     }
@@ -26,6 +24,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
     function test_borrow(uint256 collatDeposited, uint256 borrowedAmount, uint256 repayAmount) external {
         borrowedAmount = bound(borrowedAmount, minimumLoan, market.maxMarketDebt());
+
         collatDeposited = bound(collatDeposited, minimumCollatForDebt(borrowedAmount), 2_000_000 ether);
 
         hDeposit.deposit(usr1, collatDeposited, true);
@@ -33,6 +32,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
         verifyMintERC20(tgUsd, borrowedAmount, "Cvx Reward tokens are burnt");
         verifyReceiveERC20(tgUsd, usr2, borrowedAmount, "User 2, not the caller, receives tgUSD");
 
+        hBorrow.setMsgSender(usr2);
         hBorrow.borrow(usr2, borrowedAmount);
 
         assertERC20Tracking();

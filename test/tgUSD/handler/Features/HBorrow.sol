@@ -5,7 +5,7 @@ pragma solidity ^0.8.22;
 import "../Base/HMarketBase.sol";
 
 contract HBorrow is HMarketBase {
-    constructor(address _sender, Market _market) HandlerBase(_sender, _market) {}
+    constructor(address _sender, MarketExternalActions _market) HandlerBase(_sender, _market) {}
 
     function borrow(address receiver, uint256 borrowedAmount) external handler {
         (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, uint256 mintableInterests) = _beforBorrowOrRepayCheck(market);
@@ -21,22 +21,16 @@ contract HBorrow is HMarketBase {
     function repay(address account, uint256 repayedAmount) external handler {
         (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, uint256 mintableInterests) = _beforBorrowOrRepayCheck(market);
 
-        _beforeRepayCheck(market, repayedAmount);
+        uint256 tgUSDToRepay = repayedAmount;
+        if (repayedAmount == MAX_UINT) {
+            tgUSDToRepay = positionDebt;
+        }
+
+        _beforeRepayCheck(market, tgUSDToRepay);
 
         market.repay(account, repayedAmount);
 
         _afterCheckpointGlobal(market, interests, newDebtIndex, mintableInterests);
-        _afterRepayCheck(market, account, repayedAmount, lastDebt, interests, newDebtIndex, positionDebt);
-    }
-
-    function repayAll(address account) external handler {
-        (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, uint256 mintableInterests) = _beforBorrowOrRepayCheck(market);
-
-        _beforeRepayCheck(market, positionDebt);
-
-        market.repayAll(account);
-
-        _afterCheckpointGlobal(market, interests, newDebtIndex, mintableInterests);
-        _afterRepayCheck(market, account, positionDebt, lastDebt, interests, newDebtIndex, positionDebt);
+        _afterRepayCheck(market, account, tgUSDToRepay, lastDebt, interests, newDebtIndex, positionDebt);
     }
 }

@@ -3,31 +3,33 @@ pragma solidity ^0.8.22;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {IMarketRewards} from "../../interfaces/internals/tgUSD/IMarketRewards.sol";
 import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
-import {Market, ItgUSD, IPriceOracle} from "./Market.sol";
+import {MarketExternalActions, MarketCore} from "./MarketExternalActions.sol";
 import "forge-std/console.sol";
 /// @notice Lending market
-abstract contract MarketRewards is Market, IMarketRewards {
+abstract contract MarketRewards is MarketExternalActions, IMarketRewards {
     using SafeERC20 for IERC20;
     /// @dev Duration that rewards are streamed over
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
 
-    /// @notice Percentage of reward of rewards to distribute to borrowers
+    /// @notice Percentage of reward of rewards to distribute to borrowers. 50_000 = 50%
     uint256 public rewardCutPercentage = 50_000;
 
-    /// @notice Percentage of reward given to harvester on the rewards distributed to borrowers
+    /// @notice Percentage of reward given to harvester. 1_000 = 1%
     uint256 public harvesterFeePercentage;
 
+    /// @notice Total amount of collateral on the market
     uint256 public totalCollateral;
 
     uint256 public socFeePercentage;
     uint256 public socFeePending;
 
+    /// @notice Receiver of all rewards produced by the market
     IRewardAccumulator public rewardAccumulator;
 
     /// @dev List of reward tokens
@@ -64,7 +66,7 @@ abstract contract MarketRewards is Market, IMarketRewards {
         _updateReward(_account);
         _;
     }
-    constructor(MarketInit memory _marketInit, IRewardAccumulator _rewardAccumulator, IERC20[] memory _rewardTokens) Market(_marketInit) {
+    constructor(MarketInit memory _marketInit, IRewardAccumulator _rewardAccumulator, IERC20[] memory _rewardTokens) MarketCore(_marketInit) {
         rewardCutPercentage = 50_000;
         harvesterFeePercentage = 1_000;
 
@@ -85,62 +87,24 @@ abstract contract MarketRewards is Market, IMarketRewards {
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        DEPOSIT ACTIONS 
+                        DEPOSIT  
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function deposit(address _for, uint256 lpDeposited, bool isStaked) external updateReward(_for) {
-        (uint256 lpStaked, IERC20 _collatToken) = _preDeposit(lpDeposited, isStaked);
-        require(lpStaked != 0);
-        _deposit(_for, lpStaked);
-        _postDeposit(_collatToken, isStaked);
-    }
+    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateReward(_for) returns (uint256, IERC20) {
+        uint256 lpStaked = _sociabilizationProcess(lpDeposited, isStaked);
 
-    function depositAndBorrow(uint256 lpDeposited, uint256 debtBorrow, bool isStaked) external updateReward(msg.sender) {
-        (uint256 lpStaked, IERC20 _collatToken) = _preDeposit(lpDeposited, isStaked);
-        require(lpStaked != 0);
-        _depositAndBorrow(lpStaked, debtBorrow);
-        _postDeposit(_collatToken, isStaked);
-    }
+        require(lpStaked != 0, ZeroCollatAmount());
 
-    function depositAndRepay(address _for, uint256 lpDeposited, uint256 debtRepay, bool isStaked) external updateReward(_for) {
-        (uint256 lpStaked, IERC20 _collatToken) = _preDeposit(lpDeposited, isStaked);
-        require(lpStaked != 0);
-        _depositAndRepay(_for, lpStaked, debtRepay);
-        _postDeposit(_collatToken, isStaked);
+        return (lpStaked, collatToken);
     }
-    function _preDeposit(uint256 lpDeposited, bool isStaked) internal returns (uint256, IERC20) {
-        IERC20 _collatToken = collatToken;
-        _collatToken.transferFrom(msg.sender, address(this), lpDeposited);
-        lpDeposited = _sociabilizationProcess(lpDeposited, isStaked);
-        totalCollateral += lpDeposited;
-
-        return (lpDeposited, _collatToken);
-    }
-
-    function _postDeposit(IERC20 _collatToken, bool isStaked) internal virtual {}
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        WITHDRAW ACTIONS 
+                        WITHDRAW  
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function withdraw(uint256 lpToWithdraw) external updateReward(address(0)) {
-        _withdraw(lpToWithdraw);
+    function _preWithdraw(uint256 lpToWithdraw) internal override updateReward(address(0)) {
         totalCollateral -= lpToWithdraw;
-        _postWithdraw(lpToWithdraw);
     }
-
-    function withdrawAndBorrow(uint256 lpToWithdraw, uint256 debtBorrow) external updateReward(address(0)) {
-        _withdrawAndBorrow(lpToWithdraw, debtBorrow);
-        totalCollateral -= lpToWithdraw;
-        _postWithdraw(lpToWithdraw);
-    }
-    function withdrawAndRepay(uint256 lpToWithdraw, uint256 debtRepay) external updateReward(address(0)) {
-        _withdrawAndRepay(lpToWithdraw, debtRepay);
-        totalCollateral -= lpToWithdraw;
-        _postWithdraw(lpToWithdraw);
-    }
-
-    function _postWithdraw(uint256 lpToWithdraw) internal virtual {}
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         SOCIABILIZATION ACTIONS 
@@ -276,7 +240,11 @@ abstract contract MarketRewards is Market, IMarketRewards {
 
     function _processRewards(address harvestFeeReceiver) internal {
         uint256 rewardCut = rewardCutPercentage;
-        rewardCutPercentage = _calculateRewardCut(tgUSDOracle.latestAnswer());
+
+        /// @dev We compute the reward cut only if it's activated
+        if (rewardCut != 0) {
+            rewardCutPercentage = _calculateRewardCut(tgUSDOracle.latestAnswer());
+        }
         /// @dev Reward tokens updated
         IERC20[] memory _rewardTokens = rewardTokens;
         uint256 rewardTokensLength = _rewardTokens.length;
@@ -305,11 +273,18 @@ abstract contract MarketRewards is Market, IMarketRewards {
                 if (remainingRewards != 0) {
                     rewardToken.safeTransfer(_rewardAccumulator, remainingRewards);
                 }
-                uint256 rewardAmountCut = (remainingRewards * rewardCut) / DENOMINATOR;
-                uint256 rewardAmountStreamed = remainingRewards - rewardAmountCut;
 
+                uint256 rewardAmountStreamed;
+                if (rewardCut != 0) {
+                    uint256 rewardAmountCut = (remainingRewards * rewardCut) / DENOMINATOR;
+                    rewardCutToUpdate[tokenIndex] = ICommonStruct.TokenAmount({token: rewardToken, amount: rewardAmountCut});
+                    rewardAmountStreamed = remainingRewards - rewardAmountCut;
+                } else {
+                    rewardAmountStreamed = remainingRewards;
+                }
+
+                /// TODO Treat the case where a reward is not distributed anymore on a Reward contract
                 /// @dev Reward Cut to update in
-                rewardCutToUpdate[tokenIndex] = ICommonStruct.TokenAmount({token: rewardToken, amount: rewardAmountCut});
 
                 require(rewardAmountStreamed > 1e10 && rewardAmountStreamed < 1e30, "INCORRECT_VALUE");
 

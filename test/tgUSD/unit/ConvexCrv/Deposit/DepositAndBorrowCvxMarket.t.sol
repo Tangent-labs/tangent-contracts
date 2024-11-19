@@ -24,7 +24,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         uint256 borrowedAmount1 = 3_440 ether;
 
         verifyReceiveERC20(market.cvxRewardToken(), address(market), collatDeposited1, "Verify that market receives Cvx Reward tokens");
-        verifyBalERC20NotChanging(AddrCurveStableLP.CRVUSD_USDC, address(market), "Verify that as staking, no LP are received by the Market");
+        verifyBalERC20NotChanging(AddrCurveStableLP.CRVUSD_USDC, address(market), "Verify that as staking, no LP are received by the MarketCore");
         verifyLostERC20(AddrCurveStableLP.CRVUSD_USDC, usr1, collatDeposited1, "Verify that user sent its LP");
         verifyMintERC20(tgUsd, borrowedAmount1, "tgUSD are not minted");
         verifyReceiveERC20(tgUsd, usr1, borrowedAmount1, "User receives the borrowed amount");
@@ -46,7 +46,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         uint256 borrowedAmount2 = 6_000 ether;
 
         verifyReceiveERC20(market.cvxRewardToken(), address(market), collatDeposited2, "Verify that market receives Cvx Reward tokens");
-        verifyBalERC20NotChanging(AddrCurveStableLP.CRVUSD_USDC, address(market), "Verify that as staking, no LP are received by the Market");
+        verifyBalERC20NotChanging(AddrCurveStableLP.CRVUSD_USDC, address(market), "Verify that as staking, no LP are received by the MarketCore");
         verifyLostERC20(AddrCurveStableLP.CRVUSD_USDC, usr2, collatDeposited2, "Verify that user sent its LP");
         verifyReceiveERC20(tgUsd, usr2, borrowedAmount2 + 12, "User receives 50 tgUSD");
 

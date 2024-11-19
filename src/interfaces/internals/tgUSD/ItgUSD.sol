@@ -5,5 +5,5 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 interface ItgUSD is IERC20 {
     function mint(address to, uint256 amount) external;
 
-    function burnFrom(address to, uint256 amount) external;
+    function burnFrom(address from, uint256 amount) external;
 }

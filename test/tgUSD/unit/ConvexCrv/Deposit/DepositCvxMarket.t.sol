@@ -21,7 +21,7 @@ contract DepositCvxMarket is ConvexCurveContext {
     //
     function test_deposit_stake() external {
         verifyReceiveERC20(market.cvxRewardToken(), address(market), 100 ether, "Verify that market receives Cvx Reward tokens");
-        verifyBalERC20NotChanging(collatToken, address(market), "Verify that as staking, no LP are received by the Market");
+        verifyBalERC20NotChanging(collatToken, address(market), "Verify that as staking, no LP are received by the MarketCore");
         verifyLostERC20(collatToken, usr1, 100 ether, "Verify that user sent its LP");
 
         vm.startSnapshotGas("Deposit", "First deposit ever on the market and stake");

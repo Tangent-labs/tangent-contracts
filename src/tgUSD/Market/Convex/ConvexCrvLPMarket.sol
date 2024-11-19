@@ -31,13 +31,16 @@ contract ConvexCrvLPMarket is MarketRewards {
         socFeePercentage = 1_000;
     }
 
-    function _postDeposit(IERC20 _collatToken, bool isStaked) internal override {
+    function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, uint256 lpStaked, bool isStaked) internal override {
+        totalCollateral += lpStaked;
+        _collatToken.transferFrom(msg.sender, address(this), lpDeposited);
+
         if (isStaked) {
             CVX_BOOSTER.deposit(pid, _collatToken.balanceOf(address(this)), true);
         }
     }
 
-    function _postWithdraw(uint256 lpToWithdraw) internal override {
+    function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {
         uint256 lpAvailable = collatToken.balanceOf(address(this)) - socFeePending;
 
         /// @dev Verify that all there are enough LlamaLend LP on the contract
@@ -46,7 +49,7 @@ contract ConvexCrvLPMarket is MarketRewards {
             cvxRewardToken.withdrawAndUnwrap(lpToWithdraw - lpAvailable, false);
         }
 
-        collatToken.transfer(msg.sender, lpToWithdraw);
+        collatToken.transfer(to, lpToWithdraw);
     }
     /**
      * @notice Claim and process the governance rewards

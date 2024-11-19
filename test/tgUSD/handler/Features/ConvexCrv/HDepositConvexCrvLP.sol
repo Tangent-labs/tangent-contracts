@@ -37,6 +37,21 @@ contract HDepositConvexCrvLP is HMarketBase {
         _afterBorrowCheck(marketCrvLP, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);
     }
 
+    function depositAndRepay(uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
+        (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(
+            sender,
+            lpDeposited,
+            isStaked
+        );
+        (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, ) = _beforBorrowOrRepayCheck(marketCrvLP);
+        _beforeBorrowCheck(marketCrvLP, sender, borrowedAmount);
+
+        marketCrvLP.depositAndBorrow(lpDeposited, borrowedAmount, isStaked);
+
+        _afterDepositCheck(sender, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
+        _afterBorrowCheck(marketCrvLP, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);
+    }
+
     function _beforeDepositCheck(
         address _for,
         uint256 lpDeposited,
@@ -59,7 +74,12 @@ contract HDepositConvexCrvLP is HMarketBase {
             } else {
                 verifyBalERC20NotChanging(collatToken, address(marketCrvLP), "There were no collat on the marketCrvLP waiting to be staked");
             }
-            verifyReceiveERC20(marketCrvLP.cvxRewardToken(), address(marketCrvLP), collatMarketBalance + lpDeposited, "Collat is received by the staking contract");
+            verifyReceiveERC20(
+                marketCrvLP.cvxRewardToken(),
+                address(marketCrvLP),
+                collatMarketBalance + lpDeposited,
+                "Collat is received by the staking contract"
+            );
         } else {
             feeToTake = (lpDeposited * socFeePercentage) / 100_000;
             verifyReceiveERC20(collatToken, address(marketCrvLP), lpDeposited, "Collat is received by the marketCrvLP");
@@ -91,7 +111,11 @@ contract HDepositConvexCrvLP is HMarketBase {
         } else {
             uint256 collatIncrease = lpDeposited - feeToTake;
 
-            assertEq(marketCrvLP.socFeePending(), socFeePending + feeToTake, "Fee pending is equal to the sum of previous fee pending and the new soc fee to take");
+            assertEq(
+                marketCrvLP.socFeePending(),
+                socFeePending + feeToTake,
+                "Fee pending is equal to the sum of previous fee pending and the new soc fee to take"
+            );
             assertEq(
                 collatIncrease,
                 marketCrvLP.totalCollateral() - totalCollateralBefore,

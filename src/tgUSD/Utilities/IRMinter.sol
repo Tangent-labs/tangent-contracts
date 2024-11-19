@@ -4,7 +4,7 @@ pragma solidity ^0.8.22;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ItgUSD} from "../../interfaces/internals/tgUSD/ItgUSD.sol";
 
-import {IMarket} from "../../interfaces/internals/tgUSD/IMarket.sol";
+import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
 
 import "forge-std/console.sol";
 
@@ -40,7 +40,7 @@ contract IRMinter is Ownable {
             address _irProducer = _irProducers[i];
             require(isIrProducer[_irProducer], NotIRProducer(_irProducer));
 
-            totalInterests += IMarket(_irProducer).mintPendingInterests();
+            totalInterests += IDebtIR(_irProducer).mintPendingInterests();
 
             unchecked {
                 ++i;
