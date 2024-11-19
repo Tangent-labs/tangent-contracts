@@ -44,10 +44,11 @@ contract BorrowReverts is ConvexCurveContext {
 
     function test_borrow_more_than_LTV_with_not_enough_collat() external {
         hDeposit.deposit(usr1, minimumLoan * 3, false);
+        uint256 maxBorrow = market.maxBorrowable(usr1);
 
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooHigh.selector));
-        market.borrow(usr1, market.maxBorrowable(usr1) + 1);
+        market.borrow(usr1, maxBorrow + 1);
         vm.stopPrank();
     }
 }
