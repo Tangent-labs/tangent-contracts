@@ -35,21 +35,21 @@ contract tgUSD is OFT, ItgUSD {
         _;
     }
 
+    function burn(uint256 amount) external {
+        _burn(msg.sender, amount);
+    }
+
+    function mintIR() external {
+        _mint(controlTower.feeTreasury(), mintableInterests);
+        delete mintableInterests;
+    }
+
     function mint(address to, uint256 amount) external onlyMarketCaller {
         _mint(to, amount);
     }
 
     function burnFrom(address from, uint256 amount) external onlyMarketCaller {
         _burn(from, amount);
-    }
-
-    function burn(uint256 amount) external {
-        _burn(msg.sender, amount);
-    }
-
-    function mintIR(address[] calldata _markets) external onlyOwner {
-        _mint(controlTower.feeTreasury(), mintableInterests);
-        delete mintableInterests;
     }
 
     function increaseMintableInterests(uint256 interests) external onlyMarketCaller {
