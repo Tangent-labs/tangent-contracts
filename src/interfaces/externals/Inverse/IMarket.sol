@@ -1,4 +1,4 @@
-interface IMarket {
+interface IMarketCore {
     function DOMAIN_SEPARATOR() external view returns (bytes32);
     function borrow(uint256 amount) external;
     function borrowController() external view returns (address);

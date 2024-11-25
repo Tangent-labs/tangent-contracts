@@ -22,13 +22,13 @@ contract HBorrow is HMarketBase {
         (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, uint256 mintableInterests) = _beforBorrowOrRepayCheck(market);
 
         uint256 tgUSDToRepay = repayedAmount;
-        if (repayedAmount == MAX_UINT) {
+        if (repayedAmount >= positionDebt) {
             tgUSDToRepay = positionDebt;
         }
 
         _beforeRepayCheck(market, tgUSDToRepay);
 
-        market.repay(account, repayedAmount);
+        market.repay(account, repayedAmount, address(0));
 
         _afterCheckpointGlobal(market, interests, newDebtIndex, mintableInterests);
         _afterRepayCheck(market, account, tgUSDToRepay, lastDebt, interests, newDebtIndex, positionDebt);

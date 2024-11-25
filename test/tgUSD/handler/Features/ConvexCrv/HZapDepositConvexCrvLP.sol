@@ -1,77 +1,84 @@
 // SPDX-License-Identifier: UNLICENSED
 
 pragma solidity ^0.8.22;
-import "../../Base/HMarketBase.sol";
 
-import "../../../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
+import "./HDepositConvexCrvLP.sol";
 
-contract HDepositConvexCrvLP is HMarketBase {
-    ConvexCrvLPMarket marketCrvLP;
-    constructor(address _sender, ConvexCrvLPMarket _market) HandlerBase(_sender, _market) {
-        marketCrvLP = ConvexCrvLPMarket(address(_market));
+import "../../../../../src/tgUSD/Utilities/Zapper.sol";
+import "../../../../utils/OdosUtils.sol";
+
+contract HZapDepositConvexCrvLP is HDepositConvexCrvLP {
+    Zapper public zapper;
+    OdosUtils public odosUtils;
+
+    constructor(address _sender, ConvexCrvLPMarket _market, Zapper _zapper, OdosUtils _odosUtils) HDepositConvexCrvLP(_sender, _market) {
+        zapper = _zapper;
+        odosUtils = _odosUtils;
     }
-    function deposit(address _for, uint256 lpDeposited, bool isStaked) external handler {
-        (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(
-            _for,
-            lpDeposited,
+
+    function zapDeposit(Zapper.ZapMarket calldata zapMarket, bytes calldata odosDataCall, bool isStaked) external payable handler {
+        uint256 quote = odosUtils.getQuoteOdos(zapMarket.amountIn, zapMarket.tokenIn, marketCrvLP.collatToken(), address(marketCrvLP));
+
+        (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeZapDepositCheck(
+            zapMarket._for,
+            zapMarket.tokenIn,
+            zapMarket.amountIn,
+            quote,
             isStaked
         );
 
-        marketCrvLP.deposit(_for, lpDeposited, isStaked);
+        zapper.zapDeposit{value: msg.value}(zapMarket, odosDataCall, isStaked);
 
-        _afterDepositCheck(_for, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
+        _afterZapDepositCheck(zapMarket._for, quote, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
     }
 
-    function depositAndBorrow(address _for, uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
-        (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(
-            sender,
-            lpDeposited,
-            isStaked
-        );
-        (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, ) = _beforBorrowOrRepayCheck(marketCrvLP);
-        _beforeBorrowCheck(marketCrvLP, sender, borrowedAmount);
-
-        marketCrvLP.depositAndBorrow(_for, lpDeposited, borrowedAmount, isStaked);
-
-        _afterDepositCheck(sender, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
-        _afterBorrowCheck(marketCrvLP, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);
-    }
-
-    function _beforeDepositCheck(
+    function _beforeZapDepositCheck(
         address _for,
+        IERC20 tokenIn,
+        uint256 amountIn,
         uint256 lpDeposited,
         bool isStaked
     ) internal returns (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) {
         IERC20 collatToken = marketCrvLP.collatToken();
+
         uint256 socFeePercentage = marketCrvLP.socFeePercentage();
         socFeePending = marketCrvLP.socFeePending();
-
-        collatToken.approve(address(marketCrvLP), MAX_UINT);
+        if (msg.value != 0) {
+            deal(sender, msg.value);
+        } else {
+            tokenIn.approve(address(zapper), MAX_UINT);
+            deal(address(tokenIn), sender, amountIn);
+        }
 
         totalCollateralBefore = marketCrvLP.totalCollateral();
         balanceCollateralBefore = marketCrvLP.collateralBalances(_for);
 
-        verifyLostERC20(collatToken, sender, lpDeposited, "Collat is deposited by sender");
+        verifyLostERC20(tokenIn, sender, amountIn, "Zapped token is deposited by sender");
         if (isStaked) {
             uint256 collatMarketBalance = collatToken.balanceOf(address(marketCrvLP));
             if (socFeePending != 0) {
                 verifyLostERC20(collatToken, address(marketCrvLP), collatMarketBalance, "Collat in pending is staked by the marketCrvLP");
             } else {
-                verifyBalERC20NotChanging(collatToken, address(marketCrvLP), "There were no collat on the marketCrvLP waiting to be staked");
+                verifyBalERC20NotChanging(
+                    collatToken,
+                    address(marketCrvLP),
+                    "There were no collat on the marketCrvLP waiting to be staked so the balance of the market doesn't change"
+                );
             }
-            verifyReceiveERC20(
+            verifyReceiveDeltaRelERC20(
                 marketCrvLP.cvxRewardToken(),
                 address(marketCrvLP),
                 collatMarketBalance + lpDeposited,
-                "Collat is received by the staking contract"
+                1e17,
+                "Sum of collat deposited + the pending is received by the staking contract because we are on stake mode"
             );
         } else {
             feeToTake = (lpDeposited * socFeePercentage) / 100_000;
-            verifyReceiveERC20(collatToken, address(marketCrvLP), lpDeposited, "Collat is received by the marketCrvLP");
+            verifyReceiveDeltaRelERC20(collatToken, address(marketCrvLP), lpDeposited, 1e17, "Collat is received by the marketCrvLP");
         }
     }
 
-    function _afterDepositCheck(
+    function _afterZapDepositCheck(
         address _for,
         uint256 lpDeposited,
         bool isStaked,
@@ -83,32 +90,37 @@ contract HDepositConvexCrvLP is HMarketBase {
         if (isStaked) {
             uint256 collatIncrease = lpDeposited + socFeePending;
             assertEq(0, marketCrvLP.socFeePending(), "When staked, fee pending are deleted");
-            assertEq(
+            assertApproxEqRel(
                 collatIncrease,
                 marketCrvLP.totalCollateral() - totalCollateralBefore,
+                1e17,
                 "Total collateral is increased by taking into account the pending sociabilization fee"
             );
-            assertEq(
+            assertApproxEqRel(
                 collatIncrease,
                 marketCrvLP.collateralBalances(_for) - balanceCollateralBefore,
+                1e17,
                 "Collateral of the user is increased by taking into account pending soc fee"
             );
         } else {
             uint256 collatIncrease = lpDeposited - feeToTake;
 
-            assertEq(
+            assertApproxEqRel(
                 marketCrvLP.socFeePending(),
                 socFeePending + feeToTake,
+                1e17,
                 "Fee pending is equal to the sum of previous fee pending and the new soc fee to take"
             );
-            assertEq(
+            assertApproxEqRel(
                 collatIncrease,
                 marketCrvLP.totalCollateral() - totalCollateralBefore,
+                1e17,
                 "Total collateral is increased by removing the soc fee from the input amount"
             );
-            assertEq(
+            assertApproxEqRel(
                 collatIncrease,
                 marketCrvLP.collateralBalances(_for) - balanceCollateralBefore,
+                1e17,
                 "Collateral of the user is increased by removing the soc fee from the input amount"
             );
         }

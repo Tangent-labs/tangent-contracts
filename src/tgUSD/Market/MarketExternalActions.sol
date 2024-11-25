@@ -6,11 +6,11 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MarketCore, Ownable} from "./MarketCore.sol";
 
 import {ILiquidator} from "../../interfaces/internals/tgUSD/ILiquidator.sol";
-
+import {IMarketExternalActions} from "../../interfaces/internals/tgUSD/IMarketExternalActions.sol";
 import "forge-std/console.sol";
 
 /// @notice
-abstract contract MarketExternalActions is MarketCore {
+abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         USER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -18,13 +18,15 @@ abstract contract MarketExternalActions is MarketCore {
     function deposit(address _for, uint256 lpDeposited, bool isStaked) external {
         (uint256 lpStaked, IERC20 _collatToken) = _preDeposit(_for, lpDeposited, isStaked);
         _deposit(_for, lpStaked);
-        _transferCollateralDeposit(_collatToken, lpDeposited, lpStaked, isStaked);
+        _transferCollateralDeposit(_collatToken, lpDeposited);
+        _postDeposit(_collatToken, lpStaked, isStaked);
     }
 
-    function depositAndBorrow(uint256 lpDeposited, uint256 debtBorrow, bool isStaked) external {
-        (uint256 lpStaked, IERC20 _collatToken) = _preDeposit(msg.sender, lpDeposited, isStaked);
+    function depositAndBorrow(address _for, uint256 lpDeposited, uint256 debtBorrow, bool isStaked) external {
+        (uint256 lpStaked, IERC20 _collatToken) = _preDeposit(_for, lpDeposited, isStaked);
         _depositAndBorrow(lpStaked, debtBorrow);
-        _transferCollateralDeposit(_collatToken, lpDeposited, lpStaked, isStaked);
+        _transferCollateralDeposit(_collatToken, lpDeposited);
+        _postDeposit(_collatToken, lpStaked, isStaked);
     }
 
     function withdraw(uint256 lpToWithdraw) external {
@@ -33,10 +35,11 @@ abstract contract MarketExternalActions is MarketCore {
         _transferCollateralWithdraw(msg.sender, lpToWithdraw);
     }
 
-    function withdrawAndRepay(uint256 lpToWithdraw, uint256 debtRepay) external {
+    function withdrawAndRepay(uint256 lpToWithdraw, uint256 debtRepay, address callerZapper) external {
         _preWithdraw(lpToWithdraw);
-        _withdrawAndRepay(lpToWithdraw, debtRepay);
-        _transferCollateralWithdraw(msg.sender, lpToWithdraw);
+        address caller = controlTower.isZapper(msg.sender) ? callerZapper : msg.sender;
+        _withdrawAndRepay(lpToWithdraw, debtRepay, caller);
+        _transferCollateralWithdraw(caller, lpToWithdraw);
     }
 
     function borrow(address receiver, uint256 tgUSDToBorrow) external {
@@ -44,9 +47,9 @@ abstract contract MarketExternalActions is MarketCore {
         _updateDebts(msg.sender, newUserDebt, newDebtIndex, newTotalDebt);
     }
 
-    function repay(address account, uint256 tgUSDToRepay) external {
-        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _repay(account, tgUSDToRepay);
-
+    function repay(address account, uint256 tgUSDToRepay, address callerZapper) external {
+        address caller = controlTower.isZapper(msg.sender) ? callerZapper : msg.sender;
+        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _repay(account, tgUSDToRepay, caller);
         _updateDebts(account, newUserDebt, newDebtIndex, newTotalDebt);
     }
 
@@ -64,7 +67,7 @@ abstract contract MarketExternalActions is MarketCore {
         uint256 collatAmountToLiquidate;
 
         /// @dev Liquidate all
-        if (tgUSDToRepay == MAX_UINT) {
+        if (tgUSDToRepay >= userDebt) {
             tgUSDToRepay = userDebt;
             collatAmountToLiquidate = collatBalance;
         }
@@ -72,7 +75,7 @@ abstract contract MarketExternalActions is MarketCore {
         else {
             collatAmountToLiquidate = (collatBalance * tgUSDToRepay) / userDebt;
             newCollatBalance = collatBalance - collatAmountToLiquidate;
-            uint256 remainingDebt = userDebt - tgUSDToRepay;
+            remainingDebt = userDebt - tgUSDToRepay;
             require(remainingDebt >= minimumLoan, PositionDebtTooLow());
         }
 
@@ -87,6 +90,7 @@ abstract contract MarketExternalActions is MarketCore {
         tgUSD.burnFrom(msg.sender, tgUSDToRepay);
     }
 
+    /// TODO Add self liquidate partial
     function selfLiquidate(ILiquidator liquidator) external {
         /// @dev Checkpoint IR
         (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();

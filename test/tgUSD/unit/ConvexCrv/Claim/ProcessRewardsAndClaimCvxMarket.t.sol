@@ -35,9 +35,7 @@ contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
 
         skip(15 days);
 
-        address[] memory markets = new address[](1);
-        markets[0] = address(market);
-        irMinter.mintIR(markets);
+        tgUsd.mintIR(Array.memoryAddress([address(market)]));
         vm.stopPrank();
 
         hRewards.processRewards(usr2);

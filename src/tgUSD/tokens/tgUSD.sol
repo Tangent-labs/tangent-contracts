@@ -6,10 +6,16 @@ import {OFT} from "@layerzerolabs/oft-evm/contracts/OFT.sol";
 
 import {ItgUSD} from "../../interfaces/internals/tgUSD/ItgUSD.sol";
 
+import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
+
+import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
+
 import "forge-std/console.sol";
 /// @notice OFT is an ERC-20 token that extends the OFTCore contract.
 contract tgUSD is OFT, ItgUSD {
-    mapping(address => bool) public isMinterBurner;
+    IControlTower public controlTower;
+
+    uint256 public mintableInterests;
 
     error CallerNotMinterBurner();
 
@@ -18,30 +24,35 @@ contract tgUSD is OFT, ItgUSD {
         string memory _symbol,
         address _lzEndpoint,
         address _delegate,
-        address _owner
-    ) OFT(_name, _symbol, _lzEndpoint, _delegate) Ownable(_owner) {}
+        address _owner,
+        IControlTower _controlTower
+    ) OFT(_name, _symbol, _lzEndpoint, _delegate) Ownable(_owner) {
+        controlTower = _controlTower;
+    }
 
-    function mint(address to, uint256 amount) external {
-        require(isMinterBurner[msg.sender], CallerNotMinterBurner());
+    modifier onlyMarketCaller() {
+        require(controlTower.isMarket(msg.sender), CallerNotMinterBurner());
+        _;
+    }
+
+    function mint(address to, uint256 amount) external onlyMarketCaller {
         _mint(to, amount);
     }
 
-    function burnFrom(address from, uint256 amount) external {
-        require(isMinterBurner[msg.sender], CallerNotMinterBurner());
+    function burnFrom(address from, uint256 amount) external onlyMarketCaller {
         _burn(from, amount);
     }
 
-    function burnFrom(uint256 amount) external {
+    function burn(uint256 amount) external {
         _burn(msg.sender, amount);
     }
 
-    function toggleMintersBurners(address[] calldata mintersBurners) external onlyOwner {
-        for (uint256 i; i < mintersBurners.length; ) {
-            address minterBurner = mintersBurners[i];
-            isMinterBurner[minterBurner] = !isMinterBurner[minterBurner];
-            unchecked {
-                ++i;
-            }
-        }
+    function mintIR(address[] calldata _markets) external onlyOwner {
+        _mint(controlTower.feeTreasury(), mintableInterests);
+        delete mintableInterests;
+    }
+
+    function increaseMintableInterests(uint256 interests) external onlyMarketCaller {
+        mintableInterests += interests;
     }
 }

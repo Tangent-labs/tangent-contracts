@@ -50,7 +50,7 @@ contract BorrowNoRewards is ConvexCurveContext {
 
         assertEq(market.positionDebt(usr2), market.totalDebt());
 
-        irMinter.mintIR(Array.memoryAddress([address(market)]));
+        tgUsd.mintIR(Array.memoryAddress([address(market)]));
 
         assertEq(market.totalDebt(), market.lastDebt() + market.pendingInterests());
         assertEq(market.positionDebt(usr2), market.totalDebt());
@@ -58,7 +58,7 @@ contract BorrowNoRewards is ConvexCurveContext {
         repayAmount = bound(repayAmount, 1, market.positionDebt(usr2) - market.minimumLoan());
 
         vm.startPrank(owner);
-        tgUsd.toggleMintersBurners(Array.memoryAddress([owner]));
+        controlTower.toggleMarkets(Array.memoryAddress([owner]));
         tgUsd.mint(usr2, repayAmount);
         vm.stopPrank();
 

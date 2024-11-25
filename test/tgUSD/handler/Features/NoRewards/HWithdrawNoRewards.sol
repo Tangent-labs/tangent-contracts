@@ -18,10 +18,10 @@ contract HWithdrawNoRewards is HMarketBase {
         // _afterWithdrawCheck(lpToWithdraw, totalCollateralBefore, balanceCollateralBefore);
     }
 
-    function withdrawAndRepay(uint256 lpToWithdraw, uint256 debtRepay) external handler {
+    function withdrawAndRepay(uint256 lpToWithdraw, uint256 debtRepay, address callerZapper) external handler {
         // (uint256 totalCollateralBefore, uint256 balanceCollateralBefore) = _beforeWithdrawCheck(lpToWithdraw);
 
-        marketNoRewards.withdrawAndRepay(lpToWithdraw, debtRepay);
+        marketNoRewards.withdrawAndRepay(lpToWithdraw, debtRepay, callerZapper);
 
         // _afterWithdrawCheck(lpToWithdraw, totalCollateralBefore, balanceCollateralBefore);
     }

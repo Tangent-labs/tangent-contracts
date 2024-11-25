@@ -14,11 +14,12 @@ contract ConvexFxnLPMarket is MarketRewards {
     IStakingProxyERC20 public stakingProxyVault;
 
     constructor(
+        address _owner,
         MarketInit memory _marketInit,
         IRewardAccumulator _rewardAccumulator,
-        IERC20[] memory _rewardTokens,
+        IERC20Metadata[] memory _rewardTokens,
         uint256 _pid
-    ) MarketRewards(_marketInit, _rewardAccumulator, _rewardTokens) {
+    ) MarketRewards(_owner, _marketInit, _rewardAccumulator, _rewardTokens) {
         address vaultAddress = CVX_BOOSTER.createVault(_pid);
 
         stakingProxyVault = IStakingProxyERC20(vaultAddress);
@@ -27,9 +28,8 @@ contract ConvexFxnLPMarket is MarketRewards {
         collatToken.approve(vaultAddress, MAX_UINT);
     }
 
-    function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, uint256 lpStaked, bool isStaked) internal override {
+    function _postDeposit(IERC20 _collatToken, uint256 lpStaked, bool isStaked) internal override {
         totalCollateral += lpStaked;
-        _collatToken.transferFrom(msg.sender, address(this), lpDeposited);
         if (isStaked) {
             stakingProxyVault.deposit(_collatToken.balanceOf(address(this)), true);
         }

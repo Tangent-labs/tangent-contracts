@@ -41,13 +41,13 @@ contract AssertERC20 is Test {
 
     function verifyBalERC20NotChanging(IERC20 erc20, address acc, string memory reason) public {
         receiveChanges.push(
-            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: 0, bal: erc20.balanceOf(acc), deltaAbs: 0, deltaRel: 0, reason: reason})
+            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: 0, bal: _getBalance(erc20, acc), deltaAbs: 0, deltaRel: 0, reason: reason})
         );
     }
 
     function verifyBalERC20NotChanging(IERC20 erc20, address acc) public {
         receiveChanges.push(
-            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: 0, bal: erc20.balanceOf(acc), deltaAbs: 0, deltaRel: 0, reason: ""})
+            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: 0, bal: _getBalance(erc20, acc), deltaAbs: 0, deltaRel: 0, reason: ""})
         );
     }
 
@@ -65,13 +65,13 @@ contract AssertERC20 is Test {
 
     function verifyReceiveERC20(IERC20 erc20, address acc, uint256 amount, string memory reason) public {
         receiveChanges.push(
-            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: erc20.balanceOf(acc), deltaAbs: 0, deltaRel: 0, reason: reason})
+            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: _getBalance(erc20, acc), deltaAbs: 0, deltaRel: 0, reason: reason})
         );
     }
 
     function verifyLostERC20(IERC20 erc20, address acc, uint256 amount, string memory reason) public {
         lostChanges.push(
-            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: erc20.balanceOf(acc), deltaAbs: 0, deltaRel: 0, reason: reason})
+            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: _getBalance(erc20, acc), deltaAbs: 0, deltaRel: 0, reason: reason})
         );
     }
 
@@ -91,13 +91,13 @@ contract AssertERC20 is Test {
 
     function verifyReceiveERC20(IERC20 erc20, address acc, uint256 amount) public {
         receiveChanges.push(
-            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: erc20.balanceOf(acc), deltaAbs: 0, deltaRel: 0, reason: ""})
+            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: _getBalance(erc20, acc), deltaAbs: 0, deltaRel: 0, reason: ""})
         );
     }
 
     function verifyLostERC20(IERC20 erc20, address acc, uint256 amount) public {
         lostChanges.push(
-            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: erc20.balanceOf(acc), deltaAbs: 0, deltaRel: 0, reason: ""})
+            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: _getBalance(erc20, acc), deltaAbs: 0, deltaRel: 0, reason: ""})
         );
     }
 
@@ -121,7 +121,7 @@ contract AssertERC20 is Test {
                 erc20: IERC20Metadata(address(erc20)),
                 acc: acc,
                 amount: amount,
-                bal: erc20.balanceOf(acc),
+                bal: _getBalance(erc20, acc),
                 deltaAbs: 0,
                 deltaRel: deltaRel,
                 reason: reason
@@ -135,7 +135,7 @@ contract AssertERC20 is Test {
                 erc20: IERC20Metadata(address(erc20)),
                 acc: acc,
                 amount: amount,
-                bal: erc20.balanceOf(acc),
+                bal: _getBalance(erc20, acc),
                 deltaAbs: 0,
                 deltaRel: deltaRel,
                 reason: reason
@@ -159,13 +159,29 @@ contract AssertERC20 is Test {
 
     function verifyReceiveDeltaRelERC20(IERC20 erc20, address acc, uint256 amount, uint256 deltaRel) public {
         receiveChanges.push(
-            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: erc20.balanceOf(acc), deltaAbs: 0, deltaRel: deltaRel, reason: ""})
+            BalChange({
+                erc20: IERC20Metadata(address(erc20)),
+                acc: acc,
+                amount: amount,
+                bal: _getBalance(erc20, acc),
+                deltaAbs: 0,
+                deltaRel: deltaRel,
+                reason: ""
+            })
         );
     }
 
     function verifyLostDeltaRelERC20(IERC20 erc20, address acc, uint256 amount, uint256 deltaRel) public {
         lostChanges.push(
-            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: erc20.balanceOf(acc), deltaAbs: 0, deltaRel: deltaRel, reason: ""})
+            BalChange({
+                erc20: IERC20Metadata(address(erc20)),
+                acc: acc,
+                amount: amount,
+                bal: _getBalance(erc20, acc),
+                deltaAbs: 0,
+                deltaRel: deltaRel,
+                reason: ""
+            })
         );
     }
 
@@ -189,7 +205,7 @@ contract AssertERC20 is Test {
                 erc20: IERC20Metadata(address(erc20)),
                 acc: acc,
                 amount: amount,
-                bal: erc20.balanceOf(acc),
+                bal: _getBalance(erc20, acc),
                 deltaAbs: deltaAbs,
                 deltaRel: 0,
                 reason: reason
@@ -203,7 +219,7 @@ contract AssertERC20 is Test {
                 erc20: IERC20Metadata(address(erc20)),
                 acc: acc,
                 amount: amount,
-                bal: erc20.balanceOf(acc),
+                bal: _getBalance(erc20, acc),
                 deltaAbs: deltaAbs,
                 deltaRel: 0,
                 reason: reason
@@ -227,13 +243,29 @@ contract AssertERC20 is Test {
 
     function verifyReceiveDeltaAbsERC20(IERC20 erc20, address acc, uint256 amount, uint256 deltaAbs) public {
         receiveChanges.push(
-            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: erc20.balanceOf(acc), deltaAbs: deltaAbs, deltaRel: 0, reason: ""})
+            BalChange({
+                erc20: IERC20Metadata(address(erc20)),
+                acc: acc,
+                amount: amount,
+                bal: _getBalance(erc20, acc),
+                deltaAbs: deltaAbs,
+                deltaRel: 0,
+                reason: ""
+            })
         );
     }
 
     function verifyLostDeltaAbsERC20(IERC20 erc20, address acc, uint256 amount, uint256 deltaAbs) public {
         lostChanges.push(
-            BalChange({erc20: IERC20Metadata(address(erc20)), acc: acc, amount: amount, bal: erc20.balanceOf(acc), deltaAbs: deltaAbs, deltaRel: 0, reason: ""})
+            BalChange({
+                erc20: IERC20Metadata(address(erc20)),
+                acc: acc,
+                amount: amount,
+                bal: _getBalance(erc20, acc),
+                deltaAbs: deltaAbs,
+                deltaRel: 0,
+                reason: ""
+            })
         );
     }
 
@@ -264,10 +296,14 @@ contract AssertERC20 is Test {
         }
     }
 
+    function _getBalance(IERC20 erc20, address acc) internal view returns (uint256) {
+        return address(erc20) != address(0) ? erc20.balanceOf(acc) : acc.balance;
+    }
+
     function _assertBalanceChanges() internal {
         for (uint256 index = 0; index < receiveChanges.length; index++) {
             BalChange memory bal = receiveChanges[index];
-            uint256 newBalance = bal.erc20.balanceOf(bal.acc);
+            uint256 newBalance = _getBalance(bal.erc20, bal.acc);
             string memory symbol = vm.getLabel(address(bal.erc20));
             uint256 realAmount;
 
@@ -292,7 +328,7 @@ contract AssertERC20 is Test {
 
         for (uint256 index = 0; index < lostChanges.length; index++) {
             BalChange memory bal = lostChanges[index];
-            uint256 newBalance = bal.erc20.balanceOf(bal.acc);
+            uint256 newBalance = _getBalance(bal.erc20, bal.acc);
             string memory symbol = vm.getLabel(address(bal.erc20));
             uint256 realAmount;
 

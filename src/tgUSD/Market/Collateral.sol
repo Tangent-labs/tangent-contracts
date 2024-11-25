@@ -4,38 +4,55 @@ pragma solidity ^0.8.22;
 import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {DebtIR, Ownable} from "./DebtIR.sol";
+import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
 
 import "forge-std/console.sol";
 
 /// @notice
-abstract contract Collateral is DebtIR {
+abstract contract Collateral is DebtIR, ICollateral {
     uint256 constant MAX_UINT = uint256(int256(-1));
     uint256 public constant DENOMINATOR = 100_000;
 
-    /// @dev Collateral token of the MarketCore.
+    /// @notice Collateral asset of the market
     IERC20Metadata public collatToken;
-    /// @dev Contract allowing to retrieve the price in dollar of the collateral.
+    /// @notice Contract allowing to retrieve the price in dollar of the collateral.
     IPriceOracle public collatOracle;
 
-    /// @dev Maxium Loan to Value of the market in %
+    /// @notice Maxium Loan to Value of the market in %.
     uint256 public maxLTV;
-    /// @dev Liquidation threshold of the market in %.
+    /// @notice Liquidation threshold of the market in %.
     uint256 public liquidationThreshold;
 
-    /// @dev Amount of collateral deposited by a user.
+    /// @notice Amount of collateral deposited by a user.
     mapping(address => uint256) public collateralBalances;
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     OWNER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    /**
+     *  @notice Updates the Oracle address allowing to price the collateral.
+     *  @dev    Function callable only by the DAO
+     *  @param _collatOracle Address of the new oracle.
+     */
     function setCollatOracle(IPriceOracle _collatOracle) external onlyOwner {
         collatOracle = _collatOracle;
     }
 
+    /**
+     *  @notice Updates the maximum Loan to Value allowed on the market.
+     *  @dev    Function callable only by the DAO
+     *  @param _maxLTV New maxLTV percentage
+     */
     function setMaxLTV(uint256 _maxLTV) external onlyOwner {
         maxLTV = _maxLTV;
     }
+
+    /**
+     *  @notice Updates the liquidation threshold of the market.
+     *  @dev    Function callable only by the DAO
+     *  @param _liquidationThreshold New maximum liquidation threshold
+     */
     function setLiquidationThreshold(uint256 _liquidationThreshold) external onlyOwner {
         liquidationThreshold = _liquidationThreshold;
     }
@@ -44,26 +61,47 @@ abstract contract Collateral is DebtIR {
                     INTERNAL STORAGE UPDATE 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    /**
+     *  @dev  Updates in the storage the Total debt, User debt and Collateral owned by an account
+     *        Called during depositAndBorrow, withdrawAndReway, liquidate and selfLiquidate functions.
+     *  @param account           Address of the account to update
+     *  @param newCollatBalance  New collateral balance of account
+     *  @param newUserDebt       New debt of the account
+     *  @param newDebtIndex      New index of the debt
+     *  @param newTotalDebt      New total debt of the market
+     */
     function _updateCollatAndDebts(address account, uint256 newCollatBalance, uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) internal {
-        /// @dev Increase collateral deposited by the user
+        // Updates the collateral owned by the account.
         collateralBalances[account] = newCollatBalance;
 
-        /// @dev Modify
+        // Updates global and user debt
         _updateDebts(account, newUserDebt, newDebtIndex, newTotalDebt);
     }
 
+    /**
+     *  @dev  Updates in the storage the Total debt and Collateral owned by an account
+     *        Called during simple deposit and withdraw.
+     *  @param account           Address of the account to update
+     *  @param newCollatBalance  New collateral balance of account
+     *  @param newDebtIndex      New index of the debt
+     *  @param newTotalDebt      New total debt of the market
+     */
     function _updateCollatAndGlobalDebt(address account, uint256 newCollatBalance, uint256 newDebtIndex, uint256 newTotalDebt) internal {
-        /// @dev Increase collateral deposited by the user
+        // Updates the collateral owned by the account.
         collateralBalances[account] = newCollatBalance;
 
-        /// @dev Modify
+        // Updates global debt
         _updateGlobalDebt(newDebtIndex, newTotalDebt);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        INTERNAL VIEWS
+                        VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    /**
+     *  @notice Returns the maximum of tgUSD borrowable on the market per an account.
+     *  @param account  Address of the account to check the maximum borrowable
+     */
     function maxBorrowable(address account) external view returns (uint256) {
         return _maxBorrowable(account);
     }

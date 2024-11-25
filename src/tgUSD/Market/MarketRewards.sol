@@ -3,7 +3,7 @@ pragma solidity ^0.8.22;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 
@@ -12,7 +12,7 @@ import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumu
 import {MarketExternalActions, MarketCore} from "./MarketExternalActions.sol";
 import "forge-std/console.sol";
 /// @notice Lending market
-abstract contract MarketRewards is MarketExternalActions, IMarketRewards {
+abstract contract MarketRewards is MarketExternalActions {
     using SafeERC20 for IERC20;
     /// @dev Duration that rewards are streamed over
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
@@ -66,7 +66,12 @@ abstract contract MarketRewards is MarketExternalActions, IMarketRewards {
         _updateReward(_account);
         _;
     }
-    constructor(MarketInit memory _marketInit, IRewardAccumulator _rewardAccumulator, IERC20[] memory _rewardTokens) MarketCore(_marketInit) {
+    constructor(
+        address _owner,
+        MarketInit memory _marketInit,
+        IRewardAccumulator _rewardAccumulator,
+        IERC20Metadata[] memory _rewardTokens
+    ) MarketCore(_owner, _marketInit) {
         rewardCutPercentage = 50_000;
         harvesterFeePercentage = 1_000;
 
@@ -75,7 +80,7 @@ abstract contract MarketRewards is MarketExternalActions, IMarketRewards {
         rewardAccumulator = _rewardAccumulator;
 
         for (uint256 i; i < _rewardTokens.length; ) {
-            IERC20 token = _rewardTokens[i];
+            IERC20Metadata token = _rewardTokens[i];
             rewardTokens.push(token);
             rewardData[token].lastUpdateTime = uint128(block.timestamp);
             rewardData[token].periodFinish = uint128(block.timestamp);
@@ -161,9 +166,9 @@ abstract contract MarketRewards is MarketExternalActions, IMarketRewards {
                 ++tokenIndex;
             }
         }
-        if (tokenAmounts.length != 0) {
-            /// @dev Reduce length of tokenAmounts struct to not return useless 0
 
+        /// @dev Reduce length of tokenAmounts struct to not return useless 0
+        if (tokenAmounts.length != 0) {
             // solhint-disable-next-line no-inline-assembly
             assembly {
                 mstore(tokenAmounts, sub(mload(tokenAmounts), sub(rewardTokensLength, counter)))

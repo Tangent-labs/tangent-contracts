@@ -62,6 +62,7 @@ abstract contract HMarketBase is HandlerBase {
         uint256 positionDebt
     ) internal view {
         assertEq(lastDebt + interests - _market.lastDebt(), repayedAmount, "Total new debt didn't decrease");
+
         assertEq(_market.positionDebtIndex(account), ((positionDebt - repayedAmount) * RAY) / newDebtIndex, "New position debt index updated");
     }
 }

@@ -7,16 +7,16 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {IMarketRewards, ICommonStruct} from "../../interfaces/internals/tgUSD/IMarketRewards.sol";
 import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
-
+import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 contract RewardAccumulator is IRewardAccumulator, Ownable {
     using SafeERC20 for IERC20;
 
     address public feeTreasury;
 
+    IControlTower public controlTower;
+
     /// @dev Gives the amount of fee that DAO can withdraw for an ERC20
     mapping(IERC20 => uint256) public cutFeeForToken;
-    /// @dev Determines if address is scvUSD or gUSD
-    mapping(address => bool) public isMarketRewards;
 
     error NoRewardsToClaimFromContract(address contractAddr);
     error IncorretRewardLength(uint256 rewardLengthInParam, uint256 realRewardLength);
@@ -24,20 +24,9 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     error NoRewardToSimpleClaim();
     error NotAMarketRewards();
 
-    constructor(address _owner, address _feeTreasury) Ownable(_owner) {
+    constructor(address _owner, IControlTower _controlTower, address _feeTreasury) Ownable(_owner) {
+        controlTower = _controlTower;
         feeTreasury = _feeTreasury;
-    }
-
-    function toggleMarketRewards(address[] calldata _marketRewards) external onlyOwner {
-        for (uint256 i; i < _marketRewards.length; ) {
-            address _marketReward = _marketRewards[i];
-
-            isMarketRewards[_marketReward] = !isMarketRewards[_marketReward];
-
-            unchecked {
-                ++i;
-            }
-        }
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -48,7 +37,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      *  @param market The erc20 to claim the rewards on
      */
     function claimSimple(address market) external {
-        require(isMarketRewards[market], NotAMarketRewards());
+        require(controlTower.isMarket(market), NotAMarketRewards());
 
         ICommonStruct.TokenAmount[] memory tokenAmounts = IMarketRewards(market).getAndUpdateRewards(msg.sender);
 
@@ -64,20 +53,22 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
 
     /**
      *  @notice Claim rewards on one staking contract only
-     *  @param splitterTokens Array of contract to claim the rewards on
+     *  @param markets Array of contract to claim the rewards on
      *  @param rewardLength Amount of different tokens to claim as a reward
      */
-    function claimMultiple(address[] calldata splitterTokens, uint256 rewardLength) external {
+    function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
         /// @dev We save this length on his own variable, to not miss with the assembly manipulations
-        uint256 lendTokensLength = splitterTokens.length;
+        uint256 lendTokensLength = markets.length;
         IERC20[] memory tokenList = new IERC20[](lendTokensLength);
         uint256 actualErc20Index;
 
+        /// @dev Reverts if one of the market passed in parameter is not one
+        controlTower.isContractsMarkets(markets);
+
         /// @dev Iterates through all of the vaults
         for (uint256 splitterTokenIndex; splitterTokenIndex < lendTokensLength; ) {
-            address splitterToken = splitterTokens[splitterTokenIndex];
+            address splitterToken = markets[splitterTokenIndex];
             /// @dev User input verification
-            require(isMarketRewards[splitterToken], NotAMarketRewards());
 
             /// @dev Get and update the amount of rewards to claim
             ICommonStruct.TokenAmount[] memory tokenAmountsToClaim = IMarketRewards(splitterToken).getAndUpdateRewards(msg.sender);
@@ -156,7 +147,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      * @param tokenAmounts array of token to used to increment fees
      */
     function incrementCutFees(ICommonStruct.TokenAmount[] memory tokenAmounts) external {
-        require(isMarketRewards[msg.sender], NotAMarketRewards());
+        require(controlTower.isMarket(msg.sender), NotAMarketRewards());
         for (uint256 erc20Id; erc20Id < tokenAmounts.length; ) {
             cutFeeForToken[tokenAmounts[erc20Id].token] += tokenAmounts[erc20Id].amount;
             unchecked {
