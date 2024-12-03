@@ -3,10 +3,19 @@ pragma solidity ^0.8.24;
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {IAggregatorV3} from "../../interfaces/externals/Chainlink/IAggregatorV3.sol";
+import {IOdosRouter} from "../../interfaces/externals/IOdosRouter.sol";
+import {ISFRAX} from "../../interfaces/externals/Frax/ISFRAX.sol";
+
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
+import {IRewardsHandler} from "../../interfaces/internals/tgUSD/IRewardsHandler.sol";
+
+import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 library AddrClassicERC20 {
     // Tokens
+    IERC20Metadata constant TOKEN_DAI = IERC20Metadata(0x6B175474E89094C44Da98b954EedeAC495271d0F);
+    IERC20Metadata constant TOKEN_FRAX = IERC20Metadata(0x853d955aCEf822Db058eb8505911ED77F175b99e);
+    IERC20Metadata constant TOKEN_USDT = IERC20Metadata(0xdAC17F958D2ee523a2206206994597C13D831ec7);
     IERC20Metadata constant TOKEN_CRVUSD = IERC20Metadata(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
     IERC20Metadata constant TOKEN_SDT = IERC20Metadata(0x73968b9a57c6E53d41345FD57a6E6ae27d6CDB2F);
     IERC20Metadata constant TOKEN_CRV = IERC20Metadata(0xD533a949740bb3306d119CC777fa900bA034cd52);
@@ -19,7 +28,14 @@ library AddrClassicERC20 {
     IERC20Metadata constant TOKEN_FXN = IERC20Metadata(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09);
     IERC20Metadata constant TOKEN_DOLA = IERC20Metadata(0x865377367054516e17014CcdED1e7d814EDC9ce4);
     IERC20Metadata constant TOKEN_FXUSD = IERC20Metadata(0x085780639CC2cACd35E474e71f4d000e2405d8f6);
-    IERC20Metadata constant TOKEN_SDAI = IERC20Metadata(0x83F20F44975D03b1b09e64809B757c47f942BEeA);
+}
+
+library AddrERC4626 {
+    IERC4626 constant S_CRVUSD = IERC4626(0x0655977FEb2f289A4aB78af67BAB0d17aAb84367);
+    IRewardsHandler constant REWARD_HANDLER_SCRVUSD = IRewardsHandler(0xE8d1E2531761406Af1615A6764B0d5fF52736F56);
+    IERC4626 constant S_DAI = IERC4626(0x83F20F44975D03b1b09e64809B757c47f942BEeA);
+    ISFRAX constant S_FRAX = ISFRAX(0xA663B02CF0a4b149d2aD41910CB81e23e1c41c32);
+    IERC4626 constant S_DOLA = IERC4626(0xb45ad160634c528Cc3D2926d9807104FA3157305);
 }
 
 library AddrChainlinkOracle {
@@ -28,4 +44,8 @@ library AddrChainlinkOracle {
     IAggregatorV3 constant USDC = IAggregatorV3(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
     IAggregatorV3 constant USDT = IAggregatorV3(0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
     IPriceOracle constant SDAI = IPriceOracle(0x29081f7aB5a644716EfcDC10D5c926c5fEe9F72B);
+}
+
+library AddrAggregator {
+    IOdosRouter constant ROUTER_ODOS = IOdosRouter(0xCf5540fFFCdC3d510B18bFcA6d2b9987b0772559);
 }

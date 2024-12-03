@@ -22,7 +22,7 @@ contract HDepositConvexFxnLP is HMarketBase {
         _afterDepositCheck(_for, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
     }
 
-    function depositAndBorrow(uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
+    function depositAndBorrow(address _for, uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
         (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(
             sender,
             lpDeposited,
@@ -31,7 +31,7 @@ contract HDepositConvexFxnLP is HMarketBase {
         (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, ) = _beforBorrowOrRepayCheck(marketFxnLP);
         _beforeBorrowCheck(marketFxnLP, sender, borrowedAmount);
 
-        marketFxnLP.depositAndBorrow(lpDeposited, borrowedAmount, isStaked);
+        marketFxnLP.depositAndBorrow(_for, lpDeposited, borrowedAmount, isStaked);
 
         _afterDepositCheck(sender, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
         _afterBorrowCheck(marketFxnLP, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);

@@ -16,12 +16,13 @@ contract ConvexCrvLPMarket is MarketRewards {
     uint256 public pid;
 
     constructor(
+        address _owner,
         MarketInit memory _marketInit,
         IRewardAccumulator _rewardAccumulator,
-        IERC20[] memory _rewardTokens,
+        IERC20Metadata[] memory _rewardTokens,
         ICvxRewardToken _cvxRewardToken,
         uint256 _pid
-    ) MarketRewards(_marketInit, _rewardAccumulator, _rewardTokens) {
+    ) MarketRewards(_owner, _marketInit, _rewardAccumulator, _rewardTokens) {
         /// @dev Need this approval to the llamaLendVault on the CvxBooster
         collatToken.approve(address(CVX_BOOSTER), MAX_UINT);
 
@@ -31,10 +32,8 @@ contract ConvexCrvLPMarket is MarketRewards {
         socFeePercentage = 1_000;
     }
 
-    function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, uint256 lpStaked, bool isStaked) internal override {
+    function _postDeposit(IERC20 _collatToken, uint256 lpStaked, bool isStaked) internal override {
         totalCollateral += lpStaked;
-        _collatToken.transferFrom(msg.sender, address(this), lpDeposited);
-
         if (isStaked) {
             CVX_BOOSTER.deposit(pid, _collatToken.balanceOf(address(this)), true);
         }
@@ -43,9 +42,9 @@ contract ConvexCrvLPMarket is MarketRewards {
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {
         uint256 lpAvailable = collatToken.balanceOf(address(this)) - socFeePending;
 
-        /// @dev Verify that all there are enough LlamaLend LP on the contract
+        // Verify that all there are enough LlamaLend LP on the contract
         if (lpAvailable < lpToWithdraw) {
-            /// @dev If not enough are on the contract, we need to withdraw the difference from Convex
+            // If not enough are on the contract, we need to withdraw the difference from Convex
             cvxRewardToken.withdrawAndUnwrap(lpToWithdraw - lpAvailable, false);
         }
 
@@ -57,7 +56,7 @@ contract ConvexCrvLPMarket is MarketRewards {
      *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
     function processRewards(address harvestFeeReceiver) external override {
-        /// @dev Claim rewards on behalf
+        // Claim rewards on behalf
         cvxRewardToken.getReward();
         _processRewards(harvestFeeReceiver);
     }

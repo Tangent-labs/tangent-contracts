@@ -38,7 +38,7 @@ contract OraclesContext is TgUSDDeployContext {
         vm.label(address(oracles[AddrCurveStableLP.USDC_FXUSD]), "Oracle LP USDC/fxUSD");
 
         // Oracle sDAI
-        oracles[AddrClassicERC20.TOKEN_SDAI] = new sDAIOracle(AddrChainlinkOracle.SDAI);
-        vm.label(address(oracles[AddrClassicERC20.TOKEN_SDAI]), "Oracle sDAI");
+        oracles[AddrERC4626.S_DAI] = new sDAIOracle(AddrChainlinkOracle.SDAI);
+        vm.label(address(oracles[AddrERC4626.S_DAI]), "Oracle sDAI");
     }
 }

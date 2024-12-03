@@ -3,30 +3,29 @@
 pragma solidity ^0.8.22;
 
 import "forge-std/console.sol";
-import "forge-std/Test.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {StdUtils} from "forge-std/StdUtils.sol";
-
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
-import "../../../test/utils/Array.sol";
-
-import "../../../src/libs/Resources/ResourcesGlobal.sol";
-
 import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
 
-import "../../../src/tgUSD/Utilities/IRMinter.sol";
+import "../../../src/tgUSD/tokens/TgUSD.sol";
+import "../../../src/tgUSD/tokens/TgStable.sol";
 import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
-import "../../../src/tgUSD/tokens/tgUSD.sol";
+import "../../../src/tgUSD/Utilities/Zapper.sol";
+import "../../../src/tgUSD/Utilities/ControlTower.sol";
 
 import "../../utils/AssertERC20.sol";
+import "../../utils/LowLevel.sol";
+import "../../utils/OdosUtils.sol";
+import "../../utils/Labeliser.sol";
+import "../../utils/Array.sol";
 
-contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20 {
+contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address usr1 = makeAddr("User1");
     address usr2 = makeAddr("User2");
     address usr3 = makeAddr("User3");
@@ -42,38 +41,64 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20 {
 
     address public endpointAddressMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
 
+    ControlTower public controlTower;
+
+    Zapper public zapper;
+
     ICurveStableSwapNG public tgUSDLp;
 
-    tgUSD public tgUsd;
-
-    IRMinter public irMinter;
+    TgUSD public tgUsd;
 
     RewardAccumulator public rewardAccumulator;
+
+    MockedOdosRouter public mockedOdosRouter;
+
+    OdosUtils public odosUtils;
+
+    Labeliser public labeliser;
 
     /// @dev Validate Implementation (false if you don't want to "forge clean" at each modification)
     bool constant IS_VALIDATE_IMPLEM = false;
 
     constructor() {
-        vm.createSelectFork("mainnet", 21093905);
+        vm.createSelectFork("mainnet", 21273560);
 
-        /// Deploy tgUSD
-        tgUsd = new tgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"), owner);
+        vm.startPrank(owner);
+
+        odosUtils = new OdosUtils();
+
+        labeliser = new Labeliser();
+        labeliser.labelizeERC20();
+        labeliser.labelizeERC4626();
+
+        controlTower = new ControlTower(owner, feeTreasury);
+
+        // Deploy tgUSD
+        tgUsd = new TgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"), owner, controlTower);
+
+        mockedOdosRouter = new MockedOdosRouter();
+
+        controlTower.toggleMarkets(Array.memoryAddress([address(AddrAggregator.ROUTER_ODOS)]));
+
+        zapper = new Zapper(owner, controlTower, tgUsd);
+
+        controlTower.toggleZapper(address(zapper));
 
         deal(address(tgUsd), owner, 1_000_000 ether);
 
-        irMinter = new IRMinter(owner, feeTreasury, tgUsd);
-
-        /// Deploy and addLiquidity in tgUSD LP
+        // Deploy and addLiquidity in tgUSD LP
         tgUSDLp = deployTgUSDLP();
 
-        tgUsd.toggleMintersBurners(Array.memoryAddress([address(irMinter)]));
-
-        rewardAccumulator = new RewardAccumulator(owner, feeTreasury);
+        rewardAccumulator = new RewardAccumulator(owner, controlTower, feeTreasury);
 
         vm.label(address(tgUsd), "tgUSD");
-        vm.label(address(irMinter), "IRMinter");
+        vm.label(address(controlTower), "ControlTower");
         vm.label(address(tgUSDLp), "LP tgUSD");
         vm.label(address(rewardAccumulator), "RewardAccumulator");
+        vm.label(address(AddrAggregator.ROUTER_ODOS), "Odos Router");
+        vm.label(address(mockedOdosRouter), "Mock Odos Router");
+
+        vm.stopPrank();
     }
 
     function deployTgUSDLP() public returns (ICurveStableSwapNG) {

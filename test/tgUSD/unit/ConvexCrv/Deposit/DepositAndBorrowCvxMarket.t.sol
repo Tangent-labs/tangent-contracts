@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../contexts/ConvexCurveContext.sol";
-
+import "../../../handler/Features/BorrowRepay/HBorrow.sol";
 contract DepositAndBorrowCvxMarket is ConvexCurveContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
@@ -20,7 +20,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
 
     //
     function test_deposit_and_borrow_stake() external {
-        uint256 collatDeposited1 = 4_000 ether;
+        uint256 collatDeposited1 = 5_000 ether;
         uint256 borrowedAmount1 = 3_440 ether;
 
         verifyReceiveERC20(market.cvxRewardToken(), address(market), collatDeposited1, "Verify that market receives Cvx Reward tokens");
@@ -30,7 +30,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         verifyReceiveERC20(tgUsd, usr1, borrowedAmount1, "User receives the borrowed amount");
 
         vm.startSnapshotGas("Deposit And Borrow", "First deposit and borrow ever on the market and stake");
-        hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1, true);
+        hDeposit.depositAndBorrow(usr1, collatDeposited1, borrowedAmount1, true);
         vm.stopSnapshotGas("Deposit And Borrow", "First deposit and borrow ever on the market and stake");
 
         assertEq(market.collateralBalances(usr1), collatDeposited1, "Collateral deposited must be equal to collateralBalances");
@@ -51,7 +51,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         verifyReceiveERC20(tgUsd, usr2, borrowedAmount2 + 12, "User receives 50 tgUSD");
 
         hDeposit.setMsgSender(usr2);
-        hDeposit.depositAndBorrow(collatDeposited2, borrowedAmount2, true);
+        hDeposit.depositAndBorrow(usr2, collatDeposited2, borrowedAmount2, true);
 
         assertEq(market.collateralBalances(usr2), collatDeposited2, "Collateral deposited must be equal to collateralBalances");
         assertEq(market.totalCollateral(), collatDeposited1 + collatDeposited2, "Total collateral is not right");
@@ -65,11 +65,5 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         assertEq(market.socFeePending(), 0);
 
         skip(1 days);
-
-        hDeposit.setMsgSender(usr1);
-
-        // vm.startSnapshotGas("Deposit and Repay", "Deposit and repay on user already init, no stake");
-        // hDeposit.depositAndRepay(usr1, collatDeposited2, 440 ether, false);
-        // vm.stopSnapshotGas("Deposit and Repay", "Deposit and repay on user already init, no stake");
     }
 }

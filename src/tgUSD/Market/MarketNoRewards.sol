@@ -11,14 +11,10 @@ import "forge-std/console.sol";
 
 /// @notice
 contract MarketNoRewards is MarketExternalActions {
-    constructor(MarketInit memory _marketInit) MarketCore(_marketInit) {}
+    constructor(address _owner, MarketInit memory _marketInit) MarketCore(_owner, _marketInit) {}
     function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal view override returns (uint256, IERC20) {
         require(lpDeposited != 0, ZeroCollatAmount());
         return (lpDeposited, collatToken);
-    }
-
-    function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, uint256 lpStaked, bool isStaked) internal override {
-        _collatToken.transferFrom(msg.sender, address(this), lpDeposited);
     }
 
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {

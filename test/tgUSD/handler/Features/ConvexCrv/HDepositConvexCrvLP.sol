@@ -22,7 +22,7 @@ contract HDepositConvexCrvLP is HMarketBase {
         _afterDepositCheck(_for, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
     }
 
-    function depositAndBorrow(uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
+    function depositAndBorrow(address _for, uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
         (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(
             sender,
             lpDeposited,
@@ -31,22 +31,7 @@ contract HDepositConvexCrvLP is HMarketBase {
         (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, ) = _beforBorrowOrRepayCheck(marketCrvLP);
         _beforeBorrowCheck(marketCrvLP, sender, borrowedAmount);
 
-        marketCrvLP.depositAndBorrow(lpDeposited, borrowedAmount, isStaked);
-
-        _afterDepositCheck(sender, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
-        _afterBorrowCheck(marketCrvLP, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);
-    }
-
-    function depositAndRepay(uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
-        (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(
-            sender,
-            lpDeposited,
-            isStaked
-        );
-        (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, ) = _beforBorrowOrRepayCheck(marketCrvLP);
-        _beforeBorrowCheck(marketCrvLP, sender, borrowedAmount);
-
-        marketCrvLP.depositAndBorrow(lpDeposited, borrowedAmount, isStaked);
+        marketCrvLP.depositAndBorrow(_for, lpDeposited, borrowedAmount, isStaked);
 
         _afterDepositCheck(sender, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
         _afterBorrowCheck(marketCrvLP, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);

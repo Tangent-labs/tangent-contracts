@@ -7,7 +7,7 @@ abstract contract HMarketBase is HandlerBase {
     function _beforBorrowOrRepayCheck(
         MarketCore _market
     ) internal view returns (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, uint256 mintableInterests) {
-        mintableInterests = _market.mintableInterests();
+        mintableInterests = _market.tgUSD().mintableInterests();
         positionDebt = _market.positionDebt(sender);
         // uint256 positionDebtIndex = market.positionDebtIndex(sender);
         uint256 timeDelta = block.timestamp - _market.blockLastIRTimestamp();
@@ -26,7 +26,7 @@ abstract contract HMarketBase is HandlerBase {
 
     function _afterCheckpointGlobal(MarketCore _market, uint256 interests, uint256 newDebtIndex, uint256 mintableInterests) internal view {
         assertEq(_market.debtIndex(), newDebtIndex, "New total debt index incremented");
-        assertEq(_market.mintableInterests(), mintableInterests + interests, "New interests increments mintableInterests");
+        assertEq(_market.tgUSD().mintableInterests(), mintableInterests + interests, "New interests increments mintableInterests");
         assertEq(_market.blockLastIRTimestamp(), block.timestamp, "Last block IR changed has been updated");
     }
 
@@ -62,6 +62,7 @@ abstract contract HMarketBase is HandlerBase {
         uint256 positionDebt
     ) internal view {
         assertEq(lastDebt + interests - _market.lastDebt(), repayedAmount, "Total new debt didn't decrease");
+
         assertEq(_market.positionDebtIndex(account), ((positionDebt - repayedAmount) * RAY) / newDebtIndex, "New position debt index updated");
     }
 }

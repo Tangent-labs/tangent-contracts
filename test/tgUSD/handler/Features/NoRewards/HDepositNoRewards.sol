@@ -18,12 +18,12 @@ contract HDepositNoRewards is HMarketBase {
         _afterDepositCheck(_for, lpDeposited, balanceCollateralBefore);
     }
 
-    function depositAndBorrow(uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
+    function depositAndBorrow(address _for, uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
         uint256 balanceCollateralBefore = _beforeDepositCheck(sender, lpDeposited);
         (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, ) = _beforBorrowOrRepayCheck(marketNoRewards);
         _beforeBorrowCheck(marketNoRewards, sender, borrowedAmount);
 
-        marketNoRewards.depositAndBorrow(lpDeposited, borrowedAmount, isStaked);
+        marketNoRewards.depositAndBorrow(_for, lpDeposited, borrowedAmount, isStaked);
 
         _afterDepositCheck(sender, lpDeposited, balanceCollateralBefore);
         _afterBorrowCheck(marketNoRewards, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);

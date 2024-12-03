@@ -1,5 +1,31 @@
 // SPDX-License-Identifier: MIT
+
+import "@openzeppelin/contracts/utils/Strings.sol";
 contract LowLevel {
+    function bytesToUint256(bytes memory data) public pure returns (uint256) {
+        require(data.length <= 32, "Bytes array too long");
+        uint256 result;
+
+        for (uint256 i = 0; i < data.length; i++) {
+            result = result << 8;
+            result |= uint8(data[i]);
+        }
+        return result;
+    }
+
+    function stringToUint(string memory s) public pure returns (uint256) {
+        bytes memory b = bytes(s);
+        uint256 result = 0;
+        for (uint256 i = 0; i < b.length - 1; i++) {
+            // Vérifier que le caractère est un chiffre
+            require(b[i] >= 0x30 && b[i] <= 0x39, "Invalid character");
+            result = result * 10 + (uint256(uint8(b[i])) - 48);
+        }
+        return result;
+    }
+    function addressToString(address _addr) public pure returns (string memory) {
+        return Strings.toHexString(uint256(uint160(_addr)), 20);
+    }
     function bytes32ToAddress(bytes32 _bytes32) public pure returns (address) {
         return address(uint160(uint256(_bytes32)));
     }
@@ -16,6 +42,17 @@ contract LowLevel {
         }
     }
 
+    function getNext32Bytes(bytes memory data) public pure returns (bytes32) {
+        require(data.length >= 0 + 32, "Insufficient bytes for slicing");
+
+        bytes32 result;
+        assembly {
+            result := mload(add(add(data, 0x20), 0))
+        }
+
+        return result;
+    }
+
     function removeFirst4Bytes(bytes memory data) public pure returns (bytes memory) {
         require(data.length > 4, "Data must be longer than 4 bytes");
 
@@ -28,5 +65,22 @@ contract LowLevel {
         }
 
         return result;
+    }
+
+    function getLast20Bytes(bytes memory data) public pure returns (bytes20) {
+        require(data.length >= 20, "Bytes array too short");
+
+        bytes20 result;
+
+        // Copie les 20 derniers bytes dans le résultat
+        for (uint256 i = 0; i < 20; i++) {
+            result |= bytes20(data[data.length - 20 + i]) >> (i * 8);
+        }
+
+        return result;
+    }
+
+    function bytes20ToAddress(bytes20 data) public pure returns (address) {
+        return address(uint160(data));
     }
 }

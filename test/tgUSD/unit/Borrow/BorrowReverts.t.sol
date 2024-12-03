@@ -2,23 +2,20 @@
 pragma solidity ^0.8.24;
 import "../../contexts/ConvexCurveContext.sol";
 
+import "../../handler/Features/BorrowRepay/HBorrow.sol";
+import "../../handler/Features/BorrowRepay/HRepay.sol";
+
 contract BorrowReverts is ConvexCurveContext {
+    IERC20Metadata public collatToken = AddrERC4626.S_DAI;
+
     MarketNoRewards public market;
-    IERC20Metadata public collatToken;
-
     HDepositNoRewards public hDeposit;
-    HBorrow public hBorrow;
-
     uint256 minimumLoan;
     uint256 maxMarketDebt;
     function setUp() public {
-        collatToken = AddrClassicERC20.TOKEN_SDAI;
         market = deployNoRewardsMarket(collatToken);
-
         hDeposit = new HDepositNoRewards(usr1, market);
-        hBorrow = new HBorrow(usr1, market);
         minimumLoan = market.minimumLoan();
-
         maxMarketDebt = market.maxMarketDebt();
     }
 

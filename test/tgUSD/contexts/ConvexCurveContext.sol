@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "./OraclesContext.sol";
+import "./TgStableContext.sol";
 
 import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
 import "../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
@@ -9,7 +9,7 @@ import "../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
 import "../../../src/tgUSD/Market/MarketNoRewards.sol";
 
 import "../handler/Features/HProcessRewards.sol";
-import "../handler/Features/HBorrow.sol";
+
 import "../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 import "../handler/Features/ConvexCrv/HWithdrawConvexCrvLP.sol";
 
@@ -18,11 +18,11 @@ import "../handler/Features/ConvexFxn/HWithdrawConvexFxnLP.sol";
 
 import "../handler/Features/NoRewards/HDepositNoRewards.sol";
 import "../handler/Features/NoRewards/HWithdrawNoRewards.sol";
+import "../handler/Features/NoRewards/HWithdrawNoRewards.sol";
+import "../../../src/interfaces/internals/tgUSD/IMarketCore.sol";
 
-import "../../../src/interfaces/internals/tgUSD/IMarket.sol";
-
-contract ConvexCurveContext is OraclesContext {
-    IMarket[] cvxCurveLPMarket;
+contract ConvexCurveContext is TgStableContext {
+    IMarketCore[] cvxCurveLPMarket;
     mapping(address => ParamsInitConvexCurveLPMarket) public cvxCurveLPMaps;
     mapping(address => ParamsInitConvexFxnLPMarket) public cvxFxnLPMaps;
 
@@ -30,14 +30,14 @@ contract ConvexCurveContext is OraclesContext {
 
     struct ParamsInitConvexCurveLPMarket {
         MarketInitSimplified marketInit;
-        IERC20[] rewards;
+        IERC20Metadata[] rewards;
         ICvxRewardToken cvxRewardToken;
         uint256 pid;
     }
 
     struct ParamsInitConvexFxnLPMarket {
         MarketInitSimplified marketInit;
-        IERC20[] rewards;
+        IERC20Metadata[] rewards;
         uint256 pid;
     }
 
@@ -51,11 +51,7 @@ contract ConvexCurveContext is OraclesContext {
 
     constructor() {
         // Convex Curve - CRVUSD_USDC
-        IERC20[] memory _rewardsCrvCvx = new IERC20[](2);
-        _rewardsCrvCvx[0] = AddrClassicERC20.TOKEN_CRV;
-        _rewardsCrvCvx[1] = AddrClassicERC20.TOKEN_CVX;
-        vm.label(address(AddrClassicERC20.TOKEN_CRV), "CRV");
-        vm.label(address(AddrClassicERC20.TOKEN_CVX), "CVX");
+        IERC20Metadata[] memory _rewardsCrvCvx = Array.memoryIERC20([AddrClassicERC20.TOKEN_CRV, AddrClassicERC20.TOKEN_CVX]);
 
         cvxCurveLPMaps[address(AddrCurveStableLP.CRVUSD_USDC)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
@@ -72,9 +68,7 @@ contract ConvexCurveContext is OraclesContext {
 
         // Convex FXN - USDC_FXUSD
 
-        IERC20[] memory _rewardsFxn = new IERC20[](1);
-        _rewardsFxn[0] = AddrClassicERC20.TOKEN_FXN;
-        vm.label(address(AddrClassicERC20.TOKEN_FXN), "FXN");
+        IERC20Metadata[] memory _rewardsFxn = Array.memoryIERC20([AddrClassicERC20.TOKEN_FXN]);
 
         cvxFxnLPMaps[address(AddrCurveStableLP.USDC_FXUSD)] = ParamsInitConvexFxnLPMarket({
             marketInit: MarketInitSimplified({
@@ -90,8 +84,8 @@ contract ConvexCurveContext is OraclesContext {
 
         // sDAI
 
-        noRewardsMaps[address(AddrClassicERC20.TOKEN_SDAI)] = MarketInitSimplified({
-            collat: AddrClassicERC20.TOKEN_SDAI,
+        noRewardsMaps[address(AddrERC4626.S_DAI)] = MarketInitSimplified({
+            collat: AddrERC4626.S_DAI,
             maxLTV: 85_000,
             liquidationThreshold: 93_000,
             minimumLoan: 3_000 ether,
@@ -107,12 +101,13 @@ contract ConvexCurveContext is OraclesContext {
 
         /// Initialize reward tokens for the market
         ConvexCrvLPMarket convexMarket = new ConvexCrvLPMarket(
-            IMarket.MarketInit({
+            owner,
+            IMarketCore.MarketInit({
                 tgUSD: tgUsd,
+                controlTower: controlTower,
                 tgUSDOracle: oracles[tgUsd],
                 collatToken: initP.marketInit.collat,
                 collatOracle: oracles[collat],
-                irMinter: address(irMinter),
                 maxLTV: initP.marketInit.maxLTV,
                 maxMarketDebt: initP.marketInit.maxMarketDebt,
                 liquidationThreshold: initP.marketInit.liquidationThreshold,
@@ -125,12 +120,12 @@ contract ConvexCurveContext is OraclesContext {
         );
         assertEq(address(convexMarket.collatOracle()), address(oracles[collat]), "Collat oracle address setup");
 
-        toggleIrProducerAndRewardAccumulator(address(convexMarket));
+        vm.startPrank(owner);
+        controlTower.toggleMarkets(Array.memoryAddress([address(convexMarket)]));
+        vm.stopPrank();
         giveCollateralToUsers(collat);
 
-        vm.label(address(collat), string.concat(collat.symbol()));
-        vm.label(address(convexMarket), string.concat("MarketCore CvxCrv", collat.symbol()));
-        vm.label(address(initP.cvxRewardToken), string.concat("CvxRewardToken ", collat.symbol()));
+        labeliser.labeliseNewConvexCrvMarket(address(collat), collat.symbol(), address(convexMarket), address(initP.cvxRewardToken));
 
         return convexMarket;
     }
@@ -143,12 +138,13 @@ contract ConvexCurveContext is OraclesContext {
 
         /// Initialize reward tokens for the market
         ConvexFxnLPMarket convexMarket = new ConvexFxnLPMarket(
-            IMarket.MarketInit({
+            owner,
+            IMarketCore.MarketInit({
                 tgUSD: tgUsd,
+                controlTower: controlTower,
                 tgUSDOracle: oracles[tgUsd],
                 collatToken: initP.marketInit.collat,
                 collatOracle: oracles[collat],
-                irMinter: address(irMinter),
                 maxLTV: initP.marketInit.maxLTV,
                 maxMarketDebt: initP.marketInit.maxMarketDebt,
                 liquidationThreshold: initP.marketInit.liquidationThreshold,
@@ -158,14 +154,13 @@ contract ConvexCurveContext is OraclesContext {
             initP.rewards,
             initP.pid
         );
+        vm.startPrank(owner);
+        controlTower.toggleMarkets(Array.memoryAddress([address(convexMarket)]));
+        vm.stopPrank();
 
-        toggleIrProducerAndRewardAccumulator(address(convexMarket));
         giveCollateralToUsers(collat);
 
-        vm.label(address(collat), string.concat(collat.symbol()));
-        vm.label(address(convexMarket), string.concat("MarketCore CvxFxn ", collat.symbol()));
-        vm.label(address(AddrClassicERC20.TOKEN_FXN), "FXN");
-        vm.label(address(convexMarket.stakingProxyVault()), string.concat("StakingProxyVault ", collat.symbol()));
+        labeliser.labeliseNewConvexFxnMarket(address(collat), collat.symbol(), address(convexMarket), address(convexMarket.stakingProxyVault()));
 
         return convexMarket;
     }
@@ -178,12 +173,13 @@ contract ConvexCurveContext is OraclesContext {
 
         /// Initialize reward tokens for the market
         MarketNoRewards marketNoRewards = new MarketNoRewards(
-            IMarket.MarketInit({
+            owner,
+            IMarketCore.MarketInit({
                 tgUSD: tgUsd,
+                controlTower: controlTower,
                 tgUSDOracle: oracles[tgUsd],
                 collatToken: initP.collat,
                 collatOracle: oracles[collat],
-                irMinter: address(irMinter),
                 maxLTV: initP.maxLTV,
                 maxMarketDebt: initP.maxMarketDebt,
                 liquidationThreshold: initP.liquidationThreshold,
@@ -191,21 +187,15 @@ contract ConvexCurveContext is OraclesContext {
             })
         );
 
-        toggleIrProducerAndRewardAccumulator(address(marketNoRewards));
+        vm.startPrank(owner);
+        controlTower.toggleMarkets(Array.memoryAddress([address(marketNoRewards)]));
+        vm.stopPrank();
+
         giveCollateralToUsers(collat);
 
-        vm.label(address(collat), string.concat(collat.symbol()));
-        vm.label(address(marketNoRewards), string.concat("Market ", collat.symbol()));
+        labeliser.labeliseNewNoRewardsMarket(address(collat), collat.symbol(), address(marketNoRewards));
 
         return marketNoRewards;
-    }
-
-    function toggleIrProducerAndRewardAccumulator(address _convexMarket) public {
-        address[] memory markets = Array.memoryAddress([_convexMarket]);
-
-        irMinter.toggleIRProducers(markets);
-        rewardAccumulator.toggleMarketRewards(markets);
-        tgUsd.toggleMintersBurners(markets);
     }
 
     function giveCollateralToUsers(IERC20Metadata collat) public {

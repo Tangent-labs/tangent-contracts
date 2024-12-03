@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../contexts/ConvexCurveContext.sol";
+import "../../../handler/Features/BorrowRepay/HBorrow.sol";
 
 contract DepositCvxFxnMarket is ConvexCurveContext {
     ConvexFxnLPMarket public market;
@@ -29,7 +30,7 @@ contract DepositCvxFxnMarket is ConvexCurveContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount, true);
+        hDeposit.depositAndBorrow(usr1, amountIn, borrowedAmount, true);
 
         uint256 withdrawnAmount = 1_000 ether;
 
@@ -48,7 +49,7 @@ contract DepositCvxFxnMarket is ConvexCurveContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount, false);
+        hDeposit.depositAndBorrow(usr1, amountIn, borrowedAmount, false);
 
         uint256 withdrawnAmount = 1_000 ether;
 
@@ -68,8 +69,8 @@ contract DepositCvxFxnMarket is ConvexCurveContext {
         uint256 amountInStaked = 10_000 ether;
         uint256 borrowedAmount1 = 5_000 ether;
         uint256 borrowedAmount2 = 1_000 ether;
-        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount1, true);
-        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount2, false);
+        hDeposit.depositAndBorrow(usr1, amountInStaked, borrowedAmount1, true);
+        hDeposit.depositAndBorrow(usr1, amountInStaked, borrowedAmount2, false);
 
         uint256 withdrawnAmount = 12_000 ether;
         uint256 availableAmount = market.collatToken().balanceOf(address(market)) - market.socFeePending();

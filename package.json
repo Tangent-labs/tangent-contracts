@@ -1,15 +1,17 @@
 {
-  "name": "llamalend-yield-splitter",
+  "name": "tangent-contracts",
   "version": "1.0.0",
   "description": "## Install dependencies",
   "main": "index.js",
+  "type": "module",
   "directories": {
     "lib": "lib",
     "test": "test"
   },
   "scripts": {
     "hh-node": "npx hardhat node --fork https://rpc.ankr.com/eth",
-    "dapp-setup": "npx hardhat run hardhat/dappSetup/run-setup-booster.ts --network localhost"
+    "dapp-setup": "npx hardhat run hardhat/dappSetup/run-setup-booster.ts --network localhost",
+    "build": "forge build --skip ./src/LendSplitter/* ./test/lendSplitter/*"
   },
   "author": "",
   "license": "ISC",

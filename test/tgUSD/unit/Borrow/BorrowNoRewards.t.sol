@@ -2,20 +2,25 @@
 pragma solidity ^0.8.24;
 import "../../contexts/ConvexCurveContext.sol";
 
+import "../../handler/Features/BorrowRepay/HBorrow.sol";
+import "../../handler/Features/BorrowRepay/HRepay.sol";
+
 contract BorrowNoRewards is ConvexCurveContext {
     MarketNoRewards public market;
     IERC20Metadata public collatToken;
 
     HDepositNoRewards public hDeposit;
     HBorrow public hBorrow;
+    HRepay public hRepay;
 
     uint256 minimumLoan;
     function setUp() public {
-        collatToken = AddrClassicERC20.TOKEN_SDAI;
+        collatToken = AddrERC4626.S_DAI;
         market = deployNoRewardsMarket(collatToken);
 
         hDeposit = new HDepositNoRewards(usr1, market);
         hBorrow = new HBorrow(usr1, market);
+        hRepay = new HRepay(usr1, market);
         minimumLoan = market.minimumLoan();
     }
     function minimumCollatForDebt(uint256 userDebt) internal view returns (uint256) {
@@ -33,6 +38,7 @@ contract BorrowNoRewards is ConvexCurveContext {
         verifyReceiveERC20(tgUsd, usr2, borrowedAmount, "User 2, not the caller, receives tgUSD");
 
         hBorrow.setMsgSender(usr2);
+        hRepay.setMsgSender(usr2);
         hBorrow.borrow(usr2, borrowedAmount);
 
         assertERC20Tracking();
@@ -50,7 +56,7 @@ contract BorrowNoRewards is ConvexCurveContext {
 
         assertEq(market.positionDebt(usr2), market.totalDebt());
 
-        irMinter.mintIR(Array.memoryAddress([address(market)]));
+        tgUsd.mintIR();
 
         assertEq(market.totalDebt(), market.lastDebt() + market.pendingInterests());
         assertEq(market.positionDebt(usr2), market.totalDebt());
@@ -58,11 +64,11 @@ contract BorrowNoRewards is ConvexCurveContext {
         repayAmount = bound(repayAmount, 1, market.positionDebt(usr2) - market.minimumLoan());
 
         vm.startPrank(owner);
-        tgUsd.toggleMintersBurners(Array.memoryAddress([owner]));
+        controlTower.toggleMarkets(Array.memoryAddress([owner]));
         tgUsd.mint(usr2, repayAmount);
         vm.stopPrank();
 
-        hBorrow.repay(usr2, repayAmount);
+        hRepay.repay(usr2, repayAmount, address(0));
 
         skip(30);
 
@@ -71,7 +77,7 @@ contract BorrowNoRewards is ConvexCurveContext {
         vm.stopPrank();
 
         // Repay all
-        hBorrow.repay(usr2, MAX_UINT);
+        hRepay.repay(usr2, MAX_UINT, address(0));
 
         assertEq(0, market.positionDebt(usr2), "User debt is 0 after a repay all");
     }
