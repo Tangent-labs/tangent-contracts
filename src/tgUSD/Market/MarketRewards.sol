@@ -10,9 +10,10 @@ import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 import {IMarketRewards} from "../../interfaces/internals/tgUSD/IMarketRewards.sol";
 import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {MarketExternalActions, MarketCore} from "./MarketExternalActions.sol";
+import {Sociabilization} from "../Utilities/Sociabilization.sol";
 import "forge-std/console.sol";
 /// @notice Lending market
-abstract contract MarketRewards is MarketExternalActions {
+abstract contract MarketRewards is MarketExternalActions, Sociabilization {
     using SafeERC20 for IERC20;
     /// @dev Duration that rewards are streamed over
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
@@ -25,9 +26,6 @@ abstract contract MarketRewards is MarketExternalActions {
 
     /// @notice Total amount of collateral on the market
     uint256 public totalCollateral;
-
-    uint256 public socFeePercentage;
-    uint256 public socFeePending;
 
     /// @notice Receiver of all rewards produced by the market
     IRewardAccumulator public rewardAccumulator;
@@ -60,7 +58,6 @@ abstract contract MarketRewards is MarketExternalActions {
     error HarvesterFeeToHigh();
     error NothingToProcess();
     error RewardAlreadyAdded(IERC20 erc20);
-    error SocFeeTooHigh();
 
     modifier updateReward(address _account) {
         _updateReward(_account);
@@ -71,11 +68,9 @@ abstract contract MarketRewards is MarketExternalActions {
         MarketInit memory _marketInit,
         IRewardAccumulator _rewardAccumulator,
         IERC20Metadata[] memory _rewardTokens
-    ) MarketCore(_owner, _marketInit) {
+    ) MarketCore(_owner, _marketInit) Sociabilization(2_000) {
         rewardCutPercentage = 50_000;
         harvesterFeePercentage = 1_000;
-
-        socFeePercentage = 1_000;
 
         rewardAccumulator = _rewardAccumulator;
 
@@ -96,11 +91,7 @@ abstract contract MarketRewards is MarketExternalActions {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateReward(_for) returns (uint256, IERC20) {
-        uint256 lpStaked = _sociabilizationProcess(lpDeposited, isStaked);
-
-        require(lpStaked != 0, ZeroCollatAmount());
-
-        return (lpStaked, collatToken);
+        return (_sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR), collatToken);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -109,32 +100,6 @@ abstract contract MarketRewards is MarketExternalActions {
 
     function _preWithdraw(uint256 lpToWithdraw) internal override updateReward(address(0)) {
         totalCollateral -= lpToWithdraw;
-    }
-
-    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        SOCIABILIZATION ACTIONS 
-    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    function _sociabilizationProcess(uint256 lpDeposited, bool isStake) internal returns (uint256) {
-        if (isStake) {
-            lpDeposited += socFeePending;
-            delete socFeePending;
-        } else {
-            uint256 feeTaken = (lpDeposited * socFeePercentage) / DENOMINATOR;
-            socFeePending += feeTaken;
-            lpDeposited -= feeTaken;
-        }
-        return lpDeposited;
-    }
-
-    /**
-     * @notice Sets the percetage of the sociabilization fee.
-     * @param _socFee New sociabilization fee on a 100_000 basis
-     */
-    function setSociabilizationFee(uint256 _socFee) external onlyOwner {
-        require(_socFee < 2_000, SocFeeTooHigh());
-        /// @dev Claim rewards on behalf
-        socFeePercentage = _socFee;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

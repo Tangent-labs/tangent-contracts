@@ -13,7 +13,8 @@ import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
 
-import "../../../src/tgUSD/tokens/tgUSD.sol";
+import "../../../src/tgUSD/tokens/TgUSD.sol";
+import "../../../src/tgUSD/tokens/TgStable.sol";
 import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
@@ -46,7 +47,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     ICurveStableSwapNG public tgUSDLp;
 
-    tgUSD public tgUsd;
+    TgUSD public tgUsd;
 
     RewardAccumulator public rewardAccumulator;
 
@@ -60,7 +61,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     bool constant IS_VALIDATE_IMPLEM = false;
 
     constructor() {
-        vm.createSelectFork("mainnet", 21243705);
+        vm.createSelectFork("mainnet", 21273560);
 
         vm.startPrank(owner);
 
@@ -68,11 +69,12 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         labeliser = new Labeliser();
         labeliser.labelizeERC20();
+        labeliser.labelizeERC4626();
 
         controlTower = new ControlTower(owner, feeTreasury);
 
-        /// Deploy tgUSD
-        tgUsd = new tgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"), owner, controlTower);
+        // Deploy tgUSD
+        tgUsd = new TgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"), owner, controlTower);
 
         mockedOdosRouter = new MockedOdosRouter();
 
@@ -84,7 +86,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         deal(address(tgUsd), owner, 1_000_000 ether);
 
-        /// Deploy and addLiquidity in tgUSD LP
+        // Deploy and addLiquidity in tgUSD LP
         tgUSDLp = deployTgUSDLP();
 
         rewardAccumulator = new RewardAccumulator(owner, controlTower, feeTreasury);

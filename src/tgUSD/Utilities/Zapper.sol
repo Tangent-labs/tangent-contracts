@@ -84,7 +84,6 @@ contract Zapper is Ownable {
      *  @param odosCall  Raw data call used to call swap or swapMulti on the ODOS Router
      */
     function zapRepay(ZapMarket calldata zapMarket, bytes calldata odosCall) external payable {
-        /// @dev Oui
         IMarketExternalActions(zapMarket.market).repay(zapMarket._for, _zapRepay(zapMarket, odosCall), msg.sender);
     }
 
@@ -110,9 +109,9 @@ contract Zapper is Ownable {
      *  @param odosCall  Raw data call used to call swap or swapMulti on the ODOS Router
      */
     function _zapRepay(ZapMarket calldata zapMarket, bytes calldata odosCall) internal onlyMarket(zapMarket.market) returns (uint256) {
-        /// @dev Transfer ERC20 of native blockchain coin on this contract
+        // Transfer ERC20 of native blockchain coin on this contract
         _transferTokenToZapper(zapMarket.tokenIn, zapMarket.amountIn);
-        /// @dev Call Odos Router to swap the tokenIn to tgUSD and returns the out amount
+        // Call Odos Router to swap the tokenIn to tgUSD and returns the out amount
         return _zapOdosAndVerify(tgUsd, msg.sender, zapMarket.minAmountOut, odosCall);
     }
 
@@ -123,10 +122,13 @@ contract Zapper is Ownable {
      *  @param amountIn  Amount of token in to swap
      */
     function _transferTokenToZapper(IERC20 tokenIn, uint256 amountIn) internal {
+        // When no native coin are send, it means we are Zaping an ERC20
         if (msg.value == 0) {
+            // TokenIn in param must different from 0
             require(address(tokenIn) != address(0), TokenInMustNotBeZero());
+            // In the case
             if (amountIn > tokenIn.allowance(address(this), ROUTER_ODOS)) {
-                tokenIn.approve(ROUTER_ODOS, MAX_UINT);
+                tokenIn.forceApprove(ROUTER_ODOS, MAX_UINT);
             }
             tokenIn.safeTransferFrom(msg.sender, address(this), amountIn);
         } else {
@@ -143,22 +145,22 @@ contract Zapper is Ownable {
      *  @param odosData  Amount of token in to swap
      */
     function _zapOdosAndVerify(IERC20 tokenOut, address receiver, uint256 minAmountOut, bytes calldata odosData) internal returns (uint256) {
-        /// @dev Retrieve the balance of the tokenOut before the Swap.
+        // Retrieve the balance of the tokenOut before the Swap.
         uint256 amountOut = tokenOut.balanceOf(receiver);
 
-        /// @dev Call Odos router and perform the swaps with raw data following recommendations.
+        // Call Odos router and perform the swaps with raw data following recommendations.
         (bool isOdosCallSuccess, ) = ROUTER_ODOS.call{value: msg.value}(odosData);
 
-        /// @dev Verify the call to Odos was successfull
+        // Verify the call to Odos was successfull
         require(isOdosCallSuccess, OdosCallError());
 
-        /// @dev Compute the amount of tokenOut returned by Odos thanks to previous value
+        // Compute the amount of tokenOut returned by Odos thanks to previous value
         amountOut = tokenOut.balanceOf(receiver) - amountOut;
 
-        /// @dev Verifies slippage to don't get less tokens than user expected
+        // Verifies slippage to don't get less tokens than user expected
         require(amountOut >= minAmountOut, MinAmountOutNotReached());
 
-        /// @dev Return the amount of token Out received
+        // Return the amount of token Out received
         return amountOut;
     }
 }

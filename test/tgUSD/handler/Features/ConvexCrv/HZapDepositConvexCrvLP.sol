@@ -2,12 +2,16 @@
 
 pragma solidity ^0.8.22;
 
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
 import "./HDepositConvexCrvLP.sol";
 
 import "../../../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../../utils/OdosUtils.sol";
 
 contract HZapDepositConvexCrvLP is HDepositConvexCrvLP {
+    using SafeERC20 for IERC20;
+
     Zapper public zapper;
     OdosUtils public odosUtils;
 
@@ -46,7 +50,7 @@ contract HZapDepositConvexCrvLP is HDepositConvexCrvLP {
         if (msg.value != 0) {
             deal(sender, msg.value);
         } else {
-            tokenIn.approve(address(zapper), MAX_UINT);
+            tokenIn.forceApprove(address(zapper), MAX_UINT);
             deal(address(tokenIn), sender, amountIn);
         }
 

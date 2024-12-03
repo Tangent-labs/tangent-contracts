@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../contexts/ConvexCurveContext.sol";
+import "../../../handler/Features/BorrowRepay/HBorrow.sol";
 
 contract DepositCvxFxnMarket is ConvexCurveContext {
     ConvexFxnLPMarket public market;

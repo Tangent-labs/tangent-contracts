@@ -3,16 +3,13 @@ pragma solidity ^0.8.22;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {OFT} from "@layerzerolabs/oft-evm/contracts/OFT.sol";
-
 import {ItgUSD} from "../../interfaces/internals/tgUSD/ItgUSD.sol";
-
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
-
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 
 import "forge-std/console.sol";
 /// @notice OFT is an ERC-20 token that extends the OFTCore contract.
-contract tgUSD is OFT, ItgUSD {
+contract TgUSD is OFT, ItgUSD {
     IControlTower public controlTower;
 
     uint256 public mintableInterests;

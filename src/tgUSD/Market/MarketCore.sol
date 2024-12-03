@@ -19,6 +19,7 @@ abstract contract MarketCore is IMarketCore, Collateral {
     error TotalDebtTooHigh();
     error PositionDebtTooHigh();
     error PositionDebtTooLow();
+    error PositionDebtZero();
     error ZeroCollatAmount();
     error ZeroDebtAmount();
     error NotLiquidablePosition();
@@ -37,7 +38,6 @@ abstract contract MarketCore is IMarketCore, Collateral {
 
         lastIR = 10 * RAY; // 10%
         blockLastIRTimestamp = block.timestamp;
-
         debtIndex = RAY;
     }
 
@@ -48,16 +48,18 @@ abstract contract MarketCore is IMarketCore, Collateral {
     function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal virtual returns (uint256, IERC20) {}
 
     function _deposit(address _for, uint256 amountDeposited) internal {
-        /// @dev Verify that newDebt is over the minimum loan
-
+        // Verify that newDebt is over the minimum loan
         (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
 
-        /// @dev Increase collateral deposited by the user
+        // Increase collateral balance of the position and update total debt
         _updateCollatAndGlobalDebt(_for, collateralBalances[_for] + amountDeposited, newDebtIndex, newTotalDebt);
     }
 
     function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited) internal {
+        // When caller is not one of our Zapper, sender needs to send collateral token to the market.
+        // Zapper send the collateral directly on the market before calling "deposit"
         if (!controlTower.isZapper(msg.sender)) {
+            // Transfer the collateral from the sender to the market
             _collatToken.transferFrom(msg.sender, address(this), lpDeposited);
         }
     }
@@ -69,20 +71,27 @@ abstract contract MarketCore is IMarketCore, Collateral {
 
     function _preWithdraw(uint256 lpToWithdraw) internal virtual {}
 
-    function _commonWithdraw(uint256 amountToWithdraw, uint256 newDebtIndex) internal view returns (uint256) {
+    function _getBalanceAfterWithdrawAndCheckMaxBorrowable(uint256 amountToWithdraw, uint256 newUserDebt) internal view returns (uint256) {
+        // Prevent to withdraw 0 collateral from the market
         require(amountToWithdraw != 0, ZeroCollatAmount());
+        // Computes the decremented collateral balance of the user after the withdraw
         uint256 newCollatAmount = collateralBalances[msg.sender] - amountToWithdraw;
 
-        /// @dev Verify that the newDebt of the loan is not over the maximum borrrowable
-        require(_maxBorrowable(newCollatAmount) >= _positionDebt(msg.sender, newDebtIndex), PositionDebtTooHigh());
+        // Verify that the newDebt of the loan is not over the maximum borrrowable regarding the LTV of the position
+        require(_maxBorrowable(newCollatAmount) >= newUserDebt, PositionDebtTooHigh());
         return newCollatAmount;
     }
 
     function _withdraw(uint256 amountToWithdraw) internal {
         (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
 
-        /// @dev Increase collateral deposited by the user
-        _updateCollatAndGlobalDebt(msg.sender, _commonWithdraw(amountToWithdraw, newDebtIndex), newDebtIndex, newTotalDebt);
+        // Increase collateral deposited by the user
+        _updateCollatAndGlobalDebt(
+            msg.sender,
+            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _positionDebt(msg.sender, newDebtIndex)),
+            newDebtIndex,
+            newTotalDebt
+        );
     }
 
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal virtual {}
@@ -97,25 +106,25 @@ abstract contract MarketCore is IMarketCore, Collateral {
 
         newTotalDebt += tgUSDToBorrow;
 
-        /// @dev Cache the new value in tgUSD of the debt
+        //  Cache the new value in tgUSD of the debt
         uint256 newUserDebt = _positionDebt(msg.sender, newDebtIndex) + tgUSDToBorrow;
 
-        /// @dev Verify that the new total debt is not bigger the max debt
+        //  Verify that the new total debt is not bigger the max debt
         require(newTotalDebt <= maxMarketDebt, TotalDebtTooHigh());
-        /// @dev Verify that newDebt is over the minimum loan
+        //  Verify that newDebt is over the minimum loan
         require(newUserDebt >= minimumLoan, PositionDebtTooLow());
 
-        /// @dev Verify that the newDebt of the loan is not over the maximum borrrowable
+        // Verify that the newDebt of the loan is not over the maximum borrrowable
         require(_maxBorrowable(collatAmount) >= newUserDebt, PositionDebtTooHigh());
 
-        /// @dev Mint tgUSD to the user
+        // Mint tgUSD to the receiver
         tgUSD.mint(receiver, tgUSDToBorrow);
 
         return (newUserDebt, newDebtIndex, newTotalDebt);
     }
 
     function _depositAndBorrow(uint256 amountDeposited, uint256 tgUSDToBorrow) internal {
-        /// @dev Verify collat amount added > 0
+        // Verify collat amount added > 0
         require(amountDeposited != 0, ZeroCollatAmount());
 
         uint256 newCollatAmount = collateralBalances[msg.sender] + amountDeposited;
@@ -130,34 +139,45 @@ abstract contract MarketCore is IMarketCore, Collateral {
                                                     ------ */
 
     function _repay(address account, uint256 tgUSDToRepay, address burnAddress) internal returns (uint256, uint256, uint256) {
+        // Cannot repay 0 debt
         require(tgUSDToRepay != 0, ZeroDebtAmount());
 
+        // Update interests rate, computes new debt index and total debt.
         (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
 
+        // Retrieve the position of the user
         uint256 newUserDebt = _positionDebt(account, newDebtIndex);
+        // Cannot repay an empty position
+        require(newUserDebt != 0, PositionDebtZero());
 
-        /// @dev Repay all case
+        // Repay all case
+        // When IR != 0, debt of the user is increasing every block.
+        // It is so complicated to provide the exact amount that a user have to repay to close his loan.
+        // To cover this, any debt given in parameter that is equal or bigger than the debt will close the loan.
         if (tgUSDToRepay >= newUserDebt) {
+            // User shouldn't repay more than his debt so we rearrange the amount of tgUSD to repay.
             tgUSDToRepay = newUserDebt;
+            // As we are repaying all the debt, the new debt of the user is 0.
             newUserDebt = 0;
-        } else {
-            /// @dev Cache the new value in tgUSD of the debt
+        }
+        // Partial repay case
+        else {
+            // We are adjusting the debt of the user by decrementing the amount the user wants to repay.
             newUserDebt -= tgUSDToRepay;
-            /// @dev Verify that newDebt is over the minimum loan
+            // We need to verify that the partial repay is not decreasing the debt lower than the minimum loan.
             require(newUserDebt >= minimumLoan, PositionDebtTooLow());
         }
 
-        /// @dev Mint tgUSD from the user
+        // Burns tgUSD from the burnAddress as a repayment of the debt
         tgUSD.burnFrom(burnAddress, tgUSDToRepay);
 
         return (newUserDebt, newDebtIndex, newTotalDebt - tgUSDToRepay);
     }
 
     function _withdrawAndRepay(uint256 amountToWithdraw, uint256 tgUSDToRepay, address caller) internal {
+        // Call _repay function in order to checkpoint the total debt, computes new User debt and burn corresponding amount of tgUSD.
         (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _repay(caller, tgUSDToRepay, caller);
 
-        uint256 newCollatAmount = _commonWithdraw(amountToWithdraw, newDebtIndex);
-
-        _updateCollatAndDebts(caller, newCollatAmount, newUserDebt, newDebtIndex, newTotalDebt);
+        _updateCollatAndDebts(caller, _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, newUserDebt), newUserDebt, newDebtIndex, newTotalDebt);
     }
 }

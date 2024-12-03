@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "./OraclesContext.sol";
+import "./TgStableContext.sol";
 
 import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
 import "../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
@@ -9,7 +9,7 @@ import "../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
 import "../../../src/tgUSD/Market/MarketNoRewards.sol";
 
 import "../handler/Features/HProcessRewards.sol";
-import "../handler/Features/HBorrow.sol";
+
 import "../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 import "../handler/Features/ConvexCrv/HWithdrawConvexCrvLP.sol";
 
@@ -21,7 +21,7 @@ import "../handler/Features/NoRewards/HWithdrawNoRewards.sol";
 import "../handler/Features/NoRewards/HWithdrawNoRewards.sol";
 import "../../../src/interfaces/internals/tgUSD/IMarketCore.sol";
 
-contract ConvexCurveContext is OraclesContext {
+contract ConvexCurveContext is TgStableContext {
     IMarketCore[] cvxCurveLPMarket;
     mapping(address => ParamsInitConvexCurveLPMarket) public cvxCurveLPMaps;
     mapping(address => ParamsInitConvexFxnLPMarket) public cvxFxnLPMaps;
@@ -84,8 +84,8 @@ contract ConvexCurveContext is OraclesContext {
 
         // sDAI
 
-        noRewardsMaps[address(AddrClassicERC20.TOKEN_SDAI)] = MarketInitSimplified({
-            collat: AddrClassicERC20.TOKEN_SDAI,
+        noRewardsMaps[address(AddrERC4626.S_DAI)] = MarketInitSimplified({
+            collat: AddrERC4626.S_DAI,
             maxLTV: 85_000,
             liquidationThreshold: 93_000,
             minimumLoan: 3_000 ether,

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../contexts/ConvexCurveContext.sol";
+import "../../handler/Features/BorrowRepay/HBorrow.sol";
 
 contract DepositAndBorrowReverts is ConvexCurveContext {
     MarketNoRewards public market;
@@ -12,7 +13,7 @@ contract DepositAndBorrowReverts is ConvexCurveContext {
     uint256 minimumLoan;
     uint256 maxMarketDebt;
     function setUp() public {
-        collatToken = AddrClassicERC20.TOKEN_SDAI;
+        collatToken = AddrERC4626.S_DAI;
         market = deployNoRewardsMarket(collatToken);
 
         hDeposit = new HDepositNoRewards(usr1, market);

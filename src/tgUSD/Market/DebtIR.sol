@@ -14,26 +14,22 @@ abstract contract DebtIR is Ownable {
     using Math for uint256;
     uint256 public constant RAY = 1e27; // Facteur de précision ray (1 * 10^27)
 
-    /// @dev tgUSD is the StableCoin to borrow against the collatToken.
+    /// @notice tgUSD is the StableCoin to borrow against the collatToken.
     ItgUSD public tgUSD;
-    /// @dev Global debt index. Represents the accumulation of the interest rate among time.
+    /// @notice Global debt index. Represents the accumulation of the interest rate among time.
     uint256 public debtIndex;
-    /// @dev Last total debt of the market.
+    /// @notice Last total debt of the market.
     uint256 public lastDebt;
-    /// @dev Last interest rate since previous interaction with the market. In RAY.
+    /// @notice Last interest rate since previous interaction with the market. In RAY.
     uint256 public lastIR;
-    /// @dev Last time interest rate has been updated.
+    /// @notice Last time interest rate has been updated.
     uint256 public blockLastIRTimestamp;
-    /// @dev Total interest amount mintable by the system in tgUSD.
-    uint256 public mintableInterests;
-
-    /// @dev Maximum debt of the market
+    /// @notice Maximum debt of the market
     uint256 public maxMarketDebt;
-
-    /// @dev Loan minimum in tgUSD. We need it higher on L1 to keep liquidations profitable for liquidators
+    /// @notice Loan minimum in tgUSD. We need it higher on L1 to keep liquidations profitable for liquidators
     uint256 public minimumLoan;
 
-    /// @dev Debt in amount of tgUSD per user.
+    /// @notice Debt in amount of tgUSD per user.
     mapping(address => uint256) public positionDebtIndex;
 
     error NotIRMinter();
@@ -59,10 +55,6 @@ abstract contract DebtIR is Ownable {
     function setMinimumLoan(uint256 _minimumLoan) external onlyOwner {
         minimumLoan = _minimumLoan;
     }
-
-    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        IR MINTER ACTIONS 
-    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     INTERNAL STORAGE UPDATE 
@@ -155,11 +147,18 @@ abstract contract DebtIR is Ownable {
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         GLOBAL VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
+    /**
+     *  @notice  Returns the total debt of the market
+     *  @dev     Takes the last registered debt and applies it the IR accumulated since last checkpoint.
+     */
     function totalDebt() public view returns (uint256) {
         uint256 _lastDebt = lastDebt;
         return _lastDebt + _pendingInterests(_lastDebt);
     }
+
+    /**
+     *  @notice  Returns IR generated since the last checkpoint
+     */
     function pendingInterests() public view returns (uint256) {
         return (lastDebt * _indexIncrease(block.timestamp - blockLastIRTimestamp)) / RAY;
     }
@@ -172,6 +171,11 @@ abstract contract DebtIR is Ownable {
                         USERS VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    /**
+     *  @notice  Returns the debt of a position
+     *  @dev     Takes the last registered debt index of the position and applies it the IR accumulated since last checkpoint.
+     *  @param   account Address of the position to check the debt on
+     */
     function positionDebt(address account) public view returns (uint256) {
         uint256 newDebtIndex = debtIndex + _indexIncrease(block.timestamp - blockLastIRTimestamp);
         return _positionDebt(account, newDebtIndex);

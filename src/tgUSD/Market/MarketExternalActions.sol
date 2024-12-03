@@ -54,7 +54,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     }
 
     function liquidate(address account, uint256 tgUSDToRepay, ILiquidator liquidator) external {
-        /// @dev Checkpoint IR
+        // Checkpoint IR
         (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
         uint256 collatBalance = collateralBalances[account];
 
@@ -66,12 +66,12 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         uint256 newCollatBalance;
         uint256 collatAmountToLiquidate;
 
-        /// @dev Liquidate all
+        // Liquidate all
         if (tgUSDToRepay >= userDebt) {
             tgUSDToRepay = userDebt;
             collatAmountToLiquidate = collatBalance;
         }
-        /// @dev Liquidate partial
+        // Liquidate partial
         else {
             collatAmountToLiquidate = (collatBalance * tgUSDToRepay) / userDebt;
             newCollatBalance = collatBalance - collatAmountToLiquidate;

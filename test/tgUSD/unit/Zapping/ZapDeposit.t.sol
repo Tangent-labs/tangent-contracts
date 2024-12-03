@@ -6,12 +6,11 @@ import "../../handler/Features/ConvexCrv/HZapDepositConvexCrvLP.sol";
 
 contract ZapDeposit is ConvexCurveContext {
     ConvexCrvLPMarket public market;
-    IERC20Metadata public collatToken;
+    IERC20Metadata public collatToken = AddrCurveStableLP.CRVUSD_USDC;
 
     HZapDepositConvexCrvLP public hZapDeposit;
 
     function setUp() public {
-        collatToken = AddrCurveStableLP.CRVUSD_USDC;
         market = deployConvexCurveLPMarket(collatToken);
 
         hZapDeposit = new HZapDepositConvexCrvLP(usr1, market, zapper, odosUtils);
@@ -52,7 +51,7 @@ contract ZapDeposit is ConvexCurveContext {
 
     function test_zap_deposit_with_erc20_and_no_stake() external {
         IERC20 tokenIn = AddrClassicERC20.TOKEN_USDT;
-        uint256 amountIn = 10_000 ether;
+        uint256 amountIn = 10_000 * 10 ** 6;
 
         hZapDeposit.zapDeposit(
             Zapper.ZapMarket({market: address(market), tokenIn: tokenIn, amountIn: amountIn, minAmountOut: 0, _for: usr1}),

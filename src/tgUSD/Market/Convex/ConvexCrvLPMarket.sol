@@ -42,9 +42,9 @@ contract ConvexCrvLPMarket is MarketRewards {
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {
         uint256 lpAvailable = collatToken.balanceOf(address(this)) - socFeePending;
 
-        /// @dev Verify that all there are enough LlamaLend LP on the contract
+        // Verify that all there are enough LlamaLend LP on the contract
         if (lpAvailable < lpToWithdraw) {
-            /// @dev If not enough are on the contract, we need to withdraw the difference from Convex
+            // If not enough are on the contract, we need to withdraw the difference from Convex
             cvxRewardToken.withdrawAndUnwrap(lpToWithdraw - lpAvailable, false);
         }
 
@@ -56,7 +56,7 @@ contract ConvexCrvLPMarket is MarketRewards {
      *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
     function processRewards(address harvestFeeReceiver) external override {
-        /// @dev Claim rewards on behalf
+        // Claim rewards on behalf
         cvxRewardToken.getReward();
         _processRewards(harvestFeeReceiver);
     }

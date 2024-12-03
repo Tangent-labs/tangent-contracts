@@ -2,6 +2,9 @@
 pragma solidity ^0.8.24;
 import "../../contexts/ConvexCurveContext.sol";
 
+import "../../handler/Features/BorrowRepay/HBorrow.sol";
+import "../../handler/Features/BorrowRepay/HRepay.sol";
+
 contract BorrowCvxMarket is ConvexCurveContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
@@ -9,6 +12,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
     HProcessRewards public hRewards;
     HDepositConvexCrvLP public hDeposit;
     HBorrow public hBorrow;
+    HRepay public hRepay;
 
     uint256 minimumLoan;
     function setUp() public {
@@ -18,6 +22,8 @@ contract BorrowCvxMarket is ConvexCurveContext {
         hRewards = new HProcessRewards(usr1, market);
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
+        hRepay = new HRepay(usr1, market);
+
         minimumLoan = market.minimumLoan();
     }
     function minimumCollatForDebt(uint256 userDebt) internal view returns (uint256) {
@@ -50,7 +56,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         assertEq(market.positionDebt(usr1), market.totalDebt());
 
-        tgUsd.mintIR(Array.memoryAddress([address(market)]));
+        tgUsd.mintIR();
 
         assertEq(market.totalDebt(), market.lastDebt() + market.pendingInterests());
         assertEq(market.positionDebt(usr1), market.totalDebt());
@@ -62,7 +68,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
         tgUsd.mint(usr1, repayAmount);
         vm.stopPrank();
 
-        hBorrow.repay(usr1, repayAmount);
+        hRepay.repay(usr1, repayAmount, address(0));
 
         skip(30);
 
@@ -70,7 +76,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
         tgUsd.mint(usr1, market.positionDebt(usr1));
         vm.stopPrank();
 
-        hBorrow.repay(usr1, MAX_UINT);
+        hRepay.repay(usr1, MAX_UINT, address(0));
 
         // assertEq(0, market.positionDebt(usr1), "User debt is 0 after a repay all");
     }
