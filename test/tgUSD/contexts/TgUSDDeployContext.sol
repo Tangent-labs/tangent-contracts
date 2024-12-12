@@ -5,10 +5,6 @@ pragma solidity ^0.8.22;
 import "forge-std/console.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {StdUtils} from "forge-std/StdUtils.sol";
-import {UpgradeableBeacon} from "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
-import {ProxyAdmin} from "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
-import {TransparentUpgradeableProxy} from "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
-import {Upgrades, Options} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 
 import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
@@ -61,7 +57,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     bool constant IS_VALIDATE_IMPLEM = false;
 
     constructor() {
-        vm.createSelectFork("mainnet", 21273560);
+        vm.createSelectFork("mainnet", 21379442);
 
         vm.startPrank(owner);
 
@@ -72,6 +68,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         labeliser.labelizeERC4626();
 
         controlTower = new ControlTower(owner, feeTreasury);
+        rewardAccumulator = new RewardAccumulator(owner, controlTower, feeTreasury);
 
         // Deploy tgUSD
         tgUsd = new TgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"), owner, controlTower);
@@ -88,8 +85,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         // Deploy and addLiquidity in tgUSD LP
         tgUSDLp = deployTgUSDLP();
-
-        rewardAccumulator = new RewardAccumulator(owner, controlTower, feeTreasury);
 
         vm.label(address(tgUsd), "tgUSD");
         vm.label(address(controlTower), "ControlTower");

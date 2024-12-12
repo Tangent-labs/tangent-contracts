@@ -5,12 +5,12 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 
 import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
+import {ICommonStruct} from "../../../interfaces/internals/ICommonStruct.sol";
 
-import {IMarketRewards} from "../../interfaces/internals/tgUSD/IMarketRewards.sol";
-import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
+import {IMarketRewards} from "../../../interfaces/internals/tgUSD/IMarketRewards.sol";
+import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {MarketExternalActions, MarketCore} from "./MarketExternalActions.sol";
-import {Sociabilization} from "../Utilities/Sociabilization.sol";
+import {Sociabilization} from "../../Utilities/Sociabilization.sol";
 import "forge-std/console.sol";
 /// @notice Lending market
 abstract contract MarketRewards is MarketExternalActions, Sociabilization {
@@ -213,7 +213,7 @@ abstract contract MarketRewards is MarketExternalActions, Sociabilization {
 
         /// @dev We compute the reward cut only if it's activated
         if (rewardCut != 0) {
-            rewardCutPercentage = _calculateRewardCut(tgUSDOracle.latestAnswer());
+            rewardCutPercentage = irCalculator.computeRCForMarket(address(this));
         }
         /// @dev Reward tokens updated
         IERC20[] memory _rewardTokens = rewardTokens;
@@ -304,32 +304,7 @@ abstract contract MarketRewards is MarketExternalActions, Sociabilization {
     function getRewardTokens() external view returns (IERC20[] memory) {
         return rewardTokens;
     }
-    function _calculateRewardCut(uint256 tgUSDPrice) internal pure returns (uint256) {
-        /// @dev tgUSD >= 1$ / 50% of reward cut
-        if (tgUSDPrice >= 1 ether) {
-            return 50_000;
-        }
-        /// @dev 0.999875$ <= tgPrice < 1 / 60% of reward cut
-        else if (tgUSDPrice >= 9987500000000000) {
-            return 60_000;
-        }
-        /// @dev 0.9975$ <= tgPrice < 0.999875$ / 70% of reward cut
-        else if (tgUSDPrice >= 997500000000000000) {
-            return 70_000;
-        }
-        /// @dev 0.99625$ <= tgPrice < 0.9975$ / 80% of reward cut
-        else if (tgUSDPrice >= 996250000000000000) {
-            return 80_000;
-        }
-        /// @dev 0.995$ <= tgPrice < 0.99625$ / 90% of reward cut
-        else if (tgUSDPrice >= 995000000000000000) {
-            return 90_000;
-        }
-        /// @dev tgPrice < 0.995$ / 100% of reward cut
-        else {
-            return DENOMINATOR;
-        }
-    }
+
     /**
      * @notice Get the claimable amount of all reward tokens for the given address
      * @param _account Address of the user

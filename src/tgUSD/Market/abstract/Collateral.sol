@@ -2,9 +2,9 @@
 pragma solidity ^0.8.22;
 
 import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
+import {IPriceOracle} from "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
+import {ICollateral} from "../../../interfaces/internals/tgUSD/ICollateral.sol";
 import {DebtIR, Ownable} from "./DebtIR.sol";
-import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
 
 import "forge-std/console.sol";
 

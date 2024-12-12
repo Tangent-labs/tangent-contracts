@@ -1,0 +1,104 @@
+import {ethers} from "hardhat";
+
+import {commonERC20, convexContracts, convexERC20, stakeDaoERC20} from "convergence-defi-tools";
+
+import {MainSetup} from "../Main.setup";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import {AddressLike, MaxUint256, parseEther, parseUnits, ZeroAddress} from "ethers";
+import {
+    ControlTower,
+    ICurveStableSwapFactoryNG,
+    ICurveStableSwapNG,
+    IERC20,
+    IRCalculator,
+    RewardAccumulator,
+    StablePriceOracleParams,
+    TgUSD,
+    Zapper,
+} from "../../../typechain-types";
+
+export class BaseContext extends MainSetup {
+    owner!: HardhatEthersSigner;
+    feeTreso!: HardhatEthersSigner;
+
+    controlTower!: ControlTower;
+
+    tgUSD!: TgUSD;
+    zapper!: Zapper;
+    rewardAccumulator!: RewardAccumulator;
+    irCalculator!: IRCalculator;
+
+    tgUSD_USDC_LP!: ICurveStableSwapNG;
+
+    coins: {[name: string]: IERC20} = {};
+
+    async deployContracts1() {
+        const l0EndpointAddress = "0x1a44076050125825900e736c501f859c50fE728c";
+        // TODO To change
+        const l0Delegate = "0x1a44076050125825900e736c501f859c50fE728c";
+
+        this.owner = this.users[0];
+        this.feeTreso = this.users[1];
+
+        const ControlTowerFactory = await ethers.getContractFactory("ControlTower");
+        this.controlTower = await ControlTowerFactory.deploy(this.owner, this.feeTreso);
+        await this.controlTower.waitForDeployment();
+
+        const TgUSDFactory = await ethers.getContractFactory("TgUSD");
+        this.tgUSD = await TgUSDFactory.deploy("Tangent USD", "tgUSD", l0EndpointAddress, l0Delegate, this.owner, this.controlTower);
+        await this.tgUSD.waitForDeployment();
+
+        const ZapperFactory = await ethers.getContractFactory("Zapper");
+        this.zapper = await ZapperFactory.deploy(this.owner, this.controlTower, this.tgUSD);
+        await this.zapper.waitForDeployment();
+
+        const RewardAccumulatorFactory = await ethers.getContractFactory("RewardAccumulator");
+        this.rewardAccumulator = await RewardAccumulatorFactory.deploy(this.owner, this.controlTower, this.feeTreso);
+        await this.rewardAccumulator.waitForDeployment();
+    }
+
+    async deployTgUSD_USDC_LP() {
+        const curveStableSwapFactory = await ethers.getContractAt("ICurveStableSwapFactoryNG", "0x6A8cbed756804B16E05E741eDaBd5cB544AE21bf");
+
+        const poolCount = await curveStableSwapFactory.pool_count();
+
+        const lpCreationTx = await curveStableSwapFactory
+            .connect(this.owner)
+            .deploy_plain_pool(
+                "tgUSD-USDC",
+                "tgUSD-USDC",
+                [this.coins.usdc, this.tgUSD],
+                "5000",
+                "100000000",
+                "0",
+                "866",
+                "0",
+                [0, 0],
+                ["0x00000000", "0x00000000"],
+                [ZeroAddress, ZeroAddress]
+            );
+        await lpCreationTx.wait();
+
+        const tgUSD_USDC_LP = await ethers.getContractAt("ICurveStableSwapNG", await curveStableSwapFactory.pool_list(poolCount));
+
+        this.tgUSD_USDC_LP = tgUSD_USDC_LP;
+
+        await this.coins.usdc.connect(this.owner).approve(tgUSD_USDC_LP, MaxUint256);
+        await this.tgUSD.connect(this.owner).approve(tgUSD_USDC_LP, MaxUint256);
+
+        await tgUSD_USDC_LP.connect(this.owner)["add_liquidity(uint256[],uint256)"]([parseUnits("1000000", 6), parseEther("1000000")], 0);
+    }
+
+    async deployContracts2(tgUSDOracle: AddressLike) {
+        const IRCalculatorFactory = await ethers.getContractFactory("IRCalculator");
+        this.irCalculator = await IRCalculatorFactory.deploy(this.owner, tgUSDOracle);
+        await this.irCalculator.waitForDeployment();
+    }
+
+    async setUpERC20() {
+        this.coins["usdc"] = await ethers.getContractAt("IERC20", commonERC20.USDC);
+        this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20", commonERC20.USDC);
+
+        await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 5, amount: 1_000_000}]);
+    }
+}

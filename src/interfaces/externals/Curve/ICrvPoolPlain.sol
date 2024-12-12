@@ -7,9 +7,9 @@ interface ICrvPoolPlain is IERC20Metadata {
 
     function get_virtual_price() external view returns (uint256);
 
-    function add_liquidity(uint256[] memory amounts, uint256 min_mint_amount) external;
+    function add_liquidity(uint256[2] memory amounts, uint256 min_mint_amount) external returns (uint256);
 
-    function add_liquidity(uint256[] memory amounts, uint256 min_mint_amount, address receiver) external;
+    function add_liquidity(uint256[2] memory amounts, uint256 min_mint_amount, address receiver) external returns (uint256);
 
     function exchange(
         int128 i, //index tokenIn

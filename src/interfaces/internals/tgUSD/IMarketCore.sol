@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IPriceOracle} from "./IPriceOracle.sol";
-import {ItgUSD} from "./ItgUSD.sol";
+import {IIrCalculator} from "./IIrCalculator.sol";
+import {ITgUSD} from "./ITgUSD.sol";
 import {ICollateral, IERC20Metadata} from "./ICollateral.sol";
 import {IControlTower} from "./IControlTower.sol";
+import {IPriceOracle} from "./IPriceOracle.sol";
+
 interface IMarketCore {
     struct MarketInit {
-        ItgUSD tgUSD;
+        ITgUSD tgUSD;
         IControlTower controlTower;
-        IPriceOracle tgUSDOracle;
+        IIrCalculator irCalculator;
         IERC20Metadata collatToken;
         IPriceOracle collatOracle;
         uint256 maxLTV;

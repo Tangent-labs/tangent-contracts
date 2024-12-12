@@ -3,16 +3,16 @@ pragma solidity ^0.8.24;
 
 import "forge-std/console.sol";
 
-import {ItgUSD} from "../../../src/interfaces/internals/tgUSD/ItgUSD.sol";
+import {ITgUSD} from "../../../src/interfaces/internals/tgUSD/ITgUSD.sol";
 
 contract MockedOdosRouter {
     function swapCompact() external payable returns (uint256) {
-        (ItgUSD tgUsd, address receiver, uint256 tgUsdMinted) = _decodeMockRouterOdosSwapCompact(msg.data);
+        (ITgUSD tgUsd, address receiver, uint256 tgUsdMinted) = _decodeMockRouterOdosSwapCompact(msg.data);
         tgUsd.mint(receiver, tgUsdMinted);
         return tgUsdMinted;
     }
 
-    function _decodeMockRouterOdosSwapCompact(bytes memory data) internal pure returns (ItgUSD, address, uint256) {
+    function _decodeMockRouterOdosSwapCompact(bytes memory data) internal pure returns (ITgUSD, address, uint256) {
         address tgUsd;
         address receiver;
         uint256 tgUsdMinted;
@@ -23,6 +23,6 @@ contract MockedOdosRouter {
             tgUsdMinted := calldataload(68)
         }
 
-        return (ItgUSD(tgUsd), receiver, tgUsdMinted);
+        return (ITgUSD(tgUsd), receiver, tgUsdMinted);
     }
 }

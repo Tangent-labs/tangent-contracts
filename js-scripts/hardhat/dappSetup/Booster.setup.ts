@@ -3,7 +3,7 @@ import {ethers} from "hardhat";
 import {commonERC20, stakeDaoERC20} from "convergence-defi-tools";
 
 import {IERC20, IGauge, ISdtStaking, ISdtUtilities} from "../../typechain-types";
-import {MainSetup} from "./Main.setup";
+import {MainSetup} from "../Main.setup";
 
 export class BoosterSetup extends MainSetup {
     private sdtUtilities!: ISdtUtilities;

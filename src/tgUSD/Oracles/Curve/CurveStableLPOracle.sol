@@ -59,11 +59,8 @@ contract CurveStableLPOracle is IPriceOracle {
         // (, int256 a0, , uint256 lastUpdate0, ) = coin0Oracle.latestRoundData();
         // (, int256 a1, , uint256 lastUpdate1, ) = coin1Oracle.latestRoundData();
 
-        uint256 a0 = coin0Oracle.latestAnswer();
-        uint256 a1 = coin1Oracle.latestAnswer();
-
-        uint256 answer0 = uint256(a0) * 10 ** (18 - coin0OracleDecimals);
-        uint256 answer1 = uint256(a1) * 10 ** (18 - coin1OracleDecimals);
+        uint256 answer0 = uint256(coin0Oracle.latestAnswer()) * 10 ** (18 - coin0OracleDecimals);
+        uint256 answer1 = uint256(coin1Oracle.latestAnswer()) * 10 ** (18 - coin1OracleDecimals);
 
         return (lp.get_virtual_price() * min(uint256(answer0), uint256(answer1))) / 10 ** 18;
     }

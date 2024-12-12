@@ -105,7 +105,7 @@ contract ConvexCurveContext is TgStableContext {
             IMarketCore.MarketInit({
                 tgUSD: tgUsd,
                 controlTower: controlTower,
-                tgUSDOracle: oracles[tgUsd],
+                irCalculator: irCalculator,
                 collatToken: initP.marketInit.collat,
                 collatOracle: oracles[collat],
                 maxLTV: initP.marketInit.maxLTV,
@@ -120,10 +120,7 @@ contract ConvexCurveContext is TgStableContext {
         );
         assertEq(address(convexMarket.collatOracle()), address(oracles[collat]), "Collat oracle address setup");
 
-        vm.startPrank(owner);
-        controlTower.toggleMarkets(Array.memoryAddress([address(convexMarket)]));
-        vm.stopPrank();
-        giveCollateralToUsers(collat);
+        _toggleMarket_dealCollat_verifyParams(address(convexMarket), initP.marketInit.collat);
 
         labeliser.labeliseNewConvexCrvMarket(address(collat), collat.symbol(), address(convexMarket), address(initP.cvxRewardToken));
 
@@ -142,7 +139,7 @@ contract ConvexCurveContext is TgStableContext {
             IMarketCore.MarketInit({
                 tgUSD: tgUsd,
                 controlTower: controlTower,
-                tgUSDOracle: oracles[tgUsd],
+                irCalculator: irCalculator,
                 collatToken: initP.marketInit.collat,
                 collatOracle: oracles[collat],
                 maxLTV: initP.marketInit.maxLTV,
@@ -154,11 +151,7 @@ contract ConvexCurveContext is TgStableContext {
             initP.rewards,
             initP.pid
         );
-        vm.startPrank(owner);
-        controlTower.toggleMarkets(Array.memoryAddress([address(convexMarket)]));
-        vm.stopPrank();
-
-        giveCollateralToUsers(collat);
+        _toggleMarket_dealCollat_verifyParams(address(convexMarket), initP.marketInit.collat);
 
         labeliser.labeliseNewConvexFxnMarket(address(collat), collat.symbol(), address(convexMarket), address(convexMarket.stakingProxyVault()));
 
@@ -177,7 +170,7 @@ contract ConvexCurveContext is TgStableContext {
             IMarketCore.MarketInit({
                 tgUSD: tgUsd,
                 controlTower: controlTower,
-                tgUSDOracle: oracles[tgUsd],
+                irCalculator: irCalculator,
                 collatToken: initP.collat,
                 collatOracle: oracles[collat],
                 maxLTV: initP.maxLTV,
@@ -187,11 +180,7 @@ contract ConvexCurveContext is TgStableContext {
             })
         );
 
-        vm.startPrank(owner);
-        controlTower.toggleMarkets(Array.memoryAddress([address(marketNoRewards)]));
-        vm.stopPrank();
-
-        giveCollateralToUsers(collat);
+        _toggleMarket_dealCollat_verifyParams(address(marketNoRewards), initP.collat);
 
         labeliser.labeliseNewNoRewardsMarket(address(collat), collat.symbol(), address(marketNoRewards));
 
@@ -203,6 +192,22 @@ contract ConvexCurveContext is TgStableContext {
         deal(address(collat), usr2, 1_000_000_000 * 10 ** 18);
         deal(address(collat), usr3, 1_000_000_000 * 10 ** 18);
         deal(address(collat), usr4, 1_000_000_000 * 10 ** 18);
+    }
+
+    function _toggleMarket_dealCollat_verifyParams(address market, IERC20Metadata collat) internal {
+        assertTrue(address(collat) != address(0), "No init params for LP");
+        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
+
+        vm.startPrank(owner);
+        controlTower.toggleMarkets(Array.memoryAddress([address(market)]));
+        irCalculator.setUpMarketRewards(
+            market,
+            IRCalculator.IRParams({sigma: 2750000000000000, r0: 5 ether}),
+            IRCalculator.RCParams({cutAtOneDollar: 50_000, stepAmount: 5, fullCutPrice: 99500000000000})
+        );
+        vm.stopPrank();
+
+        giveCollateralToUsers(collat);
     }
 
     // function setUpSingleRandomMarket() public {

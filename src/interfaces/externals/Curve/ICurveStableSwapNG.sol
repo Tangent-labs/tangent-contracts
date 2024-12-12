@@ -23,6 +23,8 @@ interface ICurveStableSwapNG is IERC20Metadata {
         bool _claim_admin_fees
     ) external returns (uint256[2] memory);
     function withdraw_admin_fees() external;
+    function last_price() external view returns (uint256);
+
     function last_price(uint256 i) external view returns (uint256);
     function ema_price(uint256 i) external view returns (uint256);
     function get_p(uint256 i) external view returns (uint256);

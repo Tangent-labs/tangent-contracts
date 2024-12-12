@@ -73,4 +73,6 @@ interface ICurveStableSwapFactoryNG {
     function gauge_implementation() external view returns (address);
     function views_implementation() external view returns (address);
     function fee_receiver() external view returns (address);
+
+    event PlainPoolDeployed(address[] coins, uint256 A, uint256 _fee, address creator);
 }

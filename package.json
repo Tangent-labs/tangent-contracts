@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "## Install dependencies",
   "main": "index.js",
-  "type": "module",
+  "type": "commonjs",
   "directories": {
     "lib": "lib",
     "test": "test"
@@ -16,13 +16,14 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "convergence-defi-tools": "git://github.com/Convergence-fi/convergence-defi-tools.git#main",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-foundry": "^1.1.2",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "chai": "4.3.7",
+    "convergence-defi-tools": "git://github.com/Convergence-fi/convergence-defi-tools.git#main",
     "ethers": "^6.13.4"
   },
   "dependencies": {
-    "hardhat": "^2.22.15"
+    "hardhat": "^2.22.17"
   }
 }

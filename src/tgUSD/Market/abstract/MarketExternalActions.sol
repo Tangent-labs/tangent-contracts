@@ -5,8 +5,8 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {MarketCore, Ownable} from "./MarketCore.sol";
 
-import {ILiquidator} from "../../interfaces/internals/tgUSD/ILiquidator.sol";
-import {IMarketExternalActions} from "../../interfaces/internals/tgUSD/IMarketExternalActions.sol";
+import {ILiquidator} from "../../../interfaces/internals/tgUSD/ILiquidator.sol";
+import {IMarketExternalActions} from "../../../interfaces/internals/tgUSD/IMarketExternalActions.sol";
 import "forge-std/console.sol";
 
 /// @notice
