@@ -3,7 +3,7 @@ pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {MarketExternalActions, MarketCore, Ownable} from "./MarketExternalActions.sol";
+import {MarketExternalActions, MarketCore, Ownable} from "./abstract/MarketExternalActions.sol";
 
 import {ILiquidator} from "../../interfaces/internals/tgUSD/ILiquidator.sol";
 

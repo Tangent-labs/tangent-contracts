@@ -3,8 +3,8 @@ pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {IMarketCore, IPriceOracle} from "../../interfaces/internals/tgUSD/IMarketCore.sol";
-import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
+import {IMarketCore, IPriceOracle} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
+import {IControlTower} from "../../../interfaces/internals/tgUSD/IControlTower.sol";
 import {Collateral, Ownable} from "./Collateral.sol";
 
 import "forge-std/console.sol";
@@ -12,9 +12,6 @@ import "forge-std/console.sol";
 /// @notice
 abstract contract MarketCore is IMarketCore, Collateral {
     IControlTower public controlTower;
-
-    /// @dev Contract allowing to retrieve the price in dollar of tgUSD.
-    IPriceOracle public tgUSDOracle;
 
     error TotalDebtTooHigh();
     error PositionDebtTooHigh();
@@ -26,8 +23,8 @@ abstract contract MarketCore is IMarketCore, Collateral {
 
     constructor(address _owner, MarketInit memory _marketInit) Ownable(_owner) {
         tgUSD = _marketInit.tgUSD;
-        tgUSDOracle = _marketInit.tgUSDOracle;
         controlTower = _marketInit.controlTower;
+        irCalculator = _marketInit.irCalculator;
         collatToken = _marketInit.collatToken;
         collatOracle = _marketInit.collatOracle;
 

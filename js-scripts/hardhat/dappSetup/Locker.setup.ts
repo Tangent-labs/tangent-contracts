@@ -3,7 +3,7 @@ import {ethers} from "hardhat";
 import {commonERC20, convexContracts, convexERC20, stakeDaoERC20} from "convergence-defi-tools";
 
 import {ICvgCVX, ICvgSDT, ICVX1, ICvxStaking, IERC20, IGauge, ISdtStaking, ISdtUtilities} from "../../typechain-types";
-import {MainSetup} from "./Main.setup";
+import {MainSetup} from "../Main.setup";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {ZeroAddress} from "ethers";
 

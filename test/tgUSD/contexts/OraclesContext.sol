@@ -3,10 +3,14 @@ pragma solidity ^0.8.24;
 
 import "./TgUSDDeployContext.sol";
 
-import "../../../src/tgUSD/Oracles/Curve/StablePriceOracleParams.sol";
-import "../../../src/tgUSD/Oracles/Curve/CurveStableLPOracle.sol";
-import "../../../src/tgUSD/Oracles/sDAIOracle.sol";
+import {StablePriceOracleParams} from "../../../src/tgUSD/Oracles/Curve/StablePriceOracleParams.sol";
+import {CurveStableLPOracle} from "../../../src/tgUSD/Oracles/Curve/CurveStableLPOracle.sol";
+import {sDAIOracle} from "../../../src/tgUSD/Oracles/sDAIOracle.sol";
+
+import {IRCalculator} from "../../../src/tgUSD/Utilities/IRCalculator.sol";
 contract OraclesContext is TgUSDDeployContext {
+    IRCalculator public irCalculator;
+
     mapping(IERC20 => IPriceOracle) public oracles;
 
     constructor() {
@@ -16,6 +20,8 @@ contract OraclesContext is TgUSDDeployContext {
         // Oracle tgUSD
         oracles[tgUsd] = new StablePriceOracleParams(tgUSDLp, IPriceOracle(address(AddrChainlinkOracle.USDC)));
         vm.label(address(oracles[tgUsd]), "Oracle tgUSD");
+
+        irCalculator = new IRCalculator(owner, oracles[tgUsd]);
 
         // Oracle FXUSD
         oracles[AddrClassicERC20.TOKEN_FXUSD] = new StablePriceOracleParams(AddrCurveStableLP.USDC_FXUSD, IPriceOracle(address(AddrChainlinkOracle.USDC)));

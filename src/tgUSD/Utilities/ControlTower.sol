@@ -2,7 +2,7 @@
 pragma solidity ^0.8.22;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ItgUSD} from "../../interfaces/internals/tgUSD/ItgUSD.sol";
+import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 
 import "forge-std/console.sol";

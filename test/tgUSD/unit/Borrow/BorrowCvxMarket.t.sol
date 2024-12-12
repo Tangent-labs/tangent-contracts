@@ -50,7 +50,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
         assertEq(market.positionDebt(usr1), borrowedAmount);
         assertEq(market.positionDebt(usr2), 0);
 
-        assertEq(market.debtIndex(), 10 ** 27, "Debt index didn't moove");
+        assertEq(market.debtIndex(), 10 ** 18, "Debt index didn't moove");
 
         skip(15 days);
 

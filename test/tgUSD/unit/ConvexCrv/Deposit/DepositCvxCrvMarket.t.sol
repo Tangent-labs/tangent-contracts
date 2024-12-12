@@ -4,7 +4,7 @@ import "../../../contexts/ConvexCurveContext.sol";
 
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
 
-contract DepositCvxMarket is ConvexCurveContext {
+contract DepositCvxCrvMarket is ConvexCurveContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
 

@@ -33,7 +33,7 @@ contract OdosUtils is Test, LowLevel {
     ) internal returns (bytes memory) {
         string[] memory inputs = new string[](8);
         inputs[0] = "node";
-        inputs[1] = "./js-scripts/ffi/getDataForSwap.js";
+        inputs[1] = "./js-scripts/ffi/getDataForSwap.mjs";
         inputs[2] = vm.toString(amountIn);
         inputs[3] = vm.toString(address(tokenIn));
         inputs[4] = vm.toString(uint256(proportion));
@@ -47,7 +47,7 @@ contract OdosUtils is Test, LowLevel {
     function getQuoteOdos(uint256 amountIn, IERC20 tokenIn, IERC20 tokenOut, address user) public returns (uint256) {
         string[] memory inputs = new string[](6);
         inputs[0] = "node";
-        inputs[1] = "./js-scripts/ffi/getQuote.js";
+        inputs[1] = "./js-scripts/ffi/getQuote.mjs";
         inputs[2] = vm.toString(amountIn);
         inputs[3] = vm.toString(address(tokenIn));
         inputs[4] = vm.toString(address(tokenOut));

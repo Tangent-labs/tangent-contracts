@@ -4,7 +4,7 @@ pragma solidity ^0.8.22;
 import {ICvxBooster} from "../../../interfaces/externals/Convex/ICvxBooster.sol";
 import {ICvxRewardToken} from "../../../interfaces/externals/Convex/ICvxRewardToken.sol";
 
-import "../MarketRewards.sol";
+import "../abstract/MarketRewards.sol";
 
 import "forge-std/console.sol";
 

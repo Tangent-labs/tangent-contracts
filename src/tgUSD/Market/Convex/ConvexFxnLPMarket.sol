@@ -4,7 +4,7 @@ pragma solidity ^0.8.22;
 import {ICvxFxnBooster} from "../../../interfaces/externals/Convex/ICvxFxnBooster.sol";
 import {IStakingProxyERC20} from "../../../interfaces/externals/Convex/IStakingProxyERC20.sol";
 
-import "../MarketRewards.sol";
+import "../abstract/MarketRewards.sol";
 
 import "forge-std/console.sol";
 

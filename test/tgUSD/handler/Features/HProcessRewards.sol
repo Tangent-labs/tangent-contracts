@@ -3,7 +3,7 @@
 pragma solidity ^0.8.22;
 import "../Base/HandlerBase.sol";
 
-import "../../../../src/tgUSD/Market/MarketRewards.sol";
+import "../../../../src/tgUSD/Market/abstract/MarketRewards.sol";
 
 contract HProcessRewards is HandlerBase {
     MarketRewards marketRewards;

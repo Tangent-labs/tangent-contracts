@@ -5,17 +5,21 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
-import {ItgUSD} from "../../interfaces/internals/tgUSD/ItgUSD.sol";
+import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
+import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
+import {IIrCalculator} from "../../../interfaces/internals/tgUSD/IIrCalculator.sol";
 
 import "forge-std/console.sol";
 
 /// @notice
-abstract contract DebtIR is Ownable {
+abstract contract DebtIR is Ownable, IDebtIR {
     using Math for uint256;
-    uint256 public constant RAY = 1e27; // Facteur de précision ray (1 * 10^27)
+    uint256 public constant RAY = 1e18; // Facteur de précision ray (1 * 10^27)
 
+    /// @notice Computes the interest rate and the cut of rewards.
+    IIrCalculator public irCalculator;
     /// @notice tgUSD is the StableCoin to borrow against the collatToken.
-    ItgUSD public tgUSD;
+    ITgUSD public tgUSD;
     /// @notice Global debt index. Represents the accumulation of the interest rate among time.
     uint256 public debtIndex;
     /// @notice Last total debt of the market.
@@ -116,6 +120,11 @@ abstract contract DebtIR is Ownable {
         }
     }
 
+    function checkpointIR() external {
+        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
+        _updateGlobalDebt(newDebtIndex, newTotalDebt);
+    }
+
     /**
      *  @notice Computes and returns the new debt index regarding interests generated allowing to readjust the total debt of the market
      *          If some interests are generated, it increments the value in tgUSD to be able to mint them later.
@@ -140,6 +149,7 @@ abstract contract DebtIR is Ownable {
 
             newTotalDebt += interestsGenerated;
         }
+        lastIR = irCalculator.computeIRForMarket(address(this));
 
         return (newDebtIndex, newTotalDebt);
     }
@@ -163,7 +173,7 @@ abstract contract DebtIR is Ownable {
         return (lastDebt * _indexIncrease(block.timestamp - blockLastIRTimestamp)) / RAY;
     }
 
-    function _pendingInterests(uint256 _lastDebt) public view returns (uint256) {
+    function _pendingInterests(uint256 _lastDebt) internal view returns (uint256) {
         return (_lastDebt * _indexIncrease(block.timestamp - blockLastIRTimestamp)) / RAY;
     }
 

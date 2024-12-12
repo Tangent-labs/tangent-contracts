@@ -4,7 +4,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 contract AssertERC20 is Test {
     uint256 public constant MAX_UINT = uint256(int256(-1));
-    uint256 public constant RAY = 10 ** 27;
+    uint256 public constant RAY = 10 ** 18;
     BalChange[] receiveChanges;
     BalChange[] lostChanges;
     BalChange[] noBalChanges;
