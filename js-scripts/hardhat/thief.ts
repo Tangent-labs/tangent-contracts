@@ -16,7 +16,6 @@ export async function giveTokensToAddresses(users: Signer[], tokensAmounts: Toke
         const userAddress = await users[i].getAddress();
         for (let j = 0; j < tokensAmounts.length; j++) {
             const tokenAmount = tokensAmounts[j];
-            console.log(tokenAmount);
             let storageSlot = "";
             if (tokenAmount.isVyper) {
                 storageSlot = GlobalHelper.calculateStorageSlotEthersVyper(userAddress, tokenAmount.slotBalance);
