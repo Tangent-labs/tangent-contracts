@@ -2,6 +2,7 @@ import {BaseContext} from "./BaseContext";
 import {OracleContext} from "./OracleContext";
 import {MarketContext} from "./MarketContext";
 import * as fs from "fs";
+import {curveLp} from "convergence-defi-tools";
 async function main() {
     const baseContext = new BaseContext();
     const oracleContext = new OracleContext();
@@ -19,6 +20,9 @@ async function main() {
     await baseContext.deployContracts2(oracleContext.tgUSD);
     // Deploy markets
     await marketContext.deployMarkets(baseContext, oracleContext);
+
+    await baseContext.approveCurveLP(await baseContext.tgUSD_USDC_LP.getAddress());
+    await baseContext.approveCurveLP(curveLp.CRVUSD_USDC);
 
     let contracts: {[name: string]: string} = {
         controlTower: await baseContext.controlTower.getAddress(),

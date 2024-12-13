@@ -61,6 +61,10 @@ export function TOKENS_TO_GIVE(mintedAmount: number) {
             amount: mintedAmount,
         },
         {
+            ...thiefConfig.THIEF_TOKEN_CONFIG.CRVUSD,
+            amount: mintedAmount,
+        },
+        {
             ...thiefConfig.THIEF_TOKEN_CONFIG.CRVUSD_USDC,
             amount: mintedAmount,
         },

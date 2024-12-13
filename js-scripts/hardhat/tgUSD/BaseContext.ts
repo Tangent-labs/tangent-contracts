@@ -1,10 +1,10 @@
 import {ethers} from "hardhat";
 
-import {commonERC20, convexContracts, convexERC20, stakeDaoERC20} from "convergence-defi-tools";
+import {commonERC20, convexContracts, convexERC20, curveLp, stakeDaoERC20} from "convergence-defi-tools";
 
 import {MainSetup} from "../Main.setup";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {AddressLike, MaxUint256, parseEther, parseUnits, ZeroAddress} from "ethers";
+import {Addressable, AddressLike, MaxUint256, parseEther, parseUnits, ZeroAddress} from "ethers";
 import {
     ControlTower,
     ICurveStableSwapFactoryNG,
@@ -97,8 +97,23 @@ export class BaseContext extends MainSetup {
 
     async setUpERC20() {
         this.coins["usdc"] = await ethers.getContractAt("IERC20", commonERC20.USDC);
-        this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20", commonERC20.USDC);
+        this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20", curveLp.CRVUSD_USDC);
 
         await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 5, amount: 1_000_000}]);
+    }
+
+    async approveCurveLP(lp: string) {
+        const curveLP = await ethers.getContractAt("ICurveStableSwapNG", lp);
+        const coin0 = await ethers.getContractAt("IERC20", await curveLP.coins(0));
+        const coin1 = await ethers.getContractAt("IERC20", await curveLP.coins(1));
+
+        for (let i = 0; i < this.users.length; i++) {
+            const user = this.users[i];
+            await coin0.connect(user).approve(lp, MaxUint256);
+            await coin1.connect(user).approve(lp, MaxUint256);
+            console.log(await user.getAddress());
+            console.log(await coin0.balanceOf(user), "UNO");
+            console.log(await coin1.balanceOf(user), "DOS");
+        }
     }
 }

@@ -5,7 +5,7 @@ async function main() {
     const boosterSetup = new BoosterSetup();
 
     await boosterSetup.setupTestUsers();
-    await boosterSetup.giveTokens(boosterSetup.users);
+    await boosterSetup.giveTokens(boosterSetup.users, []);
 
     await boosterSetup.setupContracts();
     await boosterSetup.stake();
