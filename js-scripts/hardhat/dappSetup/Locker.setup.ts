@@ -5,7 +5,7 @@ import {commonERC20, convexContracts, convexERC20, stakeDaoERC20} from "converge
 import {ICvgCVX, ICvgSDT, ICVX1, ICvxStaking, IERC20, IGauge, ISdtStaking, ISdtUtilities} from "../../typechain-types";
 import {MainSetup} from "../Main.setup";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {ZeroAddress} from "ethers";
+import {parseEther, ZeroAddress} from "ethers";
 
 export class LockerSetup extends MainSetup {
     private sdtUtilities!: ISdtUtilities;
@@ -61,15 +61,16 @@ export class LockerSetup extends MainSetup {
     }
 
     async approveAndMintLockers(user: HardhatEthersSigner) {
+        const erc20Minted = parseEther(this.erc20Minted.toString());
         // StakeDao
 
-        await this.sdt.connect(user).approve(this.cvgSDT, this.erc20Minted);
+        await this.sdt.connect(user).approve(this.cvgSDT, erc20Minted);
         await this.cvgSDT.connect(user).mint(user, ethers.parseEther("1000"));
 
         // Convex
 
-        await this.cvx.connect(user).approve(this.cvgCVX, this.erc20Minted);
-        await this.cvx.connect(user).approve(this.CVX1, this.erc20Minted);
+        await this.cvx.connect(user).approve(this.cvgCVX, erc20Minted);
+        await this.cvx.connect(user).approve(this.CVX1, erc20Minted);
 
         await this.cvgCVX.connect(user).mint(user, ethers.parseEther("1000"), true);
         await this.CVX1.connect(user).mint(user, ethers.parseEther("1000"));
