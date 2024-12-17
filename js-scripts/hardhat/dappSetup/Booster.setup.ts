@@ -4,7 +4,8 @@ import {commonERC20, stakeDaoERC20} from "convergence-defi-tools";
 
 import {IERC20, IGauge, ISdtStaking, ISdtUtilities} from "../../typechain-types";
 import {MainSetup} from "../Main.setup";
-import {ICvgRewards, ICycleProcessor, ISdtBuffer} from "../../../typechain-types";
+import {ICycleProcessor, ISdtBuffer} from "../../../typechain-types";
+import {parseEther} from "ethers";
 
 export class BoosterSetup extends MainSetup {
     private sdtUtilities!: ISdtUtilities;
@@ -67,6 +68,7 @@ export class BoosterSetup extends MainSetup {
 
     async stake() {
         const gaugeAmount = ethers.parseEther("1000");
+        const erc20Minted = parseEther(this.erc20Minted.toString());
         for (let i = 0; i < this.users.length; i++) {
             // CRV
             const user = this.users[i];
@@ -74,20 +76,19 @@ export class BoosterSetup extends MainSetup {
             await this.sdCRVGauge.connect(user).deposit(gaugeAmount);
 
             await this.CRV.connect(user).approve(this.sdtUtilities, ethers.MaxUint256);
-            await this.sdCRV.connect(user).approve(this.sdtUtilities, this.erc20Minted);
-            await this.sdCRVGauge.connect(user).approve(this.SD_CRV_STAKING, this.erc20Minted);
+            await this.sdCRV.connect(user).approve(this.sdtUtilities, erc20Minted);
+            await this.sdCRVGauge.connect(user).approve(this.SD_CRV_STAKING, erc20Minted);
 
             await this.SD_CRV_STAKING.connect(user).deposit(0, ethers.parseEther("500"), user);
             await this.sdtUtilities
                 .connect(user)
                 .convertAndStakeSdAsset(0, this.SD_CRV_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
-
             // PENDLE
 
             await this.sdPENDLE.connect(user).approve(this.sdPENDLEGauge, ethers.parseEther("10000"));
             await this.sdPENDLEGauge.connect(user).deposit(ethers.parseEther("1000"));
 
-            await this.PENDLE.connect(user).approve(this.sdtUtilities, this.erc20Minted);
+            await this.PENDLE.connect(user).approve(this.sdtUtilities, erc20Minted);
 
             await this.sdtUtilities
                 .connect(user)
@@ -98,7 +99,7 @@ export class BoosterSetup extends MainSetup {
             await this.sdFXN.connect(user).approve(this.sdFXNGauge, ethers.parseEther("10000"));
             await this.sdFXNGauge.connect(user).deposit(ethers.parseEther("1000"));
 
-            await this.sdFXN.connect(user).approve(this.sdtUtilities, this.erc20Minted);
+            await this.sdFXN.connect(user).approve(this.sdtUtilities, erc20Minted);
             await this.sdtUtilities.connect(user).convertAndStakeSdAsset(0, this.SD_FXN_STAKING, 0, 0, ethers.parseEther("500"), 0, false);
 
             // BAL
@@ -106,7 +107,7 @@ export class BoosterSetup extends MainSetup {
             await this.sdBAL.connect(user).approve(this.sdBALGauge, ethers.parseEther("10000"));
             await this.sdBALGauge.connect(user).deposit(ethers.parseEther("1000"));
 
-            await this._80Bal_20ETH.connect(user).approve(this.sdtUtilities, this.erc20Minted);
+            await this._80Bal_20ETH.connect(user).approve(this.sdtUtilities, erc20Minted);
             await this.sdtUtilities
                 .connect(user)
                 .convertAndStakeSdAsset(0, this.SD_BAL_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
