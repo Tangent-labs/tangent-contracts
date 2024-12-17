@@ -5,6 +5,8 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IMarketCore, IPriceOracle} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 import {IControlTower} from "../../../interfaces/internals/tgUSD/IControlTower.sol";
+import {ILiquidator} from "../../../interfaces/internals/tgUSD/ILiquidator.sol";
+
 import {Collateral, Ownable} from "./Collateral.sol";
 
 import "forge-std/console.sol";
@@ -176,5 +178,55 @@ abstract contract MarketCore is IMarketCore, Collateral {
         (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _repay(caller, tgUSDToRepay, caller);
 
         _updateCollatAndDebts(caller, _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, newUserDebt), newUserDebt, newDebtIndex, newTotalDebt);
+    }
+
+    /* --------
+                        LIQUIDATION
+                                                    ------ */
+
+    function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256) {
+        // Checkpoint IR
+        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
+        uint256 collatBalance = collateralBalances[account];
+
+        uint256 userDebt = _positionDebt(account, newDebtIndex);
+        return (newDebtIndex, newTotalDebt, userDebt, collatBalance);
+    }
+    function _liquidate(
+        address account,
+        uint256 tgUSDToRepay,
+        uint256 userDebt,
+        uint256 newTotalDebt,
+        uint256 newDebtIndex,
+        uint256 collatBalance,
+        ILiquidator liquidator
+    ) internal {
+        require(tgUSDToRepay != 0, ZeroDebtAmount());
+        uint256 remainingDebt;
+        uint256 newCollatBalance;
+        uint256 collatAmountToLiquidate;
+
+        // Liquidate all
+        if (tgUSDToRepay >= userDebt) {
+            tgUSDToRepay = userDebt;
+            collatAmountToLiquidate = collatBalance;
+        }
+        // Liquidate partial
+        else {
+            collatAmountToLiquidate = (collatBalance * tgUSDToRepay) / userDebt;
+            newCollatBalance = collatBalance - collatAmountToLiquidate;
+            remainingDebt = userDebt - tgUSDToRepay;
+            require(remainingDebt >= minimumLoan, PositionDebtTooLow());
+        }
+
+        _updateCollatAndDebts(account, newCollatBalance, remainingDebt, newDebtIndex, newTotalDebt - tgUSDToRepay);
+
+        _transferCollateralWithdraw(address(liquidator) != address(0) ? address(liquidator) : msg.sender, collatAmountToLiquidate);
+
+        if (address(liquidator) != address(0)) {
+            liquidator.liquidate();
+        }
+
+        tgUSD.burnFrom(msg.sender, tgUSDToRepay);
     }
 }

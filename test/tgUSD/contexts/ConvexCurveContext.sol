@@ -19,6 +19,8 @@ import "../handler/Features/ConvexFxn/HWithdrawConvexFxnLP.sol";
 import "../handler/Features/NoRewards/HDepositNoRewards.sol";
 import "../handler/Features/NoRewards/HWithdrawNoRewards.sol";
 import "../handler/Features/NoRewards/HWithdrawNoRewards.sol";
+
+import "../handler/Curve/HLpManipulator.sol";
 import "../../../src/interfaces/internals/tgUSD/IMarketCore.sol";
 
 contract ConvexCurveContext is TgStableContext {
@@ -202,8 +204,8 @@ contract ConvexCurveContext is TgStableContext {
         controlTower.toggleMarkets(Array.memoryAddress([address(market)]));
         irCalculator.setUpMarketRewards(
             market,
-            IRCalculator.IRParams({sigma: 2750000000000000, r0: 5 ether}),
-            IRCalculator.RCParams({cutAtOneDollar: 50_000, stepAmount: 5, fullCutPrice: 99500000000000})
+            IRCalculator.IRParams({sigma: 2750000000000000, r0: 5 ether, irStartPrice: 995000000000000000}),
+            IRCalculator.RCParams({cutAtOneDollar: 50_000, stepAmount: 5, fullCutPrice: 995000000000000000})
         );
         vm.stopPrank();
 

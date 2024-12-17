@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "hh-node": "npx hardhat node --fork https://rpc.ankr.com/eth",
+    "hh-node": "npx hardhat node --fork https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy",
     "dapp-setup": "npx hardhat run hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "build": "forge build --skip ./src/LendSplitter/* ./test/lendSplitter/*"
   },
@@ -20,7 +20,7 @@
     "@nomicfoundation/hardhat-foundry": "^1.1.2",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "chai": "4.3.7",
-    "convergence-defi-tools": "git://github.com/Convergence-fi/convergence-defi-tools.git#main",
+    "convergence-defi-tools": "https://github.com/Convergence-fi/convergence-defi-tools.git#main",
     "ethers": "^6.13.4"
   },
   "dependencies": {

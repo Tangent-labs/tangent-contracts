@@ -14,7 +14,12 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         USER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
+    /**
+     * @notice Set the percentage of rewards on the rewards streamed to borrowers to send to the processor.
+     * @param  _for        The collateral is deposited to this address
+     * @param  lpDeposited Amount of collateral to deposit
+     * @param  isStaked    Stake
+     */
     function deposit(address _for, uint256 lpDeposited, bool isStaked) external {
         (uint256 lpStaked, IERC20 _collatToken) = _preDeposit(_for, lpDeposited, isStaked);
         _deposit(_for, lpStaked);
@@ -55,57 +60,16 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
 
     function liquidate(address account, uint256 tgUSDToRepay, ILiquidator liquidator) external {
         // Checkpoint IR
-        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
-        uint256 collatBalance = collateralBalances[account];
-
-        uint256 userDebt = _positionDebt(account, newDebtIndex);
+        (uint256 newDebtIndex, uint256 newTotalDebt, uint256 userDebt, uint256 collatBalance) = _preLiquidate(account);
 
         require(_healthRatio(userDebt, collatBalance) < 1 ether, NotLiquidablePosition());
 
-        uint256 remainingDebt;
-        uint256 newCollatBalance;
-        uint256 collatAmountToLiquidate;
-
-        // Liquidate all
-        if (tgUSDToRepay >= userDebt) {
-            tgUSDToRepay = userDebt;
-            collatAmountToLiquidate = collatBalance;
-        }
-        // Liquidate partial
-        else {
-            collatAmountToLiquidate = (collatBalance * tgUSDToRepay) / userDebt;
-            newCollatBalance = collatBalance - collatAmountToLiquidate;
-            remainingDebt = userDebt - tgUSDToRepay;
-            require(remainingDebt >= minimumLoan, PositionDebtTooLow());
-        }
-
-        _updateCollatAndDebts(account, newCollatBalance, remainingDebt, newDebtIndex, newTotalDebt - tgUSDToRepay);
-
-        _transferCollateralWithdraw(address(liquidator) != address(0) ? address(liquidator) : msg.sender, collatAmountToLiquidate);
-
-        if (address(liquidator) != address(0)) {
-            liquidator.liquidate();
-        }
-
-        tgUSD.burnFrom(msg.sender, tgUSDToRepay);
+        _liquidate(account, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator);
     }
 
-    /// TODO Add self liquidate partial
-    function selfLiquidate(ILiquidator liquidator) external {
-        /// @dev Checkpoint IR
-        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
-        uint256 collatBalance = collateralBalances[msg.sender];
-
-        uint256 userDebt = _positionDebt(msg.sender, newDebtIndex);
-
-        _updateCollatAndDebts(msg.sender, 0, 0, newDebtIndex, newTotalDebt - userDebt);
-
-        _transferCollateralWithdraw(address(liquidator) != address(0) ? address(liquidator) : msg.sender, collatBalance);
-
-        if (address(liquidator) != address(0)) {
-            liquidator.liquidate();
-        }
-
-        tgUSD.burnFrom(msg.sender, userDebt);
+    function selfLiquidate(uint256 tgUSDToRepay, ILiquidator liquidator) external {
+        // Checkpoint IR
+        (uint256 newDebtIndex, uint256 newTotalDebt, uint256 userDebt, uint256 collatBalance) = _preLiquidate(msg.sender);
+        _liquidate(msg.sender, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator);
     }
 }

@@ -31,9 +31,7 @@ contract ExpIRF is ConvexCurveContext {
         r0 = 5 ether;
 
         uint256 expected = getIRFFI(tgUSDPrice, sigma, r0);
-        console.log("expected", expected);
-        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, sigma, r0);
-        console.log("calculated", calculated);
+        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, sigma, r0, 999500000000000000);
 
         assertApproxEqRel(expected, calculated, 1e8);
     }

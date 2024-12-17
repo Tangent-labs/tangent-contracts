@@ -25,6 +25,7 @@ contract IRCalculator is IIrCalculator, Ownable {
     struct IRParams {
         uint128 sigma;
         uint128 r0;
+        uint256 irStartPrice;
     }
 
     struct RCParams {
@@ -58,7 +59,7 @@ contract IRCalculator is IIrCalculator, Ownable {
      */
     function computeIRForMarket(address market) external view returns (uint256) {
         IRParams memory irParam = irParams[market];
-        return _computeIR(tgUSDOracle.latestAnswer(), irParam.sigma, irParam.r0);
+        return _computeIR(tgUSDOracle.latestAnswer(), irParam.sigma, irParam.r0, irParam.irStartPrice);
     }
 
     /**
@@ -67,17 +68,19 @@ contract IRCalculator is IIrCalculator, Ownable {
      * @param  sigma a
      * @param  r0    a
      */
-    function simulateIR(uint256 tgUSDPrice, uint256 sigma, uint256 r0) external pure returns (uint256) {
-        return _computeIR(tgUSDPrice, sigma, r0);
+    function simulateIR(uint256 tgUSDPrice, uint256 sigma, uint256 r0, uint256 irStartPrice) external pure returns (uint256) {
+        return _computeIR(tgUSDPrice, sigma, r0, irStartPrice);
     }
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
-     * @param  tgUSDPrice zd
-     * @param  sigma zed
-     * @param  r0 zd
+     * @param  tgUSDPrice Price of tgUSD in wei.
+     * @param  sigma Denominator of the part passed to exp. The smaller it is, the faster the IR grows with depeg
+     * @param  r0   Base coefficient of the IR
      */
-    function _computeIR(uint256 tgUSDPrice, uint256 sigma, uint256 r0) internal pure returns (uint256) {
-        console.log(tgUSDPrice, sigma, r0);
+    function _computeIR(uint256 tgUSDPrice, uint256 sigma, uint256 r0, uint256 irStartPrice) internal pure returns (uint256) {
+        if (tgUSDPrice > irStartPrice) {
+            return 0;
+        }
         int128 powerIn64x64 = ABDKMath64x64.divu(((1 ether - tgUSDPrice) * 10 ** 18) / sigma, 10 ** 18);
 
         // Calcul exp(1) en utilisant la méthode exp
