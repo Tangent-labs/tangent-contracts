@@ -11,27 +11,19 @@ contract HDepositConvexCrvLP is HMarketBase {
         marketCrvLP = ConvexCrvLPMarket(address(_market));
     }
     function deposit(address _for, uint256 lpDeposited, bool isStaked) external handler {
-        (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(
-            _for,
-            lpDeposited,
-            isStaked
-        );
+        (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(_for, lpDeposited, isStaked);
 
         marketCrvLP.deposit(_for, lpDeposited, isStaked);
 
         _afterDepositCheck(_for, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
     }
 
-    function depositAndBorrow(address _for, uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
-        (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(
-            sender,
-            lpDeposited,
-            isStaked
-        );
+    function depositAndBorrow(uint256 lpDeposited, uint256 borrowedAmount, bool isStaked, address callerZapper) external handler {
+        (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(sender, lpDeposited, isStaked);
         (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, ) = _beforBorrowOrRepayCheck(marketCrvLP);
         _beforeBorrowCheck(marketCrvLP, sender, borrowedAmount);
 
-        marketCrvLP.depositAndBorrow(_for, lpDeposited, borrowedAmount, isStaked);
+        marketCrvLP.depositAndBorrow(lpDeposited, borrowedAmount, isStaked, callerZapper);
 
         _afterDepositCheck(sender, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
         _afterBorrowCheck(marketCrvLP, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);
@@ -59,12 +51,7 @@ contract HDepositConvexCrvLP is HMarketBase {
             } else {
                 verifyBalERC20NotChanging(collatToken, address(marketCrvLP), "There were no collat on the marketCrvLP waiting to be staked");
             }
-            verifyReceiveERC20(
-                marketCrvLP.cvxRewardToken(),
-                address(marketCrvLP),
-                collatMarketBalance + lpDeposited,
-                "Collat is received by the staking contract"
-            );
+            verifyReceiveERC20(marketCrvLP.cvxRewardToken(), address(marketCrvLP), collatMarketBalance + lpDeposited, "Collat is received by the staking contract");
         } else {
             feeToTake = (lpDeposited * socFeePercentage) / 100_000;
             verifyReceiveERC20(collatToken, address(marketCrvLP), lpDeposited, "Collat is received by the marketCrvLP");
@@ -83,29 +70,13 @@ contract HDepositConvexCrvLP is HMarketBase {
         if (isStaked) {
             uint256 collatIncrease = lpDeposited + socFeePending;
             assertEq(0, marketCrvLP.socFeePending(), "When staked, fee pending are deleted");
-            assertEq(
-                collatIncrease,
-                marketCrvLP.totalCollateral() - totalCollateralBefore,
-                "Total collateral is increased by taking into account the pending sociabilization fee"
-            );
-            assertEq(
-                collatIncrease,
-                marketCrvLP.collateralBalances(_for) - balanceCollateralBefore,
-                "Collateral of the user is increased by taking into account pending soc fee"
-            );
+            assertEq(collatIncrease, marketCrvLP.totalCollateral() - totalCollateralBefore, "Total collateral is increased by taking into account the pending sociabilization fee");
+            assertEq(collatIncrease, marketCrvLP.collateralBalances(_for) - balanceCollateralBefore, "Collateral of the user is increased by taking into account pending soc fee");
         } else {
             uint256 collatIncrease = lpDeposited - feeToTake;
 
-            assertEq(
-                marketCrvLP.socFeePending(),
-                socFeePending + feeToTake,
-                "Fee pending is equal to the sum of previous fee pending and the new soc fee to take"
-            );
-            assertEq(
-                collatIncrease,
-                marketCrvLP.totalCollateral() - totalCollateralBefore,
-                "Total collateral is increased by removing the soc fee from the input amount"
-            );
+            assertEq(marketCrvLP.socFeePending(), socFeePending + feeToTake, "Fee pending is equal to the sum of previous fee pending and the new soc fee to take");
+            assertEq(collatIncrease, marketCrvLP.totalCollateral() - totalCollateralBefore, "Total collateral is increased by removing the soc fee from the input amount");
             assertEq(
                 collatIncrease,
                 marketCrvLP.collateralBalances(_for) - balanceCollateralBefore,

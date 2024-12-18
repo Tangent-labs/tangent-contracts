@@ -15,9 +15,13 @@ import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
 
+import "../../../test/tgUSD/mocks/MockEnsoRouterLeverage.sol";
+import "../../../test/tgUSD/mocks/MockEnsoRouterRepay.sol";
+
 import "../../utils/AssertERC20.sol";
 import "../../utils/LowLevel.sol";
 import "../../utils/OdosUtils.sol";
+import "../../utils/EnsoUtils.sol";
 import "../../utils/Labeliser.sol";
 import "../../utils/Array.sol";
 
@@ -34,6 +38,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public owner = makeAddr("Owner");
     address public ownerGauge = makeAddr("ownerGauge");
     address public feeTreasury = makeAddr("feeTreasury");
+    address public mockedLP = makeAddr("Mocked LP");
 
     address public endpointAddressMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
 
@@ -47,9 +52,11 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     RewardAccumulator public rewardAccumulator;
 
-    MockedOdosRouter public mockedOdosRouter;
+    MockEnsoRouterRepay public mockEnsoRouterRepay;
+    MockEnsoRouterLeverage public mockEnsoRouterLeverage;
 
     OdosUtils public odosUtils;
+    EnsoUtils public ensoUtils;
 
     Labeliser public labeliser;
 
@@ -57,11 +64,12 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     bool constant IS_VALIDATE_IMPLEM = false;
 
     constructor() {
-        vm.createSelectFork("mainnet", 21379442);
+        vm.createSelectFork("mainnet", 21430040);
 
         vm.startPrank(owner);
 
         odosUtils = new OdosUtils();
+        ensoUtils = new EnsoUtils();
 
         labeliser = new Labeliser();
         labeliser.labelizeERC20();
@@ -73,10 +81,10 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         // Deploy tgUSD
         tgUsd = new TgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"), owner, controlTower);
 
-        mockedOdosRouter = new MockedOdosRouter();
+        mockEnsoRouterRepay = new MockEnsoRouterRepay();
+        mockEnsoRouterLeverage = new MockEnsoRouterLeverage();
 
-        controlTower.toggleMarkets(Array.memoryAddress([address(AddrAggregator.ROUTER_ODOS)]));
-
+        vm.allowCheatcodes(address(AddrAggregator.ENSO_ROUTER));
         zapper = new Zapper(owner, controlTower, tgUsd);
 
         controlTower.toggleZapper(address(zapper));
@@ -90,8 +98,10 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(controlTower), "ControlTower");
         vm.label(address(tgUSDLp), "LP tgUSD");
         vm.label(address(rewardAccumulator), "RewardAccumulator");
-        vm.label(address(AddrAggregator.ROUTER_ODOS), "Odos Router");
-        vm.label(address(mockedOdosRouter), "Mock Odos Router");
+        vm.label(address(AddrAggregator.ODOS_ROUTER), "Odos Router");
+        vm.label(address(AddrAggregator.ENSO_ROUTER), "Enso Router");
+        vm.label(address(mockEnsoRouterRepay), "Mock Odos Router repay");
+        vm.label(address(mockEnsoRouterLeverage), "Mock Odos Router leverage");
 
         vm.stopPrank();
     }

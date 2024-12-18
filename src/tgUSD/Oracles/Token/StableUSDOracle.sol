@@ -7,7 +7,7 @@ import "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 import "forge-std/console.sol";
 
-contract StableUSDOracle is IPriceOracle {
+abstract contract StableUSDOracle is IPriceOracle {
     ICurveStableSwapNG lp;
 
     IPriceOracle otherStableOracle;

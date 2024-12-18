@@ -7,6 +7,7 @@ import {MarketCore, Ownable} from "./MarketCore.sol";
 
 import {ILiquidator} from "../../../interfaces/internals/tgUSD/ILiquidator.sol";
 import {IMarketExternalActions} from "../../../interfaces/internals/tgUSD/IMarketExternalActions.sol";
+import {IZapper} from "../../../interfaces/internals/tgUSD/IZapper.sol";
 import "forge-std/console.sol";
 
 /// @notice
@@ -17,44 +18,48 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     /**
      * @notice Set the percentage of rewards on the rewards streamed to borrowers to send to the processor.
      * @param  _for        The collateral is deposited to this address
-     * @param  lpDeposited Amount of collateral to deposit
+     * @param  depositedAmount Amount of collateral to deposit
      * @param  isStaked    Stake
      */
-    function deposit(address _for, uint256 lpDeposited, bool isStaked) external {
-        (uint256 lpStaked, IERC20 _collatToken) = _preDeposit(_for, lpDeposited, isStaked);
-        _deposit(_for, lpStaked);
-        _transferCollateralDeposit(_collatToken, lpDeposited);
-        _postDeposit(_collatToken, lpStaked, isStaked);
+    function deposit(address _for, uint256 depositedAmount, bool isStaked) external {
+        (uint256 stakedAmount, IERC20 _collatToken) = _preDeposit(_for, depositedAmount, isStaked);
+        _deposit(_for, stakedAmount);
+        _transferCollateralDeposit(_collatToken, depositedAmount, controlTower.isZapper(msg.sender));
+        _postDeposit(_collatToken, stakedAmount, isStaked);
     }
 
-    function depositAndBorrow(address _for, uint256 lpDeposited, uint256 debtBorrow, bool isStaked) external {
-        (uint256 lpStaked, IERC20 _collatToken) = _preDeposit(_for, lpDeposited, isStaked);
-        _depositAndBorrow(lpStaked, debtBorrow);
-        _transferCollateralDeposit(_collatToken, lpDeposited);
-        _postDeposit(_collatToken, lpStaked, isStaked);
+    function depositAndBorrow(uint256 depositedAmount, uint256 debtBorrow, bool isStaked, address callerZapper) external {
+        bool isZapping = controlTower.isZapper(msg.sender);
+        callerZapper = isZapping ? callerZapper : msg.sender;
+
+        (uint256 stakedAmount, IERC20 _collatToken) = _preDeposit(callerZapper, depositedAmount, isStaked);
+
+        _depositAndBorrow(callerZapper, stakedAmount, debtBorrow, false);
+        _transferCollateralDeposit(_collatToken, depositedAmount, isZapping);
+        _postDeposit(_collatToken, stakedAmount, isStaked);
     }
 
-    function withdraw(uint256 lpToWithdraw) external {
-        _preWithdraw(lpToWithdraw);
-        _withdraw(lpToWithdraw);
-        _transferCollateralWithdraw(msg.sender, lpToWithdraw);
+    function withdraw(uint256 withdrawAmount) external {
+        _preWithdraw(withdrawAmount);
+        _withdraw(withdrawAmount);
+        _transferCollateralWithdraw(msg.sender, withdrawAmount);
     }
 
-    function withdrawAndRepay(uint256 lpToWithdraw, uint256 debtRepay, address callerZapper) external {
-        _preWithdraw(lpToWithdraw);
+    function withdrawAndRepay(uint256 withdrawAmount, uint256 debtRepay, address callerZapper) external {
+        _preWithdraw(withdrawAmount);
         address caller = controlTower.isZapper(msg.sender) ? callerZapper : msg.sender;
-        _withdrawAndRepay(lpToWithdraw, debtRepay, caller);
-        _transferCollateralWithdraw(caller, lpToWithdraw);
+        _withdrawAndRepay(withdrawAmount, debtRepay, caller);
+        _transferCollateralWithdraw(caller, withdrawAmount);
     }
 
     function borrow(address receiver, uint256 tgUSDToBorrow) external {
-        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(receiver, tgUSDToBorrow, collateralBalances[msg.sender]);
+        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(receiver, tgUSDToBorrow, collateralBalances[msg.sender], false);
         _updateDebts(msg.sender, newUserDebt, newDebtIndex, newTotalDebt);
     }
 
     function repay(address account, uint256 tgUSDToRepay, address callerZapper) external {
-        address caller = controlTower.isZapper(msg.sender) ? callerZapper : msg.sender;
-        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _repay(account, tgUSDToRepay, caller);
+        callerZapper = controlTower.isZapper(msg.sender) ? callerZapper : msg.sender;
+        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _repay(account, tgUSDToRepay, callerZapper);
         _updateDebts(account, newUserDebt, newDebtIndex, newTotalDebt);
     }
 
@@ -71,5 +76,17 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         // Checkpoint IR
         (uint256 newDebtIndex, uint256 newTotalDebt, uint256 userDebt, uint256 collatBalance) = _preLiquidate(msg.sender);
         _liquidate(msg.sender, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator);
+    }
+
+    function leverage(uint256 collatToDeposit, uint256 tgUSDToFlashMint, uint256 minCollatAmountReceived, address zapper, bool isStaked, bytes calldata odosCall) external {
+        require(controlTower.isZapper(zapper), NotZapper(zapper));
+        tgUSD.mint(zapper, tgUSDToFlashMint);
+        uint256 collatReceived = IZapper(zapper).zapLeverage(collatToken, tgUSDToFlashMint, minCollatAmountReceived, odosCall);
+        (uint256 stakedAmount, IERC20 _collatToken) = _preDeposit(msg.sender, collatToDeposit + collatReceived, isStaked);
+        _transferCollateralDeposit(_collatToken, collatToDeposit, false);
+
+        _depositAndBorrow(msg.sender, stakedAmount, tgUSDToFlashMint, true);
+
+        _postDeposit(_collatToken, stakedAmount, isStaked);
     }
 }

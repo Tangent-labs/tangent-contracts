@@ -3,8 +3,9 @@ pragma solidity ^0.8.24;
 
 import "./TgUSDDeployContext.sol";
 
-import {StablePriceOracleParams} from "../../../src/tgUSD/Oracles/Curve/StablePriceOracleParams.sol";
-import {CurveStableLPOracle} from "../../../src/tgUSD/Oracles/Curve/CurveStableLPOracle.sol";
+import {StablePriceOracleParams} from "../../../src/tgUSD/Oracles/Token/StablePriceOracleParams.sol";
+import {OracleDuoPoolStable} from "../../../src/tgUSD/Oracles/Pools/OracleDuoPoolStable.sol";
+import {OracleTriPoolStable} from "../../../src/tgUSD/Oracles/Pools/OracleTriPoolStable.sol";
 import {sDAIOracle} from "../../../src/tgUSD/Oracles/sDAIOracle.sol";
 
 import {IRCalculator} from "../../../src/tgUSD/Utilities/IRCalculator.sol";
@@ -28,7 +29,7 @@ contract OraclesContext is TgUSDDeployContext {
         vm.label(address(oracles[AddrClassicERC20.TOKEN_FXUSD]), "Oracle fxUSD");
 
         // Oracle CRVUSD_USDC
-        oracles[AddrCurveStableLP.CRVUSD_USDC] = new CurveStableLPOracle(
+        oracles[AddrCurveStableLP.CRVUSD_USDC] = new OracleDuoPoolStable(
             AddrCurveStableLP.CRVUSD_USDC,
             IPriceOracle(address(AddrChainlinkOracle.CRVUSD)),
             IPriceOracle(address(AddrChainlinkOracle.USDC))
@@ -36,10 +37,18 @@ contract OraclesContext is TgUSDDeployContext {
         vm.label(address(oracles[AddrCurveStableLP.CRVUSD_USDC]), "Oracle LP crvUSD/USDC");
 
         // Oracle USDC_FXUSD
-        oracles[AddrCurveStableLP.USDC_FXUSD] = new CurveStableLPOracle(
+        oracles[AddrCurveStableLP.USDC_FXUSD] = new OracleDuoPoolStable(
             AddrCurveStableLP.USDC_FXUSD,
             IPriceOracle(address(AddrChainlinkOracle.USDC)),
             oracles[AddrClassicERC20.TOKEN_FXUSD]
+        );
+
+        // Oracle TriStable DAI/USDC/USDT
+        oracles[AddrCurveStableLP.TRI_USD_TOKEN] = new OracleTriPoolStable(
+            AddrCurveStableLP.TRI_USD_LP,
+            IPriceOracle(address(AddrChainlinkOracle.DAI)),
+            IPriceOracle(address(AddrChainlinkOracle.USDC)),
+            IPriceOracle(address(AddrChainlinkOracle.USDT))
         );
         vm.label(address(oracles[AddrCurveStableLP.USDC_FXUSD]), "Oracle LP USDC/fxUSD");
 

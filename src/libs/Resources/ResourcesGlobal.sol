@@ -3,7 +3,9 @@ pragma solidity ^0.8.24;
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {IAggregatorV3} from "../../interfaces/externals/Chainlink/IAggregatorV3.sol";
-import {IOdosRouter} from "../../interfaces/externals/IOdosRouter.sol";
+import {IOdosRouter} from "../../interfaces/externals/Aggregators/IOdosRouter.sol";
+import {IEnsoRouter} from "../../interfaces/externals/Aggregators/IEnsoRouter.sol";
+
 import {ISFRAX} from "../../interfaces/externals/Frax/ISFRAX.sol";
 
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
@@ -40,6 +42,7 @@ library AddrERC4626 {
 
 library AddrChainlinkOracle {
     // Tokens
+    IAggregatorV3 constant DAI = IAggregatorV3(0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9);
     IAggregatorV3 constant CRVUSD = IAggregatorV3(0xEEf0C605546958c1f899b6fB336C20671f9cD49F);
     IAggregatorV3 constant USDC = IAggregatorV3(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
     IAggregatorV3 constant USDT = IAggregatorV3(0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
@@ -47,5 +50,6 @@ library AddrChainlinkOracle {
 }
 
 library AddrAggregator {
-    IOdosRouter constant ROUTER_ODOS = IOdosRouter(0xCf5540fFFCdC3d510B18bFcA6d2b9987b0772559);
+    IOdosRouter constant ODOS_ROUTER = IOdosRouter(0xCf5540fFFCdC3d510B18bFcA6d2b9987b0772559);
+    IEnsoRouter constant ENSO_ROUTER = IEnsoRouter(0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E);
 }

@@ -43,6 +43,12 @@ const config: HardhatUserConfig = {
                 blockNumber: 21048642,
             },
         },
+        tangent: {
+            chainId: 31337, // Chain ID should match the hardhat network's chainid
+            url: "https://io.convergence-finance.network:8545",
+            loggingEnabled: true,
+            timeout: 100_000_000,
+        },
     },
 };
 

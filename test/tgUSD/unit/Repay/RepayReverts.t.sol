@@ -32,7 +32,7 @@ contract RepayReverts is ConvexCurveContext {
     }
 
     function test_repay_and_leave_position_under_minimum_loan() external {
-        hDeposit.depositAndBorrow(usr1, 10_000 ether, 3_000 ether, true);
+        hDeposit.depositAndBorrow(10_000 ether, 3_000 ether, true, address(0));
         vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooLow.selector));
         market.repay(usr1, 1, address(0));
     }

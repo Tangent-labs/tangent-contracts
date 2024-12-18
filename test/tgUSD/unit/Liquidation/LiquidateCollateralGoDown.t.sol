@@ -20,7 +20,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
     }
 
     function test_liquidate_all_after_collateral_loses_value() external {
-        hDeposit.depositAndBorrow(usr1, 10_000 ether, 8_000 ether, true);
+        hDeposit.depositAndBorrow(10_000 ether, 8_000 ether, true, address(0));
 
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
@@ -55,7 +55,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
     }
 
     function test_liquidate_partial_after_collateral_loses_value() external {
-        hDeposit.depositAndBorrow(usr1, 10_000 ether, 8_000 ether, true);
+        hDeposit.depositAndBorrow(10_000 ether, 8_000 ether, true, address(0));
 
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);

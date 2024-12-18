@@ -22,6 +22,7 @@ abstract contract MarketCore is IMarketCore, Collateral {
     error ZeroCollatAmount();
     error ZeroDebtAmount();
     error NotLiquidablePosition();
+    error NotZapper(address zapper);
 
     constructor(address _owner, MarketInit memory _marketInit) Ownable(_owner) {
         tgUSD = _marketInit.tgUSD;
@@ -54,10 +55,10 @@ abstract contract MarketCore is IMarketCore, Collateral {
         _updateCollatAndGlobalDebt(_for, collateralBalances[_for] + amountDeposited, newDebtIndex, newTotalDebt);
     }
 
-    function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited) internal {
+    function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, bool isZapping) internal {
         // When caller is not one of our Zapper, sender needs to send collateral token to the market.
         // Zapper send the collateral directly on the market before calling "deposit"
-        if (!controlTower.isZapper(msg.sender)) {
+        if (!isZapping) {
             // Transfer the collateral from the sender to the market
             _collatToken.transferFrom(msg.sender, address(this), lpDeposited);
         }
@@ -99,7 +100,7 @@ abstract contract MarketCore is IMarketCore, Collateral {
                             BORROW 
                                                     ------ */
 
-    function _borrow(address receiver, uint256 tgUSDToBorrow, uint256 collatAmount) internal returns (uint256, uint256, uint256) {
+    function _borrow(address receiver, uint256 tgUSDToBorrow, uint256 collatAmount, bool isLeverage) internal returns (uint256, uint256, uint256) {
         require(tgUSDToBorrow != 0, ZeroDebtAmount());
         (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
 
@@ -116,21 +117,22 @@ abstract contract MarketCore is IMarketCore, Collateral {
         // Verify that the newDebt of the loan is not over the maximum borrrowable
         require(_maxBorrowable(collatAmount) >= newUserDebt, PositionDebtTooHigh());
 
-        // Mint tgUSD to the receiver
-        tgUSD.mint(receiver, tgUSDToBorrow);
-
+        if (!isLeverage) {
+            // Mint tgUSD to the receiver
+            tgUSD.mint(receiver, tgUSDToBorrow);
+        }
         return (newUserDebt, newDebtIndex, newTotalDebt);
     }
 
-    function _depositAndBorrow(uint256 amountDeposited, uint256 tgUSDToBorrow) internal {
+    function _depositAndBorrow(address _for, uint256 amountDeposited, uint256 tgUSDToBorrow, bool isLeverage) internal {
         // Verify collat amount added > 0
         require(amountDeposited != 0, ZeroCollatAmount());
 
-        uint256 newCollatAmount = collateralBalances[msg.sender] + amountDeposited;
+        uint256 newCollatAmount = collateralBalances[_for] + amountDeposited;
 
-        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(msg.sender, tgUSDToBorrow, newCollatAmount);
+        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(_for, tgUSDToBorrow, newCollatAmount, isLeverage);
 
-        _updateCollatAndDebts(msg.sender, newCollatAmount, newUserDebt, newDebtIndex, newTotalDebt);
+        _updateCollatAndDebts(_for, newCollatAmount, newUserDebt, newDebtIndex, newTotalDebt);
     }
 
     /* --------
@@ -229,4 +231,8 @@ abstract contract MarketCore is IMarketCore, Collateral {
 
         tgUSD.burnFrom(msg.sender, tgUSDToRepay);
     }
+
+    /* --------
+                        LEVERAGE
+                                                    ------ */
 }

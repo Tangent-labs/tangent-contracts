@@ -18,12 +18,12 @@ contract HDepositNoRewards is HMarketBase {
         _afterDepositCheck(_for, lpDeposited, balanceCollateralBefore);
     }
 
-    function depositAndBorrow(address _for, uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
+    function depositAndBorrow(uint256 lpDeposited, uint256 borrowedAmount, bool isStaked, address callerZapper) external handler {
         uint256 balanceCollateralBefore = _beforeDepositCheck(sender, lpDeposited);
         (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, ) = _beforBorrowOrRepayCheck(marketNoRewards);
         _beforeBorrowCheck(marketNoRewards, sender, borrowedAmount);
 
-        marketNoRewards.depositAndBorrow(_for, lpDeposited, borrowedAmount, isStaked);
+        marketNoRewards.depositAndBorrow(lpDeposited, borrowedAmount, isStaked, callerZapper);
 
         _afterDepositCheck(sender, lpDeposited, balanceCollateralBefore);
         _afterBorrowCheck(marketNoRewards, borrowedAmount, lastDebt, interests, newDebtIndex, positionDebt);
@@ -42,10 +42,6 @@ contract HDepositNoRewards is HMarketBase {
     }
 
     function _afterDepositCheck(address _for, uint256 collatDeposited, uint256 balanceCollateralBefore) internal view {
-        assertEq(
-            collatDeposited,
-            marketNoRewards.collateralBalances(_for) - balanceCollateralBefore,
-            "Collateral of the user is increased by taking into account pending soc fee"
-        );
+        assertEq(collatDeposited, marketNoRewards.collateralBalances(_for) - balanceCollateralBefore, "Collateral of the user is increased by taking into account pending soc fee");
     }
 }

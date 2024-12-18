@@ -30,7 +30,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         verifyReceiveERC20(tgUsd, usr1, borrowedAmount1, "User receives the borrowed amount");
 
         vm.startSnapshotGas("Deposit And Borrow", "First deposit and borrow ever on the market and stake");
-        hDeposit.depositAndBorrow(usr1, collatDeposited1, borrowedAmount1, true);
+        hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1, true, address(0));
         vm.stopSnapshotGas("Deposit And Borrow", "First deposit and borrow ever on the market and stake");
 
         assertEq(market.collateralBalances(usr1), collatDeposited1, "Collateral deposited must be equal to collateralBalances");
@@ -51,7 +51,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         verifyReceiveERC20(tgUsd, usr2, borrowedAmount2 + 12, "User receives 50 tgUSD");
 
         hDeposit.setMsgSender(usr2);
-        hDeposit.depositAndBorrow(usr2, collatDeposited2, borrowedAmount2, true);
+        hDeposit.depositAndBorrow(collatDeposited2, borrowedAmount2, true, address(0));
 
         assertEq(market.collateralBalances(usr2), collatDeposited2, "Collateral deposited must be equal to collateralBalances");
         assertEq(market.totalCollateral(), collatDeposited1 + collatDeposited2, "Total collateral is not right");

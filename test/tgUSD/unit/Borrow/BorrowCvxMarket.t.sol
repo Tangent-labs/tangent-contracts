@@ -31,6 +31,8 @@ contract BorrowCvxMarket is ConvexCurveContext {
     }
 
     function test_borrow(uint256 collatDeposited, uint256 borrowedAmount, uint256 repayAmount) external {
+        console.log("maxMarketDebt", minimumLoan, market.maxMarketDebt());
+        console.log("min", minimumCollatForDebt(borrowedAmount), 2_000_000 ether);
         borrowedAmount = bound(borrowedAmount, minimumLoan, market.maxMarketDebt());
         collatDeposited = bound(collatDeposited, minimumCollatForDebt(borrowedAmount), 2_000_000 ether);
 
@@ -60,7 +62,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         assertEq(market.totalDebt(), market.lastDebt() + market.pendingInterests());
         assertEq(market.positionDebt(usr1), market.totalDebt());
-
+        console.log("posDebt", 1, market.positionDebt(usr1));
         repayAmount = bound(repayAmount, 1, market.positionDebt(usr1) - market.minimumLoan());
 
         vm.startPrank(owner);

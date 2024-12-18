@@ -20,7 +20,7 @@ contract LiquidateDebtGoHigh is ConvexCurveContext {
     }
 
     function test_liquidate_all_after_tgUSD_depegs() external {
-        hDeposit.depositAndBorrow(usr1, 10_000 ether, 8_500 ether, true);
+        hDeposit.depositAndBorrow(10_000 ether, 8_500 ether, true, address(0));
 
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
