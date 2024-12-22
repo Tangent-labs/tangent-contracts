@@ -9,22 +9,22 @@ import {Test} from "forge-std/Test.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {StdUtils} from "forge-std/StdUtils.sol";
 
-contract MockEnsoRouterRepay is StdCheats, StdUtils, Test {
+contract MockEnsoRouter is StdCheats, StdUtils, Test {
     function routeSingle(address tokenIn, uint256 amountIn, bytes32[] memory commands, bytes[] memory state) external payable returns (bytes[] memory returnData) {
-        address tgUsd = bytes32ToAddress(commands[0]);
+        address tokenOut = bytes32ToAddress(commands[0]);
         address payable mockedLP = payable(bytes32ToAddress(commands[1]));
         address receiver = bytes32ToAddress(commands[2]);
         address zapper = bytes32ToAddress(commands[3]);
-        uint256 amountTgUSDOut = uint256(commands[4]);
+        uint256 amountOut = uint256(commands[4]);
 
         if (tokenIn == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)) {
             mockedLP.transfer(amountIn);
         } else {
             IERC20(tokenIn).transferFrom(zapper, mockedLP, amountIn);
         }
-        deal(address(tgUsd), receiver, amountTgUSDOut + IERC20(tgUsd).balanceOf(receiver));
+        deal(address(tokenOut), receiver, amountOut + IERC20(tokenOut).balanceOf(receiver));
 
-        bytes[] memory data = new bytes[](3);
+        bytes[] memory data = new bytes[](0);
         return data;
     }
 

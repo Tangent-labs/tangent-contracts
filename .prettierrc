@@ -13,7 +13,7 @@
     {
       "files": "*.ts",
       "options": {
-        "printWidth": 160,
+        "printWidth": 180,
         "tabWidth": 4,
         "useTabs": false,
         "singleQuote": false,
@@ -23,7 +23,17 @@
     {
       "files": "*.js",
       "options": {
-        "printWidth": 160,
+        "printWidth": 180,
+        "tabWidth": 4,
+        "useTabs": false,
+        "singleQuote": false,
+        "bracketSpacing": false
+      }
+    },
+    {
+      "files": "*.mjs",
+      "options": {
+        "printWidth": 180,
         "tabWidth": 4,
         "useTabs": false,
         "singleQuote": false,

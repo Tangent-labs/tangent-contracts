@@ -78,10 +78,19 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         _liquidate(msg.sender, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator);
     }
 
-    function leverage(uint256 collatToDeposit, uint256 tgUSDToFlashMint, uint256 minCollatAmountReceived, address zapper, bool isStaked, bytes calldata odosCall) external {
+    function leverage(
+        uint256 collatToDeposit,
+        uint256 tgUSDToFlashMint,
+        uint256 minCollatAmountReceived,
+        address zapper,
+        bool isStaked,
+        bytes calldata routerCall
+    ) external payable {
         require(controlTower.isZapper(zapper), NotZapper(zapper));
+        // Mint the tgUSD on the zapper, ready to be exchanged through the router
         tgUSD.mint(zapper, tgUSDToFlashMint);
-        uint256 collatReceived = IZapper(zapper).zapLeverage(collatToken, tgUSDToFlashMint, minCollatAmountReceived, odosCall);
+        // Exchange
+        uint256 collatReceived = IZapper(zapper).zapLeverage{value: msg.value}(collatToken, minCollatAmountReceived, routerCall);
         (uint256 stakedAmount, IERC20 _collatToken) = _preDeposit(msg.sender, collatToDeposit + collatReceived, isStaked);
         _transferCollateralDeposit(_collatToken, collatToDeposit, false);
 

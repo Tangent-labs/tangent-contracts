@@ -16,24 +16,42 @@ contract LeverageToTheLimit is ConvexCurveContext {
     }
 
     function test_leverage_to_limit() external {
+        vm.startPrank(usr1);
         uint256 collatToDeposit = 10_000 ether;
         uint256 tgUSDToFlashMint = 20_000 ether;
-        uint256 minCollatReceived = 19_000 ether;
+        uint256 collatReceived = 19_000 ether;
 
-        uint256 quote = odosUtils.getQuoteOdos(tgUSDToFlashMint, AddrClassicERC20.TOKEN_USDC, collatToken, usr1);
+        vm.mockFunction(address(AddrAggregator.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
 
-        vm.mockFunction(address(AddrAggregator.ODOS_ROUTER), address(mockEnsoRouterRepay), abi.encodeWithSelector(IOdosRouter.swapCompact.selector));
+        collatToken.approve(address(market), MAX_UINT);
+        deal(address(collatToken), usr1, collatToDeposit);
 
         market.leverage(
             collatToDeposit,
             tgUSDToFlashMint,
-            minCollatReceived,
+            collatReceived,
             address(zapper),
             true,
-            abi.encodeWithSelector(IOdosRouter.swapCompact.selector, address(tgUsd), address(collatToken), usr1, mockedLP, tgUSDToFlashMint, quote)
+            abi.encodeWithSelector(
+                IEnsoRouter.routeSingle.selector,
+                address(tgUsd),
+                tgUSDToFlashMint,
+                Array.memoryBytes32(
+                    [
+                        addressToBytes32(address(collatToken)),
+                        addressToBytes32(mockedLP),
+                        addressToBytes32(address(market)),
+                        addressToBytes32(address(zapper)),
+                        bytes32(collatReceived)
+                    ]
+                ),
+                new bytes[](0)
+            )
         );
 
-        uint256 withdrawnAmount = 1_000 ether;
+        assertEq(market.collateralBalances(usr1), collatToDeposit + collatReceived);
+        assertEq(market.totalCollateral(), collatToDeposit + collatReceived);
+        assertEq(market.positionDebt(usr1), tgUSDToFlashMint);
 
         // // verifyLostERC20(market.cvxRewardToken(), address(market), withdrawnAmount, "Verify that market receives Cvx Reward tokens");
         // // verifyBurnERC20(market.cvxRewardToken(), withdrawnAmount, "Verify that Cvx Reward tokens are burnt");

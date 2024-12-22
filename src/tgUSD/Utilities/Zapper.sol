@@ -9,9 +9,10 @@ import {IMarketExternalActions} from "../../interfaces/internals/tgUSD/IMarketEx
 import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
+import {IZapper} from "../../interfaces/internals/tgUSD/IZapper.sol";
 import "forge-std/console.sol";
 
-contract Zapper is Ownable {
+contract Zapper is Ownable, IZapper {
     using SafeERC20 for IERC20;
     uint256 constant MAX_UINT = 2 ** 256 - 1;
 
@@ -95,8 +96,8 @@ contract Zapper is Ownable {
     //     IMarketExternalActions(zapMarket.market).repay(zapMarket._for, _zapRepay(zapMarket, routerCall));
     // }
 
-    function zapLeverage(IERC20 collatToken, uint256 minCollatReceived, bytes calldata routerCall) external onlyMarket(msg.sender) returns (uint256) {
-        return _zaprouterAndVerify(collatToken, msg.sender, minCollatReceived, routerCall);
+    function zapLeverage(IERC20 collatToken, uint256 minCollatReceived, bytes calldata routerCall) external payable onlyMarket(msg.sender) returns (uint256) {
+        return _zapRouterAndVerify(collatToken, msg.sender, minCollatReceived, routerCall);
     }
 
     /**
@@ -107,7 +108,7 @@ contract Zapper is Ownable {
      */
     function _zapDeposit(ZapMarket calldata zapMarket, bytes calldata routerCall) internal onlyMarket(zapMarket.market) returns (uint256) {
         _transferTokenToZapper(zapMarket.tokenIn, zapMarket.amountIn);
-        return _zaprouterAndVerify(ICollateral(zapMarket.market).collatToken(), address(zapMarket.market), zapMarket.minAmountOut, routerCall);
+        return _zapRouterAndVerify(ICollateral(zapMarket.market).collatToken(), address(zapMarket.market), zapMarket.minAmountOut, routerCall);
     }
 
     /**
@@ -120,7 +121,7 @@ contract Zapper is Ownable {
         // Transfer ERC20 of native blockchain coin on this contract
         _transferTokenToZapper(zapMarket.tokenIn, zapMarket.amountIn);
         // Call router Router to swap the tokenIn to tgUSD and returns the out amount
-        return _zaprouterAndVerify(tgUsd, msg.sender, zapMarket.minAmountOut, routerCall);
+        return _zapRouterAndVerify(tgUsd, msg.sender, zapMarket.minAmountOut, routerCall);
     }
 
     /**
@@ -134,7 +135,7 @@ contract Zapper is Ownable {
         if (msg.value == 0) {
             // TokenIn in param must different from 0
             require(address(tokenIn) != CHAIN_COIN, TokenInMustNotBeZero());
-            // In the case
+            // If the Zapper never approved the router
             if (amountIn > tokenIn.allowance(address(this), ROUTER)) {
                 tokenIn.forceApprove(ROUTER, MAX_UINT);
             }
@@ -152,7 +153,7 @@ contract Zapper is Ownable {
      *  @param minAmountOut  Amount of token in to swap
      *  @param routerData  Amount of token in to swap
      */
-    function _zaprouterAndVerify(IERC20 tokenOut, address receiver, uint256 minAmountOut, bytes calldata routerData) internal returns (uint256) {
+    function _zapRouterAndVerify(IERC20 tokenOut, address receiver, uint256 minAmountOut, bytes calldata routerData) internal returns (uint256) {
         // Retrieve the balance of the tokenOut before the Swap.
         uint256 amountOut = tokenOut.balanceOf(receiver);
 

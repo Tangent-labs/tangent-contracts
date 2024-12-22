@@ -33,18 +33,21 @@ contract OracleDuoPoolStable is IPriceOracle {
         return 18;
     }
 
+    function coinPrice(IPriceOracle _oracle, uint256 oracleDecimals) internal view returns (uint256) {
+        return _oracle.latestAnswer() * 10 ** (18 - oracleDecimals);
+    }
+
     function min(uint256 a, uint256 b) internal pure returns (uint256) {
         if (a > b) {
             return b;
         }
-
         return a;
     }
 
     function latestAnswer() external view returns (uint256) {
         OracleDuoPoolStruct memory _params = params;
-        uint256 answer0 = uint256(_params.coin0Oracle.latestAnswer()) * 10 ** (18 - _params.coin0OracleDecimals);
-        uint256 answer1 = uint256(_params.coin1Oracle.latestAnswer()) * 10 ** (18 - _params.coin1OracleDecimals);
+        uint256 answer0 = coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals);
+        uint256 answer1 = coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals);
 
         return (_params.lp.get_virtual_price() * min(answer0, answer1)) / 10 ** 18;
     }

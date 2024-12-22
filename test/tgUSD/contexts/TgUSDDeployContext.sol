@@ -15,12 +15,10 @@ import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
 
-import "../../../test/tgUSD/mocks/MockEnsoRouterLeverage.sol";
-import "../../../test/tgUSD/mocks/MockEnsoRouterRepay.sol";
+import "../../../test/tgUSD/mocks/MockEnsoRouter.sol";
 
 import "../../utils/AssertERC20.sol";
 import "../../utils/LowLevel.sol";
-import "../../utils/OdosUtils.sol";
 import "../../utils/EnsoUtils.sol";
 import "../../utils/Labeliser.sol";
 import "../../utils/Array.sol";
@@ -52,10 +50,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     RewardAccumulator public rewardAccumulator;
 
-    MockEnsoRouterRepay public mockEnsoRouterRepay;
-    MockEnsoRouterLeverage public mockEnsoRouterLeverage;
+    MockEnsoRouter public mockEnsoRouter;
 
-    OdosUtils public odosUtils;
     EnsoUtils public ensoUtils;
 
     Labeliser public labeliser;
@@ -68,7 +64,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         vm.startPrank(owner);
 
-        odosUtils = new OdosUtils();
         ensoUtils = new EnsoUtils();
 
         labeliser = new Labeliser();
@@ -81,8 +76,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         // Deploy tgUSD
         tgUsd = new TgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"), owner, controlTower);
 
-        mockEnsoRouterRepay = new MockEnsoRouterRepay();
-        mockEnsoRouterLeverage = new MockEnsoRouterLeverage();
+        mockEnsoRouter = new MockEnsoRouter();
 
         vm.allowCheatcodes(address(AddrAggregator.ENSO_ROUTER));
         zapper = new Zapper(owner, controlTower, tgUsd);
@@ -98,10 +92,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(controlTower), "ControlTower");
         vm.label(address(tgUSDLp), "LP tgUSD");
         vm.label(address(rewardAccumulator), "RewardAccumulator");
-        vm.label(address(AddrAggregator.ODOS_ROUTER), "Odos Router");
         vm.label(address(AddrAggregator.ENSO_ROUTER), "Enso Router");
-        vm.label(address(mockEnsoRouterRepay), "Mock Odos Router repay");
-        vm.label(address(mockEnsoRouterLeverage), "Mock Odos Router leverage");
+        vm.label(address(mockEnsoRouter), "Mock Odos Router");
 
         vm.stopPrank();
     }

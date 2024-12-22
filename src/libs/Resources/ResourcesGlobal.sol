@@ -47,6 +47,14 @@ library AddrChainlinkOracle {
     IAggregatorV3 constant USDC = IAggregatorV3(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
     IAggregatorV3 constant USDT = IAggregatorV3(0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
     IPriceOracle constant SDAI = IPriceOracle(0x29081f7aB5a644716EfcDC10D5c926c5fEe9F72B);
+    IAggregatorV3 constant GHO = IAggregatorV3(0x3f12643D3f6f874d39C2a4c9f2Cd6f2DbAC877FC);
+    IAggregatorV3 constant USD0 = IAggregatorV3(0x7e891DEbD8FA0A4Cf6BE58Ddff5a8ca174FebDCB);
+    IAggregatorV3 constant TUSD = IAggregatorV3(0xec746eCF986E2927Abd291a2A1716c940100f8Ba);
+    IAggregatorV3 constant USDS = IAggregatorV3(0xfF30586cD0F29eD462364C7e81375FC0C71219b1);
+    IAggregatorV3 constant USDP = IAggregatorV3(0x09023c0DA49Aaf8fc3fA3ADF34C6A7016D38D5e3);
+    IAggregatorV3 constant USDE = IAggregatorV3(0xa569d910839Ae8865Da8F8e70FfFb0cBA869F961);
+    IAggregatorV3 constant EZ_ETH = IAggregatorV3(0x636A000262F6aA9e1F094ABF0aD8f645C44f641C);
+    IAggregatorV3 constant CB_BTC = IAggregatorV3(0x2665701293fCbEB223D11A08D826563EDcCE423A);
 }
 
 library AddrAggregator {

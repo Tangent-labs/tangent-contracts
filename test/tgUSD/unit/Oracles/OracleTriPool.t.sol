@@ -4,9 +4,6 @@ import "../../contexts/ConvexCurveContext.sol";
 import "../../../../src/interfaces/externals/Curve/ICrvPoolPlain.sol";
 import "../../../../src/interfaces/externals/Chainlink/IAggregatorV3.sol";
 contract OracleTriPool is ConvexCurveContext {
-    IERC20Metadata coin0;
-    IERC20Metadata coin1;
-
     function setUp() public {}
 
     function test_pricing_tripool() external {
