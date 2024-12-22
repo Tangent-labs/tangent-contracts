@@ -27,7 +27,7 @@ jobs:
 
       - name: Install dependencies with Forge
         run: |
-          forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-foundry-upgrades OpenZeppelin/openzeppelin-contracts-upgradeable --no-git
+          forge test --match-path test/tgUSD/*.t.sol
 
       - name: Run Forge build
         run: |
