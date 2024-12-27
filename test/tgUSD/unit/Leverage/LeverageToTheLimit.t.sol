@@ -8,11 +8,30 @@ contract LeverageToTheLimit is ConvexCurveContext {
     IERC20Metadata public collatToken;
 
     uint256 minimumLoan;
+
+    IStakingProxyERC20 stakingProxy;
+
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_FXUSD;
         market = deployConvexFxnLPMarket(collatToken);
 
         minimumLoan = market.minimumLoan();
+
+        stakingProxy = market.stakingProxyVault();
+    }
+
+    function test_leverage_without_deposit() external {
+        vm.startPrank(usr1);
+        uint256 collatToDeposit = 0;
+        uint256 tgUSDToFlashMint = 10_000 ether;
+        uint256 collatReceived = 9_995 ether;
+
+        vm.mockFunction(address(AddrAggregator.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
+        bytes memory callRouter = ensoUtils.getZapCallMocked(address(tgUsd), tgUSDToFlashMint, address(collatToken), mockedLP, address(market), address(zapper), collatReceived);
+
+        // Revert beaucause LTV is too low
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooHigh.selector));
+        market.leverage(collatToDeposit, tgUSDToFlashMint, collatReceived, address(zapper), true, callRouter);
     }
 
     function test_leverage_to_limit() external {
@@ -32,35 +51,16 @@ contract LeverageToTheLimit is ConvexCurveContext {
             collatReceived,
             address(zapper),
             true,
-            abi.encodeWithSelector(
-                IEnsoRouter.routeSingle.selector,
-                address(tgUsd),
-                tgUSDToFlashMint,
-                Array.memoryBytes32(
-                    [
-                        addressToBytes32(address(collatToken)),
-                        addressToBytes32(mockedLP),
-                        addressToBytes32(address(market)),
-                        addressToBytes32(address(zapper)),
-                        bytes32(collatReceived)
-                    ]
-                ),
-                new bytes[](0)
-            )
+            ensoUtils.getZapCallMocked(address(tgUsd), tgUSDToFlashMint, address(collatToken), mockedLP, address(market), address(zapper), collatReceived)
         );
 
+        assertEq(IERC20(stakingProxy.gaugeAddress()).balanceOf(address(stakingProxy)), collatReceived + collatToDeposit, "Convex staking proxy received Fxn Gauge");
         assertEq(market.collateralBalances(usr1), collatToDeposit + collatReceived);
         assertEq(market.totalCollateral(), collatToDeposit + collatReceived);
         assertEq(market.positionDebt(usr1), tgUSDToFlashMint);
 
-        // // verifyLostERC20(market.cvxRewardToken(), address(market), withdrawnAmount, "Verify that market receives Cvx Reward tokens");
-        // // verifyBurnERC20(market.cvxRewardToken(), withdrawnAmount, "Verify that Cvx Reward tokens are burnt");
-        // verifyReceiveERC20(collatToken, usr1, withdrawnAmount, "Verify that user 1 retrieve its collateral");
+        skip(7 days);
 
-        // vm.startSnapshotGas("Withdraw", "Withdraw fully from staked collat");
-        // hWithdraw.withdraw(withdrawnAmount);
-        // vm.stopSnapshotGas();
-
-        // assertERC20Tracking();
+        market.processRewards(usr2);
     }
 }

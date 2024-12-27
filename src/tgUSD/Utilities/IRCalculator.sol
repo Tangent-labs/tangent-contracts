@@ -22,6 +22,8 @@ contract IRCalculator is IIrCalculator, Ownable {
     /// @notice Gives the parameter of the market
     mapping(address => RCParams) public rcParams;
 
+    error IRStartPriceLtOne();
+
     struct IRParams {
         uint128 sigma;
         uint128 r0;
@@ -29,27 +31,50 @@ contract IRCalculator is IIrCalculator, Ownable {
     }
 
     struct RCParams {
-        uint64 cutAtOneDollar;
-        uint64 stepAmount;
-        uint128 fullCutPrice;
+        /// @dev Amount of distincts reward cut steps.
+        uint16 stepAmount;
+        /// @dev Percentage minimum of the reward cut.
+        uint32 startCutPercentage;
+        /// @dev Percentage maximum of the reward cut.
+        uint32 endCutPercentage;
+        /// @dev Price of tgUSD on which the reward cut starts to increase.
+        uint88 startCutPrice;
+        /// @dev Price of tgUSD on which the reward cut is at its maximum
+        uint88 endCutPrice;
     }
 
     constructor(address _owner, IPriceOracle _tgUSDOracle) Ownable(_owner) {
         tgUSDOracle = _tgUSDOracle;
     }
 
-    function setUpMarketRewards(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external onlyOwner {
+    modifier verifyIRParams(IRParams calldata _irParam) {
+        //TODO Add range check on Sigma & r0
+        require(_irParam.irStartPrice <= 1 ether, IRStartPriceLtOne());
+        _;
+    }
+
+    modifier verifyRCParams(RCParams calldata _rcParam) {
+        require(_rcParam.startCutPrice <= 1e18);
+        if (_rcParam.stepAmount == 2) {
+            require(_rcParam.startCutPercentage < _rcParam.endCutPercentage);
+            require(_rcParam.startCutPrice > _rcParam.endCutPrice);
+        }
+        _;
+    }
+
+    function setUpMarketRewards(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external verifyIRParams(_irParam) verifyRCParams(_rcParam) onlyOwner {
         irParams[market] = _irParam;
         rcParams[market] = _rcParam;
         IDebtIR(market).checkpointIR();
     }
 
-    function updateIR(address market, IRParams calldata _irParam) external onlyOwner {
+    function updateIR(address market, IRParams calldata _irParam) external verifyIRParams(_irParam) onlyOwner {
+        require(_irParam.irStartPrice <= 1 ether, IRStartPriceLtOne());
         irParams[market] = _irParam;
         IDebtIR(market).checkpointIR();
     }
 
-    function updateRC(address market, RCParams calldata _rcParam) external onlyOwner {
+    function updateRC(address market, RCParams calldata _rcParam) external verifyRCParams(_rcParam) onlyOwner {
         rcParams[market] = _rcParam;
     }
 
@@ -59,29 +84,31 @@ contract IRCalculator is IIrCalculator, Ownable {
      */
     function computeIRForMarket(address market) external view returns (uint256) {
         IRParams memory irParam = irParams[market];
-        return _computeIR(tgUSDOracle.latestAnswer(), irParam.sigma, irParam.r0, irParam.irStartPrice);
+        return _computeIR(tgUSDOracle.latestAnswer(), irParam.irStartPrice, irParam.sigma, irParam.r0);
     }
 
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
-     * @param  tgUSDPrice a
-     * @param  sigma a
-     * @param  r0    a
+     * @param  tgUSDPrice   Price of tgUSD in wei on 18 decimals.
+     * @param  irStartPrice Price of tgUSD on which the IR is starting to be higher than 0
+     * @param  sigma      Denominator of the part passed to exp. The smaller it is, the faster the IR grows with depeg
+     * @param  r0         Base coefficient of the IR
      */
-    function simulateIR(uint256 tgUSDPrice, uint256 sigma, uint256 r0, uint256 irStartPrice) external pure returns (uint256) {
-        return _computeIR(tgUSDPrice, sigma, r0, irStartPrice);
+    function simulateIR(uint256 tgUSDPrice, uint256 irStartPrice, uint256 sigma, uint256 r0) external pure returns (uint256) {
+        return _computeIR(tgUSDPrice, irStartPrice, sigma, r0);
     }
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
      * @param  tgUSDPrice Price of tgUSD in wei.
+     * @param  irStartPrice Price of tgUSD on which the IR is starting to be higher than 0
      * @param  sigma Denominator of the part passed to exp. The smaller it is, the faster the IR grows with depeg
      * @param  r0   Base coefficient of the IR
      */
-    function _computeIR(uint256 tgUSDPrice, uint256 sigma, uint256 r0, uint256 irStartPrice) internal pure returns (uint256) {
+    function _computeIR(uint256 tgUSDPrice, uint256 irStartPrice, uint256 sigma, uint256 r0) internal pure returns (uint256) {
         if (tgUSDPrice > irStartPrice) {
             return 0;
         }
-        int128 powerIn64x64 = ABDKMath64x64.divu(((1 ether - tgUSDPrice) * 10 ** 18) / sigma, 10 ** 18);
+        int128 powerIn64x64 = ABDKMath64x64.divu(((1 ether - tgUSDPrice) * 1e18) / sigma, 1e18);
 
         // Calcul exp(1) en utilisant la méthode exp
         int128 expIn64x64 = ABDKMath64x64.exp(powerIn64x64);
@@ -90,11 +117,11 @@ contract IRCalculator is IIrCalculator, Ownable {
         uint256 integerPart = ABDKMath64x64.toUInt(expIn64x64);
 
         // Decimal part of the exp in uint256
-        uint256 fractionalAsDecimal = ABDKMath64x64.mulu(expIn64x64 - ABDKMath64x64.fromUInt(integerPart), 10 ** 18);
+        uint256 fractionalAsDecimal = ABDKMath64x64.mulu(expIn64x64 - ABDKMath64x64.fromUInt(integerPart), 1e18);
 
-        uint256 formulaReturn = integerPart * 10 ** 18 + fractionalAsDecimal;
+        uint256 formulaReturn = integerPart * 1e18 + fractionalAsDecimal;
 
-        return (formulaReturn * r0) / 1 ether;
+        return (formulaReturn * r0) / 1e18;
     }
 
     /**
@@ -103,24 +130,70 @@ contract IRCalculator is IIrCalculator, Ownable {
      */
     function computeRCForMarket(address market) external view returns (uint256) {
         RCParams memory rcParam = rcParams[market];
-        return _calculateRC(tgUSDOracle.latestAnswer(), rcParam.cutAtOneDollar, rcParam.stepAmount, rcParam.fullCutPrice);
+        return _calculateRC(tgUSDOracle.latestAnswer(), rcParam.stepAmount, rcParam.startCutPercentage, rcParam.endCutPercentage, rcParam.startCutPrice, rcParam.endCutPrice);
     }
 
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
      * @param  tgUSDPrice Denominator of the number in exponent. The higher it is, the
-     * @param  cutAtOneDollar Denominator of the number in exponent. The higher it is, the
      * @param  stepAmount    New sociabilization fee on a 100_000 basis
+     * @param  startCutPercentage Denominator of the number in exponent. The higher it is, the
+     * @param  endCutPercentage    New sociabilization fee on a 100_000 basis
+     * @param  startCutPrice    New sociabilization fee on a 100_000 basis
+     * @param  endCutPrice    New sociabilization fee on a 100_000 basis
      */
-    function simulateRC(uint256 tgUSDPrice, uint64 cutAtOneDollar, uint64 stepAmount, uint128 fullCutPrice) external pure returns (uint256) {
-        return _calculateRC(tgUSDPrice, cutAtOneDollar, stepAmount, fullCutPrice);
+    function simulateRC(
+        uint256 tgUSDPrice,
+        uint16 stepAmount,
+        uint32 startCutPercentage,
+        uint32 endCutPercentage,
+        uint88 startCutPrice,
+        uint88 endCutPrice
+    ) external pure returns (uint256) {
+        return _calculateRC(tgUSDPrice, stepAmount, startCutPercentage, endCutPercentage, startCutPrice, endCutPrice);
     }
 
-    function _calculateRC(uint256 tgUSDPrice, uint64 cutAtOneDollar, uint64 stepAmount, uint128 fullCutPrice) internal pure returns (uint256) {
-        uint256 stepPrice = (1e18 - fullCutPrice) / stepAmount;
-
-        uint256 aa = 1 + (1e18 - tgUSDPrice) / stepPrice;
-        uint256 rewardCut = cutAtOneDollar + aa * stepAmount;
-        return rewardCut;
+    /**
+     * @notice Computes the reward cut percentage based on the tgUSD price and market parameters
+     * @param  tgUSDPrice Price of tgUSD in wei.
+     * @param  stepAmount Number of distinct reward cut steps.
+     * @param  startCutPercentage Percentage of the reward cut at the start.
+     * @param  endCutPercentage Maximum percentage of the reward cut.
+     * @param  startCutPrice Price of tgUSD at which the reward cut starts to increase.
+     * @param  endCutPrice Price of tgUSD at which the reward cut is at its maximum.
+     */
+    function _calculateRC(
+        uint256 tgUSDPrice,
+        uint16 stepAmount,
+        uint32 startCutPercentage,
+        uint32 endCutPercentage,
+        uint88 startCutPrice,
+        uint88 endCutPrice
+    ) internal pure returns (uint256) {
+        // Cut percentage is always constant
+        if (stepAmount == 1) {
+            return startCutPercentage;
+        }
+        // Cut percentage either startCutPercentage or endCutPercetange
+        else if (stepAmount == 2) {
+            if (tgUSDPrice >= startCutPrice) {
+                return startCutPercentage;
+            } else {
+                return endCutPercentage;
+            }
+        }
+        // Cut percentage is computed regarding the step amount
+        else {
+            // When tgUSDPrice is above the startCutPrice
+            if (tgUSDPrice >= startCutPrice) {
+                return startCutPercentage;
+            }
+            if (tgUSDPrice < endCutPrice) {
+                return endCutPercentage;
+            }
+            uint256 stepsBetween = stepAmount - 2;
+            uint256 actualStep = 1 + (startCutPrice - tgUSDPrice) / ((startCutPrice - endCutPrice) / stepsBetween);
+            return startCutPercentage + (actualStep * (endCutPercentage - startCutPercentage)) / stepsBetween;
+        }
     }
 }

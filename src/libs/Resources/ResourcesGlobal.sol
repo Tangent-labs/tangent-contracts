@@ -30,6 +30,8 @@ library AddrClassicERC20 {
     IERC20Metadata constant TOKEN_FXN = IERC20Metadata(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09);
     IERC20Metadata constant TOKEN_DOLA = IERC20Metadata(0x865377367054516e17014CcdED1e7d814EDC9ce4);
     IERC20Metadata constant TOKEN_FXUSD = IERC20Metadata(0x085780639CC2cACd35E474e71f4d000e2405d8f6);
+    IERC20Metadata constant TOKEN_FRXETH = IERC20Metadata(0x5E8422345238F34275888049021821E8E08CAa1f);
+    IERC20Metadata constant TOKEN_PXETH = IERC20Metadata(0x04C154b66CB340F3Ae24111CC767e0184Ed00Cc6);
 }
 
 library AddrERC4626 {
@@ -44,6 +46,7 @@ library AddrChainlinkOracle {
     // Tokens
     IAggregatorV3 constant DAI = IAggregatorV3(0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9);
     IAggregatorV3 constant CRVUSD = IAggregatorV3(0xEEf0C605546958c1f899b6fB336C20671f9cD49F);
+    IAggregatorV3 constant ETH = IAggregatorV3(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
     IAggregatorV3 constant USDC = IAggregatorV3(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
     IAggregatorV3 constant USDT = IAggregatorV3(0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
     IPriceOracle constant SDAI = IPriceOracle(0x29081f7aB5a644716EfcDC10D5c926c5fEe9F72B);

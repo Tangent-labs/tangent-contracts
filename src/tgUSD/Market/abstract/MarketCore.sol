@@ -117,6 +117,7 @@ abstract contract MarketCore is IMarketCore, Collateral {
         // Verify that the newDebt of the loan is not over the maximum borrrowable
         require(_maxBorrowable(collatAmount) >= newUserDebt, PositionDebtTooHigh());
 
+        // If it's a leverage transaction, tgUSD is already minted before
         if (!isLeverage) {
             // Mint tgUSD to the receiver
             tgUSD.mint(receiver, tgUSDToBorrow);
@@ -128,6 +129,7 @@ abstract contract MarketCore is IMarketCore, Collateral {
         // Verify collat amount added > 0
         require(amountDeposited != 0, ZeroCollatAmount());
 
+        // Collat amount after the deposit
         uint256 newCollatAmount = collateralBalances[_for] + amountDeposited;
 
         (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(_for, tgUSDToBorrow, newCollatAmount, isLeverage);
@@ -189,10 +191,9 @@ abstract contract MarketCore is IMarketCore, Collateral {
     function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256) {
         // Checkpoint IR
         (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
-        uint256 collatBalance = collateralBalances[account];
 
         uint256 userDebt = _positionDebt(account, newDebtIndex);
-        return (newDebtIndex, newTotalDebt, userDebt, collatBalance);
+        return (newDebtIndex, newTotalDebt, userDebt, collateralBalances[account]);
     }
     function _liquidate(
         address account,
@@ -201,7 +202,8 @@ abstract contract MarketCore is IMarketCore, Collateral {
         uint256 newTotalDebt,
         uint256 newDebtIndex,
         uint256 collatBalance,
-        ILiquidator liquidator
+        address liquidator,
+        bytes calldata routerCall
     ) internal {
         require(tgUSDToRepay != 0, ZeroDebtAmount());
         uint256 remainingDebt;
@@ -215,20 +217,30 @@ abstract contract MarketCore is IMarketCore, Collateral {
         }
         // Liquidate partial
         else {
+            // Computes the amount of collateral to liquidate by proportionnality
             collatAmountToLiquidate = (collatBalance * tgUSDToRepay) / userDebt;
+            // Computes the new balance of collateral after the partial liquidation
             newCollatBalance = collatBalance - collatAmountToLiquidate;
+            // Computes the debt remaining for the position
             remainingDebt = userDebt - tgUSDToRepay;
+            // Ensure that the remaining debt is bigger than a minimum in order to leave a profitable liquidation
             require(remainingDebt >= minimumLoan, PositionDebtTooLow());
         }
 
+        // Modifies the total collateral and the
+        _preWithdraw(collatAmountToLiquidate);
+
+        // Modify the collateral balance, the user debt and the total debt
         _updateCollatAndDebts(account, newCollatBalance, remainingDebt, newDebtIndex, newTotalDebt - tgUSDToRepay);
 
-        _transferCollateralWithdraw(address(liquidator) != address(0) ? address(liquidator) : msg.sender, collatAmountToLiquidate);
+        _transferCollateralWithdraw(liquidator != address(0) ? liquidator : msg.sender, collatAmountToLiquidate);
 
-        if (address(liquidator) != address(0)) {
-            liquidator.liquidate();
+        // When liquidator is not zero, it allows to the liquidator to receive the collateral on a contract.
+        // Liquidator is so able to sell the collateral for tgUSD in the same transaction.
+        if (liquidator != address(0)) {
+            ILiquidator(liquidator).liquidate(routerCall);
         }
-
+        // Burns tgUSD from the ender
         tgUSD.burnFrom(msg.sender, tgUSDToRepay);
     }
 

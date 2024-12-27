@@ -20,23 +20,11 @@ contract ZapAndDepositStableConvex is ConvexMarketContext {
         assertEq(scvUSD.balanceOf(user), llamaVault.convertToShares(expected));
     }
 
-    function _getSwapParamsForEth() internal returns (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) {
+    function _getSwapParamsForEth() internal view returns (address[11] memory routes, address[5] memory pools, uint256[5][5] memory swapParams) {
         address TRI_CRV_CURVE_POOL = 0x4eBdF703948ddCEA3B11f675B4D1Fba9d2414A14;
         address ETH_CURVE_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-        routes = [
-            ETH_CURVE_ADDRESS,
-            TRI_CRV_CURVE_POOL,
-            address(lendAsset),
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            address(0),
-            address(0)
-        ];
+        routes = [ETH_CURVE_ADDRESS, TRI_CRV_CURVE_POOL, address(lendAsset), address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0)];
 
         pools = [TRI_CRV_CURVE_POOL, address(0), address(0), address(0), address(0)];
 

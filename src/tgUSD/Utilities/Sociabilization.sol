@@ -4,7 +4,6 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 abstract contract Sociabilization is Ownable {
     uint256 public socFeePercentage;
-
     uint256 public socFeePending;
 
     error ZeroAmountDepositedAfterSociabilization();
@@ -43,7 +42,7 @@ abstract contract Sociabilization is Ownable {
      */
     function setSociabilizationFee(uint256 _socFeePercentage) external onlyOwner {
         require(_socFeePercentage < 2_000, SocFeeTooHigh());
-        /// @dev Claim rewards on behalf
+        // Claim rewards on behalf
         socFeePercentage = _socFeePercentage;
     }
 }

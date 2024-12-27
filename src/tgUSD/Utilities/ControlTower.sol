@@ -48,7 +48,7 @@ contract ControlTower is Ownable, IControlTower {
     function toggleMarkets(address[] calldata _markets) external onlyOwner {
         for (uint256 i; i < _markets.length; ) {
             address _market = _markets[i];
-            /// @dev Toggle the address
+            // Toggle the address
             isMarket[_market] = !isMarket[_market];
             unchecked {
                 ++i;

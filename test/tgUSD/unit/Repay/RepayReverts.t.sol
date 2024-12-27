@@ -5,18 +5,18 @@ import "../../contexts/ConvexCurveContext.sol";
 import "../../handler/Features/BorrowRepay/HRepay.sol";
 
 contract RepayReverts is ConvexCurveContext {
-    MarketNoRewards public market;
+    ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
 
-    HDepositNoRewards public hDeposit;
+    HDepositConvexCrvLP public hDeposit;
     HRepay public hRepay;
 
     uint256 minimumLoan;
     uint256 maxMarketDebt;
     function setUp() public {
         collatToken = AddrERC4626.S_DAI;
-        market = deployNoRewardsMarket(collatToken);
-        hDeposit = new HDepositNoRewards(usr1, market);
+        market = deployConvexCurveLPMarket(collatToken);
+        hDeposit = new HDepositConvexCrvLP(usr1, market);
         minimumLoan = market.minimumLoan();
         maxMarketDebt = market.maxMarketDebt();
     }

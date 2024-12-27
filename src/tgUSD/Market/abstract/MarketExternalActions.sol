@@ -63,19 +63,19 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         _updateDebts(account, newUserDebt, newDebtIndex, newTotalDebt);
     }
 
-    function liquidate(address account, uint256 tgUSDToRepay, ILiquidator liquidator) external {
+    function liquidate(address account, uint256 tgUSDToRepay, address liquidator, bytes calldata routerCall) external {
         // Checkpoint IR
         (uint256 newDebtIndex, uint256 newTotalDebt, uint256 userDebt, uint256 collatBalance) = _preLiquidate(account);
 
         require(_healthRatio(userDebt, collatBalance) < 1 ether, NotLiquidablePosition());
 
-        _liquidate(account, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator);
+        _liquidate(account, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator, routerCall);
     }
 
-    function selfLiquidate(uint256 tgUSDToRepay, ILiquidator liquidator) external {
+    function selfLiquidate(uint256 tgUSDToRepay, address liquidator, bytes calldata routerCall) external {
         // Checkpoint IR
         (uint256 newDebtIndex, uint256 newTotalDebt, uint256 userDebt, uint256 collatBalance) = _preLiquidate(msg.sender);
-        _liquidate(msg.sender, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator);
+        _liquidate(msg.sender, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator, routerCall);
     }
 
     function leverage(
@@ -86,14 +86,20 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         bool isStaked,
         bytes calldata routerCall
     ) external payable {
+        // Only callable from a Zapper contract
         require(controlTower.isZapper(zapper), NotZapper(zapper));
-        // Mint the tgUSD on the zapper, ready to be exchanged through the router
+        // Mint the tgUSD on the Zapper, ready to be exchanged through the router
         tgUSD.mint(zapper, tgUSDToFlashMint);
-        // Exchange
-        uint256 collatReceived = IZapper(zapper).zapLeverage{value: msg.value}(collatToken, minCollatAmountReceived, routerCall);
+        // Exchange the tgUSD that has just been minted on the Zapper for the collateral of the market
+        uint256 collatReceived = IZapper(zapper).zapLeverage(collatToken, minCollatAmountReceived, routerCall);
+
+        // Computes the amount
         (uint256 stakedAmount, IERC20 _collatToken) = _preDeposit(msg.sender, collatToDeposit + collatReceived, isStaked);
+
+        // Transfer the collateral on the market
         _transferCollateralDeposit(_collatToken, collatToDeposit, false);
 
+        // Performs same modification as in depositAndBorrow
         _depositAndBorrow(msg.sender, stakedAmount, tgUSDToFlashMint, true);
 
         _postDeposit(_collatToken, stakedAmount, isStaked);

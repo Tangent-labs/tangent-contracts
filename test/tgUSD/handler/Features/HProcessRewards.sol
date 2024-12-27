@@ -3,13 +3,13 @@
 pragma solidity ^0.8.22;
 import "../Base/HandlerBase.sol";
 
-import "../../../../src/tgUSD/Market/abstract/MarketRewards.sol";
+import "../../../../src/tgUSD/Market/abstract/Rewards.sol";
 
 contract HProcessRewards is HandlerBase {
-    MarketRewards marketRewards;
+    Rewards marketRewards;
 
-    constructor(address _sender, MarketRewards _market) HandlerBase(_sender, _market) {
-        marketRewards = MarketRewards(address(_market));
+    constructor(address _sender, Rewards _market) HandlerBase(_sender, _market) {
+        marketRewards = Rewards(address(_market));
     }
 
     function processRewards(address harvestFeeReceiver) external handler {

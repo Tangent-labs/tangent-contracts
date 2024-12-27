@@ -13,7 +13,7 @@ import {MarketExternalActions, MarketCore} from "./MarketExternalActions.sol";
 import {Sociabilization} from "../../Utilities/Sociabilization.sol";
 import "forge-std/console.sol";
 /// @notice Lending market
-abstract contract MarketRewards is MarketExternalActions, Sociabilization {
+abstract contract Rewards is MarketExternalActions, Sociabilization {
     using SafeERC20 for IERC20;
     /// @dev Duration that rewards are streamed over
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
@@ -24,13 +24,10 @@ abstract contract MarketRewards is MarketExternalActions, Sociabilization {
     /// @notice Percentage of reward given to harvester. 1_000 = 1%
     uint256 public harvesterFeePercentage;
 
-    /// @notice Total amount of collateral on the market
-    uint256 public totalCollateral;
-
     /// @notice Receiver of all rewards produced by the market
     IRewardAccumulator public rewardAccumulator;
 
-    /// @dev List of reward tokens
+    /// @notice List of reward tokens
     IERC20[] public rewardTokens;
 
     /// @dev Reward data associated to a reward token
@@ -84,14 +81,6 @@ abstract contract MarketRewards is MarketExternalActions, Sociabilization {
                 ++i;
             }
         }
-    }
-
-    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        DEPOSIT  
-    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateReward(_for) returns (uint256, IERC20) {
-        return (_sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR), collatToken);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -158,9 +147,8 @@ abstract contract MarketRewards is MarketExternalActions, Sociabilization {
 
         return
             rewardData[_rewardToken].rewardPerTokenStored +
-            (((_lastTimeRewardApplicable(rewardData[_rewardToken].periodFinish) - rewardData[_rewardToken].lastUpdateTime) *
-                rewardData[_rewardToken].rewardRate *
-                1e18) / totalCollateral);
+            (((_lastTimeRewardApplicable(rewardData[_rewardToken].periodFinish) - rewardData[_rewardToken].lastUpdateTime) * rewardData[_rewardToken].rewardRate * 1e18) /
+                totalCollateral);
     }
 
     /**
@@ -211,11 +199,11 @@ abstract contract MarketRewards is MarketExternalActions, Sociabilization {
     function _processRewards(address harvestFeeReceiver) internal {
         uint256 rewardCut = rewardCutPercentage;
 
-        /// @dev We compute the reward cut only if it's activated
+        //  We compute the reward cut only if it's activated
         if (rewardCut != 0) {
             rewardCutPercentage = irCalculator.computeRCForMarket(address(this));
         }
-        /// @dev Reward tokens updated
+        // Reward tokens updated
         IERC20[] memory _rewardTokens = rewardTokens;
         uint256 rewardTokensLength = _rewardTokens.length;
         ICommonStruct.TokenAmount[] memory rewardCutToUpdate = new ICommonStruct.TokenAmount[](rewardTokensLength);
@@ -231,7 +219,7 @@ abstract contract MarketRewards is MarketExternalActions, Sociabilization {
             if (rewardToProcess != 0) {
                 isSomeRewardToProcess = true;
 
-                /// @dev Calculate and sends harvester fees
+                // Calculate and sends harvester fees
                 uint256 harvesterFees = (rewardToProcess * _harvesterFeePercetage) / DENOMINATOR;
 
                 if (harvesterFees != 0) {
@@ -252,11 +240,6 @@ abstract contract MarketRewards is MarketExternalActions, Sociabilization {
                 } else {
                     rewardAmountStreamed = remainingRewards;
                 }
-
-                /// TODO Treat the case where a reward is not distributed anymore on a Reward contract
-                /// @dev Reward Cut to update in
-
-                require(rewardAmountStreamed > 1e10 && rewardAmountStreamed < 1e30, "INCORRECT_VALUE");
 
                 Reward storage rData = rewardData[rewardToken];
 

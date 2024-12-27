@@ -18,7 +18,7 @@ contract Zapper is Ownable, IZapper {
 
     address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    /// @notice router Router
+    /// @notice Router
     address public constant ROUTER = 0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E;
 
     /// @notice Tangent USD
@@ -96,7 +96,7 @@ contract Zapper is Ownable, IZapper {
     //     IMarketExternalActions(zapMarket.market).repay(zapMarket._for, _zapRepay(zapMarket, routerCall));
     // }
 
-    function zapLeverage(IERC20 collatToken, uint256 minCollatReceived, bytes calldata routerCall) external payable onlyMarket(msg.sender) returns (uint256) {
+    function zapLeverage(IERC20 collatToken, uint256 minCollatReceived, bytes calldata routerCall) external onlyMarket(msg.sender) returns (uint256) {
         return _zapRouterAndVerify(collatToken, msg.sender, minCollatReceived, routerCall);
     }
 

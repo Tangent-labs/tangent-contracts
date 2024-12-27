@@ -8,17 +8,32 @@ import "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 
 import "forge-std/console.sol";
 
+/// @title OracleDuoPoolStable
+/// @notice This contract provides price oracle functionality for a dual pool stablecoin setup.
 contract OracleDuoPoolStable is IPriceOracle {
+    /// @notice Struct to store oracle parameters
     struct OracleDuoPoolStruct {
+        /// @dev Oracle for the first coin
         IPriceOracle coin0Oracle;
+        /// @dev Oracle for the second coin
         IPriceOracle coin1Oracle;
+        /// @dev Curve stable swap pool
         ICurveStableSwapNG lp;
+        /// @dev Decimals for the first coin's oracle
         uint16 coin0OracleDecimals;
+        /// @dev Decimals for the second coin's oracle
         uint16 coin1OracleDecimals;
     }
 
+    /// @notice Public variable to store oracle parameters
     OracleDuoPoolStruct public params;
 
+    /**
+     * @notice Constructor to initialize the OracleDuoPoolStable contract
+     * @param _lp Address of the Curve stable swap pool
+     * @param _coin0Oracle Address of the oracle for the first coin
+     * @param _coin1Oracle Address of the oracle for the second coin
+     */
     constructor(ICurveStableSwapNG _lp, IPriceOracle _coin0Oracle, IPriceOracle _coin1Oracle) {
         params = OracleDuoPoolStruct({
             coin0Oracle: _coin0Oracle,
@@ -29,26 +44,40 @@ contract OracleDuoPoolStable is IPriceOracle {
         });
     }
 
+    /**
+     * @notice Returns the number of decimals used by the oracle
+     * @return The number of decimals (18)
+     */
     function decimals() external pure returns (uint256) {
         return 18;
     }
 
+    /**
+     * @notice Internal function to get the latest price from an oracle
+     * @param _oracle The oracle to get the price from
+     * @param oracleDecimals The number of decimals used by the oracle
+     * @return The latest price from the oracle, adjusted to 18 decimals
+     */
     function coinPrice(IPriceOracle _oracle, uint256 oracleDecimals) internal view returns (uint256) {
         return _oracle.latestAnswer() * 10 ** (18 - oracleDecimals);
     }
 
+    /**
+     * @notice Returns the latest price from the oracle
+     * @return The price of the stable pool, adjusted to 18 decimals
+     */
+    function latestAnswer() external view returns (uint256) {
+        OracleDuoPoolStruct memory _params = params;
+        return
+            (_params.lp.get_virtual_price() * min(coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals), coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals))) /
+            10 ** 18;
+    }
+
+    /// @dev Internal function to get the minimum of two numbers
     function min(uint256 a, uint256 b) internal pure returns (uint256) {
         if (a > b) {
             return b;
         }
         return a;
-    }
-
-    function latestAnswer() external view returns (uint256) {
-        OracleDuoPoolStruct memory _params = params;
-        uint256 answer0 = coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals);
-        uint256 answer1 = coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals);
-
-        return (_params.lp.get_virtual_price() * min(answer0, answer1)) / 10 ** 18;
     }
 }
