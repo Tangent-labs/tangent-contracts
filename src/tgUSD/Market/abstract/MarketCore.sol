@@ -126,9 +126,6 @@ abstract contract MarketCore is IMarketCore, Collateral {
     }
 
     function _depositAndBorrow(address _for, uint256 amountDeposited, uint256 tgUSDToBorrow, bool isLeverage) internal {
-        // Verify collat amount added > 0
-        require(amountDeposited != 0, ZeroCollatAmount());
-
         // Collat amount after the deposit
         uint256 newCollatAmount = collateralBalances[_for] + amountDeposited;
 

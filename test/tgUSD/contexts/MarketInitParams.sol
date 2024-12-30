@@ -63,6 +63,20 @@ contract MarketInitParams is TgStableContext {
             cvxRewardToken: AddrCvxRewardTokens.FRXETH_WETH_LP,
             pid: PidCvxCrvBooster.FRXETH_WETH_LP
         });
+
+        // Convex Curve - PXETH-WETH
+        cvxCurveLPMaps[address(AddrCurveStableLP.PXETH_WETH)] = ParamsInitConvexCurveLPMarket({
+            marketInit: MarketInitSimplified({
+                collat: AddrCurveStableLP.PXETH_WETH,
+                maxLTV: 85_000,
+                liquidationThreshold: 93_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether
+            }),
+            rewards: _rewardsCrvCvx,
+            cvxRewardToken: AddrCvxRewardTokens.PXETH_WETH_LP,
+            pid: PidCvxCrvBooster.PXETH_WETH_LP
+        });
     }
 
     function initConvexFxnParams() public {

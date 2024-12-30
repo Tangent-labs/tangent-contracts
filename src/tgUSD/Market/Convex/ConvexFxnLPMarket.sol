@@ -33,6 +33,8 @@ contract ConvexFxnLPMarket is Rewards {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateReward(_for) returns (uint256, IERC20) {
+        // Verify collat amount added > 0
+        require(lpDeposited != 0, ZeroCollatAmount());
         return (_sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR), collatToken);
     }
 

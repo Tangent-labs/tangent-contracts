@@ -14,7 +14,7 @@ contract RepayReverts is ConvexCurveContext {
     uint256 minimumLoan;
     uint256 maxMarketDebt;
     function setUp() public {
-        collatToken = AddrERC4626.S_DAI;
+        collatToken = AddrCurveStableLP.FRXETH_WETH;
         market = deployConvexCurveLPMarket(collatToken);
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         minimumLoan = market.minimumLoan();

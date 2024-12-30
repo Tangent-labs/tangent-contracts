@@ -40,7 +40,7 @@ contract BorrowReverts is ConvexCurveContext {
     }
 
     function test_borrow_more_than_LTV_with_not_enough_collat() external {
-        hDeposit.deposit(usr1, minimumLoan * 3, false);
+        hDeposit.deposit(usr1, 2 ether, false);
         uint256 maxBorrow = market.maxBorrowable(usr1);
 
         vm.startPrank(usr1);

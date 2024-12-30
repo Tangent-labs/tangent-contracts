@@ -28,25 +28,30 @@ contract DepositAndBorrowReverts is ConvexCurveContext {
         market.depositAndBorrow(0, 1_000 ether, false, address(0));
     }
 
+    function test_depositBorrow_amountDeposited_very_low() external {
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
+        market.depositAndBorrow(0, 1_000 ether, false, address(0));
+    }
+
     function test_depositBorrow_0_debt() external {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroDebtAmount.selector));
-        market.depositAndBorrow(1_000 ether, 0, false, address(0));
+        market.depositAndBorrow(2 ether, 0, false, address(0));
     }
 
     function test_depositBorrow_more_than_max_total_debt() external {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.TotalDebtTooHigh.selector));
-        market.depositAndBorrow(1_000 ether, maxMarketDebt + 1, false, address(0));
+        market.depositAndBorrow(2 ether, maxMarketDebt + 1, false, address(0));
     }
 
     function test_depositBorrow_less_than_minimum_loan() external {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooLow.selector));
-        market.depositAndBorrow(100 ether, minimumLoan - 1, false, address(0));
+        market.depositAndBorrow(2 ether, minimumLoan - 1, false, address(0));
     }
 
     function test_depositBorrow_more_than_LTV_with_not_enough_collat() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooHigh.selector));
-        market.depositAndBorrow(100 ether, minimumLoan, false, address(0));
+        market.depositAndBorrow(0.5 ether, minimumLoan, false, address(0));
         vm.stopPrank();
     }
 }

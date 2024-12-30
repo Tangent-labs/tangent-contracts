@@ -29,7 +29,12 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     }
 
     function depositAndBorrow(uint256 depositedAmount, uint256 debtBorrow, bool isStaked, address callerZapper) external {
-        bool isZapping = controlTower.isZapper(msg.sender);
+        bool isZapping;
+        if (address(callerZapper) != address(0)) {
+            isZapping = controlTower.isZapper(msg.sender);
+        } else {
+            callerZapper = msg.sender;
+        }
         callerZapper = isZapping ? callerZapper : msg.sender;
 
         (uint256 stakedAmount, IERC20 _collatToken) = _preDeposit(callerZapper, depositedAmount, isStaked);

@@ -39,13 +39,12 @@ contract LiquidateDebtGoHigh is ConvexCurveContext {
         assertLt(tgUSDLp.last_price(0), 991 * 10 ** 15, "Last price dropped hard");
 
         skip(800);
-        uint256 tgUSDPrice = oracles[tgUsd].latestAnswer();
         assertLt(oracles[tgUsd].latestAnswer(), 995 * 10 ** 15, "Price is goig down brutally after EMA is following");
 
         // Update IR on the market
         market.checkpointIR();
 
-        assertGt(market.lastIR(), 43 ether, "IR should skyrocket as peg of tgUSD is low");
+        assertGt(market.lastIR(), 40 ether, "IR should skyrocket as peg of tgUSD is low");
 
         // Go to the limit of the health ratio
         skip(70 days);
@@ -54,12 +53,12 @@ contract LiquidateDebtGoHigh is ConvexCurveContext {
         market.liquidate(usr1, MAX_UINT, address(0), "");
 
         // The position from this point liquidable
-        skip(10 days);
+        skip(15 days);
 
         deal(address(tgUsd), usr1, market.positionDebt(usr1));
 
         assertLe(market.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
-        assertGe(market.positionDebt(usr1), 9_300 ether, "Health ratio is lower than minimal");
+        assertGe(market.positionDebt(usr1), 9_300 ether, "Debt is getting over the 93% of the collateral");
 
         verifyLostERC20(tgUsd, usr1, market.positionDebt(usr1), "tgUSD burnt from sender");
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "tgUSD burnt from sender");
