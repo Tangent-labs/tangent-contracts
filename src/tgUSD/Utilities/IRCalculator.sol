@@ -10,8 +10,13 @@ import {ABDKMath64x64} from "../../libs/ABDKMath64x64.sol";
 
 import "forge-std/console.sol";
 
+///@notice Contract allowing to compute the interest rate and reward cut of a tgUSD market
+// TODO Put a cap on tgUSD price to prevent overflow on IR computation
+// TODO Comments are bad
 contract IRCalculator is IIrCalculator, Ownable {
     uint256 public constant DENOMINATOR = 100_000;
+
+    uint256 public constant ONE_ETHER = 1e18;
 
     /// @notice Contract allowing to retrieve the price in dollar of tgUSD.
     IPriceOracle public tgUSDOracle;
@@ -49,12 +54,12 @@ contract IRCalculator is IIrCalculator, Ownable {
 
     modifier verifyIRParams(IRParams calldata _irParam) {
         //TODO Add range check on Sigma & r0
-        require(_irParam.irStartPrice <= 1 ether, IRStartPriceLtOne());
+        require(_irParam.irStartPrice <= ONE_ETHER, IRStartPriceLtOne());
         _;
     }
 
     modifier verifyRCParams(RCParams calldata _rcParam) {
-        require(_rcParam.startCutPrice <= 1e18);
+        require(_rcParam.startCutPrice <= ONE_ETHER);
         if (_rcParam.stepAmount == 2) {
             require(_rcParam.startCutPercentage < _rcParam.endCutPercentage);
             require(_rcParam.startCutPrice > _rcParam.endCutPrice);
@@ -108,7 +113,7 @@ contract IRCalculator is IIrCalculator, Ownable {
         if (tgUSDPrice > irStartPrice) {
             return 0;
         }
-        int128 powerIn64x64 = ABDKMath64x64.divu(((1 ether - tgUSDPrice) * 1e18) / sigma, 1e18);
+        int128 powerIn64x64 = ABDKMath64x64.divu(((1 ether - tgUSDPrice) * ONE_ETHER) / sigma, ONE_ETHER);
 
         // Calcul exp(1) en utilisant la méthode exp
         int128 expIn64x64 = ABDKMath64x64.exp(powerIn64x64);
@@ -117,11 +122,11 @@ contract IRCalculator is IIrCalculator, Ownable {
         uint256 integerPart = ABDKMath64x64.toUInt(expIn64x64);
 
         // Decimal part of the exp in uint256
-        uint256 fractionalAsDecimal = ABDKMath64x64.mulu(expIn64x64 - ABDKMath64x64.fromUInt(integerPart), 1e18);
+        uint256 fractionalAsDecimal = ABDKMath64x64.mulu(expIn64x64 - ABDKMath64x64.fromUInt(integerPart), ONE_ETHER);
 
-        uint256 formulaReturn = integerPart * 1e18 + fractionalAsDecimal;
+        uint256 formulaReturn = integerPart * ONE_ETHER + fractionalAsDecimal;
 
-        return (formulaReturn * r0) / 1e18;
+        return (formulaReturn * r0) / ONE_ETHER;
     }
 
     /**
