@@ -5,6 +5,8 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IMarketCore, IPriceOracle} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 import {IControlTower} from "../../../interfaces/internals/tgUSD/IControlTower.sol";
+import {ILiquidator} from "../../../interfaces/internals/tgUSD/ILiquidator.sol";
+
 import {Collateral, Ownable} from "./Collateral.sol";
 
 import "forge-std/console.sol";
@@ -20,6 +22,7 @@ abstract contract MarketCore is IMarketCore, Collateral {
     error ZeroCollatAmount();
     error ZeroDebtAmount();
     error NotLiquidablePosition();
+    error NotZapper(address zapper);
 
     constructor(address _owner, MarketInit memory _marketInit) Ownable(_owner) {
         tgUSD = _marketInit.tgUSD;
@@ -52,10 +55,10 @@ abstract contract MarketCore is IMarketCore, Collateral {
         _updateCollatAndGlobalDebt(_for, collateralBalances[_for] + amountDeposited, newDebtIndex, newTotalDebt);
     }
 
-    function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited) internal {
+    function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, bool isZapping) internal {
         // When caller is not one of our Zapper, sender needs to send collateral token to the market.
         // Zapper send the collateral directly on the market before calling "deposit"
-        if (!controlTower.isZapper(msg.sender)) {
+        if (!isZapping) {
             // Transfer the collateral from the sender to the market
             _collatToken.transferFrom(msg.sender, address(this), lpDeposited);
         }
@@ -97,7 +100,7 @@ abstract contract MarketCore is IMarketCore, Collateral {
                             BORROW 
                                                     ------ */
 
-    function _borrow(address receiver, uint256 tgUSDToBorrow, uint256 collatAmount) internal returns (uint256, uint256, uint256) {
+    function _borrow(address receiver, uint256 tgUSDToBorrow, uint256 collatAmount, bool isLeverage) internal returns (uint256, uint256, uint256) {
         require(tgUSDToBorrow != 0, ZeroDebtAmount());
         (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
 
@@ -114,21 +117,21 @@ abstract contract MarketCore is IMarketCore, Collateral {
         // Verify that the newDebt of the loan is not over the maximum borrrowable
         require(_maxBorrowable(collatAmount) >= newUserDebt, PositionDebtTooHigh());
 
-        // Mint tgUSD to the receiver
-        tgUSD.mint(receiver, tgUSDToBorrow);
-
+        // If it's a leverage transaction, tgUSD is already minted before
+        if (!isLeverage) {
+            // Mint tgUSD to the receiver
+            tgUSD.mint(receiver, tgUSDToBorrow);
+        }
         return (newUserDebt, newDebtIndex, newTotalDebt);
     }
 
-    function _depositAndBorrow(uint256 amountDeposited, uint256 tgUSDToBorrow) internal {
-        // Verify collat amount added > 0
-        require(amountDeposited != 0, ZeroCollatAmount());
+    function _depositAndBorrow(address _for, uint256 amountDeposited, uint256 tgUSDToBorrow, bool isLeverage) internal {
+        // Collat amount after the deposit
+        uint256 newCollatAmount = collateralBalances[_for] + amountDeposited;
 
-        uint256 newCollatAmount = collateralBalances[msg.sender] + amountDeposited;
+        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(_for, tgUSDToBorrow, newCollatAmount, isLeverage);
 
-        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(msg.sender, tgUSDToBorrow, newCollatAmount);
-
-        _updateCollatAndDebts(msg.sender, newCollatAmount, newUserDebt, newDebtIndex, newTotalDebt);
+        _updateCollatAndDebts(_for, newCollatAmount, newUserDebt, newDebtIndex, newTotalDebt);
     }
 
     /* --------
@@ -177,4 +180,68 @@ abstract contract MarketCore is IMarketCore, Collateral {
 
         _updateCollatAndDebts(caller, _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, newUserDebt), newUserDebt, newDebtIndex, newTotalDebt);
     }
+
+    /* --------
+                        LIQUIDATION
+                                                    ------ */
+
+    function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256) {
+        // Checkpoint IR
+        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
+
+        uint256 userDebt = _positionDebt(account, newDebtIndex);
+        return (newDebtIndex, newTotalDebt, userDebt, collateralBalances[account]);
+    }
+    function _liquidate(
+        address account,
+        uint256 tgUSDToRepay,
+        uint256 userDebt,
+        uint256 newTotalDebt,
+        uint256 newDebtIndex,
+        uint256 collatBalance,
+        address liquidator,
+        bytes calldata routerCall
+    ) internal {
+        require(tgUSDToRepay != 0, ZeroDebtAmount());
+        uint256 remainingDebt;
+        uint256 newCollatBalance;
+        uint256 collatAmountToLiquidate;
+
+        // Liquidate all
+        if (tgUSDToRepay >= userDebt) {
+            tgUSDToRepay = userDebt;
+            collatAmountToLiquidate = collatBalance;
+        }
+        // Liquidate partial
+        else {
+            // Computes the amount of collateral to liquidate by proportionnality
+            collatAmountToLiquidate = (collatBalance * tgUSDToRepay) / userDebt;
+            // Computes the new balance of collateral after the partial liquidation
+            newCollatBalance = collatBalance - collatAmountToLiquidate;
+            // Computes the debt remaining for the position
+            remainingDebt = userDebt - tgUSDToRepay;
+            // Ensure that the remaining debt is bigger than a minimum in order to leave a profitable liquidation
+            require(remainingDebt >= minimumLoan, PositionDebtTooLow());
+        }
+
+        // Modifies the total collateral and the
+        _preWithdraw(collatAmountToLiquidate);
+
+        // Modify the collateral balance, the user debt and the total debt
+        _updateCollatAndDebts(account, newCollatBalance, remainingDebt, newDebtIndex, newTotalDebt - tgUSDToRepay);
+
+        _transferCollateralWithdraw(liquidator != address(0) ? liquidator : msg.sender, collatAmountToLiquidate);
+
+        // When liquidator is not zero, it allows to the liquidator to receive the collateral on a contract.
+        // Liquidator is so able to sell the collateral for tgUSD in the same transaction.
+        if (liquidator != address(0)) {
+            ILiquidator(liquidator).liquidate(routerCall);
+        }
+        // Burns tgUSD from the ender
+        tgUSD.burnFrom(msg.sender, tgUSDToRepay);
+    }
+
+    /* --------
+                        LEVERAGE
+                                                    ------ */
 }

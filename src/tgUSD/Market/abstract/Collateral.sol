@@ -23,6 +23,9 @@ abstract contract Collateral is DebtIR, ICollateral {
     /// @notice Liquidation threshold of the market in %.
     uint256 public liquidationThreshold;
 
+    /// @notice Total amount of collateral on the market
+    uint256 public totalCollateral;
+
     /// @notice Amount of collateral deposited by a user.
     mapping(address => uint256) public collateralBalances;
 
@@ -107,14 +110,14 @@ abstract contract Collateral is DebtIR, ICollateral {
     }
 
     function _maxBorrowable(uint256 collatAmount) internal view returns (uint256) {
-        return (maxLTV * _collateralValue(collatAmount)) / DENOMINATOR;
+        return (maxLTV * _positionValue(collatAmount)) / DENOMINATOR;
     }
 
     function _collateralPrice() internal view returns (uint256) {
         return collatOracle.latestAnswer();
     }
 
-    function _collateralValue(uint256 collatAmount) internal view returns (uint256) {
+    function _positionValue(uint256 collatAmount) internal view returns (uint256) {
         return (collatAmount * _collateralPrice()) / 1 ether;
     }
 
@@ -125,10 +128,14 @@ abstract contract Collateral is DebtIR, ICollateral {
         return MAX_UINT;
     }
     function _maxBorrowable(address account) internal view returns (uint256) {
-        return (maxLTV * _collateralValue(account)) / DENOMINATOR;
+        return (maxLTV * _positionValue(account)) / DENOMINATOR;
     }
 
-    function _collateralValue(address account) internal view returns (uint256) {
+    function _positionValue(address account) internal view returns (uint256) {
+        return (collateralBalances[account] * _collateralPrice()) / 1 ether;
+    }
+
+    function positionValue(address account) external view returns (uint256) {
         return (collateralBalances[account] * _collateralPrice()) / 1 ether;
     }
 

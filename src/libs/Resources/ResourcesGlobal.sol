@@ -3,7 +3,9 @@ pragma solidity ^0.8.24;
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {IAggregatorV3} from "../../interfaces/externals/Chainlink/IAggregatorV3.sol";
-import {IOdosRouter} from "../../interfaces/externals/IOdosRouter.sol";
+import {IOdosRouter} from "../../interfaces/externals/Aggregators/IOdosRouter.sol";
+import {IEnsoRouter} from "../../interfaces/externals/Aggregators/IEnsoRouter.sol";
+
 import {ISFRAX} from "../../interfaces/externals/Frax/ISFRAX.sol";
 
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
@@ -28,6 +30,8 @@ library AddrClassicERC20 {
     IERC20Metadata constant TOKEN_FXN = IERC20Metadata(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09);
     IERC20Metadata constant TOKEN_DOLA = IERC20Metadata(0x865377367054516e17014CcdED1e7d814EDC9ce4);
     IERC20Metadata constant TOKEN_FXUSD = IERC20Metadata(0x085780639CC2cACd35E474e71f4d000e2405d8f6);
+    IERC20Metadata constant TOKEN_FRXETH = IERC20Metadata(0x5E8422345238F34275888049021821E8E08CAa1f);
+    IERC20Metadata constant TOKEN_PXETH = IERC20Metadata(0x04C154b66CB340F3Ae24111CC767e0184Ed00Cc6);
 }
 
 library AddrERC4626 {
@@ -40,12 +44,23 @@ library AddrERC4626 {
 
 library AddrChainlinkOracle {
     // Tokens
+    IAggregatorV3 constant DAI = IAggregatorV3(0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9);
     IAggregatorV3 constant CRVUSD = IAggregatorV3(0xEEf0C605546958c1f899b6fB336C20671f9cD49F);
+    IAggregatorV3 constant ETH = IAggregatorV3(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
     IAggregatorV3 constant USDC = IAggregatorV3(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
     IAggregatorV3 constant USDT = IAggregatorV3(0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
     IPriceOracle constant SDAI = IPriceOracle(0x29081f7aB5a644716EfcDC10D5c926c5fEe9F72B);
+    IAggregatorV3 constant GHO = IAggregatorV3(0x3f12643D3f6f874d39C2a4c9f2Cd6f2DbAC877FC);
+    IAggregatorV3 constant USD0 = IAggregatorV3(0x7e891DEbD8FA0A4Cf6BE58Ddff5a8ca174FebDCB);
+    IAggregatorV3 constant TUSD = IAggregatorV3(0xec746eCF986E2927Abd291a2A1716c940100f8Ba);
+    IAggregatorV3 constant USDS = IAggregatorV3(0xfF30586cD0F29eD462364C7e81375FC0C71219b1);
+    IAggregatorV3 constant USDP = IAggregatorV3(0x09023c0DA49Aaf8fc3fA3ADF34C6A7016D38D5e3);
+    IAggregatorV3 constant USDE = IAggregatorV3(0xa569d910839Ae8865Da8F8e70FfFb0cBA869F961);
+    IAggregatorV3 constant EZ_ETH = IAggregatorV3(0x636A000262F6aA9e1F094ABF0aD8f645C44f641C);
+    IAggregatorV3 constant CB_BTC = IAggregatorV3(0x2665701293fCbEB223D11A08D826563EDcCE423A);
 }
 
 library AddrAggregator {
-    IOdosRouter constant ROUTER_ODOS = IOdosRouter(0xCf5540fFFCdC3d510B18bFcA6d2b9987b0772559);
+    IOdosRouter constant ODOS_ROUTER = IOdosRouter(0xCf5540fFFCdC3d510B18bFcA6d2b9987b0772559);
+    IEnsoRouter constant ENSO_ROUTER = IEnsoRouter(0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E);
 }

@@ -6,15 +6,15 @@ import "../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../handler/Features/BorrowRepay/HRepay.sol";
 
 contract BorrowReverts is ConvexCurveContext {
-    IERC20Metadata public collatToken = AddrERC4626.S_DAI;
+    IERC20Metadata public collatToken = AddrCurveStableLP.FRXETH_WETH;
 
-    MarketNoRewards public market;
-    HDepositNoRewards public hDeposit;
+    ConvexCrvLPMarket public market;
+    HDepositConvexCrvLP public hDeposit;
     uint256 minimumLoan;
     uint256 maxMarketDebt;
     function setUp() public {
-        market = deployNoRewardsMarket(collatToken);
-        hDeposit = new HDepositNoRewards(usr1, market);
+        market = deployConvexCurveLPMarket(collatToken);
+        hDeposit = new HDepositConvexCrvLP(usr1, market);
         minimumLoan = market.minimumLoan();
         maxMarketDebt = market.maxMarketDebt();
     }
@@ -40,7 +40,7 @@ contract BorrowReverts is ConvexCurveContext {
     }
 
     function test_borrow_more_than_LTV_with_not_enough_collat() external {
-        hDeposit.deposit(usr1, minimumLoan * 3, false);
+        hDeposit.deposit(usr1, 2 ether, false);
         uint256 maxBorrow = market.maxBorrowable(usr1);
 
         vm.startPrank(usr1);

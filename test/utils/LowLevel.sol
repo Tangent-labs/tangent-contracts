@@ -30,6 +30,10 @@ contract LowLevel {
         return address(uint160(uint256(_bytes32)));
     }
 
+    function addressToBytes32(address _address) public pure returns (bytes32) {
+        return bytes32(uint256(uint160(_address)));
+    }
+
     function _tStoreBoolForBytes32(bytes32 location, bool value) private {
         assembly {
             tstore(location, value)
@@ -65,22 +69,5 @@ contract LowLevel {
         }
 
         return result;
-    }
-
-    function getLast20Bytes(bytes memory data) public pure returns (bytes20) {
-        require(data.length >= 20, "Bytes array too short");
-
-        bytes20 result;
-
-        // Copie les 20 derniers bytes dans le résultat
-        for (uint256 i = 0; i < 20; i++) {
-            result |= bytes20(data[data.length - 20 + i]) >> (i * 8);
-        }
-
-        return result;
-    }
-
-    function bytes20ToAddress(bytes20 data) public pure returns (address) {
-        return address(uint160(data));
     }
 }

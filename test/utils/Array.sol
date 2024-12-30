@@ -123,4 +123,43 @@ library Array {
         }
         return array;
     }
+
+    function memoryBytes32(bytes32[1] memory bytess) public pure returns (bytes32[] memory) {
+        bytes32[] memory array = new bytes32[](bytess.length);
+        for (uint256 i; i < bytess.length; i++) {
+            array[i] = bytess[i];
+        }
+        return array;
+    }
+
+    function memoryBytes32(bytes32[2] memory bytess) public pure returns (bytes32[] memory) {
+        bytes32[] memory array = new bytes32[](bytess.length);
+        for (uint256 i; i < bytess.length; i++) {
+            array[i] = bytess[i];
+        }
+        return array;
+    }
+
+    function memoryBytes32(bytes32[3] memory bytess) public pure returns (bytes32[] memory) {
+        bytes32[] memory array = new bytes32[](bytess.length);
+        for (uint256 i; i < bytess.length; i++) {
+            array[i] = bytess[i];
+        }
+        return array;
+    }
+
+    function memoryBytes32(bytes32[4] memory bytess) public pure returns (bytes32[] memory) {
+        bytes32[] memory array = new bytes32[](bytess.length);
+        for (uint256 i; i < bytess.length; i++) {
+            array[i] = bytess[i];
+        }
+        return array;
+    }
+    function memoryBytes32(bytes32[5] memory bytess) public pure returns (bytes32[] memory) {
+        bytes32[] memory array = new bytes32[](bytess.length);
+        for (uint256 i; i < bytess.length; i++) {
+            array[i] = bytess[i];
+        }
+        return array;
+    }
 }

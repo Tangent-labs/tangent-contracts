@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "./TgStableContext.sol";
+import "./MarketInitParams.sol";
 
 import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
 import "../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
-
-import "../../../src/tgUSD/Market/MarketNoRewards.sol";
 
 import "../handler/Features/HProcessRewards.sol";
 
@@ -16,83 +14,10 @@ import "../handler/Features/ConvexCrv/HWithdrawConvexCrvLP.sol";
 import "../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
 import "../handler/Features/ConvexFxn/HWithdrawConvexFxnLP.sol";
 
-import "../handler/Features/NoRewards/HDepositNoRewards.sol";
-import "../handler/Features/NoRewards/HWithdrawNoRewards.sol";
-import "../handler/Features/NoRewards/HWithdrawNoRewards.sol";
+import "../handler/Curve/HLpManipulator.sol";
 import "../../../src/interfaces/internals/tgUSD/IMarketCore.sol";
 
-contract ConvexCurveContext is TgStableContext {
-    IMarketCore[] cvxCurveLPMarket;
-    mapping(address => ParamsInitConvexCurveLPMarket) public cvxCurveLPMaps;
-    mapping(address => ParamsInitConvexFxnLPMarket) public cvxFxnLPMaps;
-
-    mapping(address => MarketInitSimplified) public noRewardsMaps;
-
-    struct ParamsInitConvexCurveLPMarket {
-        MarketInitSimplified marketInit;
-        IERC20Metadata[] rewards;
-        ICvxRewardToken cvxRewardToken;
-        uint256 pid;
-    }
-
-    struct ParamsInitConvexFxnLPMarket {
-        MarketInitSimplified marketInit;
-        IERC20Metadata[] rewards;
-        uint256 pid;
-    }
-
-    struct MarketInitSimplified {
-        IERC20Metadata collat;
-        uint256 maxLTV;
-        uint256 maxMarketDebt;
-        uint256 liquidationThreshold;
-        uint256 minimumLoan;
-    }
-
-    constructor() {
-        // Convex Curve - CRVUSD_USDC
-        IERC20Metadata[] memory _rewardsCrvCvx = Array.memoryIERC20([AddrClassicERC20.TOKEN_CRV, AddrClassicERC20.TOKEN_CVX]);
-
-        cvxCurveLPMaps[address(AddrCurveStableLP.CRVUSD_USDC)] = ParamsInitConvexCurveLPMarket({
-            marketInit: MarketInitSimplified({
-                collat: AddrCurveStableLP.CRVUSD_USDC,
-                maxLTV: 85_000,
-                liquidationThreshold: 93_000,
-                minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether
-            }),
-            rewards: _rewardsCrvCvx,
-            cvxRewardToken: AddrCvxRewardTokens.CRVUSD_USDC_LP,
-            pid: PidCvxCrvBooster.CRVUSD_USDC_LP
-        });
-
-        // Convex FXN - USDC_FXUSD
-
-        IERC20Metadata[] memory _rewardsFxn = Array.memoryIERC20([AddrClassicERC20.TOKEN_FXN]);
-
-        cvxFxnLPMaps[address(AddrCurveStableLP.USDC_FXUSD)] = ParamsInitConvexFxnLPMarket({
-            marketInit: MarketInitSimplified({
-                collat: AddrCurveStableLP.USDC_FXUSD,
-                maxLTV: 85_000,
-                liquidationThreshold: 93_000,
-                minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether
-            }),
-            rewards: _rewardsFxn,
-            pid: PidCvxFxnBooster.USDC_FXUSD_LP
-        });
-
-        // sDAI
-
-        noRewardsMaps[address(AddrERC4626.S_DAI)] = MarketInitSimplified({
-            collat: AddrERC4626.S_DAI,
-            maxLTV: 85_000,
-            liquidationThreshold: 93_000,
-            minimumLoan: 3_000 ether,
-            maxMarketDebt: 1_000_000 ether
-        });
-    }
-
+contract ConvexCurveContext is MarketInitParams {
     function deployConvexCurveLPMarket(IERC20Metadata collat) public returns (ConvexCrvLPMarket) {
         ParamsInitConvexCurveLPMarket memory initP = cvxCurveLPMaps[address(collat)];
 
@@ -158,35 +83,6 @@ contract ConvexCurveContext is TgStableContext {
         return convexMarket;
     }
 
-    function deployNoRewardsMarket(IERC20Metadata collat) public returns (MarketNoRewards) {
-        MarketInitSimplified memory initP = noRewardsMaps[address(collat)];
-
-        assertTrue(address(initP.collat) != address(0), "No init params for LP");
-        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
-
-        /// Initialize reward tokens for the market
-        MarketNoRewards marketNoRewards = new MarketNoRewards(
-            owner,
-            IMarketCore.MarketInit({
-                tgUSD: tgUsd,
-                controlTower: controlTower,
-                irCalculator: irCalculator,
-                collatToken: initP.collat,
-                collatOracle: oracles[collat],
-                maxLTV: initP.maxLTV,
-                maxMarketDebt: initP.maxMarketDebt,
-                liquidationThreshold: initP.liquidationThreshold,
-                minimumLoan: initP.minimumLoan
-            })
-        );
-
-        _toggleMarket_dealCollat_verifyParams(address(marketNoRewards), initP.collat);
-
-        labeliser.labeliseNewNoRewardsMarket(address(collat), collat.symbol(), address(marketNoRewards));
-
-        return marketNoRewards;
-    }
-
     function giveCollateralToUsers(IERC20Metadata collat) public {
         deal(address(collat), usr1, 1_000_000_000 * 10 ** 18);
         deal(address(collat), usr2, 1_000_000_000 * 10 ** 18);
@@ -202,8 +98,8 @@ contract ConvexCurveContext is TgStableContext {
         controlTower.toggleMarkets(Array.memoryAddress([address(market)]));
         irCalculator.setUpMarketRewards(
             market,
-            IRCalculator.IRParams({sigma: 2750000000000000, r0: 5 ether}),
-            IRCalculator.RCParams({cutAtOneDollar: 50_000, stepAmount: 5, fullCutPrice: 99500000000000})
+            IRCalculator.IRParams({sigma: 2750000000000000, r0: 5 ether, irStartPrice: 995000000000000000}),
+            IRCalculator.RCParams({startCutPercentage: 50_000, endCutPercentage: 100_000, stepAmount: 4, startCutPrice: 995000000000000000, endCutPrice: 900000000000000000})
         );
         vm.stopPrank();
 

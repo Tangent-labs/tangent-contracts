@@ -24,6 +24,7 @@ contract BoosterList is SdtPosition {
         uint256 totalStaked;
         uint256 userStaked;
         ICommonStruct.TokenAmount[] tokensClaimable;
+        PositionData[] positionsDetails;
         bool isProcessed;
     }
 
@@ -58,33 +59,34 @@ contract BoosterList is SdtPosition {
                 totalStaked: sdtStaking.cycleInfo(nextCycle).totalStaked,
                 userStaked: 0,
                 tokensClaimable: new ICommonStruct.TokenAmount[](0),
+                positionsDetails: new PositionData[](0),
                 isProcessed: sdtStaking.cycleInfo(nextCycle - 2).isSdtProcessed
             });
     }
 
     function _getBoosterListConnected(address user) public returns (OutputBoosterList memory) {
-        ISdtStakingManager.TokenStaking[] memory allPositions = getAllOwnedPositions(user);
-
         return
             OutputBoosterList({
-                crvRow: _getBoosterRowConnected(AddrBooster.SD_CRV_STAKING, allPositions),
-                balRow: _getBoosterRowConnected(AddrBooster.SD_BAL_STAKING, allPositions),
-                pendleRow: _getBoosterRowConnected(AddrBooster.SD_PENDLE_STAKING, allPositions),
-                fxnRow: _getBoosterRowConnected(AddrBooster.SD_FXN_STAKING, allPositions)
+                crvRow: _getBoosterRowConnected(user, AddrBooster.SD_CRV_STAKING),
+                balRow: _getBoosterRowConnected(user, AddrBooster.SD_BAL_STAKING),
+                pendleRow: _getBoosterRowConnected(user, AddrBooster.SD_PENDLE_STAKING),
+                fxnRow: _getBoosterRowConnected(user, AddrBooster.SD_FXN_STAKING)
             });
     }
 
-    function _getBoosterRowConnected(ISdtStaking sdtStaking, ISdtStakingManager.TokenStaking[] memory allPositions) public returns (BoosterRow memory) {
-        uint256 nextCycle = sdtStaking.stakingCycle() + 1;
+    function _getBoosterRowConnected(address user, ISdtStaking staking) internal returns (BoosterRow memory) {
+        ISdtStakingManager.TokenStaking[] memory allPositions = getAllOwnedPositions(user);
+        uint256 nextCycle = staking.stakingCycle() + 1;
 
-        (, MergedPositionData memory mergedPos) = getMergedPosition(sdtStaking, allPositions);
+        (PositionData[] memory positionsDetails, MergedPositionData memory mergedPos) = getMergedPosition(staking, allPositions);
 
         return
             BoosterRow({
-                totalStaked: sdtStaking.cycleInfo(nextCycle).totalStaked,
+                totalStaked: staking.cycleInfo(nextCycle).totalStaked,
                 userStaked: mergedPos.deposited,
                 tokensClaimable: mergedPos.tokensClaimable,
-                isProcessed: sdtStaking.cycleInfo(nextCycle - 2).isSdtProcessed
+                positionsDetails: positionsDetails,
+                isProcessed: staking.cycleInfo(nextCycle - 2).isSdtProcessed
             });
     }
 }

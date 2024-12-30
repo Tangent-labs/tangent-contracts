@@ -7,7 +7,7 @@ import {TOKENS_TO_GIVE} from "./tokensToGive.config";
 export class MainSetup {
     users: HardhatEthersSigner[] = [];
 
-    erc20Minted = 1_000_000;
+    erc20Minted = 1_000_000_000;
 
     constructor() {}
 

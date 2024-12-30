@@ -4,7 +4,7 @@ import {commonERC20, convexContracts, convexERC20, curveLp, stakeDaoERC20} from 
 
 import {MainSetup} from "../Main.setup";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {Addressable, AddressLike, MaxUint256, parseEther, parseUnits, ZeroAddress} from "ethers";
+import {Addressable, AddressLike, BigNumberish, MaxUint256, parseEther, parseUnits, ZeroAddress} from "ethers";
 import {
     ControlTower,
     ICurveStableSwapFactoryNG,
@@ -16,7 +16,9 @@ import {
     TgUSD,
     Zapper,
 } from "../../../typechain-types";
-
+export type StableLP = {
+    [name: string]: ICurveStableSwapNG;
+};
 export class BaseContext extends MainSetup {
     owner!: HardhatEthersSigner;
     feeTreso!: HardhatEthersSigner;
@@ -28,8 +30,7 @@ export class BaseContext extends MainSetup {
     rewardAccumulator!: RewardAccumulator;
     irCalculator!: IRCalculator;
 
-    tgUSD_USDC_LP!: ICurveStableSwapNG;
-
+    stableLp: StableLP = {};
     coins: {[name: string]: IERC20} = {};
 
     async deployContracts1() {
@@ -57,36 +58,45 @@ export class BaseContext extends MainSetup {
         await this.rewardAccumulator.waitForDeployment();
     }
 
-    async deployTgUSD_USDC_LP() {
+    async deployStableLP(
+        name: string,
+        coins: IERC20[],
+        amounts: BigNumberish[],
+        A: BigNumberish,
+        fee: BigNumberish,
+        _offpeg_fee_multiplier: BigNumberish,
+        _ma_exp_time: BigNumberish,
+        implemId: BigNumberish
+    ) {
         const curveStableSwapFactory = await ethers.getContractAt("ICurveStableSwapFactoryNG", "0x6A8cbed756804B16E05E741eDaBd5cB544AE21bf");
 
         const poolCount = await curveStableSwapFactory.pool_count();
-
+        console.log(poolCount);
         const lpCreationTx = await curveStableSwapFactory
             .connect(this.owner)
             .deploy_plain_pool(
-                "tgUSD-USDC",
-                "tgUSD-USDC",
-                [this.coins.usdc, this.tgUSD],
-                "5000",
-                "100000000",
-                "0",
-                "866",
-                "0",
+                name,
+                name,
+                coins,
+                A,
+                fee,
+                _offpeg_fee_multiplier,
+                _ma_exp_time,
+                implemId,
                 [0, 0],
                 ["0x00000000", "0x00000000"],
                 [ZeroAddress, ZeroAddress]
             );
         await lpCreationTx.wait();
 
-        const tgUSD_USDC_LP = await ethers.getContractAt("ICurveStableSwapNG", await curveStableSwapFactory.pool_list(poolCount));
+        const lp = await ethers.getContractAt("ICurveStableSwapNG", await curveStableSwapFactory.pool_list(poolCount));
 
-        this.tgUSD_USDC_LP = tgUSD_USDC_LP;
+        this.stableLp[name] = lp;
 
-        await this.coins.usdc.connect(this.owner).approve(tgUSD_USDC_LP, MaxUint256);
-        await this.tgUSD.connect(this.owner).approve(tgUSD_USDC_LP, MaxUint256);
+        await this.coins.usdc.connect(this.owner).approve(lp, MaxUint256);
+        await this.tgUSD.connect(this.owner).approve(lp, MaxUint256);
 
-        await tgUSD_USDC_LP.connect(this.owner)["add_liquidity(uint256[],uint256)"]([parseUnits("1000000", 6), parseEther("1000000")], 0);
+        await lp.connect(this.owner)["add_liquidity(uint256[],uint256)"](amounts, 0);
     }
 
     async deployContracts2(tgUSDOracle: AddressLike) {
@@ -111,9 +121,6 @@ export class BaseContext extends MainSetup {
             const user = this.users[i];
             await coin0.connect(user).approve(lp, MaxUint256);
             await coin1.connect(user).approve(lp, MaxUint256);
-            console.log(await user.getAddress());
-            console.log(await coin0.balanceOf(user), "UNO");
-            console.log(await coin1.balanceOf(user), "DOS");
         }
     }
 }

@@ -57,37 +57,37 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      *  @param rewardLength Amount of different tokens to claim as a reward
      */
     function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
-        /// @dev We save this length on his own variable, to not miss with the assembly manipulations
+        // We save this length on his own variable, to not miss with the assembly manipulations
         uint256 lendTokensLength = markets.length;
         IERC20[] memory tokenList = new IERC20[](lendTokensLength);
         uint256 actualErc20Index;
 
-        /// @dev Reverts if one of the market passed in parameter is not one
+        // Reverts if one of the market passed in parameter is not one
         controlTower.isContractsMarkets(markets);
 
-        /// @dev Iterates through all of the vaults
+        // Iterates through all of the vaults
         for (uint256 splitterTokenIndex; splitterTokenIndex < lendTokensLength; ) {
             address splitterToken = markets[splitterTokenIndex];
-            /// @dev User input verification
+            // User input verification
 
-            /// @dev Get and update the amount of rewards to claim
+            // Get and update the amount of rewards to claim
             ICommonStruct.TokenAmount[] memory tokenAmountsToClaim = IMarketRewards(splitterToken).getAndUpdateRewards(msg.sender);
-            /// @dev If the rewards returned by the gUSD is an empty array,
+            // If the rewards returned by the gUSD is an empty array,
             require(tokenAmountsToClaim.length != 0, NoRewardsToClaimFromContract(address(splitterToken)));
 
-            /// @dev Iterates over all erc20 received from the claim on the gUSD
+            // Iterates over all erc20 received from the claim on the gUSD
             for (uint256 tokenIndex; tokenIndex < tokenAmountsToClaim.length; ) {
                 IERC20 erc20 = tokenAmountsToClaim[tokenIndex].token;
-                /// @dev If token is seen the first time (tokensToClaim[token] == 0)
+                // If token is seen the first time (tokensToClaim[token] == 0)
                 uint256 rewardAmount = _tLoadUintForAddress(address(erc20));
                 if (rewardAmount == 0) {
-                    /// @dev Increment tokenList length & add new token on new index
+                    // Increment tokenList length & add new token on new index
                     tokenList[actualErc20Index] = erc20;
                     unchecked {
                         ++actualErc20Index;
                     }
                 }
-                /// @dev Increment storage value
+                // Increment storage value
                 _tStoreUintForAddress(address(erc20), rewardAmount + tokenAmountsToClaim[tokenIndex].amount);
                 unchecked {
                     ++tokenIndex;
@@ -100,7 +100,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
             }
         }
 
-        /// @dev Iterate through tokenList
+        // Iterate through tokenList
         bool isSomethingToClaim;
         for (uint256 tokenIndex; tokenIndex < tokenList.length; ) {
             IERC20 token = tokenList[tokenIndex];
@@ -109,7 +109,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
             if (amountClaim != 0) {
                 isSomethingToClaim = true;
                 token.safeTransfer(msg.sender, amountClaim);
-                /// @dev Erase transient for the token
+                // Erase transient for the tokenP
                 _tStoreUintForAddress(address(token), 0);
             }
 
@@ -144,7 +144,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     /**
      * @notice Increment dao fees that will be transferred in this contract during a process rewards.
      *         This function is only callable by an updater (scvUSD or gUSD).
-     * @param tokenAmounts array of token to used to increment fees
+     * @param tokenAmounts Array of TokenAmount to used to increment fees
      */
     function incrementCutFees(ICommonStruct.TokenAmount[] memory tokenAmounts) external {
         require(controlTower.isMarket(msg.sender), NotAMarketRewards());

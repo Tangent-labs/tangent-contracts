@@ -30,7 +30,7 @@ contract WithdrawCvxMarket is ConvexCurveContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(usr1, amountIn, borrowedAmount, true);
+        hDeposit.depositAndBorrow(amountIn, borrowedAmount, true, address(0));
 
         uint256 withdrawnAmount = 1_000 ether;
 
