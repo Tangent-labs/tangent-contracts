@@ -1,23 +1,21 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
-
 import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
-import {IIrCalculator} from "../../../interfaces/internals/tgUSD/IIrCalculator.sol";
+import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {Admin} from "./Admin.sol";
 
 import "forge-std/console.sol";
 
 /// @notice
-abstract contract DebtIR is Ownable, IDebtIR {
+abstract contract DebtIR is Admin, IDebtIR {
     using Math for uint256;
     uint256 public constant RAY = 1e18; // Facteur de précision ray (1 * 10^27)
 
     /// @notice Computes the interest rate and the cut of rewards.
-    IIrCalculator public irCalculator;
+    IIRCalculator public irCalculator;
     /// @notice tgUSD is the StableCoin to borrow against the collatToken.
     ITgUSD public tgUSD;
     /// @notice Global debt index. Represents the accumulation of the interest rate among time.

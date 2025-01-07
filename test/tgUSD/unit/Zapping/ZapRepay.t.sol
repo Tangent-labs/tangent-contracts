@@ -24,7 +24,8 @@ contract ZapRepay is ConvexCurveContext {
     function test_zap_repay_partial_with_eth_for_sender() external {
         uint256 amountIn = 0.1 ether;
 
-        uint256 quote = ensoUtils.getQuote(ETH_NAKED, amountIn, AddrClassicERC20.TOKEN_USDC, 10) * 10 ** 12;
+        (uint256 quote, ) = ensoUtils.getQuote(ETH_NAKED, amountIn, AddrClassicERC20.TOKEN_USDC, 10);
+        quote = quote * 10 ** 12;
 
         vm.mockFunction(address(AddrAggregator.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
 
@@ -52,7 +53,7 @@ contract ZapRepay is ConvexCurveContext {
     function test_zap_repay_full_with_erc20_for_sender() external {
         IERC20 tokenIn = AddrClassicERC20.TOKEN_AAVE;
         uint256 amountIn = 30 ether;
-        uint256 quote = ensoUtils.getQuote(tokenIn, amountIn, AddrClassicERC20.TOKEN_FRAX, 10);
+        (uint256 quote, ) = ensoUtils.getQuote(tokenIn, amountIn, AddrClassicERC20.TOKEN_FRAX, 10);
         uint256 tgUsdRemaining = quote - initialDebt;
         vm.mockFunction(address(AddrAggregator.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
 

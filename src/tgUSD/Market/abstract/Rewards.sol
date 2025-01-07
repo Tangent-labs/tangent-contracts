@@ -7,7 +7,7 @@ import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extens
 
 import {ICommonStruct} from "../../../interfaces/internals/ICommonStruct.sol";
 
-import {IMarketRewards} from "../../../interfaces/internals/tgUSD/IMarketRewards.sol";
+import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {MarketExternalActions, MarketCore} from "./MarketExternalActions.sol";
 import {Sociabilization} from "../../Utilities/Sociabilization.sol";
@@ -60,19 +60,17 @@ abstract contract Rewards is MarketExternalActions, Sociabilization {
         _updateReward(_account);
         _;
     }
-    constructor(
-        address _owner,
-        MarketInit memory _marketInit,
-        IRewardAccumulator _rewardAccumulator,
-        IERC20Metadata[] memory _rewardTokens
-    ) MarketCore(_owner, _marketInit) Sociabilization(2_000) {
+
+    function _initializationCommon(MarketConstants memory _marketConstants, MarketInit memory _marketInit) internal {
+        require(!isInitialized, AlreadyInitialized());
+        isInitialized = true;
+        // Rewards
         rewardCutPercentage = 50_000;
         harvesterFeePercentage = 1_000;
 
-        rewardAccumulator = _rewardAccumulator;
-
-        for (uint256 i; i < _rewardTokens.length; ) {
-            IERC20Metadata token = _rewardTokens[i];
+        // Rewards
+        for (uint256 i; i < _marketInit._rewardTokens.length; ) {
+            IERC20Metadata token = _marketInit._rewardTokens[i];
             rewardTokens.push(token);
             rewardData[token].lastUpdateTime = uint128(block.timestamp);
             rewardData[token].periodFinish = uint128(block.timestamp);
@@ -81,6 +79,27 @@ abstract contract Rewards is MarketExternalActions, Sociabilization {
                 ++i;
             }
         }
+
+        // Core
+        tgUSD = _marketConstants._tgUSD;
+        controlTower = _marketConstants._controlTower;
+        irCalculator = _marketConstants._irCalculator;
+        rewardAccumulator = _marketConstants._rewardAccumulator;
+
+        collatToken = _marketInit.collatToken;
+        collatOracle = _marketInit.collatOracle;
+
+        maxLTV = _marketInit.maxLTV;
+        liquidationThreshold = _marketInit.liquidationThreshold;
+        maxMarketDebt = _marketInit.maxMarketDebt;
+        minimumLoan = _marketInit.minimumLoan;
+
+        lastIR = 10 * RAY; // 10%
+        blockLastIRTimestamp = block.timestamp;
+        debtIndex = RAY;
+
+        // Gives ownership to the DAO
+        _transferOwnership(_marketConstants._owner);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

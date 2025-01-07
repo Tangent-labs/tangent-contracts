@@ -9,15 +9,15 @@ contract MarketInitParams is TgStableContext {
 
     struct ParamsInitConvexCurveLPMarket {
         MarketInitSimplified marketInit;
-        IERC20Metadata[] rewards;
         ICvxRewardToken cvxRewardToken;
         uint256 pid;
+        uint256 socFeePercentage;
     }
 
     struct ParamsInitConvexFxnLPMarket {
         MarketInitSimplified marketInit;
-        IERC20Metadata[] rewards;
         uint256 pid;
+        uint256 socFeePercentage;
     }
 
     struct MarketInitSimplified {
@@ -26,6 +26,7 @@ contract MarketInitParams is TgStableContext {
         uint256 maxMarketDebt;
         uint256 liquidationThreshold;
         uint256 minimumLoan;
+        IERC20Metadata[] _rewardTokens;
     }
 
     constructor() {
@@ -43,11 +44,12 @@ contract MarketInitParams is TgStableContext {
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
                 minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether
+                maxMarketDebt: 1_000_000 ether,
+                _rewardTokens: _rewardsCrvCvx
             }),
-            rewards: _rewardsCrvCvx,
             cvxRewardToken: AddrCvxRewardTokens.CRVUSD_USDC_LP,
-            pid: PidCvxCrvBooster.CRVUSD_USDC_LP
+            pid: PidCvxCrvBooster.CRVUSD_USDC_LP,
+            socFeePercentage: 1_000
         });
 
         // Convex Curve - FRXETH-WETH
@@ -57,11 +59,12 @@ contract MarketInitParams is TgStableContext {
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
                 minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether
+                maxMarketDebt: 1_000_000 ether,
+                _rewardTokens: _rewardsCrvCvx
             }),
-            rewards: _rewardsCrvCvx,
             cvxRewardToken: AddrCvxRewardTokens.FRXETH_WETH_LP,
-            pid: PidCvxCrvBooster.FRXETH_WETH_LP
+            pid: PidCvxCrvBooster.FRXETH_WETH_LP,
+            socFeePercentage: 1_000
         });
 
         // Convex Curve - PXETH-WETH
@@ -71,11 +74,12 @@ contract MarketInitParams is TgStableContext {
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
                 minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether
+                maxMarketDebt: 1_000_000 ether,
+                _rewardTokens: _rewardsCrvCvx
             }),
-            rewards: _rewardsCrvCvx,
             cvxRewardToken: AddrCvxRewardTokens.PXETH_WETH_LP,
-            pid: PidCvxCrvBooster.PXETH_WETH_LP
+            pid: PidCvxCrvBooster.PXETH_WETH_LP,
+            socFeePercentage: 1_000
         });
     }
 
@@ -89,10 +93,11 @@ contract MarketInitParams is TgStableContext {
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
                 minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether
+                maxMarketDebt: 1_000_000 ether,
+                _rewardTokens: _rewardsFxn
             }),
-            rewards: _rewardsFxn,
-            pid: PidCvxFxnBooster.USDC_FXUSD_LP
+            pid: PidCvxFxnBooster.USDC_FXUSD_LP,
+            socFeePercentage: 1_000
         });
     }
 }

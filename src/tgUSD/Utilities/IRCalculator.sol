@@ -3,7 +3,8 @@ pragma solidity ^0.8.22;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import {IIrCalculator} from "../../interfaces/internals/tgUSD/IIrCalculator.sol";
+import {IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {ABDKMath64x64} from "../../libs/ABDKMath64x64.sol";
@@ -13,52 +14,37 @@ import "forge-std/console.sol";
 ///@notice Contract allowing to compute the interest rate and reward cut of a tgUSD market
 // TODO Put a cap on tgUSD price to prevent overflow on IR computation
 // TODO Comments are bad
-contract IRCalculator is IIrCalculator, Ownable {
+contract IRCalculator is IIRCalculator, Ownable {
     uint256 public constant DENOMINATOR = 100_000;
 
     uint256 public constant ONE_ETHER = 1e18;
+
+    IControlTower public controlTower;
 
     /// @notice Contract allowing to retrieve the price in dollar of tgUSD.
     IPriceOracle public tgUSDOracle;
 
     /// @notice Gives the parameter of the market
-    mapping(address => IRParams) public irParams;
+    mapping(address => IIRCalculator.IRParams) public irParams;
 
     /// @notice Gives the parameter of the market
-    mapping(address => RCParams) public rcParams;
+    mapping(address => IIRCalculator.RCParams) public rcParams;
 
     error IRStartPriceLtOne();
+    error CallerNotOwnerOrMarketCreator(address caller);
 
-    struct IRParams {
-        uint128 sigma;
-        uint128 r0;
-        uint256 irStartPrice;
-    }
-
-    struct RCParams {
-        /// @dev Amount of distincts reward cut steps.
-        uint16 stepAmount;
-        /// @dev Percentage minimum of the reward cut.
-        uint32 startCutPercentage;
-        /// @dev Percentage maximum of the reward cut.
-        uint32 endCutPercentage;
-        /// @dev Price of tgUSD on which the reward cut starts to increase.
-        uint88 startCutPrice;
-        /// @dev Price of tgUSD on which the reward cut is at its maximum
-        uint88 endCutPrice;
-    }
-
-    constructor(address _owner, IPriceOracle _tgUSDOracle) Ownable(_owner) {
+    constructor(address _owner, IControlTower _controlTower, IPriceOracle _tgUSDOracle) Ownable(_owner) {
+        controlTower = _controlTower;
         tgUSDOracle = _tgUSDOracle;
     }
 
-    modifier verifyIRParams(IRParams calldata _irParam) {
+    modifier verifyIRParams(IIRCalculator.IRParams calldata _irParam) {
         //TODO Add range check on Sigma & r0
         require(_irParam.irStartPrice <= ONE_ETHER, IRStartPriceLtOne());
         _;
     }
 
-    modifier verifyRCParams(RCParams calldata _rcParam) {
+    modifier verifyRCParams(IIRCalculator.RCParams calldata _rcParam) {
         require(_rcParam.startCutPrice <= ONE_ETHER);
         if (_rcParam.stepAmount == 2) {
             require(_rcParam.startCutPercentage < _rcParam.endCutPercentage);
@@ -67,19 +53,28 @@ contract IRCalculator is IIrCalculator, Ownable {
         _;
     }
 
-    function setUpMarketRewards(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external verifyIRParams(_irParam) verifyRCParams(_rcParam) onlyOwner {
+    function setTgUSDOracle(IPriceOracle _tgUSDOracle) external onlyOwner {
+        tgUSDOracle = _tgUSDOracle;
+    }
+
+    function setUpMarketRewards(
+        address market,
+        IIRCalculator.IRParams calldata _irParam,
+        IIRCalculator.RCParams calldata _rcParam
+    ) external verifyIRParams(_irParam) verifyRCParams(_rcParam) {
+        require(msg.sender == owner() || controlTower.isMarketCreator(msg.sender), CallerNotOwnerOrMarketCreator(msg.sender));
         irParams[market] = _irParam;
         rcParams[market] = _rcParam;
         IDebtIR(market).checkpointIR();
     }
 
-    function updateIR(address market, IRParams calldata _irParam) external verifyIRParams(_irParam) onlyOwner {
+    function updateIR(address market, IIRCalculator.IRParams calldata _irParam) external verifyIRParams(_irParam) onlyOwner {
         require(_irParam.irStartPrice <= 1 ether, IRStartPriceLtOne());
         irParams[market] = _irParam;
         IDebtIR(market).checkpointIR();
     }
 
-    function updateRC(address market, RCParams calldata _rcParam) external verifyRCParams(_rcParam) onlyOwner {
+    function updateRC(address market, IIRCalculator.RCParams calldata _rcParam) external verifyRCParams(_rcParam) onlyOwner {
         rcParams[market] = _rcParam;
     }
 
@@ -88,7 +83,7 @@ contract IRCalculator is IIrCalculator, Ownable {
      * @param  market Denominator of the number in exponent. The higher it is, the
      */
     function computeIRForMarket(address market) external view returns (uint256) {
-        IRParams memory irParam = irParams[market];
+        IIRCalculator.IRParams memory irParam = irParams[market];
         return _computeIR(tgUSDOracle.latestAnswer(), irParam.irStartPrice, irParam.sigma, irParam.r0);
     }
 
@@ -134,7 +129,7 @@ contract IRCalculator is IIrCalculator, Ownable {
      * @param  market Denominator of the number in exponent. The higher it is, the
      */
     function computeRCForMarket(address market) external view returns (uint256) {
-        RCParams memory rcParam = rcParams[market];
+        IIRCalculator.RCParams memory rcParam = rcParams[market];
         return _calculateRC(tgUSDOracle.latestAnswer(), rcParam.stepAmount, rcParam.startCutPercentage, rcParam.endCutPercentage, rcParam.startCutPrice, rcParam.endCutPrice);
     }
 

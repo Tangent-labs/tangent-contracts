@@ -14,7 +14,11 @@ contract ControlTower is Ownable, IControlTower {
 
     mapping(address => bool) public isMarket;
 
+    mapping(address => bool) public isMarketCreator;
+
     error NotIRProducer(address irProducer);
+
+    error CallerNotOwnerOrMarketCreator(address caller);
 
     constructor(address _owner, address _feeTreasury) Ownable(_owner) {
         feeTreasury = _feeTreasury;
@@ -56,7 +60,21 @@ contract ControlTower is Ownable, IControlTower {
         }
     }
 
+    /**
+     *  @notice Toggle boolean linked to an address to flag it as market or no.
+     *  @dev    Callable only by the owner or a MarketCreator.
+     *  @param _market  Address to toggle.
+     */
+    function toggleMarket(address _market) external {
+        require(owner() == msg.sender || isMarketCreator[msg.sender], CallerNotOwnerOrMarketCreator(msg.sender));
+        isMarket[_market] = !isMarket[_market];
+    }
+
     function toggleZapper(address zapper) external onlyOwner {
         isZapper[zapper] = !isZapper[zapper];
+    }
+
+    function toggleMarketCreator(address marketCreator) external onlyOwner {
+        isMarketCreator[marketCreator] = !isMarketCreator[marketCreator];
     }
 }

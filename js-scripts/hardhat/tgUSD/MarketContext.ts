@@ -1,81 +1,120 @@
 import {ethers} from "hardhat";
-import {commonERC20, curveLp} from "convergence-defi-tools";
-import {MaxUint256, parseEther} from "ethers";
-import {ConvexCrvLPMarket, ConvexFxnLPMarket, ICurveStableSwapNG} from "../../../typechain-types";
+import {ContractTransactionReceipt, Interface, InterfaceAbi, LogDescription, MaxUint256} from "ethers";
+import {ConvexCrvLPMarket, ConvexFxnLPMarket} from "../../../typechain-types";
 import {BaseContext} from "./BaseContext";
 import {OracleContext} from "./OracleContext";
 import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "./config/market";
 
+import * as MarketCreator from "../../../artifacts/src/tgUSD/Utilities/MarketCreator.sol/MarketCreator.json";
+
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;
-export type Markets = ConvexCrvLPMarket | ConvexFxnLPMarket;
 
 export class MarketContext {
-    markets: {[key: string]: ConvexCrvLPMarket | ConvexFxnLPMarket} = {};
+    convexCrvMarkets: {[key: string]: ConvexCrvLPMarket} = {};
+    convexFxnMarkets: {[key: string]: ConvexFxnLPMarket} = {};
 
-    async deployConvexCrvMarkets(key: ConvexCrvMarketKeys, baseContext: BaseContext, oracleContext: OracleContext) {
-        const ConvexCrvLPMarketFactory = await ethers.getContractFactory("ConvexCrvLPMarket");
-        const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key];
-        const market = await ConvexCrvLPMarketFactory.deploy(
-            baseContext.owner,
-            {
-                collatOracle: oracleContext.crvUSD_USDC,
-                collatToken: staticConfig.collatToken,
-                controlTower: baseContext.controlTower,
-                irCalculator: baseContext.irCalculator,
-                liquidationThreshold: staticConfig.liquidationThreshold,
-                maxLTV: staticConfig.maxLTV,
-                maxMarketDebt: staticConfig.maxMarketDebt,
-                minimumLoan: staticConfig.minimumLoan,
-                tgUSD: baseContext.tgUSD,
-            },
-            baseContext.rewardAccumulator,
-            staticConfig.rewards,
-            staticConfig.cvxRewardToken,
-            staticConfig.pid
-        );
-        await market.waitForDeployment();
+    async deployConvexCrvMarkets(keys: ConvexCrvMarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
+        for (let index = 0; index < keys.length; index++) {
+            const key = keys[index];
+            const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key];
 
-        await this.setupPostMarketDeploy(key, market, baseContext);
-    }
+            const receipt = await (
+                await baseContext.marketCreator.connect(baseContext.owner).createConvexCrvMarket(
+                    {
+                        collatToken: staticConfig.collatToken,
+                        collatOracle: oracleContext.oracles[staticConfig.collatName],
+                        maxLTV: staticConfig.maxLTV,
+                        maxMarketDebt: staticConfig.maxMarketDebt,
+                        liquidationThreshold: staticConfig.liquidationThreshold,
+                        minimumLoan: staticConfig.minimumLoan,
+                        _rewardTokens: staticConfig.rewards,
+                    },
+                    staticConfig.cvxRewardToken,
+                    staticConfig.pid,
+                    1_000,
+                    {
+                        sigma: 2750000000000000,
+                        r0: 5n * 10n ** 18n,
+                        irStartPrice: 995000000000000000n,
+                    },
+                    {
+                        startCutPercentage: 50_000,
+                        endCutPercentage: 100_000,
+                        stepAmount: 4,
+                        startCutPrice: 995000000000000000n,
+                        endCutPrice: 900000000000000000n,
+                    }
+                )
+            ).wait();
 
-    async deployConvexFxnMarkets(key: ConvexFxnMarketKeys, baseContext: BaseContext, oracleContext: OracleContext) {
-        const ConvexFxnLPMarketFactory = await ethers.getContractFactory("ConvexFxnLPMarket");
-        const staticConfig = STATIC_CONFIG_CONVEX_FXN[key];
-        const market = await ConvexFxnLPMarketFactory.deploy(
-            baseContext.owner,
-            {
-                collatOracle: oracleContext.crvUSD_USDC,
-                collatToken: staticConfig.collatToken,
-                controlTower: baseContext.controlTower,
-                irCalculator: baseContext.irCalculator,
-                liquidationThreshold: staticConfig.liquidationThreshold,
-                maxLTV: staticConfig.maxLTV,
-                maxMarketDebt: staticConfig.maxMarketDebt,
-                minimumLoan: staticConfig.minimumLoan,
-                tgUSD: baseContext.tgUSD,
-            },
-            baseContext.rewardAccumulator,
-            staticConfig.rewards,
-            staticConfig.pid
-        );
-        await market.waitForDeployment();
-
-        await this.setupPostMarketDeploy(key, market, baseContext);
-    }
-
-    async setupPostMarketDeploy(key: string, market: Markets, baseContext: BaseContext) {
-        for (let i = 0; i < baseContext.users.length; i++) {
-            await (await ethers.getContractAt("IERC20", curveLp.CRVUSD_USDC)).connect(baseContext.users[i]).approve(market, MaxUint256);
+            await this.parseCreateMarketLogs(key, receipt!);
         }
-        await baseContext.controlTower.connect(baseContext.owner).toggleMarkets([market]);
-        await baseContext.irCalculator
-            .connect(baseContext.owner)
-            .setUpMarketRewards(
-                market,
-                {r0: parseEther("5"), sigma: 2750000000000000n},
-                {stepAmount: 5, cutAtOneDollar: 50_000, fullCutPrice: parseEther("0.995")}
-            );
-        this.markets[key] = market;
+    }
+
+    async deployConvexFxnMarkets(keys: ConvexFxnMarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
+        for (let index = 0; index < keys.length; index++) {
+            const key = keys[index];
+            const staticConfig = STATIC_CONFIG_CONVEX_FXN[key];
+
+            const receipt = await (
+                await baseContext.marketCreator.connect(baseContext.owner).createConvexFxnMarket(
+                    {
+                        collatToken: staticConfig.collatToken,
+                        collatOracle: oracleContext.oracles[staticConfig.collatName],
+                        maxLTV: staticConfig.maxLTV,
+                        maxMarketDebt: staticConfig.maxMarketDebt,
+                        liquidationThreshold: staticConfig.liquidationThreshold,
+                        minimumLoan: staticConfig.minimumLoan,
+                        _rewardTokens: staticConfig.rewards,
+                    },
+                    staticConfig.pid,
+                    1_000,
+                    {
+                        sigma: 2750000000000000,
+                        r0: 5n * 10n ** 18n,
+                        irStartPrice: 995000000000000000n,
+                    },
+                    {
+                        startCutPercentage: 50_000,
+                        endCutPercentage: 100_000,
+                        stepAmount: 4,
+                        startCutPrice: 995000000000000000n,
+                        endCutPrice: 900000000000000000n,
+                    }
+                )
+            ).wait();
+
+            await this.parseCreateMarketLogs(key, receipt!);
+        }
+    }
+
+    async parseCreateMarketLogs(key: string, receipt: ContractTransactionReceipt) {
+        const iface = new Interface(MarketCreator.abi);
+
+        for (let index = 0; index < receipt!.logs.length; index++) {
+            const log = receipt!.logs[index];
+            const parsedLog = iface.parseLog(log)!;
+
+            if (STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys]) {
+                await this.getConvexCrvMarket(key as ConvexCrvMarketKeys, parsedLog);
+            } else if (STATIC_CONFIG_CONVEX_FXN[key as ConvexFxnMarketKeys]) {
+                await this.getConvexFxnMarket(key as ConvexFxnMarketKeys, parsedLog);
+            }
+        }
+    }
+
+    async getConvexCrvMarket(key: ConvexCrvMarketKeys, parsedLog: LogDescription) {
+        if (parsedLog?.name && parsedLog.name === "MarketConvexCrvCreated") {
+            const market = await ethers.getContractAt("ConvexCrvLPMarket", parsedLog.args.proxy);
+            this.convexCrvMarkets[key] = market;
+        }
+    }
+
+    async getConvexFxnMarket(key: ConvexFxnMarketKeys, parsedLog: LogDescription) {
+        if (parsedLog?.name && parsedLog.name === "MarketConvexFxnCreated") {
+            const market = await ethers.getContractAt("ConvexFxnLPMarket", parsedLog.args.proxy);
+            this.convexFxnMarkets[key] = market;
+        }
     }
 }

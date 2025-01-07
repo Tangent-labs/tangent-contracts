@@ -1,18 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-abstract contract Sociabilization is Ownable {
+import {Admin} from "../Market/abstract/Admin.sol";
+
+abstract contract Sociabilization is Admin {
     uint256 public socFeePercentage;
     uint256 public socFeePending;
 
     error ZeroAmountDepositedAfterSociabilization();
     error SocFeeTooHigh();
-
-    constructor(uint256 _socFeePercentage) {
-        require(_socFeePercentage <= 2_000, SocFeeTooHigh());
-        socFeePercentage = _socFeePercentage;
-    }
 
     /**
      * @notice Computes deposited amount regarding isStake status.
