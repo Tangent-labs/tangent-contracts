@@ -34,5 +34,11 @@ npm run hh-node
 ## Deploy the dev context of tgUSD
 
 ```
-npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost
+npm run deploy-tgUSD
+```
+
+## Distribute some rewards into markets
+
+```
+npx hardhat run js-script/hardhat/tgUSD/distributeRewards/script.ts --network localhost
 ```

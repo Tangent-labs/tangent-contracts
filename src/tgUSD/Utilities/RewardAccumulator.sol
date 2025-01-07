@@ -5,7 +5,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import {IMarketRewards, ICommonStruct} from "../../interfaces/internals/tgUSD/IMarketRewards.sol";
+import {IRewards, ICommonStruct} from "../../interfaces/internals/tgUSD/IRewards.sol";
 import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 contract RewardAccumulator is IRewardAccumulator, Ownable {
@@ -39,7 +39,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     function claimSimple(address market) external {
         require(controlTower.isMarket(market), NotAMarketRewards());
 
-        ICommonStruct.TokenAmount[] memory tokenAmounts = IMarketRewards(market).getAndUpdateRewards(msg.sender);
+        ICommonStruct.TokenAmount[] memory tokenAmounts = IRewards(market).getAndUpdateRewards(msg.sender);
 
         require(tokenAmounts.length != 0, NoRewardToSimpleClaim());
 
@@ -71,7 +71,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
             // User input verification
 
             // Get and update the amount of rewards to claim
-            ICommonStruct.TokenAmount[] memory tokenAmountsToClaim = IMarketRewards(splitterToken).getAndUpdateRewards(msg.sender);
+            ICommonStruct.TokenAmount[] memory tokenAmountsToClaim = IRewards(splitterToken).getAndUpdateRewards(msg.sender);
             // If the rewards returned by the gUSD is an empty array,
             require(tokenAmountsToClaim.length != 0, NoRewardsToClaimFromContract(address(splitterToken)));
 

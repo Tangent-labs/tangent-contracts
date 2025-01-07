@@ -24,3 +24,4 @@ cache_hardhat
 artifacts
 typechain-types
 broadcast
+snapshots/

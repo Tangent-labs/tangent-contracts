@@ -7,7 +7,7 @@ import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extens
 
 import {ICommonStruct} from "../../../interfaces/internals/ICommonStruct.sol";
 
-import {IMarketRewards} from "../../../interfaces/internals/tgUSD/IMarketRewards.sol";
+import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {MarketExternalActions, MarketCore} from "./MarketExternalActions.sol";
 import {Sociabilization} from "../../Utilities/Sociabilization.sol";
