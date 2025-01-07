@@ -1,18 +1,20 @@
 import {ethers} from "hardhat";
 
-import {commonERC20, convexContracts, convexERC20, curveLp, stakeDaoERC20} from "convergence-defi-tools";
+import {commonERC20, curveLp} from "convergence-defi-tools";
 
 import {MainSetup} from "../Main.setup";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {Addressable, AddressLike, BigNumberish, MaxUint256, parseEther, parseUnits, ZeroAddress} from "ethers";
+import {AddressLike, BigNumberish, MaxUint256, ZeroAddress} from "ethers";
 import {
     ControlTower,
-    ICurveStableSwapFactoryNG,
+    ConvexCrvLPMarket,
+    ConvexFxnLPMarket,
     ICurveStableSwapNG,
     IERC20,
     IRCalculator,
+    MarketCreator,
+    MarketNoSociabilization,
     RewardAccumulator,
-    StablePriceOracleParams,
     TgUSD,
     Zapper,
 } from "../../../typechain-types";
@@ -24,11 +26,15 @@ export class BaseContext extends MainSetup {
     feeTreso!: HardhatEthersSigner;
 
     controlTower!: ControlTower;
-
     tgUSD!: TgUSD;
     zapper!: Zapper;
     rewardAccumulator!: RewardAccumulator;
     irCalculator!: IRCalculator;
+    marketCreator!: MarketCreator;
+
+    marketCvxCrvImplem!: ConvexCrvLPMarket;
+    marketCvxFxnImplem!: ConvexFxnLPMarket;
+    marketNoSociabilizationImplem!: MarketNoSociabilization;
 
     stableLp: StableLP = {};
     coins: {[name: string]: IERC20} = {};
@@ -41,21 +47,26 @@ export class BaseContext extends MainSetup {
         this.owner = this.users[0];
         this.feeTreso = this.users[1];
 
-        const ControlTowerFactory = await ethers.getContractFactory("ControlTower");
-        this.controlTower = await ControlTowerFactory.deploy(this.owner, this.feeTreso);
+        this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
         await this.controlTower.waitForDeployment();
 
-        const TgUSDFactory = await ethers.getContractFactory("TgUSD");
-        this.tgUSD = await TgUSDFactory.deploy("Tangent USD", "tgUSD", l0EndpointAddress, l0Delegate, this.owner, this.controlTower);
+        this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy("Tangent USD", "tgUSD", l0EndpointAddress, l0Delegate, this.owner, this.controlTower);
         await this.tgUSD.waitForDeployment();
 
-        const ZapperFactory = await ethers.getContractFactory("Zapper");
-        this.zapper = await ZapperFactory.deploy(this.owner, this.controlTower, this.tgUSD);
+        this.zapper = await (await ethers.getContractFactory("Zapper")).deploy(this.owner, this.controlTower, this.tgUSD);
         await this.zapper.waitForDeployment();
 
-        const RewardAccumulatorFactory = await ethers.getContractFactory("RewardAccumulator");
-        this.rewardAccumulator = await RewardAccumulatorFactory.deploy(this.owner, this.controlTower, this.feeTreso);
+        this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, this.feeTreso);
         await this.rewardAccumulator.waitForDeployment();
+
+        this.marketCvxCrvImplem = await (await ethers.getContractFactory("ConvexCrvLPMarket")).deploy();
+        await this.marketCvxCrvImplem.waitForDeployment();
+        this.marketCvxFxnImplem = await (await ethers.getContractFactory("ConvexFxnLPMarket")).deploy();
+        await this.marketCvxFxnImplem.waitForDeployment();
+        this.marketNoSociabilizationImplem = await (await ethers.getContractFactory("MarketNoSociabilization")).deploy();
+        await this.marketNoSociabilizationImplem.waitForDeployment();
+
+        await this.controlTower.connect(this.owner).toggleZapper(this.zapper);
     }
 
     async deployStableLP(
@@ -71,22 +82,9 @@ export class BaseContext extends MainSetup {
         const curveStableSwapFactory = await ethers.getContractAt("ICurveStableSwapFactoryNG", "0x6A8cbed756804B16E05E741eDaBd5cB544AE21bf");
 
         const poolCount = await curveStableSwapFactory.pool_count();
-        console.log(poolCount);
         const lpCreationTx = await curveStableSwapFactory
             .connect(this.owner)
-            .deploy_plain_pool(
-                name,
-                name,
-                coins,
-                A,
-                fee,
-                _offpeg_fee_multiplier,
-                _ma_exp_time,
-                implemId,
-                [0, 0],
-                ["0x00000000", "0x00000000"],
-                [ZeroAddress, ZeroAddress]
-            );
+            .deploy_plain_pool(name, name, coins, A, fee, _offpeg_fee_multiplier, _ma_exp_time, implemId, [0, 0], ["0x00000000", "0x00000000"], [ZeroAddress, ZeroAddress]);
         await lpCreationTx.wait();
 
         const lp = await ethers.getContractAt("ICurveStableSwapNG", await curveStableSwapFactory.pool_list(poolCount));
@@ -100,14 +98,29 @@ export class BaseContext extends MainSetup {
     }
 
     async deployContracts2(tgUSDOracle: AddressLike) {
-        const IRCalculatorFactory = await ethers.getContractFactory("IRCalculator");
-        this.irCalculator = await IRCalculatorFactory.deploy(this.owner, tgUSDOracle);
+        this.irCalculator = await (await ethers.getContractFactory("IRCalculator")).deploy(this.owner, this.controlTower, tgUSDOracle);
         await this.irCalculator.waitForDeployment();
+
+        this.marketCreator = await (
+            await ethers.getContractFactory("MarketCreator")
+        ).deploy(
+            this.owner,
+            this.controlTower,
+            this.tgUSD,
+            this.irCalculator,
+            this.rewardAccumulator,
+            this.marketCvxCrvImplem,
+            this.marketCvxFxnImplem,
+            this.marketNoSociabilizationImplem
+        );
+        await this.marketCreator.waitForDeployment();
+
+        await this.controlTower.connect(this.owner).toggleMarketCreator(this.marketCreator);
     }
 
     async setUpERC20() {
         this.coins["usdc"] = await ethers.getContractAt("IERC20", commonERC20.USDC);
-        this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20", curveLp.CRVUSD_USDC);
+        this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20", curveLp.crvUSD_USDC);
 
         await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 5, amount: 1_000_000}]);
     }

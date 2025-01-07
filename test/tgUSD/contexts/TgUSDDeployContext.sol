@@ -14,9 +14,11 @@ import "../../../src/tgUSD/tokens/TgStable.sol";
 import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
-
+import "../../../src/tgUSD/Utilities/MarketCreator.sol";
 import "../../../test/tgUSD/mocks/MockEnsoRouter.sol";
-
+import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
+import "../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
+import "../../../src/tgUSD/Market/MarketNoSociabilization.sol";
 import "../../utils/AssertERC20.sol";
 import "../../utils/LowLevel.sol";
 import "../../utils/EnsoUtils.sol";
@@ -41,19 +43,16 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public endpointAddressMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
 
     ControlTower public controlTower;
-
+    MarketCreator public marketCreator;
+    address public convexCrvLPMarketImplem;
+    address public convexFxnLPMarketImplem;
+    address public marketNoSociabilizationImplem;
     Zapper public zapper;
-
     ICurveStableSwapNG public tgUSDLp;
-
     TgUSD public tgUsd;
-
     RewardAccumulator public rewardAccumulator;
-
     MockEnsoRouter public mockEnsoRouter;
-
     EnsoUtils public ensoUtils;
-
     Labeliser public labeliser;
 
     /// @dev Validate Implementation (false if you don't want to "forge clean" at each modification)
@@ -64,6 +63,10 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         vm.startPrank(owner);
 
+        convexCrvLPMarketImplem = address(new ConvexCrvLPMarket());
+        convexFxnLPMarketImplem = address(new ConvexFxnLPMarket());
+        marketNoSociabilizationImplem = address(new MarketNoSociabilization());
+
         ensoUtils = new EnsoUtils();
 
         labeliser = new Labeliser();
@@ -71,6 +74,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         labeliser.labelizeERC4626();
 
         controlTower = new ControlTower(owner, feeTreasury);
+
         rewardAccumulator = new RewardAccumulator(owner, controlTower, feeTreasury);
 
         // Deploy tgUSD

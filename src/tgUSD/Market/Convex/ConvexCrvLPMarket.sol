@@ -19,20 +19,19 @@ contract ConvexCrvLPMarket is Rewards {
     /// @notice Id of the Curve pool on Convex
     uint256 public pid;
 
-    constructor(
-        address _owner,
-        MarketInit memory _marketInit,
-        IRewardAccumulator _rewardAccumulator,
-        IERC20Metadata[] memory _rewardTokens,
-        ICvxRewardToken _cvxRewardToken,
-        uint256 _pid
-    ) Rewards(_owner, _marketInit, _rewardAccumulator, _rewardTokens) {
+    function initialize(MarketConstants memory _marketConstants, MarketInit memory _marketInit, ICvxRewardToken _cvxRewardToken, uint256 _pid, uint256 _socFeePercentage) external {
+        // Common
+        _initializationCommon(_marketConstants, _marketInit);
+
+        // Sociabilization
+        require(_socFeePercentage <= 2_000, SocFeeTooHigh());
+        socFeePercentage = _socFeePercentage;
+
+        // Convex Crv
         // Allows CVX_BOOSTER to transfer LP from the market contract
         collatToken.approve(address(CVX_BOOSTER), MAX_UINT);
-
         cvxRewardToken = _cvxRewardToken;
         pid = _pid;
-        socFeePercentage = 1_000;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

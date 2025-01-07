@@ -7,4 +7,10 @@ import {IDebtIR} from "./IDebtIR.sol";
 
 interface ICollateral {
     function collatToken() external returns (IERC20Metadata);
+
+    function healthRatio(address account) external returns (uint256);
+
+    function positionValue(address account) external returns (uint256);
+
+    function maxLTV() external returns (uint256);
 }

@@ -4,7 +4,7 @@ import {ERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
-import {Sociabilization, Ownable} from "../Utilities/Sociabilization.sol";
+import {Sociabilization} from "../Utilities/Sociabilization.sol";
 
 import "forge-std/console.sol";
 /// @notice
@@ -28,13 +28,19 @@ contract TgStable is ERC20, Sociabilization {
         IERC4626 _savingAccount,
         address _owner,
         uint256 _socFeePercentage
-    ) ERC20(_name, _symbol) Ownable(_owner) Sociabilization(_socFeePercentage) {
+    ) ERC20(_name, _symbol) {
         controlTower = _controlTower;
         stable = _stable;
         savingAccount = _savingAccount;
         // Match the decimals number
         _decimals = _stable.decimals();
         _stable.approve(address(_savingAccount), MAX_UINT);
+
+        _transferOwnership(_owner);
+
+        // Sociabilization
+        require(_socFeePercentage <= 2_000, SocFeeTooHigh());
+        socFeePercentage = _socFeePercentage;
     }
 
     function decimals() public view override returns (uint8) {

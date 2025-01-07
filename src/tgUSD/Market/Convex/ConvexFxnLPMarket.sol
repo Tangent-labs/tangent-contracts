@@ -13,17 +13,17 @@ contract ConvexFxnLPMarket is Rewards {
     ICvxFxnBooster constant CVX_BOOSTER = ICvxFxnBooster(0xAffe966B27ba3E4Ebb8A0eC124C7b7019CC762f8);
     IStakingProxyERC20 public stakingProxyVault;
 
-    constructor(
-        address _owner,
-        MarketInit memory _marketInit,
-        IRewardAccumulator _rewardAccumulator,
-        IERC20Metadata[] memory _rewardTokens,
-        uint256 _pid
-    ) Rewards(_owner, _marketInit, _rewardAccumulator, _rewardTokens) {
+    function initialize(MarketConstants memory _marketConstants, MarketInit memory _marketInit, uint256 _pid, uint256 _socFeePercentage) external {
+        // Common
+        _initializationCommon(_marketConstants, _marketInit);
+
+        // Sociabilization
+        require(_socFeePercentage <= 2_000, SocFeeTooHigh());
+        socFeePercentage = _socFeePercentage;
+
+        // Convex FXN
         address vaultAddress = CVX_BOOSTER.createVault(_pid);
-
         stakingProxyVault = IStakingProxyERC20(vaultAddress);
-
         // Need this approval to the llamaLendVault on the CvxBooster
         collatToken.approve(vaultAddress, MAX_UINT);
     }

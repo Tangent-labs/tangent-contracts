@@ -20,7 +20,20 @@ contract OraclesContext is TgUSDDeployContext {
         oracles[tgUsd] = new StablePriceOracleParams(tgUSDLp, IPriceOracle(address(AddrChainlinkOracle.USDC)));
         vm.label(address(oracles[tgUsd]), "Oracle tgUSD");
 
-        irCalculator = new IRCalculator(owner, oracles[tgUsd]);
+        irCalculator = new IRCalculator(owner, controlTower, oracles[tgUsd]);
+        marketCreator = new MarketCreator(
+            owner,
+            controlTower,
+            tgUsd,
+            irCalculator,
+            rewardAccumulator,
+            convexCrvLPMarketImplem,
+            convexFxnLPMarketImplem,
+            marketNoSociabilizationImplem
+        );
+
+        vm.prank(owner);
+        controlTower.toggleMarketCreator(address(marketCreator));
 
         setupChainlinkOracles();
         setupSimpleTokenOraclesWithCurveLP();

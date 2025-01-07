@@ -7,7 +7,7 @@ import {IMarketCore, IPriceOracle} from "../../../interfaces/internals/tgUSD/IMa
 import {IControlTower} from "../../../interfaces/internals/tgUSD/IControlTower.sol";
 import {ILiquidator} from "../../../interfaces/internals/tgUSD/ILiquidator.sol";
 
-import {Collateral, Ownable} from "./Collateral.sol";
+import {Collateral} from "./Collateral.sol";
 
 import "forge-std/console.sol";
 
@@ -15,6 +15,7 @@ import "forge-std/console.sol";
 abstract contract MarketCore is IMarketCore, Collateral {
     IControlTower public controlTower;
 
+    error AlreadyInitialized();
     error TotalDebtTooHigh();
     error PositionDebtTooHigh();
     error PositionDebtTooLow();
@@ -23,22 +24,10 @@ abstract contract MarketCore is IMarketCore, Collateral {
     error ZeroDebtAmount();
     error NotLiquidablePosition();
     error NotZapper(address zapper);
+    error LiquidatorCallError();
 
-    constructor(address _owner, MarketInit memory _marketInit) Ownable(_owner) {
-        tgUSD = _marketInit.tgUSD;
-        controlTower = _marketInit.controlTower;
-        irCalculator = _marketInit.irCalculator;
-        collatToken = _marketInit.collatToken;
-        collatOracle = _marketInit.collatOracle;
-
-        maxLTV = _marketInit.maxLTV;
-        liquidationThreshold = _marketInit.liquidationThreshold;
-        maxMarketDebt = _marketInit.maxMarketDebt;
-        minimumLoan = _marketInit.minimumLoan;
-
-        lastIR = 10 * RAY; // 10%
-        blockLastIRTimestamp = block.timestamp;
-        debtIndex = RAY;
+    constructor() {
+        isInitialized = true;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -100,14 +89,14 @@ abstract contract MarketCore is IMarketCore, Collateral {
                             BORROW 
                                                     ------ */
 
-    function _borrow(address receiver, uint256 tgUSDToBorrow, uint256 collatAmount, bool isLeverage) internal returns (uint256, uint256, uint256) {
+    function _borrow(address borrower, address receiver, uint256 tgUSDToBorrow, uint256 collatAmount, bool isLeverage) internal returns (uint256, uint256, uint256) {
         require(tgUSDToBorrow != 0, ZeroDebtAmount());
         (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
 
         newTotalDebt += tgUSDToBorrow;
 
         //  Cache the new value in tgUSD of the debt
-        uint256 newUserDebt = _positionDebt(msg.sender, newDebtIndex) + tgUSDToBorrow;
+        uint256 newUserDebt = _positionDebt(borrower, newDebtIndex) + tgUSDToBorrow;
 
         //  Verify that the new total debt is not bigger the max debt
         require(newTotalDebt <= maxMarketDebt, TotalDebtTooHigh());
@@ -122,16 +111,17 @@ abstract contract MarketCore is IMarketCore, Collateral {
             // Mint tgUSD to the receiver
             tgUSD.mint(receiver, tgUSDToBorrow);
         }
+
         return (newUserDebt, newDebtIndex, newTotalDebt);
     }
 
-    function _depositAndBorrow(address _for, uint256 amountDeposited, uint256 tgUSDToBorrow, bool isLeverage) internal {
+    function _depositAndBorrow(address borrower, uint256 amountDeposited, uint256 tgUSDToBorrow, bool isLeverage) internal {
         // Collat amount after the deposit
-        uint256 newCollatAmount = collateralBalances[_for] + amountDeposited;
+        uint256 newCollatAmount = collateralBalances[borrower] + amountDeposited;
 
-        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(_for, tgUSDToBorrow, newCollatAmount, isLeverage);
+        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(borrower, borrower, tgUSDToBorrow, newCollatAmount, isLeverage);
 
-        _updateCollatAndDebts(_for, newCollatAmount, newUserDebt, newDebtIndex, newTotalDebt);
+        _updateCollatAndDebts(borrower, newCollatAmount, newUserDebt, newDebtIndex, newTotalDebt);
     }
 
     /* --------
@@ -170,7 +160,6 @@ abstract contract MarketCore is IMarketCore, Collateral {
 
         // Burns tgUSD from the burnAddress as a repayment of the debt
         tgUSD.burnFrom(burnAddress, tgUSDToRepay);
-
         return (newUserDebt, newDebtIndex, newTotalDebt - tgUSDToRepay);
     }
 
@@ -200,12 +189,11 @@ abstract contract MarketCore is IMarketCore, Collateral {
         uint256 newDebtIndex,
         uint256 collatBalance,
         address liquidator,
-        bytes calldata routerCall
-    ) internal {
+        bytes calldata liquidationCall
+    ) internal returns (uint256 collatAmountToLiquidate) {
         require(tgUSDToRepay != 0, ZeroDebtAmount());
         uint256 remainingDebt;
         uint256 newCollatBalance;
-        uint256 collatAmountToLiquidate;
 
         // Liquidate all
         if (tgUSDToRepay >= userDebt) {
@@ -235,7 +223,8 @@ abstract contract MarketCore is IMarketCore, Collateral {
         // When liquidator is not zero, it allows to the liquidator to receive the collateral on a contract.
         // Liquidator is so able to sell the collateral for tgUSD in the same transaction.
         if (liquidator != address(0)) {
-            ILiquidator(liquidator).liquidate(routerCall);
+            (bool isrouterCallSuccess, ) = liquidator.call{value: msg.value}(liquidationCall);
+            require(isrouterCallSuccess, LiquidatorCallError());
         }
         // Burns tgUSD from the ender
         tgUSD.burnFrom(msg.sender, tgUSDToRepay);
@@ -244,4 +233,16 @@ abstract contract MarketCore is IMarketCore, Collateral {
     /* --------
                         LEVERAGE
                                                     ------ */
+
+    function _checkZapper(address callerZapper) internal view returns (bool, address) {
+        bool isZapping;
+        if (address(callerZapper) != address(0)) {
+            isZapping = controlTower.isZapper(msg.sender);
+        } else {
+            callerZapper = msg.sender;
+        }
+        callerZapper = isZapping ? callerZapper : msg.sender;
+
+        return (isZapping, callerZapper);
+    }
 }

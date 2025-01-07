@@ -1,29 +1,24 @@
 import {ethers} from "hardhat";
 import {curveLp} from "convergence-defi-tools";
-import {AddressLike} from "ethers";
-import {CurveStableLPOracle, IAggregatorV3, StablePriceOracleParams} from "../../../typechain-types";
+import {IPriceOracle} from "../../../typechain-types";
 import {StableLP} from "./BaseContext";
 
-const LP_USDC_FXUSD = "0x5018BE882DccE5E3F2f3B0913AE2096B9b3fB61f";
-
 export class OracleContext {
-    tgUSD!: StablePriceOracleParams;
-    crvUSD!: IAggregatorV3;
-    usdc!: IAggregatorV3;
-    usdt!: IAggregatorV3;
-    fxUSD!: StablePriceOracleParams;
-    crvUSD_USDC!: CurveStableLPOracle;
+    oracles: {[key: string]: IPriceOracle} = {};
 
     async deployAndSetupOracles(stableLp: StableLP) {
-        this.crvUSD = await ethers.getContractAt("IAggregatorV3", "0xEEf0C605546958c1f899b6fB336C20671f9cD49F");
-        this.usdc = await ethers.getContractAt("IAggregatorV3", "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6");
-        this.usdt = await ethers.getContractAt("IAggregatorV3", "0x3E7d1eAB13ad0104d2750B8863b489D65364e32D");
+        this.oracles["crvUSD"] = await ethers.getContractAt("IPriceOracle", "0xEEf0C605546958c1f899b6fB336C20671f9cD49F");
+        this.oracles["USDC"] = await ethers.getContractAt("IPriceOracle", "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6");
+        this.oracles["USDT"] = await ethers.getContractAt("IPriceOracle", "0x3E7d1eAB13ad0104d2750B8863b489D65364e32D");
 
         const StablePriceOracleParamsFactory = await ethers.getContractFactory("StablePriceOracleParams");
-        this.tgUSD = await StablePriceOracleParamsFactory.deploy(stableLp["tgUSD-USDC"], this.usdc);
-        this.fxUSD = await StablePriceOracleParamsFactory.deploy(LP_USDC_FXUSD, this.usdc);
+        this.oracles["tgUSD"] = (await StablePriceOracleParamsFactory.deploy(stableLp["tgUSD-USDC"], this.oracles["USDC"])) as unknown as IPriceOracle;
+        this.oracles["fxUSD"] = (await StablePriceOracleParamsFactory.deploy(curveLp.CRV_LP_USDC_fxUSD, this.oracles["USDC"])) as unknown as IPriceOracle;
 
-        const CurveStableLPOracleFactory = await ethers.getContractFactory("CurveStableLPOracle");
-        this.crvUSD_USDC = await CurveStableLPOracleFactory.deploy(curveLp.CRVUSD_USDC, this.crvUSD, this.usdc);
+        const OracleDuoPoolStableFactory = await ethers.getContractFactory("OracleDuoPoolStable");
+        this.oracles["crvUSD_USDC"] = (await OracleDuoPoolStableFactory.deploy(curveLp.crvUSD_USDC, this.oracles["USDC"], this.oracles["crvUSD"])) as unknown as IPriceOracle;
+        this.oracles["crvUSD_USDT"] = (await OracleDuoPoolStableFactory.deploy(curveLp.crvUSD_USDT, this.oracles["USDT"], this.oracles["crvUSD"])) as unknown as IPriceOracle;
+        this.oracles["USDC_fxUSD"] = (await OracleDuoPoolStableFactory.deploy(curveLp.CRV_LP_USDC_fxUSD, this.oracles["USDC"], this.oracles["fxUSD"])) as unknown as IPriceOracle;
+        this.oracles["frxETH_WETH"] = (await OracleDuoPoolStableFactory.deploy(curveLp.FRXETH_ETH_LP, this.oracles["USDT"], this.oracles["crvUSD"])) as unknown as IPriceOracle;
     }
 }

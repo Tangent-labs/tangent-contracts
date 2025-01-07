@@ -20,7 +20,7 @@ contract EnsoUtils is Test, LowLevel {
         return vm.ffi(inputs);
     }
 
-    function getQuote(IERC20 tokenIn, uint256 amountIn, IERC20 tokenOut, uint256 slippageMax) public returns (uint256) {
+    function getQuote(IERC20 tokenIn, uint256 amountIn, IERC20 tokenOut, uint256 slippageMax) public returns (uint256, uint256) {
         string[] memory inputs = new string[](5);
         inputs[0] = "node";
         inputs[1] = "./js-scripts/ffi/enso/getQuote.mjs";
@@ -28,7 +28,7 @@ contract EnsoUtils is Test, LowLevel {
         inputs[3] = vm.toString(amountIn);
         inputs[4] = vm.toString(address(tokenOut));
         uint256 quote = stringToUint(string(vm.ffi(inputs)));
-        return quote - (quote * slippageMax) / 100;
+        return (quote, quote - (quote * slippageMax) / 100);
     }
 
     function getZapCallMocked(
