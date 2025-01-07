@@ -23,6 +23,8 @@ contract HarvestChainview is ConvexCurveContext {
         markets[0] = address(market1);
         markets[1] = address(market2);
 
+
+
         try new HarvestUI(markets) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
         }
