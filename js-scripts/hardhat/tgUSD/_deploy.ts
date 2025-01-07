@@ -4,6 +4,7 @@ import {ConvexCrvMarketKeys, ConvexFxnMarketKeys, MarketContext} from "./MarketC
 import * as fs from "fs";
 import {curveLp} from "convergence-defi-tools";
 import {parseEther, parseUnits} from "ethers";
+import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "./config/market";
 async function main() {
     const baseContext = new BaseContext();
     const oracleContext = new OracleContext();
@@ -32,8 +33,8 @@ async function main() {
     await baseContext.deployContracts2(oracleContext.oracles["tgUSD"]);
 
     // Define markets to deploy
-    const convexCrvMarkets: ConvexCrvMarketKeys[] = ["crvUSD_USDC_Cvx_Market", "crvUSD_USDT_Cvx_Market"];
-    const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD_Cvx_Market"];
+    const convexCrvMarkets: ConvexCrvMarketKeys[] = ["crvUSD_USDC", "crvUSD_USDT"];
+    const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD"];
     // Deploy Convex CRV markets
     await marketContext.deployConvexCrvMarkets(convexCrvMarkets, baseContext, oracleContext);
     // Deploy Convex FXN markets
@@ -48,17 +49,36 @@ async function main() {
     console.log("Contracts deployed and setup !");
 }
 
-async function createJSONAddress(baseContext: BaseContext, marketContext: MarketContext, oracleContext: OracleContext) {
-    let convexCrvMarkets: {[key: string]: string} = {};
-    for (const prop in marketContext.convexCrvMarkets) {
-        const market = await marketContext.convexCrvMarkets[prop].getAddress();
-        convexCrvMarkets[prop] = market;
-    }
+type Market = {
+    marketAddress: string;
+    collatName: string;
+    collatAddress: string;
+    marketType: string;
+};
 
-    let convexFxnMarkets: {[key: string]: string} = {};
-    for (const prop in marketContext.convexFxnMarkets) {
-        const market = await marketContext.convexFxnMarkets[prop].getAddress();
-        convexFxnMarkets[prop] = market;
+async function createJSONAddress(baseContext: BaseContext, marketContext: MarketContext, oracleContext: OracleContext) {
+    const markets: Market[] = [];
+    for (const key in marketContext.convexCrvMarkets) {
+        const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys];
+        const market = await marketContext.convexCrvMarkets[key].getAddress();
+
+        markets.push({
+            marketAddress: market,
+            collatName: staticConfig.collatName,
+            collatAddress: staticConfig.collatToken,
+            marketType: "Convex_CRV",
+        });
+    }
+    for (const key in marketContext.convexFxnMarkets) {
+        const market = await marketContext.convexFxnMarkets[key].getAddress();
+        const staticConfig = STATIC_CONFIG_CONVEX_FXN[key as ConvexFxnMarketKeys];
+
+        markets.push({
+            marketAddress: market,
+            collatName: staticConfig.collatName,
+            collatAddress: staticConfig.collatToken,
+            marketType: "Convex_FXN",
+        });
     }
 
     let oracles: {[key: string]: string} = {};
@@ -76,10 +96,7 @@ async function createJSONAddress(baseContext: BaseContext, marketContext: Market
         tokens: {
             tgUSD: await baseContext.tgUSD.getAddress(),
         },
-        markets: {
-            convexCrvMarkets,
-            convexFxnMarkets,
-        },
+        markets,
         oracles,
         lps: {
             tgUSD_USDC_LP: await baseContext.stableLp["tgUSD-USDC"].getAddress(),
