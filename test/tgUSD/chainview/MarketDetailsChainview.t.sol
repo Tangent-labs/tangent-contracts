@@ -17,9 +17,7 @@ contract MarketDetailsChainview is ConvexCurveContext {
 
     // LIST
     function test_marketDetails_ui_returns() public {
-        MarketDetailsUI.MarketDetailsUIIn memory paramsIn = MarketDetailsUI.MarketDetailsUIIn({account: usr1, market: address(market)});
-
-        try new MarketDetailsUI(paramsIn) {} catch (bytes memory reason) {
+        try new MarketDetailsUI(usr1, address(market)) {} catch (bytes memory reason) {
             console.logBytes(reason);
             assertTrue(reason.length > 3, "Chainview failed");
         }

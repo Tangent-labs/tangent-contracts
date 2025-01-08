@@ -10,11 +10,6 @@ import {ERC20Infos, IERC20Metadata} from "../../ERC20Infos.sol";
 import {BalancesAllowances} from "../../BalancesAllowances.sol";
 
 contract MarketDetailsUI is ERC20Infos, BalancesAllowances {
-    struct MarketDetailsUIIn {
-        address account;
-        address market;
-    }
-
     struct MarketDetailsUIOut {
         address marketAddress;
         ERC20Infos.ERC20StaticInfos collateralToken;
@@ -34,10 +29,7 @@ contract MarketDetailsUI is ERC20Infos, BalancesAllowances {
 
     error MarketDetailsUIOutError(MarketDetailsUIOut output);
 
-    constructor(MarketDetailsUIIn memory userMarket) {
-        address market = userMarket.market;
-        address account = userMarket.account;
-
+    constructor(address account, address market) {
         ICollateral marketCollateral = ICollateral(market);
         IPriceOracle priceOracle = marketCollateral.collatOracle();
         IDebtIR marketDebt = IDebtIR(market);
