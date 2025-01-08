@@ -13,6 +13,7 @@ export async function distributeRewards() {
             await erc20.transfer(market, parseEther("1000"));
         }
     }
+    console.info("\x1b[32m%s\x1b[0m", "Rewards distributed with success ! ");
 }
 
 distributeRewards();

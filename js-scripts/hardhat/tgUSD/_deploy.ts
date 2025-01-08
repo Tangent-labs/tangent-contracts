@@ -46,7 +46,7 @@ async function main() {
     // Write JSON with all addresses
     fs.writeFileSync("./addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext), null, 2));
 
-    console.log("Contracts deployed and setup !");
+    console.info("\x1b[32m%s\x1b[0m", "Contracts deployed and setup !");
 }
 
 type Market = {
