@@ -14,7 +14,7 @@
     "build": "forge build --skip ./src/LendSplitter/* ./test/lendSplitter/*",
     "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost",
     "distribute-rewards-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/distributeRewards.ts --network localhost",
-    "stake-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/stake.ts --network localhost",
+    "stake-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/stake.ts --network localhost",
     "time-travel": "npx hardhat run js-scripts/hardhat/tgUSD/actions/time-travel.ts --network localhost"
   },
   "author": "Trottoir",
