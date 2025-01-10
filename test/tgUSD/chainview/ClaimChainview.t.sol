@@ -20,7 +20,6 @@ contract ClaimChainview is ConvexCurveContext {
         address[] memory paramsIn = new address[](1);
         paramsIn[0] = address(market);
         try new ClaimUI(usr1, paramsIn) {} catch (bytes memory reason) {
-            console.logBytes(reason);
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }

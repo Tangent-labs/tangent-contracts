@@ -18,7 +18,6 @@ contract MarketDetailsChainview is ConvexCurveContext {
     // LIST
     function test_marketDetails_ui_returns() public {
         try new MarketDetailsUI(usr1, address(market)) {} catch (bytes memory reason) {
-            console.logBytes(reason);
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }
