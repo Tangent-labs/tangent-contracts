@@ -8,7 +8,7 @@ import {StdUtils} from "forge-std/StdUtils.sol";
 
 import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
-
+import "../../../src/libs/Resources/ResourcesYearn.sol";
 import "../../../src/tgUSD/tokens/TgUSD.sol";
 import "../../../src/tgUSD/tokens/TgStable.sol";
 import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
@@ -24,6 +24,7 @@ import "../../utils/LowLevel.sol";
 import "../../utils/EnsoUtils.sol";
 import "../../utils/Labeliser.sol";
 import "../../utils/Array.sol";
+import "../../../src/interfaces/externals/YearnFi/IYearnV3Vault.sol";
 
 contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address usr1 = makeAddr("User1");
@@ -50,13 +51,11 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     Zapper public zapper;
     ICurveStableSwapNG public tgUSDLp;
     TgUSD public tgUsd;
+    IYearnV3Vault public sgUSD;
     RewardAccumulator public rewardAccumulator;
     MockEnsoRouter public mockEnsoRouter;
     EnsoUtils public ensoUtils;
     Labeliser public labeliser;
-
-    /// @dev Validate Implementation (false if you don't want to "forge clean" at each modification)
-    bool constant IS_VALIDATE_IMPLEM = false;
 
     constructor() {
         vm.createSelectFork("mainnet", 21514132);
@@ -80,6 +79,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         // Deploy tgUSD
         tgUsd = new TgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"), owner, controlTower);
 
+        sgUSD = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(tgUsd), "Staked tgUSD", "sgUSD", owner, 7 days));
+
         mockEnsoRouter = new MockEnsoRouter();
 
         vm.allowCheatcodes(address(AddrAggregator.ENSO_ROUTER));
@@ -93,6 +94,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         tgUSDLp = deployTgUSDLP();
 
         vm.label(address(tgUsd), "tgUSD");
+        vm.label(address(sgUSD), "sgUSD");
         vm.label(address(controlTower), "ControlTower");
         vm.label(address(tgUSDLp), "LP tgUSD");
         vm.label(address(rewardAccumulator), "RewardAccumulator");

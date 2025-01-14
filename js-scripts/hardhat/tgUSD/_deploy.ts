@@ -1,6 +1,6 @@
-import {BaseContext} from "./BaseContext";
-import {OracleContext} from "./OracleContext";
-import {ConvexCrvMarketKeys, ConvexFxnMarketKeys, MarketContext} from "./MarketContext";
+import {BaseContext} from "./contexts/BaseContext";
+import {OracleContext} from "./contexts/OracleContext";
+import {ConvexCrvMarketKeys, ConvexFxnMarketKeys, MarketContext} from "./contexts/MarketContext";
 import * as fs from "fs";
 import {curveLp} from "convergence-defi-tools";
 import {parseEther, parseUnits} from "ethers";
@@ -95,6 +95,7 @@ async function createJSONAddress(baseContext: BaseContext, marketContext: Market
         },
         tokens: {
             tgUSD: await baseContext.tgUSD.getAddress(),
+            sgUSD: await baseContext.sgUSD.getAddress(),
         },
         markets,
         oracles,

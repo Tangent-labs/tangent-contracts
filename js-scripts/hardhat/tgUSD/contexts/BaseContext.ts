@@ -2,7 +2,7 @@ import {ethers} from "hardhat";
 
 import {commonERC20, curveLp} from "convergence-defi-tools";
 
-import {MainSetup} from "../Main.setup";
+import {MainSetup} from "../../Main.setup";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {AddressLike, BigNumberish, MaxUint256, ZeroAddress} from "ethers";
 import {
@@ -12,12 +12,13 @@ import {
     ICurveStableSwapNG,
     IERC20,
     IRCalculator,
+    IYearnV3Vault,
     MarketCreator,
     MarketNoSociabilization,
     RewardAccumulator,
     TgUSD,
     Zapper,
-} from "../../../typechain-types";
+} from "../../../../typechain-types";
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;
 };
@@ -27,6 +28,7 @@ export class BaseContext extends MainSetup {
 
     controlTower!: ControlTower;
     tgUSD!: TgUSD;
+    sgUSD!: IYearnV3Vault;
     zapper!: Zapper;
     rewardAccumulator!: RewardAccumulator;
     irCalculator!: IRCalculator;
@@ -53,6 +55,8 @@ export class BaseContext extends MainSetup {
         this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy("Tangent USD", "tgUSD", l0EndpointAddress, l0Delegate, this.owner, this.controlTower);
         await this.tgUSD.waitForDeployment();
 
+        await this.deploySgUSD();
+
         this.zapper = await (await ethers.getContractFactory("Zapper")).deploy(this.owner, this.controlTower, this.tgUSD);
         await this.zapper.waitForDeployment();
 
@@ -67,6 +71,23 @@ export class BaseContext extends MainSetup {
         await this.marketNoSociabilizationImplem.waitForDeployment();
 
         await this.controlTower.connect(this.owner).toggleZapper(this.zapper);
+    }
+
+    async deploySgUSD() {
+        const yearnVaultFactory = await ethers.getContractAt("IYearnVaultFactory", "0x770D0d1Fb036483Ed4AbB6d53c1C88fb277D812F");
+        await yearnVaultFactory.deploy_new_vault(this.tgUSD, "Staked tgUSD", "sgUSD", this.owner, 7 * 86400);
+
+        const actualBlock = (await ethers.provider.getBlock("latest"))!.number;
+        const createEvents = await yearnVaultFactory.queryFilter(yearnVaultFactory.filters.NewVault(), actualBlock - 1, actualBlock);
+
+        this.sgUSD = await ethers.getContractAt("IYearnV3Vault", "0x" + createEvents[0].topics[1].slice(26));
+
+        // Set deposit limit
+        await this.sgUSD.add_role(this.owner, 256);
+        // Set reward processor
+        await this.sgUSD.add_role(this.owner, 32);
+        // Set max number as maximum to deposit
+        await this.sgUSD["set_deposit_limit(uint256)"](ethers.MaxUint256);
     }
 
     async deployStableLP(

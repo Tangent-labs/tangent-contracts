@@ -1,11 +1,11 @@
 import {ethers} from "hardhat";
 import {ContractTransactionReceipt, Interface, InterfaceAbi, LogDescription, MaxUint256} from "ethers";
-import {ConvexCrvLPMarket, ConvexFxnLPMarket} from "../../../typechain-types";
+import {ConvexCrvLPMarket, ConvexFxnLPMarket} from "../../../../typechain-types";
 import {BaseContext} from "./BaseContext";
 import {OracleContext} from "./OracleContext";
-import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "./config/market";
+import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "../config/market";
 
-import * as MarketCreator from "../../../artifacts/src/tgUSD/Utilities/MarketCreator.sol/MarketCreator.json";
+import * as MarketCreator from "../../../../artifacts/src/tgUSD/Utilities/MarketCreator.sol/MarketCreator.json";
 
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;
