@@ -4,14 +4,14 @@ pragma solidity ^0.8.27;
 import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {ICollateral} from "../../../interfaces/internals/tgUSD/ICollateral.sol";
 
-import {ERC20Infos, IERC20} from "../../ERC20Infos.sol";
+import {ERC20Infos, IERC20, ICommonStruct} from "../../ERC20Infos.sol";
 
 contract HarvestUI is ERC20Infos {
     struct HarvestUIOut {
         address marketAddress;
         string collateralName;
         uint256 harvesterFeePercentage;
-        ERC20Infos.ERC20Info[] tokenAmounts;
+        ERC20Infos.ERC20AmountInfos[] tokenAmounts;
     }
 
     error HarvestUIOutError(HarvestUIOut[] output);
@@ -25,11 +25,11 @@ contract HarvestUI is ERC20Infos {
 
             IERC20[] memory erc20s = IRewards(market).getRewardTokens();
             uint256 erc20sLength = erc20s.length;
-            ERC20Infos.ERC20Info[] memory tokenAmounts = new ERC20Infos.ERC20Info[](erc20sLength);
+            ERC20Infos.ERC20AmountInfos[] memory tokenAmounts = new ERC20Infos.ERC20AmountInfos[](erc20sLength);
 
             for (uint256 j; j < erc20s.length; ) {
                 IERC20 rewardToken = erc20s[j];
-                tokenAmounts[j] = getERC20Infos(rewardToken, rewardToken.balanceOf(market));
+                tokenAmounts[j] = getERC20AmountInfos(ICommonStruct.TokenAmount({token: rewardToken, amount: rewardToken.balanceOf(market)}));
 
                 unchecked {
                     ++j;

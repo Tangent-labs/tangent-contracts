@@ -37,7 +37,27 @@ npm run hh-node
 npm run deploy-tgUSD
 ```
 
-## Distribute some rewards into markets
+## Actions
+
+### Stake on markets
+
+Stake some collateral on all markets with test users
+
+```
+npm run stake-markets-tgUSD
+```
+
+### Pass some time
+
+Increase the time on the test node in days basis.
+
+```
+DAYS=3 npm run time-travel
+```
+
+### Distribute rewards into markets
+
+Distribute rewards into markets in order to be processed. We are transfering rewards directly into markets before harvest
 
 ```
 npm run distribute-rewards-tgUSD

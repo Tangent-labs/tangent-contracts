@@ -34,7 +34,7 @@ const config: HardhatUserConfig = {
             url: "http://127.0.0.1:8545",
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
-                blockNumber: 21048642,
+                blockNumber: 21621658,
             },
             loggingEnabled: true,
             timeout: 100_000_000,
@@ -42,7 +42,7 @@ const config: HardhatUserConfig = {
         hardhat: {
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
-                blockNumber: 21048642,
+                blockNumber: 21621658,
             },
         },
         tangent: {

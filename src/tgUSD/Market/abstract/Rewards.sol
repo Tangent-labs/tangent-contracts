@@ -2,11 +2,8 @@
 pragma solidity ^0.8.22;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-
 import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-
 import {ICommonStruct} from "../../../interfaces/internals/ICommonStruct.sol";
-
 import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {MarketExternalActions, MarketCore} from "./MarketExternalActions.sol";
