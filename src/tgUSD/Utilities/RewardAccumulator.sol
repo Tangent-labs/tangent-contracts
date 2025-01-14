@@ -8,6 +8,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IRewards, ICommonStruct} from "../../interfaces/internals/tgUSD/IRewards.sol";
 import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
+import "forge-std/console.sol";
+
 contract RewardAccumulator is IRewardAccumulator, Ownable {
     using SafeERC20 for IERC20;
 
@@ -19,7 +21,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     mapping(IERC20 => uint256) public cutFeeForToken;
 
     error NoRewardsToClaimFromContract(address contractAddr);
-    error IncorretRewardLength(uint256 rewardLengthInParam, uint256 realRewardLength);
+    error IncorrectRewardLength(uint256 rewardLengthInParam, uint256 realRewardLength);
     error NoRewardToMultiClaim();
     error NoRewardToSimpleClaim();
     error NotAMarketRewards();
@@ -58,15 +60,15 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      */
     function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
         // We save this length on his own variable, to not miss with the assembly manipulations
-        uint256 lendTokensLength = markets.length;
-        IERC20[] memory tokenList = new IERC20[](lendTokensLength);
+        uint256 marketsLen = markets.length;
+        IERC20[] memory tokenList = new IERC20[](rewardLength);
         uint256 actualErc20Index;
 
         // Reverts if one of the market passed in parameter is not one
         controlTower.isContractsMarkets(markets);
 
         // Iterates through all of the vaults
-        for (uint256 splitterTokenIndex; splitterTokenIndex < lendTokensLength; ) {
+        for (uint256 splitterTokenIndex; splitterTokenIndex < marketsLen; ) {
             address splitterToken = markets[splitterTokenIndex];
             // User input verification
 
@@ -74,12 +76,12 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
             ICommonStruct.TokenAmount[] memory tokenAmountsToClaim = IRewards(splitterToken).getAndUpdateRewards(msg.sender);
             // If the rewards returned by the gUSD is an empty array,
             require(tokenAmountsToClaim.length != 0, NoRewardsToClaimFromContract(address(splitterToken)));
-
             // Iterates over all erc20 received from the claim on the gUSD
             for (uint256 tokenIndex; tokenIndex < tokenAmountsToClaim.length; ) {
                 IERC20 erc20 = tokenAmountsToClaim[tokenIndex].token;
                 // If token is seen the first time (tokensToClaim[token] == 0)
                 uint256 rewardAmount = _tLoadUintForAddress(address(erc20));
+
                 if (rewardAmount == 0) {
                     // Increment tokenList length & add new token on new index
                     tokenList[actualErc20Index] = erc20;
@@ -93,12 +95,13 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
                     ++tokenIndex;
                 }
             }
-            require(rewardLength == actualErc20Index, IncorretRewardLength(rewardLength, actualErc20Index));
 
             unchecked {
                 ++splitterTokenIndex;
             }
         }
+
+        require(rewardLength == actualErc20Index, IncorrectRewardLength(rewardLength, actualErc20Index));
 
         // Iterate through tokenList
         bool isSomethingToClaim;

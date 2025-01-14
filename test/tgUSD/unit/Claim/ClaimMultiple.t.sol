@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../../contexts/ConvexCurveContext.sol";
-import "../../../handler/Features/BorrowRepay/HBorrow.sol";
-contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
+import "../../contexts/ConvexCurveContext.sol";
+import "../../handler/Features/BorrowRepay/HBorrow.sol";
+contract ClaimMultiple is ConvexCurveContext {
     ConvexCrvLPMarket public market;
     ConvexFxnLPMarket public market2;
     IERC20Metadata public collatToken;
@@ -27,47 +27,13 @@ contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
         minimumLoan = market.minimumLoan();
     }
 
-    function minimumCollatForDebt(uint256 userDebt) internal view returns (uint256) {
-        return 2 + (userDebt * 1 ether * 100_000) / (market.collatOracle().latestAnswer() * 85_000);
-    }
-
-    function test_processRewards_claim(uint256 collatDeposited, uint256 borrowedAmount) external {
-        borrowedAmount = bound(borrowedAmount, minimumLoan, market.maxMarketDebt());
-        collatDeposited = bound(collatDeposited, minimumCollatForDebt(borrowedAmount), 2_000_000 ether);
+    function test_claimMultiple_with_1_token_in_common() external {
+        uint256 collatDeposited = 100_000 ether;
 
         hDeposit.deposit(usr1, collatDeposited, true);
-
-        vm.startPrank(usr1);
-        hBorrow.borrow(usr2, borrowedAmount);
-
-        skip(15 days);
-
-        tgUsd.mintIR();
-        vm.stopPrank();
-
-        hRewards.processRewards(usr2);
-
-        skip(7 days);
-        vm.startPrank(usr1);
-        rewardAccumulator.claimSimple(address(market));
-
-        rewardAccumulator.claimCutFees(market.getRewardTokens());
-
-        assertLt(market.rewardTokens(0).balanceOf(address(rewardAccumulator)), 10 ** 7);
-
-        vm.stopPrank();
-    }
-
-    function test_processRewards_claimMultiple(uint256 collatDeposited, uint256 borrowedAmount) external {
-        borrowedAmount = bound(borrowedAmount, minimumLoan, market.maxMarketDebt());
-        collatDeposited = bound(collatDeposited, minimumCollatForDebt(borrowedAmount), 2_000_000 ether);
-
-        hDeposit.deposit(usr1, collatDeposited, true);
-
         hDeposit2.deposit(usr1, collatDeposited, true);
 
         vm.startPrank(usr1);
-        hBorrow.borrow(usr2, borrowedAmount);
 
         skip(15 days);
 
@@ -86,5 +52,33 @@ contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
         assertLt(market.rewardTokens(0).balanceOf(address(rewardAccumulator)), 10 ** 7);
 
         vm.stopPrank();
+    }
+
+    function test_claimMultiple_with_wrong_reward_len() external {
+        uint256 collatDeposited = 100_000 ether;
+
+        hDeposit.deposit(usr1, collatDeposited, true);
+        hDeposit2.deposit(usr1, collatDeposited, true);
+
+        vm.startPrank(usr1);
+
+        skip(15 days);
+
+        tgUsd.mintIR();
+        vm.stopPrank();
+
+        hRewards.processRewards(usr2);
+        hRewards2.processRewards(usr2);
+
+        skip(7 days);
+        vm.startPrank(usr1);
+
+        address[] memory marketArrays = Array.memoryAddress([address(market), address(market2)]);
+
+        vm.expectRevert();
+        rewardAccumulator.claimMultiple(marketArrays, 2);
+
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.IncorrectRewardLength.selector, 4, 3));
+        rewardAccumulator.claimMultiple(marketArrays, 4);
     }
 }
