@@ -11,6 +11,7 @@ contract HarvestUI is ERC20Infos {
         address marketAddress;
         string collateralName;
         uint256 harvesterFeePercentage;
+        uint256 lastHarvestDate;
         ERC20Infos.ERC20AmountInfos[] tokenAmounts;
     }
 
@@ -26,9 +27,12 @@ contract HarvestUI is ERC20Infos {
             IERC20[] memory erc20s = IRewards(market).getRewardTokens();
             uint256 erc20sLength = erc20s.length;
             ERC20Infos.ERC20AmountInfos[] memory tokenAmounts = new ERC20Infos.ERC20AmountInfos[](erc20sLength);
+            uint256 lastPeriodFinish;
 
             for (uint256 j; j < erc20s.length; ) {
                 IERC20 rewardToken = erc20s[j];
+                (, uint128 lastFinish, , ) = IRewards(market).rewardData(address(rewardToken));
+                lastPeriodFinish = lastPeriodFinish < lastFinish ? lastFinish : lastPeriodFinish;
                 tokenAmounts[j] = getERC20AmountInfos(ICommonStruct.TokenAmount({token: rewardToken, amount: rewardToken.balanceOf(market)}));
 
                 unchecked {
@@ -39,6 +43,7 @@ contract HarvestUI is ERC20Infos {
                 marketAddress: market,
                 collateralName: ICollateral(market).collatToken().symbol(),
                 harvesterFeePercentage: IRewards(market).harvesterFeePercentage(),
+                lastHarvestDate: lastPeriodFinish - 7 days,
                 tokenAmounts: tokenAmounts
             });
             unchecked {

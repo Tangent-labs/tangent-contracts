@@ -9,6 +9,7 @@ import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.s
 import {IPriceOracle} from "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {ERC20Infos, IERC20Metadata} from "../../ERC20Infos.sol";
 import {GetMarketDetails} from "../GetMarketDetails.sol";
+import {IYearnV3Vault} from "../../../interfaces/externals/YearnFi/IYearnV3Vault.sol";
 
 contract MarketListUI is GetMarketDetails {
     struct MarketDetailsUIOut {
@@ -22,13 +23,22 @@ contract MarketListUI is GetMarketDetails {
 
     error MarketDetailsUIOutError(MarketDetailsUIOut output);
 
-    constructor(address account, IPriceOracle tgUSDOracle, IERC20Metadata tgUSD, address[] memory markets) {
+    constructor(address account, IPriceOracle tgUSDOracle, IERC20Metadata tgUSD, IYearnV3Vault sgUSD, address[] memory markets) {
         MarketRow[] memory rows = new MarketRow[](markets.length);
         for (uint256 i; i < markets.length; i++) {
             rows[i] = getMarketDetails(account, markets[i]);
         }
+        uint256 tgUSDTotalSupply = tgUSD.totalSupply();
+        uint256 tgUSDPrice = tgUSDOracle.latestAnswer();
         revert MarketDetailsUIOutError(
-            MarketDetailsUIOut({tgUSDPrice: tgUSDOracle.latestAnswer(), tgUSDSupply: tgUSD.totalSupply(), sgUSDPrice: 0, sgUSDSupply: 0, tgUSDPercentageInSgUSD: 0, rowInfos: rows})
+            MarketDetailsUIOut({
+                tgUSDPrice: tgUSDPrice,
+                tgUSDSupply: tgUSDTotalSupply,
+                sgUSDPrice: (tgUSDPrice * sgUSD.pricePerShare()) / 1e18,
+                sgUSDSupply: sgUSD.totalSupply(),
+                tgUSDPercentageInSgUSD: (tgUSD.balanceOf(address(sgUSD)) * 1e18) / tgUSDTotalSupply,
+                rowInfos: rows
+            })
         );
     }
 }

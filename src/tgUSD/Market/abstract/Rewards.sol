@@ -28,20 +28,13 @@ abstract contract Rewards is MarketExternalActions, Sociabilization {
     IERC20[] public rewardTokens;
 
     /// @dev Reward data associated to a reward token
-    mapping(IERC20 => Reward) public rewardData; // token => reward data
+    mapping(IERC20 => IRewards.Reward) public rewardData; // token => reward data
 
     /// @dev Reward amount already sent to an user for a reward token
     mapping(address => mapping(IERC20 => uint256)) public userRewardPerTokenPaid; // user => reward token => amount
 
     /// @dev Reward amount for a reward token for a user
     mapping(address => mapping(IERC20 => uint256)) public rewards; // user => reward token => amount
-
-    struct Reward {
-        uint128 lastUpdateTime;
-        uint128 periodFinish;
-        uint256 rewardRate;
-        uint256 rewardPerTokenStored;
-    }
 
     event RewardNotified(IERC20 indexed _token, uint256 _reward);
     event RewardPaid(address indexed _user, IERC20 indexed _rewardToken, uint256 _reward);
@@ -257,7 +250,7 @@ abstract contract Rewards is MarketExternalActions, Sociabilization {
                     rewardAmountStreamed = remainingRewards;
                 }
 
-                Reward storage rData = rewardData[rewardToken];
+                IRewards.Reward storage rData = rewardData[rewardToken];
 
                 if (block.timestamp >= rData.periodFinish) {
                     rData.rewardRate = rewardAmountStreamed / REWARDS_DURATION;
