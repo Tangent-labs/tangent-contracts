@@ -34,7 +34,7 @@ contract SgUSDUI is GetMarketDetails {
                 tgUSDSupply: tgUSDTotalSupply,
                 sgUSDPrice: (tgUSDPrice * sgUSD.pricePerShare()) / 1e18,
                 sgUSDSupply: sgUSD.totalSupply(),
-                tgUSDPercentageInSgUSD: (tgUSD.balanceOf(address(sgUSD)) * 1e18) / tgUSDTotalSupply,
+                tgUSDPercentageInSgUSD: tgUSDTotalSupply == 0 ? 0 : (tgUSD.balanceOf(address(sgUSD)) * 1e18) / tgUSDTotalSupply,
                 tgUSDBalance: tgUSD.balanceOf(account),
                 sgUSDBalance: sgUSD.balanceOf(account),
                 tgUSDAllowance: tgUSD.allowance(account, address(sgUSD))
