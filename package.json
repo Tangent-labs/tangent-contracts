@@ -15,6 +15,7 @@
     "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost",
     "distribute-rewards-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/distributeRewards.ts --network localhost",
     "stake-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/stake.ts --network localhost",
+    "borrow-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/borrow.ts --network localhost",
     "time-travel": "npx hardhat run js-scripts/hardhat/tgUSD/actions/time-travel.ts --network localhost"
   },
   "author": "Trottoir",
