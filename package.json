@@ -26,7 +26,8 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "chai": "4.3.7",
     "convergence-defi-tools": "https://github.com/Convergence-fi/convergence-defi-tools.git#main",
-    "ethers": "^6.13.4"
+    "ethers": "^6.13.4",
+    "@layerzerolabs/lz-definitions": "^3.0.44"
   },
   "dependencies": {
     "hardhat": "^2.22.17"

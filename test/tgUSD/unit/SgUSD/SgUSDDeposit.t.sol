@@ -31,7 +31,7 @@ contract SgUSDDeposit is ConvexCurveContext {
         assertEq(sgUSD.profitMaxUnlockTime(), 7 days, "Profit Max unlock time not correct");
 
         assertEq(sgUSD.totalIdle(), amountIn, "Total Idle is correct");
-        assertEq(sgUSD.deposit_limit(), MAX_UINT, "Total Idle is correct");
+        assertEq(sgUSD.deposit_limit(), MAX_UINT, "Deposit limit is corect");
         vm.stopPrank();
 
         vm.prank(owner);

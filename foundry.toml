@@ -32,7 +32,7 @@ remappings = [
 [rpc_endpoints]
 forkito = 'http://127.0.0.1:8545'
 mainnet = 'https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy'
-
+base = 'https://base.llamarpc.com'
 
 [fuzz]
 runs = 256
