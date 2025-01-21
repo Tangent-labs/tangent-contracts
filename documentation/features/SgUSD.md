@@ -30,11 +30,11 @@ Chainview used to get global infos of the page is **SgUSDUI** and is called with
 - She allows `sgUSD` to spend her `tgUSD`. ( **approve(sgUSDAddress,amount)** on `tgUSD` )
 - She inputs 1000 `tgUSD`.
   - A call is made to `sgUSD` to return the amount of sgUSD minted in return ( **previewDeposit(tgUSDAmount)** ).
-- She deposits `tgUSD` on `sgUSD` and she received `sgUSD`. ( **deposit(tgUSDAmount,userAddress)** on `sgUSD` )
+- She deposits `tgUSD` on `sgUSD` and she received `sgUSD`. ( **deposit(tgUSDAmount, userAddress)** on `sgUSD` )
 
 ## Withdraw
 
 - Alice owns 1000 `sgUSD` from staking tgUSD.
 - She inputs 1000 `sgUSD`.
   - A call is made to `sgUSD` to return the amount of sgUSD minted in return ( **previewRedeem(sgUSDAmount)** ).
-- She withdraws `tgUSD` and get her `sgUSD` burnt. ( **deposit(tgUSDAmount,userAddress, userAddress)** on `sgUSD` )
+- She withdraws `tgUSD` and get her `sgUSD` burnt. ( **redeem(tgUSDAmount, userAddress, userAddress)** on `sgUSD` )
