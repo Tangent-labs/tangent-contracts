@@ -8,7 +8,7 @@ import {StdUtils} from "forge-std/StdUtils.sol";
 
 import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
-
+import "../../../src/libs/Resources/ResourcesYearn.sol";
 import "../../../src/tgUSD/tokens/TgUSD.sol";
 import "../../../src/tgUSD/tokens/TgStable.sol";
 import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
@@ -24,8 +24,13 @@ import "../../utils/LowLevel.sol";
 import "../../utils/EnsoUtils.sol";
 import "../../utils/Labeliser.sol";
 import "../../utils/Array.sol";
+import "../../../src/interfaces/externals/YearnFi/IYearnV3Vault.sol";
+import "../../../src/interfaces/externals/ICREATE3Factory.sol";
 
 contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
+    uint256 mainnetFork;
+    uint256 baseFork;
+
     address usr1 = makeAddr("User1");
     address usr2 = makeAddr("User2");
     address usr3 = makeAddr("User3");
@@ -40,7 +45,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public feeTreasury = makeAddr("feeTreasury");
     address public mockedLP = makeAddr("Mocked LP");
 
-    address public endpointAddressMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
+    address public l0EndpointMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
+    address public l0EndpointBase = 0x1a44076050125825900e736c501f859c50fE728c;
 
     ControlTower public controlTower;
     MarketCreator public marketCreator;
@@ -50,16 +56,17 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     Zapper public zapper;
     ICurveStableSwapNG public tgUSDLp;
     TgUSD public tgUsd;
+    TgUSD public tgUsdBase;
+    IYearnV3Vault public sgUSD;
     RewardAccumulator public rewardAccumulator;
     MockEnsoRouter public mockEnsoRouter;
     EnsoUtils public ensoUtils;
     Labeliser public labeliser;
-
-    /// @dev Validate Implementation (false if you don't want to "forge clean" at each modification)
-    bool constant IS_VALIDATE_IMPLEM = false;
+    ICREATE3Factory public create3Factory = ICREATE3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
 
     constructor() {
-        vm.createSelectFork("mainnet", 21514132);
+        baseFork = vm.createSelectFork("base", 24379193);
+        mainnetFork = vm.createSelectFork("mainnet", 21514132);
 
         vm.startPrank(owner);
 
@@ -77,8 +84,14 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         rewardAccumulator = new RewardAccumulator(owner, controlTower, feeTreasury);
 
-        // Deploy tgUSD
-        tgUsd = new TgUSD("Tangent StableCoin", "tgUSD", endpointAddressMainnet, makeAddr("a"), owner, controlTower);
+        // Deploy tgUSD on Base
+        tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
+        // Deploy tgUSD on Mainnet ETH
+        tgUsd = deployTgUSD(mainnetFork, l0EndpointMainnet);
+
+        assertEq(address(tgUsdBase), address(tgUsd), "Should be equals with CREATE3");
+
+        sgUSD = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(tgUsd), "Staked tgUSD", "sgUSD", owner, 7 days));
 
         mockEnsoRouter = new MockEnsoRouter();
 
@@ -93,6 +106,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         tgUSDLp = deployTgUSDLP();
 
         vm.label(address(tgUsd), "tgUSD");
+        vm.label(address(sgUSD), "sgUSD");
         vm.label(address(controlTower), "ControlTower");
         vm.label(address(tgUSDLp), "LP tgUSD");
         vm.label(address(rewardAccumulator), "RewardAccumulator");
@@ -100,6 +114,23 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(mockEnsoRouter), "Mock Odos Router");
 
         vm.stopPrank();
+    }
+
+    function getBytecodeWithConstructorArgs(address endpointAddress) public view returns (bytes memory) {
+        string memory json = vm.readFile("./out/TgUSD.sol/TgUSD.json");
+        bytes memory bytecode = abi.decode(vm.parseJson(json, ".bytecode.object"), (bytes));
+        // console.logBytes(bytecode);
+
+        // Encodez les arguments pour le constructeur
+        bytes memory constructorArgs = abi.encode("Tangent StableCoin", "tgUSD", endpointAddress, owner, owner, controlTower);
+
+        // Concaténez le bytecode et les arguments
+        return abi.encodePacked(bytecode, constructorArgs);
+    }
+
+    function deployTgUSD(uint256 forkId, address endpoint) public returns (TgUSD) {
+        vm.selectFork(forkId);
+        return TgUSD(create3Factory.deploy(bytes32(0), getBytecodeWithConstructorArgs(endpoint)));
     }
 
     function deployTgUSDLP() public returns (ICurveStableSwapNG) {

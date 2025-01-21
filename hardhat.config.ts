@@ -3,7 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-ignition-ethers";
-
+import {EndpointId} from "@layerzerolabs/lz-definitions";
 const config: HardhatUserConfig = {
     solidity: {
         compilers: [
@@ -36,7 +36,6 @@ const config: HardhatUserConfig = {
                 url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
                 blockNumber: 21621658,
             },
-            loggingEnabled: true,
             timeout: 100_000_000,
         },
         hardhat: {
@@ -48,7 +47,18 @@ const config: HardhatUserConfig = {
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "https://io.convergence-finance.network:8545",
-            loggingEnabled: true,
+            timeout: 100_000_000,
+        },
+        "avalanche-fuji": {
+            eid: EndpointId.AVALANCHE_V2_TESTNET,
+            chainId: 43113,
+            url: "https://rpc.ankr.com/avalanche_fuji",
+            timeout: 100_000_000,
+        },
+        "polygon-amoy": {
+            eid: EndpointId.AMOY_V2_TESTNET,
+            chainId: 80002,
+            url: "https://polygon-amoy-bor-rpc.publicnode.com",
             timeout: 100_000_000,
         },
     },

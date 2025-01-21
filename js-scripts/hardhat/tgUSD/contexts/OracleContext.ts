@@ -1,6 +1,6 @@
 import {ethers} from "hardhat";
 import {curveLp} from "convergence-defi-tools";
-import {IPriceOracle} from "../../../typechain-types";
+import {IPriceOracle} from "../../../../typechain-types";
 import {StableLP} from "./BaseContext";
 
 export class OracleContext {

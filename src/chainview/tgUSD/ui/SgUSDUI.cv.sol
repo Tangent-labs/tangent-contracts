@@ -11,33 +11,33 @@ import {ERC20Infos, IERC20Metadata} from "../../ERC20Infos.sol";
 import {GetMarketDetails} from "../GetMarketDetails.sol";
 import {IYearnV3Vault} from "../../../interfaces/externals/YearnFi/IYearnV3Vault.sol";
 
-contract MarketListUI is GetMarketDetails {
-    struct MarketDetailsUIOut {
+contract SgUSDUI is GetMarketDetails {
+    struct SgUSDUIOut {
         uint256 tgUSDPrice;
         uint256 tgUSDSupply;
         uint256 sgUSDPrice;
         uint256 sgUSDSupply;
         uint256 tgUSDPercentageInSgUSD;
-        MarketRow[] rowInfos;
+        uint256 tgUSDBalance;
+        uint256 sgUSDBalance;
+        uint256 tgUSDAllowance;
     }
 
-    error MarketDetailsUIOutError(MarketDetailsUIOut output);
+    error SgUSDUIOutError(SgUSDUIOut output);
 
-    constructor(address account, IPriceOracle tgUSDOracle, IERC20Metadata tgUSD, IYearnV3Vault sgUSD, address[] memory markets) {
-        MarketRow[] memory rows = new MarketRow[](markets.length);
-        for (uint256 i; i < markets.length; i++) {
-            rows[i] = getMarketDetails(account, markets[i]);
-        }
+    constructor(address account, IPriceOracle tgUSDOracle, IERC20Metadata tgUSD, IYearnV3Vault sgUSD) {
         uint256 tgUSDTotalSupply = tgUSD.totalSupply();
         uint256 tgUSDPrice = tgUSDOracle.latestAnswer();
-        revert MarketDetailsUIOutError(
-            MarketDetailsUIOut({
+        revert SgUSDUIOutError(
+            SgUSDUIOut({
                 tgUSDPrice: tgUSDPrice,
                 tgUSDSupply: tgUSDTotalSupply,
                 sgUSDPrice: (tgUSDPrice * sgUSD.pricePerShare()) / 1e18,
                 sgUSDSupply: sgUSD.totalSupply(),
-                tgUSDPercentageInSgUSD: (tgUSD.balanceOf(address(sgUSD)) * 1e18) / tgUSDTotalSupply,
-                rowInfos: rows
+                tgUSDPercentageInSgUSD: tgUSDTotalSupply == 0 ? 0 : (tgUSD.balanceOf(address(sgUSD)) * 1e18) / tgUSDTotalSupply,
+                tgUSDBalance: tgUSD.balanceOf(account),
+                sgUSDBalance: sgUSD.balanceOf(account),
+                tgUSDAllowance: tgUSD.allowance(account, address(sgUSD))
             })
         );
     }

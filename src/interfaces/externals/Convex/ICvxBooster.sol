@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 interface ICvxBooster {
+    event Deposited(address indexed user, uint256 indexed poolid, uint256 amount);
+
     function FEE_DENOMINATOR() external view returns (uint256);
 
     function MaxFees() external view returns (uint256);

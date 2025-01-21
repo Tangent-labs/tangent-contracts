@@ -15,6 +15,7 @@
     "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost",
     "distribute-rewards-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/distributeRewards.ts --network localhost",
     "stake-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/stake.ts --network localhost",
+    "borrow-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/borrow.ts --network localhost",
     "time-travel": "npx hardhat run js-scripts/hardhat/tgUSD/actions/time-travel.ts --network localhost"
   },
   "author": "Trottoir",
@@ -26,7 +27,8 @@
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "chai": "4.3.7",
     "convergence-defi-tools": "https://github.com/Convergence-fi/convergence-defi-tools.git#main",
-    "ethers": "^6.13.4"
+    "ethers": "^6.13.4",
+    "@layerzerolabs/lz-definitions": "^3.0.44"
   },
   "dependencies": {
     "hardhat": "^2.22.17"

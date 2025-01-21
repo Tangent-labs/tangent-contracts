@@ -47,6 +47,14 @@ Stake some collateral on all markets with test users
 npm run stake-markets-tgUSD
 ```
 
+### Borrow tgUSD
+
+Borrow some tgUSD on all markets with test users
+
+```
+npm run borrow-markets-tgUSD
+```
+
 ### Pass some time
 
 Increase the time on the test node in days basis.
