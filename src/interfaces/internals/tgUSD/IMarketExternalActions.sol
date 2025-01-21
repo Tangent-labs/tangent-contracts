@@ -8,4 +8,6 @@ interface IMarketExternalActions {
     function depositAndBorrow(uint256 lpDeposited, uint256 debtBorrow, bool isStaked, address callerZapper) external;
 
     function repay(address account, uint256 tgUSDToRepay, address callerZapper) external;
+
+    function liquidate(address account, uint256 tgUSDToRepay, address liquidator, bytes calldata liquidationCall) external;
 }
