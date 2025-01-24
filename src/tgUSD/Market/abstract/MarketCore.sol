@@ -5,7 +5,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IMarketCore, IPriceOracle} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 import {IControlTower} from "../../../interfaces/internals/tgUSD/IControlTower.sol";
-import {ILiquidator} from "../../../interfaces/internals/tgUSD/ILiquidator.sol";
 
 import {Collateral} from "./Collateral.sol";
 
@@ -24,7 +23,6 @@ abstract contract MarketCore is IMarketCore, Collateral {
     error ZeroDebtAmount();
     error NotLiquidablePosition();
     error NotZapper(address zapper);
-    error LiquidatorCallError();
 
     constructor() {
         isInitialized = true;
@@ -223,8 +221,7 @@ abstract contract MarketCore is IMarketCore, Collateral {
         // When liquidator is not zero, it allows to the liquidator to receive the collateral on a contract.
         // Liquidator is so able to sell the collateral for tgUSD in the same transaction.
         if (liquidator != address(0)) {
-            (bool isrouterCallSuccess, ) = liquidator.call{value: msg.value}(liquidationCall);
-            require(isrouterCallSuccess, LiquidatorCallError());
+            liquidatorProxy.callLiquidate(liquidator, liquidationCall);
         }
         // Burns tgUSD from the ender
         tgUSD.burnFrom(msg.sender, tgUSDToRepay);

@@ -15,6 +15,8 @@ import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
 import "../../../src/tgUSD/Utilities/MarketCreator.sol";
+import "../../../src/tgUSD/Utilities/CurveLPLiquidator.sol";
+import "../../../src/tgUSD/Utilities/LiquidatorProxy.sol";
 import "../../../test/tgUSD/mocks/MockEnsoRouter.sol";
 import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
 import "../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
@@ -24,6 +26,7 @@ import "../../utils/LowLevel.sol";
 import "../../utils/EnsoUtils.sol";
 import "../../utils/Labeliser.sol";
 import "../../utils/Array.sol";
+import "../../utils/Encoder.sol";
 import "../../../src/interfaces/externals/YearnFi/IYearnV3Vault.sol";
 import "../../../src/interfaces/externals/ICREATE3Factory.sol";
 
@@ -45,8 +48,12 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public feeTreasury = makeAddr("feeTreasury");
     address public mockedLP = makeAddr("Mocked LP");
 
+    Encoder public encoder;
+    CurveLPLiquidator curveLPLiquidator;
+
     address public l0EndpointMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
     address public l0EndpointBase = 0x1a44076050125825900e736c501f859c50fE728c;
+    LiquidatorProxy public liquidatorProxy;
 
     ControlTower public controlTower;
     MarketCreator public marketCreator;
@@ -54,7 +61,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public convexFxnLPMarketImplem;
     address public marketNoSociabilizationImplem;
     Zapper public zapper;
-    ICurveStableSwapNG public tgUSDLp;
+    ICurveStableSwapNG public tgUSD_USDC_Lp;
     TgUSD public tgUsd;
     TgUSD public tgUsdBase;
     IYearnV3Vault public sgUSD;
@@ -74,13 +81,16 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         convexFxnLPMarketImplem = address(new ConvexFxnLPMarket());
         marketNoSociabilizationImplem = address(new MarketNoSociabilization());
 
+        encoder = new Encoder();
+        curveLPLiquidator = new CurveLPLiquidator();
         ensoUtils = new EnsoUtils();
-
         labeliser = new Labeliser();
+
         labeliser.labelizeERC20();
         labeliser.labelizeERC4626();
 
         controlTower = new ControlTower(owner, feeTreasury);
+        liquidatorProxy = new LiquidatorProxy();
 
         rewardAccumulator = new RewardAccumulator(owner, controlTower, feeTreasury);
 
@@ -103,12 +113,12 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         deal(address(tgUsd), owner, 1_000_000 ether);
 
         // Deploy and addLiquidity in tgUSD LP
-        tgUSDLp = deployTgUSDLP();
+        tgUSD_USDC_Lp = deployTgUSDLP(AddrClassicERC20.TOKEN_USDC, "tgUSD-USDC", 1_000_000);
 
         vm.label(address(tgUsd), "tgUSD");
         vm.label(address(sgUSD), "sgUSD");
         vm.label(address(controlTower), "ControlTower");
-        vm.label(address(tgUSDLp), "LP tgUSD");
+        vm.label(address(tgUSD_USDC_Lp), "LP tgUSD");
         vm.label(address(rewardAccumulator), "RewardAccumulator");
         vm.label(address(AddrAggregator.ENSO_ROUTER), "Enso Router");
         vm.label(address(mockEnsoRouter), "Mock Odos Router");
@@ -133,16 +143,17 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         return TgUSD(create3Factory.deploy(bytes32(0), getBytecodeWithConstructorArgs(endpoint)));
     }
 
-    function deployTgUSDLP() public returns (ICurveStableSwapNG) {
+    function deployTgUSDLP(IERC20Metadata otherStable, string memory name, uint256 initialAmount) public returns (ICurveStableSwapNG) {
+        uint256 otherStableDecimals = otherStable.decimals();
         // Give usdc to owner before LP deployment
-        deal(address(AddrClassicERC20.TOKEN_USDC), owner, 1_000_000 * 10 ** 6);
+        deal(address(otherStable), owner, initialAmount * 10 ** otherStableDecimals);
         vm.startPrank(owner);
 
         ICurveStableSwapNG lpTgUSD = ICurveStableSwapNG(
             AddrCurveStableLP.STABLE_SWAP_FACTORY.deploy_plain_pool(
-                "tgUSD-USDC",
-                "tgUSD-USDC",
-                Array.memoryAddress([address(AddrClassicERC20.TOKEN_USDC), address(tgUsd)]),
+                name,
+                name,
+                Array.memoryAddress([address(otherStable), address(tgUsd)]),
                 5000,
                 100000000,
                 0,
@@ -154,10 +165,10 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
             )
         );
 
-        AddrClassicERC20.TOKEN_USDC.approve(address(lpTgUSD), MAX_UINT);
+        otherStable.approve(address(lpTgUSD), MAX_UINT);
         tgUsd.approve(address(lpTgUSD), MAX_UINT);
 
-        lpTgUSD.add_liquidity(Array.memoryUint256([uint256(1_000_000 * 10 ** 6), uint256(1_000_000 ether)]), uint256(0));
+        lpTgUSD.add_liquidity(Array.memoryUint256([uint256(initialAmount * 10 ** otherStableDecimals), uint256(initialAmount * 10 ** 18)]), uint256(0));
 
         return lpTgUSD;
     }

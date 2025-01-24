@@ -76,6 +76,14 @@ library Array {
         return array;
     }
 
+    function memoryUint256(uint256[5] memory uints) public pure returns (uint256[] memory) {
+        uint256[] memory array = new uint256[](uints.length);
+        for (uint256 i = 0; i < uints.length; i++) {
+            array[i] = uints[i];
+        }
+        return array;
+    }
+
     function memoryUint8(uint8[1] memory uints) public pure returns (uint8[] memory) {
         uint8[] memory array = new uint8[](uints.length);
         for (uint256 i; i < uints.length; i++) {

@@ -17,7 +17,7 @@ contract OraclesContext is TgUSDDeployContext {
 
     constructor() {
         // Oracle tgUSD
-        oracles[tgUsd] = new StablePriceOracleParams(tgUSDLp, IPriceOracle(address(AddrChainlinkOracle.USDC)));
+        oracles[tgUsd] = new StablePriceOracleParams(tgUSD_USDC_Lp, IPriceOracle(address(AddrChainlinkOracle.USDC)));
         vm.label(address(oracles[tgUsd]), "Oracle tgUSD");
 
         irCalculator = new IRCalculator(owner, controlTower, oracles[tgUsd]);
@@ -27,6 +27,7 @@ contract OraclesContext is TgUSDDeployContext {
             tgUsd,
             irCalculator,
             rewardAccumulator,
+            liquidatorProxy,
             convexCrvLPMarketImplem,
             convexFxnLPMarketImplem,
             marketNoSociabilizationImplem

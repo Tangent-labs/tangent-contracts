@@ -75,6 +75,7 @@ abstract contract Rewards is MarketExternalActions, Sociabilization {
         controlTower = _marketConstants._controlTower;
         irCalculator = _marketConstants._irCalculator;
         rewardAccumulator = _marketConstants._rewardAccumulator;
+        liquidatorProxy = _marketConstants._liquidatorProxy;
 
         collatToken = _marketInit.collatToken;
         collatOracle = _marketInit.collatOracle;

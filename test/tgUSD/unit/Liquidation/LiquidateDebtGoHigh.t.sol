@@ -29,14 +29,14 @@ contract LiquidateDebtGoHigh is ConvexCurveContext {
         vm.stopPrank();
 
         // Dumps tgUSD for USDC
-        hLpManipulator.dumpCrvPool(tgUSDLp, 1, 0, 900_000 ether);
+        hLpManipulator.dumpCrvPool(tgUSD_USDC_Lp, 1, 0, 900_000 ether);
 
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(usr1, MAX_UINT, address(0), "");
 
-        assertLt(tgUSDLp.last_price(0), 991 * 10 ** 15, "Last price dropped hard");
+        assertLt(tgUSD_USDC_Lp.last_price(0), 991 * 10 ** 15, "Last price dropped hard");
 
         skip(800);
         assertLt(oracles[tgUsd].latestAnswer(), 995 * 10 ** 15, "Price is goig down brutally after EMA is following");

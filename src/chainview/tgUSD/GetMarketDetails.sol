@@ -25,13 +25,16 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         uint256 totalDebt;
         uint256 positionDebt;
         uint256 healthRatio;
-        uint256 actualBorrowRate;
-        uint256 nextBorrowRate;
+        uint256 currentBorrowRate;
+        uint256 futureBorrowRate;
+        uint256 currentRewardCut;
+        uint256 futureRewardCut;
     }
     struct MarketConstants {
         uint256 maxLTV;
         uint256 maxMarketDebt;
         uint256 minimumLoan;
+        uint256 liquidationThreshold;
     }
     struct MarketRow {
         address marketAddress;
@@ -77,10 +80,17 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                     totalDebt: marketDebt.totalDebt(),
                     positionDebt: marketDebt.positionDebt(_account),
                     healthRatio: marketCollateral.healthRatio(_account),
-                    actualBorrowRate: marketDebt.lastIR(),
-                    nextBorrowRate: irCalculator.computeIRForMarket(_market)
+                    currentBorrowRate: marketDebt.lastIR(),
+                    futureBorrowRate: irCalculator.computeIRForMarket(_market),
+                    currentRewardCut: IRewards(_market).rewardCutPercentage(),
+                    futureRewardCut: irCalculator.computeRCForMarket(_market)
                 }),
-                constants: MarketConstants({maxLTV: marketCollateral.maxLTV(), maxMarketDebt: marketDebt.maxMarketDebt(), minimumLoan: marketDebt.minimumLoan()}),
+                constants: MarketConstants({
+                    maxLTV: marketCollateral.maxLTV(),
+                    maxMarketDebt: marketDebt.maxMarketDebt(),
+                    minimumLoan: marketDebt.minimumLoan(),
+                    liquidationThreshold: marketCollateral.liquidationThreshold()
+                }),
                 obas: getBalancesAllowances(_account, ibas),
                 rewardTokens: getERC20StaticInfos(IRewards(_market).getRewardTokens())
             });

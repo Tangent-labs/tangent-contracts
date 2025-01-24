@@ -6,7 +6,7 @@ import {ITgUSD} from "./ITgUSD.sol";
 import {ICollateral, IERC20Metadata} from "./ICollateral.sol";
 import {IControlTower} from "./IControlTower.sol";
 import {IPriceOracle} from "./IPriceOracle.sol";
-
+import {ILiquidatorProxy} from "./ILiquidatorProxy.sol";
 import {IRewardAccumulator} from "./IRewardAccumulator.sol";
 
 interface IMarketCore {
@@ -16,6 +16,7 @@ interface IMarketCore {
         IControlTower _controlTower;
         IIRCalculator _irCalculator;
         IRewardAccumulator _rewardAccumulator;
+        ILiquidatorProxy _liquidatorProxy;
     }
 
     struct MarketInit {

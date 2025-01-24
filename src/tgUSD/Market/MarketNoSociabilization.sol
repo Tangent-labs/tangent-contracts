@@ -3,8 +3,6 @@ pragma solidity ^0.8.22;
 
 import {Rewards, IRewardAccumulator, IERC20Metadata, IERC20} from "./abstract/Rewards.sol";
 
-import {ILiquidator} from "../../interfaces/internals/tgUSD/ILiquidator.sol";
-
 import "forge-std/console.sol";
 
 /// @notice
