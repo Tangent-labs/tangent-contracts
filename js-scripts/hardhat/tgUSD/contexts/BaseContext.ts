@@ -13,6 +13,7 @@ import {
     IERC20,
     IRCalculator,
     IYearnV3Vault,
+    LiquidatorProxy,
     MarketCreator,
     MarketNoSociabilization,
     RewardAccumulator,
@@ -31,6 +32,7 @@ export class BaseContext extends MainSetup {
     sgUSD!: IYearnV3Vault;
     zapper!: Zapper;
     rewardAccumulator!: RewardAccumulator;
+    liquidatorProxy!: LiquidatorProxy;
     irCalculator!: IRCalculator;
     marketCreator!: MarketCreator;
 
@@ -62,6 +64,9 @@ export class BaseContext extends MainSetup {
 
         this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, this.feeTreso);
         await this.rewardAccumulator.waitForDeployment();
+
+        this.liquidatorProxy = await (await ethers.getContractFactory("LiquidatorProxy")).deploy();
+        await this.liquidatorProxy.waitForDeployment();
 
         this.marketCvxCrvImplem = await (await ethers.getContractFactory("ConvexCrvLPMarket")).deploy();
         await this.marketCvxCrvImplem.waitForDeployment();
@@ -130,6 +135,7 @@ export class BaseContext extends MainSetup {
             this.tgUSD,
             this.irCalculator,
             this.rewardAccumulator,
+            this.liquidatorProxy,
             this.marketCvxCrvImplem,
             this.marketCvxFxnImplem,
             this.marketNoSociabilizationImplem
