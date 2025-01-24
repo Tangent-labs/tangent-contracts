@@ -24,6 +24,8 @@ abstract contract MarketCore is IMarketCore, Collateral {
     error NotLiquidablePosition();
     error NotZapper(address zapper);
 
+    event Liquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
+
     constructor() {
         isInitialized = true;
     }
@@ -188,9 +190,10 @@ abstract contract MarketCore is IMarketCore, Collateral {
         uint256 collatBalance,
         address liquidator,
         bytes calldata liquidationCall
-    ) internal returns (uint256 collatAmountToLiquidate) {
+    ) internal {
         require(tgUSDToRepay != 0, ZeroDebtAmount());
         uint256 remainingDebt;
+        uint256 collatAmountToLiquidate;
         uint256 newCollatBalance;
 
         // Liquidate all
@@ -216,14 +219,21 @@ abstract contract MarketCore is IMarketCore, Collateral {
         // Modify the collateral balance, the user debt and the total debt
         _updateCollatAndDebts(account, newCollatBalance, remainingDebt, newDebtIndex, newTotalDebt - tgUSDToRepay);
 
+        // Withdraw the collateral from the underlying protocol if needed and
+        // Transfer it to the caller when there is no liquidator passed in parameter
+        // If a liquidator is passed, we send the collateral to the liquidator
         _transferCollateralWithdraw(liquidator != address(0) ? liquidator : msg.sender, collatAmountToLiquidate);
+
+        emit Liquidate(account, tgUSDToRepay, collatAmountToLiquidate, liquidator);
 
         // When liquidator is not zero, it allows to the liquidator to receive the collateral on a contract.
         // Liquidator is so able to sell the collateral for tgUSD in the same transaction.
         if (liquidator != address(0)) {
             liquidatorProxy.callLiquidate(liquidator, liquidationCall);
         }
-        // Burns tgUSD from the ender
+        // Burns tgUSD from the sender.
+        // The debt has to be on the caller of the transaction.
+        // In case a liquidator is passed in parameter, it needs to send it back to the sender of the tx.
         tgUSD.burnFrom(msg.sender, tgUSDToRepay);
     }
 

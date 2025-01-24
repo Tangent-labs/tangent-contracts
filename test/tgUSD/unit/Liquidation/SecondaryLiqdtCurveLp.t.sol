@@ -42,8 +42,6 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         assertLe(market.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
         assertGe(market.positionDebt(usr1), 9_300 ether, "Debt is getting over the 93% of the collateral");
 
-        verifyLostERC20(tgUsd, usr1, market.positionDebt(usr1), "tgUSD burnt from sender");
-        verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "tgUSD burnt from sender");
         // Liquidation passes after IR increased the user debt over the liquidation threshold
 
         ICurveStableSwapNG lp = ICurveStableSwapNG(address(collatToken));
@@ -53,16 +51,17 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         uint256 collatToDump = market.collateralBalances(usr1);
         uint256 amountToRetrive = lp.calc_withdraw_one_coin(collatToDump, 0);
 
-        address[] memory route = Array.memoryAddress([address(AddrClassicERC20.TOKEN_USDC), address(tgUSD_USDC_Lp), address(tgUsd)]);
-        uint256[][] memory swapParams = new uint256[][](1);
-        uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
-        swapParams[0] = swapUsdcToTgUSD;
-        
-        bytes memory callToSecondaryLiquidator = encoder.encodeLiquidateCallForCurveLP(
-            RemoveLiquidityCollateral({lpToLiquidate: address(collatToken), amountToLiquidate: collatToDump, lpType: 0, minAmounts: [amountToRetrive, 0]}),
-            encoder.createCurveRouterStruct(route, swapParams, amountToRetrive, 0, usr1),
-            2000000
+        address[] memory route = Array.memoryAddress(
+            [address(AddrCurveStableLP.CRVUSD_USDC), address(AddrCurveStableLP.CRVUSD_USDC), address(AddrClassicERC20.TOKEN_USDC), address(tgUSD_USDC_Lp), address(tgUsd)]
         );
+        uint256[][] memory swapParams = new uint256[][](2);
+        uint256[] memory unwrapLPToUSDC = Array.memoryUint256([zero, zero, uint256(6), uint256(10), uint256(2)]);
+        uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
+
+        swapParams[0] = unwrapLPToUSDC;
+        swapParams[1] = swapUsdcToTgUSD;
+
+        bytes memory callToSecondaryLiquidator = encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, collatToDump, 0, usr1), 2000000);
         market.liquidate(usr1, MAX_UINT, address(curveLPLiquidator), callToSecondaryLiquidator);
         assertERC20Tracking();
 

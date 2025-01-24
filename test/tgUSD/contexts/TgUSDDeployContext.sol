@@ -105,7 +105,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         mockEnsoRouter = new MockEnsoRouter();
 
-        vm.allowCheatcodes(address(AddrAggregator.ENSO_ROUTER));
+        vm.allowCheatcodes(address(AddrRouter.ENSO_ROUTER));
         zapper = new Zapper(owner, controlTower, tgUsd);
 
         controlTower.toggleZapper(address(zapper));
@@ -120,8 +120,9 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(controlTower), "ControlTower");
         vm.label(address(tgUSD_USDC_Lp), "LP tgUSD");
         vm.label(address(rewardAccumulator), "RewardAccumulator");
-        vm.label(address(AddrAggregator.ENSO_ROUTER), "Enso Router");
+        vm.label(address(AddrRouter.ENSO_ROUTER), "Enso Router");
         vm.label(address(mockEnsoRouter), "Mock Odos Router");
+        vm.label(0x16C6521Dff6baB339122a0FE25a9116693265353, "Curve Router");
 
         vm.stopPrank();
     }

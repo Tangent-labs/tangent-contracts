@@ -25,7 +25,7 @@ contract ZapRepayRevert is ConvexCurveContext {
         uint256 amountIn = 0.1 ether;
         uint256 minAmountOut = 100;
 
-        vm.mockFunction(address(AddrAggregator.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
+        vm.mockFunction(address(AddrRouter.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
 
         vm.startPrank(usr1);
         deal(usr1, amountIn);
@@ -44,7 +44,7 @@ contract ZapRepayRevert is ConvexCurveContext {
     function test_zap_repay_with_msg_value_but_tokenIn_not_eth() external {
         uint256 amountIn = 0.1 ether;
 
-        vm.mockFunction(address(AddrAggregator.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
+        vm.mockFunction(address(AddrRouter.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
 
         vm.startPrank(usr1);
         deal(usr1, amountIn);

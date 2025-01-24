@@ -20,8 +20,6 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     event Borrow(address indexed account, address receiver, uint256 amount);
     event Repay(address indexed account, address repayer, uint256 amount, bool isZapping);
 
-    event Liquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
-    event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
     event Leverage(address indexed account, uint256 depositedAmount, uint256 collatBought, uint256 borrowedAmount);
 
     error DepositPaused();
@@ -102,18 +100,14 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
 
         require(_healthRatio(userDebt, collatBalance) < 1 ether, NotLiquidablePosition());
 
-        uint256 collatLiquidated = _liquidate(account, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator, liquidationCall);
-
-        emit Liquidate(account, tgUSDToRepay, collatLiquidated, liquidator);
+        _liquidate(account, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator, liquidationCall);
     }
 
     function selfLiquidate(uint256 tgUSDToRepay, address liquidator, bytes calldata routerCall) external {
         // Checkpoint IR
         (uint256 newDebtIndex, uint256 newTotalDebt, uint256 userDebt, uint256 collatBalance) = _preLiquidate(msg.sender);
 
-        uint256 collatLiquidated = _liquidate(msg.sender, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator, routerCall);
-
-        emit Liquidate(msg.sender, tgUSDToRepay, collatLiquidated, liquidator);
+        _liquidate(msg.sender, tgUSDToRepay, userDebt, newTotalDebt, newDebtIndex, collatBalance, liquidator, routerCall);
     }
 
     function leverage(

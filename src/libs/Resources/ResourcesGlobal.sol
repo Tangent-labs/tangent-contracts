@@ -60,7 +60,8 @@ library AddrChainlinkOracle {
     IAggregatorV3 constant CB_BTC = IAggregatorV3(0x2665701293fCbEB223D11A08D826563EDcCE423A);
 }
 
-library AddrAggregator {
+library AddrRouter {
     IOdosRouter constant ODOS_ROUTER = IOdosRouter(0xCf5540fFFCdC3d510B18bFcA6d2b9987b0772559);
     IEnsoRouter constant ENSO_ROUTER = IEnsoRouter(0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E);
+    address constant CURVE_ROUTER = 0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E;
 }

@@ -4,18 +4,8 @@ pragma solidity ^0.8.0;
 import {RemoveLiquidityCollateral, CurveRouterSwap} from "../../src/interfaces/internals/tgUSD/ICurveLPLiquidator.sol";
 
 contract Encoder {
-    function encodeLiquidateCallForCurveLP(
-        RemoveLiquidityCollateral calldata removeLiquidity,
-        CurveRouterSwap calldata curveRouterSwap,
-        uint256 debtToCover
-    ) public pure returns (bytes memory) {
-        return
-            abi.encodeWithSelector(
-                bytes4(keccak256("liquidateLP((address,uint256,uint256,uint256[2]),(address[11],uint256[5][5],uint256,uint256,address[5],address),uint256)")),
-                removeLiquidity,
-                curveRouterSwap,
-                debtToCover
-            );
+    function encodeLiquidateCallForCurveLP(CurveRouterSwap calldata curveRouterSwap, uint256 debtToCover) public pure returns (bytes memory) {
+        return abi.encodeWithSelector(bytes4(keccak256("liquidateLP((address[11],uint256[5][5],uint256,uint256,address[5],address),uint256)")), curveRouterSwap, debtToCover);
     }
 
     function createCurveRouterStruct(

@@ -9,33 +9,19 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metad
 
 import "forge-std/console.sol";
 
+/// @notice CurveLPLiquidator - Proxy allowing to liquidate collateral that are LP from Curve Finance.
+///         It uses directly the router of Curve Finance.
+
 contract CurveLPLiquidator {
     ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x16C6521Dff6baB339122a0FE25a9116693265353);
 
-    function liquidateLP(RemoveLiquidityCollateral calldata removeLiquidity, CurveRouterSwap calldata curveRouterSwap, uint256 debtToCover) external {
-        _removeLiquidityCollateral(removeLiquidity);
-        _swapTokensThroughRouter(curveRouterSwap);
-    }
-
-    function _removeLiquidityCollateral(RemoveLiquidityCollateral calldata removeLiquidity) internal {
-        ICurveStableSwapNG lp = ICurveStableSwapNG(removeLiquidity.lpToLiquidate);
-
-        // Unwrap the LP token
-
-        // Remove both coins in balance
-        if (removeLiquidity.minAmounts[0] != 0 && removeLiquidity.minAmounts[1] != 0) {
-            console.log("Remove double coin");
-            uint256[2] memory tokensOut = lp.remove_liquidity(removeLiquidity.amountToLiquidate, removeLiquidity.minAmounts);
+    /// @notice
+    function liquidateLP(CurveRouterSwap calldata curveRouterSwap, uint256 debtToCover) external {
+        uint256 amountIn = curveRouterSwap._amount;
+        IERC20 collateral = IERC20(curveRouterSwap._route[0]);
+        if (collateral.allowance(address(this), address(CURVE_ROUTER)) != (type(uint256).max)) {
+            collateral.approve(address(CURVE_ROUTER), type(uint256).max);
         }
-        // Remove only one coin from the LP
-        else {
-            console.log("Remove one coin");
-            int128 tokenOutId = removeLiquidity.minAmounts[0] != 0 ? int128(0) : int128(1);
-            uint256 amountOut = lp.remove_liquidity_one_coin(removeLiquidity.amountToLiquidate, tokenOutId, removeLiquidity.minAmounts[uint256(int256(tokenOutId))]);
-        }
-    }
-
-    function _swapTokensThroughRouter(CurveRouterSwap calldata curveRouterSwap) internal {
         // Swap tokens
         CURVE_ROUTER.exchange(
             curveRouterSwap._route,
@@ -46,13 +32,4 @@ contract CurveLPLiquidator {
             curveRouterSwap._receiver
         );
     }
-
-    // function decode(bytes memory data) private pure returns (uint8 withdrawType, uint256 productAmount, bytes3 color) {
-    //     assembly {
-    //         // load 32 bytes into `selector` from `data` skipping the first 32 bytes
-    //         selector := mload(add(data, 32))
-    //         productAmount := mload(add(data, 64))
-    //         color := mload(add(data, 96))
-    //     }
-    // }
 }

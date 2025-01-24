@@ -26,7 +26,7 @@ contract LeverageToTheLimit is ConvexCurveContext {
         uint256 tgUSDToFlashMint = 10_000 ether;
         uint256 collatReceived = 9_995 ether;
 
-        vm.mockFunction(address(AddrAggregator.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
+        vm.mockFunction(address(AddrRouter.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
         bytes memory callRouter = ensoUtils.getZapCallMocked(address(tgUsd), tgUSDToFlashMint, address(collatToken), mockedLP, address(market), address(zapper), collatReceived);
 
         // Revert beaucause LTV is too low
@@ -40,7 +40,7 @@ contract LeverageToTheLimit is ConvexCurveContext {
         uint256 tgUSDToFlashMint = 20_000 ether;
         uint256 collatReceived = 19_000 ether;
 
-        vm.mockFunction(address(AddrAggregator.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
+        vm.mockFunction(address(AddrRouter.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
 
         collatToken.approve(address(market), MAX_UINT);
         deal(address(collatToken), usr1, collatToDeposit);
