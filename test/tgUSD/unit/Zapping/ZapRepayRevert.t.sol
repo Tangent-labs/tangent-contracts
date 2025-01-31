@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 import "../../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../contexts/ConvexCurveContext.sol";
+import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
 contract ZapRepayRevert is ConvexCurveContext {
     ConvexCrvLPMarket public market;
@@ -31,7 +32,7 @@ contract ZapRepayRevert is ConvexCurveContext {
         deal(usr1, amountIn);
 
         bytes32[] memory commands = Array.memoryBytes32(
-            [addressToBytes32(address(tgUsd)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(minAmountOut - 1)]
+            [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(minAmountOut - 1)]
         );
         bytes[] memory state = new bytes[](0);
         vm.expectRevert(abi.encodeWithSelector(Zapper.MinAmountOutNotReached.selector));
@@ -50,7 +51,7 @@ contract ZapRepayRevert is ConvexCurveContext {
         deal(usr1, amountIn);
 
         bytes32[] memory commands = Array.memoryBytes32(
-            [addressToBytes32(address(tgUsd)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
+            [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
         );
         bytes[] memory state = new bytes[](0);
         vm.expectRevert(abi.encodeWithSelector(Zapper.TokenInMustBeZero.selector));
@@ -67,7 +68,7 @@ contract ZapRepayRevert is ConvexCurveContext {
         deal(usr1, amountIn);
 
         bytes32[] memory commands = Array.memoryBytes32(
-            [addressToBytes32(address(tgUsd)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
+            [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
         );
         bytes[] memory state = new bytes[](0);
         vm.expectRevert(abi.encodeWithSelector(Zapper.TokenInMustNotBeZero.selector));
@@ -84,7 +85,7 @@ contract ZapRepayRevert is ConvexCurveContext {
         deal(usr1, amountIn);
 
         bytes32[] memory commands = Array.memoryBytes32(
-            [addressToBytes32(address(tgUsd)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
+            [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
         );
         bytes[] memory state = new bytes[](0);
         vm.expectRevert(abi.encodeWithSelector(Zapper.NotMarket.selector, address(AddrClassicERC20.TOKEN_USDC)));

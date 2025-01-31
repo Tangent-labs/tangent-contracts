@@ -3,13 +3,14 @@
 pragma solidity ^0.8.22;
 import "../Base/HandlerBase.sol";
 
-import "../../../../src/tgUSD/Market/abstract/Rewards.sol";
+import "../../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
+import "../../../../src/interfaces/internals/tgUSD/IRewardAccumulator.sol";
 
 contract HProcessRewards is HandlerBase {
-    Rewards marketRewards;
+    MarketExternalActions marketRewards;
 
-    constructor(address _sender, Rewards _market) HandlerBase(_sender, _market) {
-        marketRewards = Rewards(address(_market));
+    constructor(address _sender, MarketExternalActions _market) HandlerBase(_sender, _market) {
+        marketRewards = MarketExternalActions(address(_market));
     }
 
     function processRewards(address harvestFeeReceiver) external handler {

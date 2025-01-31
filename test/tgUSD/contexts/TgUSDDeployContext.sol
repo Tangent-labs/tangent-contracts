@@ -15,7 +15,7 @@ import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
 import "../../../src/tgUSD/Utilities/MarketCreator.sol";
-import "../../../src/tgUSD/Utilities/CurveLPLiquidator.sol";
+import "../../../src/tgUSD/Utilities/Liquidator.sol";
 import "../../../src/tgUSD/Utilities/LiquidatorProxy.sol";
 import "../../../test/tgUSD/mocks/MockEnsoRouter.sol";
 import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
@@ -30,9 +30,11 @@ import "../../utils/Encoder.sol";
 import "../../../src/interfaces/externals/YearnFi/IYearnV3Vault.sol";
 import "../../../src/interfaces/externals/ICREATE3Factory.sol";
 
+import "./LpDeploymentContext.sol";
+
 contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
-    uint256 mainnetFork;
-    uint256 baseFork;
+    uint256 public mainnetFork;
+    uint256 public baseFork;
 
     address usr1 = makeAddr("User1");
     address usr2 = makeAddr("User2");
@@ -49,7 +51,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public mockedLP = makeAddr("Mocked LP");
 
     Encoder public encoder;
-    CurveLPLiquidator curveLPLiquidator;
+    Liquidator liquidator;
 
     address public l0EndpointMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
     address public l0EndpointBase = 0x1a44076050125825900e736c501f859c50fE728c;
@@ -61,8 +63,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public convexFxnLPMarketImplem;
     address public marketNoSociabilizationImplem;
     Zapper public zapper;
-    ICurveStableSwapNG public tgUSD_USDC_Lp;
-    TgUSD public tgUsd;
+
+    TgUSD public tgUSD;
     TgUSD public tgUsdBase;
     IYearnV3Vault public sgUSD;
     RewardAccumulator public rewardAccumulator;
@@ -71,9 +73,11 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     Labeliser public labeliser;
     ICREATE3Factory public create3Factory = ICREATE3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
 
+    LpDeploymentContext public lpDeploymentContext;
+
     constructor() {
         baseFork = vm.createSelectFork("base", 24379193);
-        mainnetFork = vm.createSelectFork("mainnet", 21514132);
+        mainnetFork = vm.createSelectFork("mainnet", 21738808);
 
         vm.startPrank(owner);
 
@@ -82,7 +86,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         marketNoSociabilizationImplem = address(new MarketNoSociabilization());
 
         encoder = new Encoder();
-        curveLPLiquidator = new CurveLPLiquidator();
+        liquidator = new Liquidator();
         ensoUtils = new EnsoUtils();
         labeliser = new Labeliser();
 
@@ -90,41 +94,49 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         labeliser.labelizeERC4626();
 
         controlTower = new ControlTower(owner, feeTreasury);
-        liquidatorProxy = new LiquidatorProxy();
 
         rewardAccumulator = new RewardAccumulator(owner, controlTower, feeTreasury);
 
         // Deploy tgUSD on Base
         tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
         // Deploy tgUSD on Mainnet ETH
-        tgUsd = deployTgUSD(mainnetFork, l0EndpointMainnet);
+        tgUSD = deployTgUSD(mainnetFork, l0EndpointMainnet);
 
-        assertEq(address(tgUsdBase), address(tgUsd), "Should be equals with CREATE3");
+        assertEq(address(tgUsdBase), address(tgUSD), "Should be equals with CREATE3");
 
-        sgUSD = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(tgUsd), "Staked tgUSD", "sgUSD", owner, 7 days));
+        liquidatorProxy = new LiquidatorProxy(tgUSD);
+
+        sgUSD = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(tgUSD), "Staked tgUSD", "sgUSD", owner, 7 days));
 
         mockEnsoRouter = new MockEnsoRouter();
 
         vm.allowCheatcodes(address(AddrRouter.ENSO_ROUTER));
-        zapper = new Zapper(owner, controlTower, tgUsd);
+        zapper = new Zapper(owner, controlTower, tgUSD);
 
         controlTower.toggleZapper(address(zapper));
 
-        deal(address(tgUsd), owner, 1_000_000 ether);
+        deal(address(tgUSD), owner, 1_000_000 ether);
 
-        // Deploy and addLiquidity in tgUSD LP
-        tgUSD_USDC_Lp = deployTgUSDLP(AddrClassicERC20.TOKEN_USDC, "tgUSD-USDC", 1_000_000);
-
-        vm.label(address(tgUsd), "tgUSD");
+        vm.label(address(tgUSD), "tgUSD");
         vm.label(address(sgUSD), "sgUSD");
         vm.label(address(controlTower), "ControlTower");
-        vm.label(address(tgUSD_USDC_Lp), "LP tgUSD");
+
         vm.label(address(rewardAccumulator), "RewardAccumulator");
         vm.label(address(AddrRouter.ENSO_ROUTER), "Enso Router");
         vm.label(address(mockEnsoRouter), "Mock Odos Router");
         vm.label(0x16C6521Dff6baB339122a0FE25a9116693265353, "Curve Router");
 
+        vm.label(address(liquidator), "Liquidator");
+        vm.label(address(liquidatorProxy), "Liquidation Proxy");
+        vm.label(address(zapper), "Zapper");
+
+        vm.label(address(convexCrvLPMarketImplem), "Implementation CvxCrvMarket");
+        vm.label(address(convexFxnLPMarketImplem), "Implementation CvxFxnMarket");
+        vm.label(address(marketNoSociabilizationImplem), "Implementation NoSocMarket");
+
         vm.stopPrank();
+
+        lpDeploymentContext = new LpDeploymentContext(owner, tgUSD);
     }
 
     function getBytecodeWithConstructorArgs(address endpointAddress) public view returns (bytes memory) {
@@ -142,35 +154,5 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     function deployTgUSD(uint256 forkId, address endpoint) public returns (TgUSD) {
         vm.selectFork(forkId);
         return TgUSD(create3Factory.deploy(bytes32(0), getBytecodeWithConstructorArgs(endpoint)));
-    }
-
-    function deployTgUSDLP(IERC20Metadata otherStable, string memory name, uint256 initialAmount) public returns (ICurveStableSwapNG) {
-        uint256 otherStableDecimals = otherStable.decimals();
-        // Give usdc to owner before LP deployment
-        deal(address(otherStable), owner, initialAmount * 10 ** otherStableDecimals);
-        vm.startPrank(owner);
-
-        ICurveStableSwapNG lpTgUSD = ICurveStableSwapNG(
-            AddrCurveStableLP.STABLE_SWAP_FACTORY.deploy_plain_pool(
-                name,
-                name,
-                Array.memoryAddress([address(otherStable), address(tgUsd)]),
-                5000,
-                100000000,
-                0,
-                866,
-                0,
-                Array.memoryUint8([uint8(0), uint8(0)]),
-                Array.memoryBytes4([bytes4(0), bytes4(0)]),
-                Array.memoryAddress([address(0), address(0)])
-            )
-        );
-
-        otherStable.approve(address(lpTgUSD), MAX_UINT);
-        tgUsd.approve(address(lpTgUSD), MAX_UINT);
-
-        lpTgUSD.add_liquidity(Array.memoryUint256([uint256(initialAmount * 10 ** otherStableDecimals), uint256(initialAmount * 10 ** 18)]), uint256(0));
-
-        return lpTgUSD;
     }
 }

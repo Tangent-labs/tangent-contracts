@@ -19,7 +19,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         sigma = _0_275_PERCENT;
         r0 = _5_PERCENT;
 
-        uint256 expected = irFFI.getIRFFI(tgUSDPrice, irStartPrice, sigma, r0);
+        uint256 expected = irFFI.getIRFFI(tgUSDPrice, irCalculator.priceIRMax(), irStartPrice, sigma, r0);
 
         uint256 calculated = irCalculator.simulateIR(tgUSDPrice, irStartPrice, sigma, r0);
 

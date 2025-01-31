@@ -10,3 +10,30 @@ This function takes into parameters :
 - **uint256** _tgUSDToRepay_ :
 - **address** _liquidator_ :
 - **bytes** _liquidationCall_ :
+
+## Schemas
+
+- 🔴 Collateral
+- 🟢 tgUSD
+
+### With liquidator
+
+```mermaid
+sequenceDiagram
+    Convex->>Market: 🔴 Withdraw from Convex
+    Market->>Liquidator : 🔴 Send to the Liquidator
+    Liquidator->>LP : 🔴 Dump the collateral for tgUSD
+    LP->>Sender: 🟢 Receives tgUSD
+    Sender->> 0x000 : 🟢 Burn tgUSD
+
+
+```
+
+### Without liquidator
+
+```mermaid
+sequenceDiagram
+    Convex->>Market: 🔴 Withdraw from Convex
+    Market->>Sender : 🔴 Send to the sender
+    Sender->> 0x000 : 🟢 Burn tgUSD
+```

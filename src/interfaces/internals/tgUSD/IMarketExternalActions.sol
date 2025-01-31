@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IMarketCore} from "./IMarketCore.sol";
 interface IMarketExternalActions {
     function deposit(address _for, uint256 lpDeposited, bool isStaked) external;
 
@@ -9,5 +8,5 @@ interface IMarketExternalActions {
 
     function repay(address account, uint256 tgUSDToRepay, address callerZapper) external;
 
-    function liquidate(address account, uint256 tgUSDToRepay, address liquidator, bytes calldata liquidationCall) external;
+    function liquidate(address account, uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external;
 }

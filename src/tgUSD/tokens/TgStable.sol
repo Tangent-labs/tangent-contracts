@@ -36,11 +36,11 @@ contract TgStable is ERC20, Sociabilization {
         _decimals = _stable.decimals();
         _stable.approve(address(_savingAccount), MAX_UINT);
 
-        _transferOwnership(_owner);
-
         // Sociabilization
         require(_socFeePercentage <= 2_000, SocFeeTooHigh());
         socFeePercentage = _socFeePercentage;
+
+        _transferOwnership(_owner);
     }
 
     function decimals() public view override returns (uint8) {

@@ -4,6 +4,7 @@ import "../../contexts/ConvexCurveContext.sol";
 
 import "../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../handler/Features/BorrowRepay/HRepay.sol";
+import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
 contract BorrowReverts is ConvexCurveContext {
     IERC20Metadata public collatToken = AddrCurveStableLP.FRXETH_WETH;

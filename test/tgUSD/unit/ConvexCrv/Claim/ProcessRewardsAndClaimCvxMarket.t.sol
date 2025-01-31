@@ -1,7 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../contexts/ConvexCurveContext.sol";
+
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
+import "../../../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
+import "../../../handler/Features/HProcessRewards.sol";
+import "../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
     ConvexCrvLPMarket public market;
     ConvexFxnLPMarket public market2;
@@ -42,7 +46,7 @@ contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
 
         skip(15 days);
 
-        tgUsd.mintIR();
+        tgUSD.mintIR();
         vm.stopPrank();
 
         hRewards.processRewards(usr2);
@@ -71,7 +75,7 @@ contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
 
         skip(15 days);
 
-        tgUsd.mintIR();
+        tgUSD.mintIR();
         vm.stopPrank();
 
         hRewards.processRewards(usr2);

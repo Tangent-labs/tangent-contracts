@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 import "../../contexts/ConvexCurveContext.sol";
 
 import "../../handler/Features/BorrowRepay/HRepay.sol";
+import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
 contract RepayReverts is ConvexCurveContext {
     ConvexCrvLPMarket public market;

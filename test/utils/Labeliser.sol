@@ -17,6 +17,10 @@ contract Labeliser is Test {
         vm.label(address(AddrClassicERC20.TOKEN_FXN), "FXN");
         vm.label(address(AddrClassicERC20.TOKEN_DOLA), "DOLA");
         vm.label(address(AddrClassicERC20.TOKEN_FXUSD), "FXUSD");
+
+        vm.label(address(AddrClassicERC20.TOKEN_WETH), "WETH");
+        vm.label(address(AddrClassicERC20.TOKEN_FRXETH), "frxETH");
+        vm.label(address(AddrClassicERC20.TOKEN_PXETH), "pxETH");
     }
 
     function labelizeERC4626() external {

@@ -19,10 +19,10 @@ contract Zapper is Ownable, IZapper {
     address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /// @notice Router
-    address public constant ROUTER = 0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E;
+    address public constant ENSO_ROUTER = 0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E;
 
     /// @notice Tangent USD
-    ITgUSD public tgUsd;
+    ITgUSD public tgUSD;
 
     /// @notice Control Tower
     IControlTower public controlTower;
@@ -34,10 +34,10 @@ contract Zapper is Ownable, IZapper {
     error TokenInMustBeZero();
 
     constructor(address _owner, IControlTower _controlTower, ITgUSD _tgUsd) Ownable(_owner) {
-        tgUsd = _tgUsd;
+        tgUSD = _tgUsd;
         controlTower = _controlTower;
 
-        _tgUsd.approve(ROUTER, MAX_UINT);
+        _tgUsd.approve(ENSO_ROUTER, MAX_UINT);
     }
 
     /**
@@ -121,7 +121,7 @@ contract Zapper is Ownable, IZapper {
         // Transfer ERC20 of native blockchain coin on this contract
         _transferTokenToZapper(zapMarket.tokenIn, zapMarket.amountIn);
         // Call router Router to swap the tokenIn to tgUSD and returns the out amount
-        return _zapRouterAndVerify(tgUsd, msg.sender, zapMarket.minAmountOut, routerCall);
+        return _zapRouterAndVerify(tgUSD, msg.sender, zapMarket.minAmountOut, routerCall);
     }
 
     /**
@@ -136,8 +136,8 @@ contract Zapper is Ownable, IZapper {
             // TokenIn in param must different from 0
             require(address(tokenIn) != CHAIN_COIN, TokenInMustNotBeZero());
             // If the Zapper never approved the router
-            if (amountIn > tokenIn.allowance(address(this), ROUTER)) {
-                tokenIn.forceApprove(ROUTER, MAX_UINT);
+            if (amountIn > tokenIn.allowance(address(this), ENSO_ROUTER)) {
+                tokenIn.forceApprove(ENSO_ROUTER, MAX_UINT);
             }
             tokenIn.safeTransferFrom(msg.sender, address(this), amountIn);
         } else {
@@ -158,7 +158,7 @@ contract Zapper is Ownable, IZapper {
         uint256 amountOut = tokenOut.balanceOf(receiver);
 
         // Call router router and perform the swaps with raw data following recommendations.
-        (bool isrouterCallSuccess, ) = ROUTER.call{value: msg.value}(routerData);
+        (bool isrouterCallSuccess, ) = ENSO_ROUTER.call{value: msg.value}(routerData);
         // Verify the call to router was successfull
         require(isrouterCallSuccess, RouterCallError());
         // Compute the amount of tokenOut returned by router thanks to previous value

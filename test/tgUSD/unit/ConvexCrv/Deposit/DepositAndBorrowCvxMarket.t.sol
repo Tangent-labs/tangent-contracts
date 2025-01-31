@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../contexts/ConvexCurveContext.sol";
+
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
+import "../../../handler/Features/HProcessRewards.sol";
+import "../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 contract DepositAndBorrowCvxMarket is ConvexCurveContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
@@ -26,8 +29,8 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         verifyReceiveERC20(market.cvxRewardToken(), address(market), collatDeposited1, "Verify that market receives Cvx Reward tokens");
         verifyBalERC20NotChanging(AddrCurveStableLP.CRVUSD_USDC, address(market), "Verify that as staking, no LP are received by the MarketCore");
         verifyLostERC20(AddrCurveStableLP.CRVUSD_USDC, usr1, collatDeposited1, "Verify that user sent its LP");
-        verifyMintERC20(tgUsd, borrowedAmount1, "tgUSD are not minted");
-        verifyReceiveERC20(tgUsd, usr1, borrowedAmount1, "User receives the borrowed amount");
+        verifyMintERC20(tgUSD, borrowedAmount1, "tgUSD are not minted");
+        verifyReceiveERC20(tgUSD, usr1, borrowedAmount1, "User receives the borrowed amount");
 
         vm.startSnapshotGas("Deposit And Borrow", "First deposit and borrow ever on the market and stake");
         hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1, true, address(0));
@@ -48,7 +51,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         verifyReceiveERC20(market.cvxRewardToken(), address(market), collatDeposited2, "Verify that market receives Cvx Reward tokens");
         verifyBalERC20NotChanging(AddrCurveStableLP.CRVUSD_USDC, address(market), "Verify that as staking, no LP are received by the MarketCore");
         verifyLostERC20(AddrCurveStableLP.CRVUSD_USDC, usr2, collatDeposited2, "Verify that user sent its LP");
-        verifyReceiveERC20(tgUsd, usr2, borrowedAmount2 + 12, "User receives 50 tgUSD");
+        verifyReceiveERC20(tgUSD, usr2, borrowedAmount2 + 12, "User receives 50 tgUSD");
 
         hDeposit.setMsgSender(usr2);
         hDeposit.depositAndBorrow(collatDeposited2, borrowedAmount2, true, address(0));

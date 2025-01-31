@@ -33,6 +33,12 @@ abstract contract Collateral is DebtIR, ICollateral {
     /// @notice Amount of collateral deposited by a user.
     mapping(address => uint256) public collateralBalances;
 
+    error NewLiquidationThresholdTooHigh();
+    error NewLiquidationThresholdTooLow();
+
+    error NewMaxLTVTooHigh();
+    error NewMaxLTVTooLow();
+
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     OWNER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -52,6 +58,8 @@ abstract contract Collateral is DebtIR, ICollateral {
      *  @param _maxLTV New maxLTV percentage
      */
     function setMaxLTV(uint256 _maxLTV) external onlyOwner {
+        // Can't be less than the liquidation threshold
+        require(_maxLTV < liquidationThreshold, NewLiquidationThresholdTooHigh());
         maxLTV = _maxLTV;
     }
 
@@ -61,6 +69,10 @@ abstract contract Collateral is DebtIR, ICollateral {
      *  @param _liquidationThreshold New maximum liquidation threshold
      */
     function setLiquidationThreshold(uint256 _liquidationThreshold) external onlyOwner {
+        // Can't be more than 100%
+        require(_liquidationThreshold < DENOMINATOR, NewLiquidationThresholdTooHigh());
+        // Can't be less than the maxLTV
+        require(_liquidationThreshold > maxLTV, NewLiquidationThresholdTooLow());
         liquidationThreshold = _liquidationThreshold;
     }
 
@@ -68,41 +80,15 @@ abstract contract Collateral is DebtIR, ICollateral {
                     INTERNAL STORAGE UPDATE 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    /**
-     *  @dev  Updates in the storage the Total debt, User debt and Collateral owned by an account
-     *        Called during depositAndBorrow, withdrawAndReway, liquidate and selfLiquidate functions.
-     *  @param account           Address of the account to update
-     *  @param newCollatBalance  New collateral balance of account
-     *  @param newUserDebt       New debt of the account
-     *  @param newDebtIndex      New index of the debt
-     *  @param newTotalDebt      New total debt of the market
-     */
-    function _updateCollatAndDebts(address account, uint256 newCollatBalance, uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) internal {
+    function _updateCollateral(address account, uint256 newCollatBalance, uint256 newTotalCollat) internal {
+        // Updates the total collateral on the market.
+        totalCollateral = newTotalCollat;
         // Updates the collateral owned by the account.
         collateralBalances[account] = newCollatBalance;
-
-        // Updates global and user debt
-        _updateDebts(account, newUserDebt, newDebtIndex, newTotalDebt);
-    }
-
-    /**
-     *  @dev  Updates in the storage the Total debt and Collateral owned by an account
-     *        Called during simple deposit and withdraw.
-     *  @param account           Address of the account to update
-     *  @param newCollatBalance  New collateral balance of account
-     *  @param newDebtIndex      New index of the debt
-     *  @param newTotalDebt      New total debt of the market
-     */
-    function _updateCollatAndGlobalDebt(address account, uint256 newCollatBalance, uint256 newDebtIndex, uint256 newTotalDebt) internal {
-        // Updates the collateral owned by the account.
-        collateralBalances[account] = newCollatBalance;
-
-        // Updates global debt
-        _updateGlobalDebt(newDebtIndex, newTotalDebt);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        VIEWS
+                        PUBLIC VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
@@ -112,6 +98,25 @@ abstract contract Collateral is DebtIR, ICollateral {
     function maxBorrowable(address account) external view returns (uint256) {
         return _maxBorrowable(account);
     }
+
+    /// @notice Computes and returns the value in $ of the collateral of an account.
+    /// @param account Account to check the value of the collateral
+    /// @return The value in $ and base 1e18 of the collateral of a position
+    function positionValue(address account) external view returns (uint256) {
+        return _positionValue(account);
+    }
+
+    function healthRatio(address account) public view returns (uint256) {
+        return _healthRatio(positionDebt(account), collateralBalances[account]);
+    }
+
+    function liquidationPrice(address account) public view returns (uint256) {
+        return ((positionDebt(account) * DENOMINATOR) * 1e18) / (collateralBalances[account] * liquidationThreshold);
+    }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                        INTERNAL VIEWS
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _maxBorrowable(uint256 collatAmount) internal view returns (uint256) {
         return (maxLTV * _positionValue(collatAmount)) / DENOMINATOR;
@@ -125,33 +130,28 @@ abstract contract Collateral is DebtIR, ICollateral {
         return (collatAmount * _collateralPrice()) / 1 ether;
     }
 
+    /// @notice Computes an returns a health ratio giving a debt and a collateral amount.
+    /// @param userDebt           Debt of the position
+    /// @param collateralBalance  Amount of collateral
+    /// @return The health ratio in base 1e18
     function _healthRatio(uint256 userDebt, uint256 collateralBalance) internal view returns (uint256) {
         if (userDebt != 0) {
             return (collateralBalance * _collateralPrice() * liquidationThreshold) / (userDebt * DENOMINATOR);
         }
         return MAX_UINT;
     }
+
+    /// @notice Computes and returns the maximum amount of tgUSD borrowable for an account givin its collateral value.
+    /// @param account Account to check the maximum borrowable
+    /// @return The maximum borrowable amount of tgUSD
     function _maxBorrowable(address account) internal view returns (uint256) {
         return (maxLTV * _positionValue(account)) / DENOMINATOR;
     }
 
+    /// @notice Computes and returns the value in $ of the collateral of an account.
+    /// @param account Account to check the value of the collateral
+    /// @return The value in $ and base 1e18 of the collateral of a position
     function _positionValue(address account) internal view returns (uint256) {
         return (collateralBalances[account] * _collateralPrice()) / 1 ether;
-    }
-
-    function positionValue(address account) external view returns (uint256) {
-        return (collateralBalances[account] * _collateralPrice()) / 1 ether;
-    }
-
-    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        USERS VIEWS
-    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    function healthRatio(address account) public view returns (uint256) {
-        return _healthRatio(positionDebt(account), collateralBalances[account]);
-    }
-
-    function liquidationPrice(address account) public view returns (uint256) {
-        return ((positionDebt(account) * DENOMINATOR) * 1e18) / (collateralBalances[account] * liquidationThreshold);
     }
 }

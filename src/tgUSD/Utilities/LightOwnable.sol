@@ -1,16 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-abstract contract Admin {
+abstract contract LightOwnable {
     address public owner;
-
-    bool public isInitialized;
-
-    bool public isDepositPaused;
-
-    bool public isBorrowPaused;
-
-    bool public isLeveragePaused;
 
     error OwnableUnauthorizedAccount(address account);
 

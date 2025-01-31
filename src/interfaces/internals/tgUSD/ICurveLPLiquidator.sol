@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-struct RemoveLiquidityCollateral {
-    address lpToLiquidate;
-    uint256 amountToLiquidate;
-    uint256 lpType;
-    uint256[2] minAmounts;
+struct MintAndSwapWStable {
+    address stable;
+    address wStable;
+    address stablePool;
+    address receiver;
+    int128 i;
+    int128 j;
+    uint256 amountIn;
+    uint256 amountMinOut;
 }
 
 struct CurveRouterSwap {
