@@ -3,15 +3,6 @@ pragma solidity ^0.8.24;
 
 import "./MarketInitParams.sol";
 
-import "../handler/Features/HProcessRewards.sol";
-
-import "../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
-import "../handler/Features/ConvexCrv/HWithdrawConvexCrvLP.sol";
-
-import "../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
-import "../handler/Features/ConvexFxn/HWithdrawConvexFxnLP.sol";
-
-import "../handler/Curve/HLpManipulator.sol";
 import "../../../src/interfaces/internals/tgUSD/IMarketCore.sol";
 import "../../../src/interfaces/internals/tgUSD/IIRCalculator.sol";
 contract ConvexCurveContext is MarketInitParams {
@@ -22,10 +13,10 @@ contract ConvexCurveContext is MarketInitParams {
         assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
 
         vm.startPrank(owner);
-        
+
         ConvexCrvLPMarket convexMarket = ConvexCrvLPMarket(
             marketCreator.createConvexCrvMarket(
-                IMarketCore.MarketInit({
+                MarketInit({
                     collatToken: initP.marketInit.collat,
                     collatOracle: oracles[collat],
                     maxLTV: initP.marketInit.maxLTV,
@@ -63,7 +54,7 @@ contract ConvexCurveContext is MarketInitParams {
 
         ConvexFxnLPMarket convexMarket = ConvexFxnLPMarket(
             marketCreator.createConvexFxnMarket(
-                IMarketCore.MarketInit({
+                MarketInit({
                     collatToken: initP.marketInit.collat,
                     collatOracle: oracles[collat],
                     maxLTV: initP.marketInit.maxLTV,
@@ -101,11 +92,11 @@ contract ConvexCurveContext is MarketInitParams {
         giveCollateralToUsers(collat);
     }
 
-    function getBaseIRParams() public pure returns (IIRCalculator.IRParams memory) {
-        return IIRCalculator.IRParams({sigma: 2750000000000000, r0: 5 ether, irStartPrice: 995000000000000000});
+    function getBaseIRParams() public pure returns (IRParams memory) {
+        return IRParams({sigma: 2750000000000000, r0: 5 ether, irStartPrice: 995000000000000000});
     }
 
-    function getBaseRCParams() public pure returns (IIRCalculator.RCParams memory) {
-        return IIRCalculator.RCParams({startCutPercentage: 50_000, endCutPercentage: 100_000, stepAmount: 4, startCutPrice: 995000000000000000, endCutPrice: 900000000000000000});
+    function getBaseRCParams() public pure returns (RCParams memory) {
+        return RCParams({startCutPercentage: 50_000, endCutPercentage: 100_000, stepAmount: 4, startCutPrice: 995000000000000000, endCutPrice: 900000000000000000});
     }
 }

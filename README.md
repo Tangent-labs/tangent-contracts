@@ -70,3 +70,11 @@ Distribute rewards into markets in order to be processed. We are transfering rew
 ```
 npm run distribute-rewards-tgUSD
 ```
+
+### Swap in a Curve LP
+
+- AMOUNT_IN is the float amount in number. The script takes into account decimals in.
+
+```
+LP=0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E AMOUNT_IN=100 I=0 J=1 npm run swap-curve
+```

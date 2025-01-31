@@ -10,10 +10,5 @@ interface ICurveRouter {
         address _receiver
     ) external payable returns (uint256);
 
-    function get_dy(
-        address[11] calldata _route,
-        uint256[5][5] calldata _swap_params,
-        uint256 _amount,
-        address[5] calldata _pools
-    ) external payable returns (uint256);
+    function get_dy(address[11] calldata _route, uint256[5][5] calldata _swap_params, uint256 _amount, address[5] calldata _pools) external payable returns (uint256);
 }

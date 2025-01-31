@@ -5,12 +5,12 @@ import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.sol";
-import {Admin} from "./Admin.sol";
+import {LightOwnable} from "../../Utilities/LightOwnable.sol";
 
 import "forge-std/console.sol";
 
 /// @notice
-abstract contract DebtIR is Admin, IDebtIR {
+abstract contract DebtIR is LightOwnable, IDebtIR {
     using Math for uint256;
     uint256 public constant RAY = 1e18; // Facteur de précision ray (1 * 10^27)
 
@@ -30,11 +30,14 @@ abstract contract DebtIR is Admin, IDebtIR {
     uint256 public maxMarketDebt;
     /// @notice Loan minimum in tgUSD. We need it higher on L1 to keep liquidations profitable for liquidators
     uint256 public minimumLoan;
+    /// @notice Bad debt amount in tgUSD of the market.
+    uint256 public badDebt;
 
     /// @notice Debt in amount of tgUSD per user.
     mapping(address => uint256) public positionDebtIndex;
 
     error NotIRMinter();
+    error RepayMoreThanBadDebt();
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         OWNER ACTIONS 
@@ -56,6 +59,18 @@ abstract contract DebtIR is Admin, IDebtIR {
      */
     function setMinimumLoan(uint256 _minimumLoan) external onlyOwner {
         minimumLoan = _minimumLoan;
+    }
+
+    /**
+     *  @notice Repays an amount of tgUSD to cover some bad debt.
+     *  @dev    Callable by anyone
+     *  @param  amount Amount of tgUSD to burn to cover the bad debt
+     */
+    function repayBadDebt(uint256 amount) external {
+        uint256 _badDebt = badDebt;
+        require(amount <= _badDebt, RepayMoreThanBadDebt());
+        badDebt = _badDebt - amount;
+        tgUSD.burnFrom(msg.sender, amount);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -161,7 +176,7 @@ abstract contract DebtIR is Admin, IDebtIR {
      */
     function totalDebt() public view returns (uint256) {
         uint256 _lastDebt = lastDebt;
-        return _lastDebt + _pendingInterests(_lastDebt);
+        return badDebt + _lastDebt + _pendingInterests(_lastDebt);
     }
 
     /**

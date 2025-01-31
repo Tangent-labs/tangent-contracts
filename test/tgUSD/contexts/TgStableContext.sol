@@ -37,5 +37,11 @@ contract TgStableContext is OraclesContext {
         tgDOLA.mint(owner, 100_000 ether, true);
 
         vm.stopPrank();
+
+        LpDeploymentContext.CreateTgUSDLpStruct[] memory params = new LpDeploymentContext.CreateTgUSDLpStruct[](3);
+        params[0] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: tgCrvUSD, name: "tgUSD-wCrvUSD", symbol: "tgCrvUSD", initialAmount: 5_000});
+        params[1] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: tgDOLA, name: "tgUSD-wDOLA", symbol: "tgDOLA", initialAmount: 5_000});
+        params[2] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: tgDAI, name: "tgUSD-wDAI", symbol: "tgDAI", initialAmount: 5_000});
+        lpDeploymentContext.createTgUSDLps(owner, params);
     }
 }

@@ -44,4 +44,5 @@ library PidCvxCrvBooster {
 
 library PidCvxFxnBooster {
     uint256 constant USDC_FXUSD_LP = 32;
+    uint256 constant FX_V2_STABILITY_POOL = 36;
 }

@@ -20,4 +20,6 @@ interface ICollateral {
     function totalCollateral() external view returns (uint256);
 
     function maxLTV() external view returns (uint256);
+
+    function liquidationThreshold() external view returns (uint256);
 }

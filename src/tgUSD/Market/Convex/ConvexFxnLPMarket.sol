@@ -1,19 +1,20 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
-
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {ICvxFxnBooster} from "../../../interfaces/externals/Convex/ICvxFxnBooster.sol";
 import {IStakingProxyERC20} from "../../../interfaces/externals/Convex/IStakingProxyERC20.sol";
+import {MarketInit, GlobalMarketInitParams} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 
-import "../abstract/Rewards.sol";
-
+import {MarketExternalActions} from "../abstract/MarketExternalActions.sol";
+import {Sociabilization} from "../../Utilities/Sociabilization.sol";
 import "forge-std/console.sol";
 
 /// @notice Lending Market of a FXN LP on Convex
-contract ConvexFxnLPMarket is Rewards {
+contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
     ICvxFxnBooster constant CVX_BOOSTER = ICvxFxnBooster(0xAffe966B27ba3E4Ebb8A0eC124C7b7019CC762f8);
     IStakingProxyERC20 public stakingProxyVault;
 
-    function initialize(MarketConstants memory _marketConstants, MarketInit memory _marketInit, uint256 _pid, uint256 _socFeePercentage) external {
+    function initialize(GlobalMarketInitParams memory _marketConstants, MarketInit memory _marketInit, uint256 _pid, uint256 _socFeePercentage) external {
         // Common
         _initializationCommon(_marketConstants, _marketInit);
 
@@ -38,8 +39,7 @@ contract ConvexFxnLPMarket is Rewards {
         return (_sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR), collatToken);
     }
 
-    function _postDeposit(IERC20 _collatToken, uint256 lpStaked, bool isStaked) internal override {
-        totalCollateral += lpStaked;
+    function _postDeposit(IERC20 _collatToken, bool isStaked) internal override {
         if (isStaked) {
             stakingProxyVault.deposit(_collatToken.balanceOf(address(this)), true);
         }
@@ -62,7 +62,7 @@ contract ConvexFxnLPMarket is Rewards {
      * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
      *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
-    function processRewards(address harvestFeeReceiver) external override {
+    function processRewards(address harvestFeeReceiver) external override updateReward(address(0)) {
         // Claim rewards of Convex FXN market
         stakingProxyVault.getReward();
 

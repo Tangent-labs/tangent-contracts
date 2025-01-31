@@ -2,6 +2,9 @@
 pragma solidity ^0.8.24;
 import "../../../contexts/ConvexCurveContext.sol";
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
+import "../../../handler/Features/ConvexFxn/HWithdrawConvexFxnLP.sol";
+import "../../../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
+import "../../../handler/Features/HProcessRewards.sol";
 
 contract DepositCvxFxnMarket is ConvexCurveContext {
     ConvexFxnLPMarket public market;

@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import {Admin} from "../Market/abstract/Admin.sol";
-
-abstract contract Sociabilization is Admin {
+import "./LightOwnable.sol";
+abstract contract Sociabilization is LightOwnable {
     uint256 public socFeePercentage;
     uint256 public socFeePending;
 

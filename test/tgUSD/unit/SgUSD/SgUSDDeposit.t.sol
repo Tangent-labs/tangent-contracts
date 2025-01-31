@@ -17,14 +17,14 @@ contract SgUSDDeposit is ConvexCurveContext {
 
         vm.startPrank(usr1);
         uint256 amountIn = 10_000 ether;
-        deal(address(tgUsd), usr1, amountIn);
-        tgUsd.approve(address(sgUSD), MAX_UINT);
+        deal(address(tgUSD), usr1, amountIn);
+        tgUSD.approve(address(sgUSD), MAX_UINT);
 
         sgUSD.deposit(amountIn, usr1);
 
-        deal(address(tgUsd), usr1, amountIn);
+        deal(address(tgUSD), usr1, amountIn);
 
-        tgUsd.transfer(address(sgUSD), amountIn);
+        tgUSD.transfer(address(sgUSD), amountIn);
 
         assertEq(sgUSD.fullProfitUnlockDate(), 0, "Full profit unlock date not correct");
         assertEq(sgUSD.profitUnlockingRate(), 0, "Profit unlock rate");
@@ -50,7 +50,7 @@ contract SgUSDDeposit is ConvexCurveContext {
         // sgUSD.process_report(address(sgUSD));
         assertEq(sgUSD.maxWithdraw(usr1), 20_000 ether, "tchoin");
 
-        verifyReceiveERC20(tgUsd, usr1, 20_000 ether, "tgUSD received");
+        verifyReceiveERC20(tgUSD, usr1, 20_000 ether, "tgUSD received");
         verifyLostERC20(IERC20(address(sgUSD)), usr1, 10_000 ether, "sgUSD lost");
         verifyBurnERC20(IERC20(address(sgUSD)), 10_000 ether, "sgUSD burnt");
 

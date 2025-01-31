@@ -15,13 +15,6 @@ contract GetLPPriceCurveStableSwap is ConvexCurveContext {
         deal(address(coin1), usr1, 1_000_000_000_000 * 10 ** coin1.decimals());
     }
 
-    // 80361
-    // function test_price_crvUSD_USDC() external {
-    //     uint256 lpPriceStart = oracles[lp].latestAnswer();
-
-    //     uint256 tgUSDPrice = oracles[tgUsd].latestAnswer();
-    // }
-
     function test_exploit_price_crvUSD_USDC(uint256 amountInSwap, uint256 amount0Lp, uint256 amount1Lp) external {
         amountInSwap = bound(amountInSwap, 1_000_000 ether, 1_000_000_000 * 10 ** 18);
 

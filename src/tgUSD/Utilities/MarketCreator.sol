@@ -14,12 +14,13 @@ pragma solidity ^0.8.0;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
-import {IMarketCore, IRewardAccumulator, IERC20Metadata} from "../../interfaces/internals/tgUSD/IMarketCore.sol";
+import {GlobalMarketInitParams, MarketInit, IRewardAccumulator, IERC20Metadata} from "../../interfaces/internals/tgUSD/IMarketCore.sol";
 import {IConvexCrvLPMarket, ICvxRewardToken} from "../../interfaces/internals/tgUSD/IConvexCrvLPMarket.sol";
 import {IConvexFxnLPMarket} from "../../interfaces/internals/tgUSD/IConvexFxnLPMarket.sol";
 import {IMarketNoSociabilization} from "../../interfaces/internals/tgUSD/IMarketNoSociabilization.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
-import {IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {IRParams, RCParams, IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {ILiquidatorProxy} from "../../interfaces/internals/tgUSD/ILiquidatorProxy.sol";
 import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
 
 /// @title Cvg-Finance - CloneFactoryV2
@@ -38,6 +39,9 @@ contract MarketCreator is Ownable {
 
     /// @notice
     IRewardAccumulator public rewardAccumulator;
+
+    /// @notice
+    ILiquidatorProxy public liquidatorProxy;
 
     /// @notice
     address public marketConvexCrv;
@@ -62,6 +66,7 @@ contract MarketCreator is Ownable {
         ITgUSD _tgUSD,
         IIRCalculator _irCalculator,
         IRewardAccumulator _rewardAccumulator,
+        ILiquidatorProxy _liquidatorProxy,
         address _marketConvexCrv,
         address _marketConvexFxn,
         address _marketNoSociabilization
@@ -70,27 +75,34 @@ contract MarketCreator is Ownable {
         tgUSD = _tgUSD;
         irCalculator = _irCalculator;
         rewardAccumulator = _rewardAccumulator;
+        liquidatorProxy = _liquidatorProxy;
         marketConvexCrv = _marketConvexCrv;
         marketConvexFxn = _marketConvexFxn;
         marketNoSociabilization = _marketNoSociabilization;
     }
 
+    function _getGlobalParams() internal view returns (GlobalMarketInitParams memory) {
+        return
+            GlobalMarketInitParams({
+                _owner: owner(),
+                _tgUSD: tgUSD,
+                _controlTower: controlTower,
+                _irCalculator: irCalculator,
+                _rewardAccumulator: rewardAccumulator,
+                _liquidatorProxy: liquidatorProxy
+            });
+    }
+
     function createConvexCrvMarket(
-        IMarketCore.MarketInit memory _marketInit,
+        MarketInit memory _marketInit,
         ICvxRewardToken _cvxRewardToken,
         uint256 _pid,
         uint256 _socFeePercentage,
-        IIRCalculator.IRParams calldata _irParams,
-        IIRCalculator.RCParams calldata _rcParams
+        IRParams calldata _irParams,
+        RCParams calldata _rcParams
     ) external onlyOwner returns (address) {
         address proxy = marketConvexCrv.clone();
-        IConvexCrvLPMarket(proxy).initialize(
-            IMarketCore.MarketConstants({_owner: owner(), _tgUSD: tgUSD, _controlTower: controlTower, _irCalculator: irCalculator, _rewardAccumulator: rewardAccumulator}),
-            _marketInit,
-            _cvxRewardToken,
-            _pid,
-            _socFeePercentage
-        );
+        IConvexCrvLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _cvxRewardToken, _pid, _socFeePercentage);
 
         controlTower.toggleMarket(proxy);
         irCalculator.setUpMarketRewards(proxy, _irParams, _rcParams);
@@ -100,19 +112,14 @@ contract MarketCreator is Ownable {
     }
 
     function createConvexFxnMarket(
-        IMarketCore.MarketInit memory _marketInit,
+        MarketInit memory _marketInit,
         uint256 _pid,
         uint256 _socFeePercentage,
-        IIRCalculator.IRParams calldata _irParams,
-        IIRCalculator.RCParams calldata _rcParams
+        IRParams calldata _irParams,
+        RCParams calldata _rcParams
     ) external onlyOwner returns (address) {
         address proxy = marketConvexFxn.clone();
-        IConvexFxnLPMarket(proxy).initialize(
-            IMarketCore.MarketConstants({_owner: owner(), _tgUSD: tgUSD, _controlTower: controlTower, _irCalculator: irCalculator, _rewardAccumulator: rewardAccumulator}),
-            _marketInit,
-            _pid,
-            _socFeePercentage
-        );
+        IConvexFxnLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _pid, _socFeePercentage);
 
         controlTower.toggleMarket(proxy);
         irCalculator.setUpMarketRewards(proxy, _irParams, _rcParams);
@@ -121,16 +128,9 @@ contract MarketCreator is Ownable {
         return proxy;
     }
 
-    function createNoSociabilizationMarket(
-        IMarketCore.MarketInit memory _marketInit,
-        IIRCalculator.IRParams calldata _irParams,
-        IIRCalculator.RCParams calldata _rcParams
-    ) external onlyOwner returns (address) {
+    function createNoSociabilizationMarket(MarketInit memory _marketInit, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
         address proxy = marketNoSociabilization.clone();
-        IMarketNoSociabilization(proxy).initialize(
-            IMarketCore.MarketConstants({_owner: owner(), _tgUSD: tgUSD, _controlTower: controlTower, _irCalculator: irCalculator, _rewardAccumulator: rewardAccumulator}),
-            _marketInit
-        );
+        IMarketNoSociabilization(proxy).initialize(_getGlobalParams(), _marketInit);
 
         controlTower.toggleMarket(proxy);
         irCalculator.setUpMarketRewards(proxy, _irParams, _rcParams);

@@ -4,6 +4,8 @@ import "../../contexts/ConvexCurveContext.sol";
 
 import "../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../handler/Features/BorrowRepay/HRepay.sol";
+import "../../handler/Features/HProcessRewards.sol";
+import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
 contract BorrowCvxMarket is ConvexCurveContext {
     ConvexCrvLPMarket public market;
@@ -36,8 +38,8 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         hDeposit.deposit(usr1, collatDeposited, true);
 
-        verifyMintERC20(tgUsd, borrowedAmount, "Cvx Reward tokens are burnt");
-        verifyReceiveERC20(tgUsd, usr2, borrowedAmount, "User 2, not the caller, receives tgUSD");
+        verifyMintERC20(tgUSD, borrowedAmount, "Cvx Reward tokens are burnt");
+        verifyReceiveERC20(tgUSD, usr2, borrowedAmount, "User 2, not the caller, receives tgUSD");
 
         hBorrow.borrow(usr2, borrowedAmount);
 
@@ -56,7 +58,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         assertEq(market.positionDebt(usr1), market.totalDebt());
 
-        tgUsd.mintIR();
+        tgUSD.mintIR();
 
         assertEq(market.totalDebt(), market.lastDebt() + market.pendingInterests());
         assertEq(market.positionDebt(usr1), market.totalDebt());
@@ -67,7 +69,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         vm.startPrank(owner);
         controlTower.toggleMarkets(Array.memoryAddress([owner]));
-        tgUsd.mint(usr1, repayAmount);
+        tgUSD.mint(usr1, repayAmount);
         vm.stopPrank();
 
         hRepay.repay(usr1, repayAmount, address(0));
@@ -75,7 +77,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
         skip(30);
 
         vm.startPrank(owner);
-        tgUsd.mint(usr1, market.positionDebt(usr1));
+        tgUSD.mint(usr1, market.positionDebt(usr1));
         vm.stopPrank();
 
         hRepay.repay(usr1, MAX_UINT, address(0));

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 import "../../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../contexts/ConvexCurveContext.sol";
+import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
 contract ZapRepay is ConvexCurveContext {
     ConvexCrvLPMarket public market;
@@ -27,15 +28,15 @@ contract ZapRepay is ConvexCurveContext {
         (uint256 quote, ) = ensoUtils.getQuote(ETH_NAKED, amountIn, AddrClassicERC20.TOKEN_USDC, 10);
         quote = quote * 10 ** 12;
 
-        vm.mockFunction(address(AddrAggregator.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
+        vm.mockFunction(address(AddrRouter.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
 
         vm.startPrank(usr1);
         deal(usr1, amountIn);
 
         uint256 nativeCoinBalance = usr1.balance;
-        uint256 tgUsdBalance = tgUsd.balanceOf(address(usr1));
+        uint256 tgUsdBalance = tgUSD.balanceOf(address(usr1));
         bytes32[] memory commands = Array.memoryBytes32(
-            [addressToBytes32(address(tgUsd)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(quote)]
+            [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(quote)]
         );
         bytes[] memory state = new bytes[](0);
 
@@ -44,8 +45,8 @@ contract ZapRepay is ConvexCurveContext {
             abi.encodeWithSelector(IEnsoRouter.routeSingle.selector, address(ETH_NAKED), amountIn, commands, state)
         );
 
-        assertEq(tgUsdBalance, tgUsd.balanceOf(address(usr1)), "The repay is not complete, so there are no tgUSD left on the user");
-        assertEq(tgUsd.balanceOf(address(zapper)), 0, "No tgUSD should stays on the zapper");
+        assertEq(tgUsdBalance, tgUSD.balanceOf(address(usr1)), "The repay is not complete, so there are no tgUSD left on the user");
+        assertEq(tgUSD.balanceOf(address(zapper)), 0, "No tgUSD should stays on the zapper");
         assertEq(nativeCoinBalance - usr1.balance, amountIn, "Native coin is sent from sender");
         assertEq(market.positionDebt(address(usr1)), initialDebt - quote, "The new debt is equal to the initial minus what has been repayed");
     }
@@ -55,7 +56,7 @@ contract ZapRepay is ConvexCurveContext {
         uint256 amountIn = 30 ether;
         (uint256 quote, ) = ensoUtils.getQuote(tokenIn, amountIn, AddrClassicERC20.TOKEN_FRAX, 10);
         uint256 tgUsdRemaining = quote - initialDebt;
-        vm.mockFunction(address(AddrAggregator.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
+        vm.mockFunction(address(AddrRouter.ENSO_ROUTER), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouter.routeSingle.selector));
 
         vm.startPrank(usr1);
 
@@ -64,7 +65,7 @@ contract ZapRepay is ConvexCurveContext {
         uint256 erc20Balance = tokenIn.balanceOf(usr1);
 
         bytes32[] memory commands = Array.memoryBytes32(
-            [addressToBytes32(address(tgUsd)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(quote)]
+            [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(quote)]
         );
         bytes[] memory state = new bytes[](0);
 
@@ -74,7 +75,7 @@ contract ZapRepay is ConvexCurveContext {
         );
 
         assertEq(tgUsdRemaining, quote - initialDebt, "The repay is complete, all tgUSD in excess from the zap returns to the sender");
-        assertEq(tgUsd.balanceOf(address(zapper)), 0, "No tgUSD should stays on the zapper");
+        assertEq(tgUSD.balanceOf(address(zapper)), 0, "No tgUSD should stays on the zapper");
         assertEq(erc20Balance - tokenIn.balanceOf(usr1), amountIn, "Native coin is sent from sender");
         assertEq(market.positionDebt(address(usr1)), 0, "Position should be fully repayed");
     }

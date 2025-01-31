@@ -16,12 +16,7 @@ interface ICurveStableSwapNG is IERC20Metadata {
 
     function remove_liquidity(uint256 _burn_amount, uint256[2] memory _min_amounts) external returns (uint256[2] memory);
     function remove_liquidity(uint256 _burn_amount, uint256[2] memory _min_amounts, address _receiver) external returns (uint256[2] memory);
-    function remove_liquidity(
-        uint256 _burn_amount,
-        uint256[2] memory _min_amounts,
-        address _receiver,
-        bool _claim_admin_fees
-    ) external returns (uint256[2] memory);
+    function remove_liquidity(uint256 _burn_amount, uint256[2] memory _min_amounts, address _receiver, bool _claim_admin_fees) external returns (uint256[2] memory);
     function withdraw_admin_fees() external;
     function last_price() external view returns (uint256);
 

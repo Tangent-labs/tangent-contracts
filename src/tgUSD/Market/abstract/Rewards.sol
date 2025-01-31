@@ -4,13 +4,13 @@ pragma solidity ^0.8.22;
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {ICommonStruct} from "../../../interfaces/internals/ICommonStruct.sol";
-import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
+import {IRewards, Reward} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
-import {MarketExternalActions, MarketCore} from "./MarketExternalActions.sol";
-import {Sociabilization} from "../../Utilities/Sociabilization.sol";
+
+import {Collateral} from "./Collateral.sol";
 import "forge-std/console.sol";
 /// @notice Lending market
-abstract contract Rewards is MarketExternalActions, Sociabilization {
+abstract contract Rewards is Collateral {
     using SafeERC20 for IERC20;
     /// @dev Duration that rewards are streamed over
     uint256 public constant REWARDS_DURATION = 7 days; // 1 week
@@ -28,7 +28,7 @@ abstract contract Rewards is MarketExternalActions, Sociabilization {
     IERC20[] public rewardTokens;
 
     /// @dev Reward data associated to a reward token
-    mapping(IERC20 => IRewards.Reward) public rewardData; // token => reward data
+    mapping(IERC20 => Reward) public rewardData; // token => reward data
 
     /// @dev Reward amount already sent to an user for a reward token
     mapping(address => mapping(IERC20 => uint256)) public userRewardPerTokenPaid; // user => reward token => amount
@@ -49,55 +49,6 @@ abstract contract Rewards is MarketExternalActions, Sociabilization {
     modifier updateReward(address _account) {
         _updateReward(_account);
         _;
-    }
-
-    function _initializationCommon(MarketConstants memory _marketConstants, MarketInit memory _marketInit) internal {
-        require(!isInitialized, AlreadyInitialized());
-        isInitialized = true;
-        // Rewards
-        rewardCutPercentage = 50_000;
-        harvesterFeePercentage = 1_000;
-
-        // Rewards
-        for (uint256 i; i < _marketInit._rewardTokens.length; ) {
-            IERC20Metadata token = _marketInit._rewardTokens[i];
-            rewardTokens.push(token);
-            rewardData[token].lastUpdateTime = uint128(block.timestamp);
-            rewardData[token].periodFinish = uint128(block.timestamp);
-
-            unchecked {
-                ++i;
-            }
-        }
-
-        // Core
-        tgUSD = _marketConstants._tgUSD;
-        controlTower = _marketConstants._controlTower;
-        irCalculator = _marketConstants._irCalculator;
-        rewardAccumulator = _marketConstants._rewardAccumulator;
-
-        collatToken = _marketInit.collatToken;
-        collatOracle = _marketInit.collatOracle;
-
-        maxLTV = _marketInit.maxLTV;
-        liquidationThreshold = _marketInit.liquidationThreshold;
-        maxMarketDebt = _marketInit.maxMarketDebt;
-        minimumLoan = _marketInit.minimumLoan;
-
-        lastIR = 10 * RAY; // 10%
-        blockLastIRTimestamp = block.timestamp;
-        debtIndex = RAY;
-
-        // Gives ownership to the DAO
-        _transferOwnership(_marketConstants._owner);
-    }
-
-    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        WITHDRAW  
-    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    function _preWithdraw(uint256 lpToWithdraw) internal override updateReward(address(0)) {
-        totalCollateral -= lpToWithdraw;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -183,13 +134,22 @@ abstract contract Rewards is MarketExternalActions, Sociabilization {
         uint256 userBal = collateralBalances[_account];
 
         uint256 rewardLength = rewardTokens.length;
+        console.log("RewardsUpdate for ", _account);
         for (uint256 i; i < rewardLength; ) {
             IERC20 token = rewardTokens[i];
+
+            console.log("Global Before", rewardData[token].rewardPerTokenStored, rewardData[token].lastUpdateTime);
             rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
             rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
+            console.log("Global After", rewardData[token].rewardPerTokenStored, rewardData[token].lastUpdateTime);
+
             if (_account != address(0)) {
+                console.log("User Before", rewards[_account][token], userRewardPerTokenPaid[_account][token]);
+
                 rewards[_account][token] = _earned(_account, token, userBal);
                 userRewardPerTokenPaid[_account][token] = rewardData[token].rewardPerTokenStored;
+
+                console.log("User After", rewards[_account][token], userRewardPerTokenPaid[_account][token]);
             }
 
             unchecked {
@@ -225,11 +185,14 @@ abstract contract Rewards is MarketExternalActions, Sociabilization {
             IERC20 rewardToken = _rewardTokens[tokenIndex];
             uint256 rewardToProcess = rewardToken.balanceOf(address(this));
 
+            console.log("RewardToProcess", rewardToProcess);
+
             if (rewardToProcess != 0) {
                 isSomeRewardToProcess = true;
 
                 // Calculate and sends harvester fees
                 uint256 harvesterFees = (rewardToProcess * _harvesterFeePercetage) / DENOMINATOR;
+                console.log("harvesterFees", harvesterFees);
 
                 if (harvesterFees != 0) {
                     rewardToken.safeTransfer(harvestFeeReceiver, harvesterFees);
@@ -250,7 +213,7 @@ abstract contract Rewards is MarketExternalActions, Sociabilization {
                     rewardAmountStreamed = remainingRewards;
                 }
 
-                IRewards.Reward storage rData = rewardData[rewardToken];
+                Reward storage rData = rewardData[rewardToken];
 
                 if (block.timestamp >= rData.periodFinish) {
                     rData.rewardRate = rewardAmountStreamed / REWARDS_DURATION;

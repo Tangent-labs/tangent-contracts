@@ -88,7 +88,7 @@ contract TgUSD is OFT, ITgUSD {
         // When the bridge is setup as permisionless, it needs to match some conditions given by the bridge checker contract.
         else {
             require(
-                msg.sender == owner || bridgeChecker.isBridgingAllowed(msg.sender, _refundAddress, _sendParam.amountLD, _sendParam.minAmountLD, _sendParam.dstEid),
+                msg.sender == owner() || bridgeChecker.isBridgingAllowed(msg.sender, _refundAddress, _sendParam.amountLD, _sendParam.minAmountLD, _sendParam.dstEid),
                 BridgingNotAllowed()
             );
         }

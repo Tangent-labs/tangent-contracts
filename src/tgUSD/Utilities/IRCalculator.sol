@@ -3,7 +3,7 @@ pragma solidity ^0.8.22;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import {IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {IRParams, RCParams, IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
@@ -19,16 +19,19 @@ contract IRCalculator is IIRCalculator, Ownable {
 
     uint256 public constant ONE_ETHER = 1e18;
 
+    /// @notice Price where the IR stops growing
+    uint256 public priceIRMax = 985 * 10 ** 15;
+
     IControlTower public controlTower;
 
     /// @notice Contract allowing to retrieve the price in dollar of tgUSD.
     IPriceOracle public tgUSDOracle;
 
     /// @notice Gives the parameter of the market
-    mapping(address => IIRCalculator.IRParams) public irParams;
+    mapping(address => IRParams) public irParams;
 
     /// @notice Gives the parameter of the market
-    mapping(address => IIRCalculator.RCParams) public rcParams;
+    mapping(address => RCParams) public rcParams;
 
     error IRStartPriceLtOne();
     error CallerNotOwnerOrMarketCreator(address caller);
@@ -38,13 +41,13 @@ contract IRCalculator is IIRCalculator, Ownable {
         tgUSDOracle = _tgUSDOracle;
     }
 
-    modifier verifyIRParams(IIRCalculator.IRParams calldata _irParam) {
+    modifier verifyIRParams(IRParams calldata _irParam) {
         //TODO Add range check on Sigma & r0
         require(_irParam.irStartPrice <= ONE_ETHER, IRStartPriceLtOne());
         _;
     }
 
-    modifier verifyRCParams(IIRCalculator.RCParams calldata _rcParam) {
+    modifier verifyRCParams(RCParams calldata _rcParam) {
         require(_rcParam.startCutPrice <= ONE_ETHER);
         if (_rcParam.stepAmount == 2) {
             require(_rcParam.startCutPercentage < _rcParam.endCutPercentage);
@@ -57,24 +60,20 @@ contract IRCalculator is IIRCalculator, Ownable {
         tgUSDOracle = _tgUSDOracle;
     }
 
-    function setUpMarketRewards(
-        address market,
-        IIRCalculator.IRParams calldata _irParam,
-        IIRCalculator.RCParams calldata _rcParam
-    ) external verifyIRParams(_irParam) verifyRCParams(_rcParam) {
+    function setUpMarketRewards(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external verifyIRParams(_irParam) verifyRCParams(_rcParam) {
         require(msg.sender == owner() || controlTower.isMarketCreator(msg.sender), CallerNotOwnerOrMarketCreator(msg.sender));
         irParams[market] = _irParam;
         rcParams[market] = _rcParam;
         IDebtIR(market).checkpointIR();
     }
 
-    function updateIR(address market, IIRCalculator.IRParams calldata _irParam) external verifyIRParams(_irParam) onlyOwner {
+    function updateIR(address market, IRParams calldata _irParam) external verifyIRParams(_irParam) onlyOwner {
         require(_irParam.irStartPrice <= 1 ether, IRStartPriceLtOne());
         irParams[market] = _irParam;
         IDebtIR(market).checkpointIR();
     }
 
-    function updateRC(address market, IIRCalculator.RCParams calldata _rcParam) external verifyRCParams(_rcParam) onlyOwner {
+    function updateRC(address market, RCParams calldata _rcParam) external verifyRCParams(_rcParam) onlyOwner {
         rcParams[market] = _rcParam;
     }
 
@@ -83,7 +82,7 @@ contract IRCalculator is IIRCalculator, Ownable {
      * @param  market Denominator of the number in exponent. The higher it is, the
      */
     function computeIRForMarket(address market) external view returns (uint256) {
-        IIRCalculator.IRParams memory irParam = irParams[market];
+        IRParams memory irParam = irParams[market];
         return _computeIR(tgUSDOracle.latestAnswer(), irParam.irStartPrice, irParam.sigma, irParam.r0);
     }
 
@@ -94,7 +93,7 @@ contract IRCalculator is IIRCalculator, Ownable {
      * @param  sigma      Denominator of the part passed to exp. The smaller it is, the faster the IR grows with depeg
      * @param  r0         Base coefficient of the IR
      */
-    function simulateIR(uint256 tgUSDPrice, uint256 irStartPrice, uint256 sigma, uint256 r0) external pure returns (uint256) {
+    function simulateIR(uint256 tgUSDPrice, uint256 irStartPrice, uint256 sigma, uint256 r0) external view returns (uint256) {
         return _computeIR(tgUSDPrice, irStartPrice, sigma, r0);
     }
     /**
@@ -104,10 +103,14 @@ contract IRCalculator is IIRCalculator, Ownable {
      * @param  sigma Denominator of the part passed to exp. The smaller it is, the faster the IR grows with depeg
      * @param  r0   Base coefficient of the IR
      */
-    function _computeIR(uint256 tgUSDPrice, uint256 irStartPrice, uint256 sigma, uint256 r0) internal pure returns (uint256) {
+    function _computeIR(uint256 tgUSDPrice, uint256 irStartPrice, uint256 sigma, uint256 r0) internal view returns (uint256) {
         if (tgUSDPrice > irStartPrice) {
             return 0;
         }
+        if (tgUSDPrice < priceIRMax) {
+            tgUSDPrice = priceIRMax;
+        }
+
         int128 powerIn64x64 = ABDKMath64x64.divu(((1 ether - tgUSDPrice) * ONE_ETHER) / sigma, ONE_ETHER);
 
         // Calcul exp(1) en utilisant la méthode exp
@@ -129,7 +132,7 @@ contract IRCalculator is IIRCalculator, Ownable {
      * @param  market Denominator of the number in exponent. The higher it is, the
      */
     function computeRCForMarket(address market) external view returns (uint256) {
-        IIRCalculator.RCParams memory rcParam = rcParams[market];
+        RCParams memory rcParam = rcParams[market];
         return _calculateRC(tgUSDOracle.latestAnswer(), rcParam.stepAmount, rcParam.startCutPercentage, rcParam.endCutPercentage, rcParam.startCutPrice, rcParam.endCutPrice);
     }
 
@@ -195,5 +198,9 @@ contract IRCalculator is IIRCalculator, Ownable {
             uint256 actualStep = 1 + (startCutPrice - tgUSDPrice) / ((startCutPrice - endCutPrice) / stepsBetween);
             return startCutPercentage + (actualStep * (endCutPercentage - startCutPercentage)) / stepsBetween;
         }
+    }
+
+    function setPriceIRMax(uint256 _priceIRMax) external onlyOwner {
+        priceIRMax = _priceIRMax;
     }
 }

@@ -12,21 +12,21 @@ import {sDAIOracle} from "../../../src/tgUSD/Oracles/sDAIOracle.sol";
 import {IRCalculator} from "../../../src/tgUSD/Utilities/IRCalculator.sol";
 contract OraclesContext is TgUSDDeployContext {
     IRCalculator public irCalculator;
-
     mapping(IERC20 => IPriceOracle) public oracles;
 
     constructor() {
         // Oracle tgUSD
-        oracles[tgUsd] = new StablePriceOracleParams(tgUSDLp, IPriceOracle(address(AddrChainlinkOracle.USDC)));
-        vm.label(address(oracles[tgUsd]), "Oracle tgUSD");
+        oracles[tgUSD] = new StablePriceOracleParams(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), IPriceOracle(address(AddrChainlinkOracle.USDC)));
+        vm.label(address(oracles[tgUSD]), "Oracle tgUSD");
 
-        irCalculator = new IRCalculator(owner, controlTower, oracles[tgUsd]);
+        irCalculator = new IRCalculator(owner, controlTower, oracles[tgUSD]);
         marketCreator = new MarketCreator(
             owner,
             controlTower,
-            tgUsd,
+            tgUSD,
             irCalculator,
             rewardAccumulator,
+            liquidatorProxy,
             convexCrvLPMarketImplem,
             convexFxnLPMarketImplem,
             marketNoSociabilizationImplem
