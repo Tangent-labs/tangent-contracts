@@ -14,10 +14,12 @@
     "build": "forge build --skip ./src/LendSplitter/* ./test/lendSplitter/*",
     "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost",
     "distribute-rewards-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/distributeRewards.ts --network localhost",
-    "stake-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/stake.ts --network localhost",
-    "borrow-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/borrow.ts --network localhost",
+    "deposit-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/deposit.ts --network localhost",
+    "borrow-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/borrow.ts --network localhost",
+    "swap-curve": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/swap.ts --network localhost",
+    "full-tgUSD": "npm run deploy-tgUSD &  npm run distribute-rewards-tgUSD & npm run deposit-markets-tgUSD  & npm run borrow-markets-tgUSD",
     "time-travel": "npx hardhat run js-scripts/hardhat/tgUSD/actions/time-travel.ts --network localhost",
-    "swap-curve": "npx hardhat run js-scripts/hardhat/tgUSD/actions/swapCurve.ts --network localhost"
+    "liquidation-context": "npx hardhat run js-scripts/hardhat/tgUSD/actions/liquidationContext.ts --network localhost"
   },
   "author": "Trottoir",
   "license": "ISC",

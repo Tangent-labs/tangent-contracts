@@ -5,6 +5,7 @@ import * as fs from "fs";
 import {curveLp} from "convergence-defi-tools";
 import {parseEther, parseUnits} from "ethers";
 import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "./config/market";
+
 async function main() {
     const baseContext = new BaseContext();
     const oracleContext = new OracleContext();
