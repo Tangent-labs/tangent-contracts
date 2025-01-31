@@ -65,7 +65,7 @@ export class BaseContext extends MainSetup {
         this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, this.feeTreso);
         await this.rewardAccumulator.waitForDeployment();
 
-        this.liquidatorProxy = await (await ethers.getContractFactory("LiquidatorProxy")).deploy();
+        this.liquidatorProxy = await (await ethers.getContractFactory("LiquidatorProxy")).deploy(this.tgUSD);
         await this.liquidatorProxy.waitForDeployment();
 
         this.marketCvxCrvImplem = await (await ethers.getContractFactory("ConvexCrvLPMarket")).deploy();
