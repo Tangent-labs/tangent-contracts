@@ -70,3 +70,9 @@ Distribute rewards into markets in order to be processed. We are transfering rew
 ```
 npm run distribute-rewards-tgUSD
 ```
+
+### Swap in a Curve LP
+
+```
+LP=0xAdress AMOUNT_IN=100 I=0 J=1 npm run swap-curve
+```
