@@ -2,14 +2,8 @@ import {formatUnits, MaxUint256} from "ethers";
 import {ethers} from "hardhat";
 import {MainSetup} from "../../Main.setup";
 
-const lpAddress = process.env.LP!;
-const amountIn = process.env.AMOUNT_IN!;
-const i = process.env.I!;
-const j = process.env.J!;
-
-export async function swap() {
-    const mainSetup = new MainSetup();
-    await mainSetup.setupTestUsers();
+// Updated swap function to accept parameters
+export async function swap(mainSetup: MainSetup, lpAddress: string, i: number, j: number, amountIn: string) {
     const lp = await ethers.getContractAt("ICurveStableSwapNG", lpAddress);
 
     const tokenIn = await ethers.getContractAt("ERC20", await lp.coins(i));
@@ -29,7 +23,21 @@ export async function swap() {
 
     balance = (await tokenOut.balanceOf(mainSetup.users[0].address)) - balance;
 
-    console.info("\x1b[32m%s\x1b[0m", "Swaped " + amountIn + " " + tokenInName + " and received " + formatUnits(balance, tokenOutDecimals) + " " + tokenOutName + " !");
+    console.info("\x1b[32m%s\x1b[0m", "Swapped " + amountIn + " " + tokenInName + " and received " + formatUnits(balance, tokenOutDecimals) + " " + tokenOutName + "!");
 }
 
-swap();
+// Example usage of the swap function
+export async function swapDefault() {
+    const mainSetup = new MainSetup(5);
+    await mainSetup.setupTestUsers();
+
+    const lpAddress = process.env.LP_ADDRESS; 
+    const i = process.env.INPUT_TOKEN_INDEX; 
+    const j = process.env.OUTPUT_TOKEN_INDEX; 
+    const amountIn = process.env.AMOUNT_IN; 
+    if (!lpAddress || !amountIn || i === undefined || j === undefined) throw Error("Missing env variables for swapDefault");
+
+    await swap(mainSetup, lpAddress, Number(i), Number(j), amountIn);
+}
+
+// Call the main function to execute the swap

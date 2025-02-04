@@ -1,23 +1,22 @@
-import {parseEther} from "ethers";
-import {ethers} from "hardhat";
 import * as contractAddresses from "../../../../addresses.json";
 import {MainSetup} from "../../Main.setup";
+import {executeUserMarketAction, prepareUserAmountByMarket} from "./common";
 
-export async function borrow() {
-    const mainSetup = new MainSetup();
-    await mainSetup.setupTestUsers();
-    const allMarkets = contractAddresses.markets;
-    for (let i = 0; i < allMarkets.length; i++) {
-        const market = await ethers.getContractAt("MarketNoSociabilization", allMarkets[i].marketAddress);
-
-        for (let j = 0; j < mainSetup.users.length; j++) {
-            const user = mainSetup.users[j];
-
-            await market.connect(user).borrow(user, parseEther("7000"));
-        }
-    }
-
-    console.info("\x1b[32m%s\x1b[0m", "Borrow tgUSD on market succeeded !");
+export async function borrow(mainSetup: MainSetup, userAmountByMarket: Record<string, Record<string, string>>) {
+    await executeUserMarketAction(mainSetup, userAmountByMarket, async (market, marketAddress, user, parsedAmount) => {
+        await market.connect(user).borrow(user.address, parsedAmount);
+    });
+    console.info("\x1b[32m%s\x1b[0m", "All borrow actions completed across specified markets!");
 }
 
-borrow();
+export async function borrowAll() {
+    const mainSetup = new MainSetup(5);
+    await mainSetup.setupTestUsers();
+    const allMarkets = contractAddresses.markets;
+
+    // Loop through all markets
+    const userAmountByMarket = prepareUserAmountByMarket(mainSetup, allMarkets, "7000");
+
+    // Call the borrow function for all markets
+    await borrow(mainSetup, userAmountByMarket);
+}
