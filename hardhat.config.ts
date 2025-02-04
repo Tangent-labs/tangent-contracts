@@ -4,6 +4,8 @@ import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import {EndpointId} from "@layerzerolabs/lz-definitions";
+
+const forkBlock = 21771693;
 const config: HardhatUserConfig = {
     solidity: {
         compilers: [
@@ -34,14 +36,14 @@ const config: HardhatUserConfig = {
             url: "http://127.0.0.1:8545",
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
-                blockNumber: 21621658,
+                blockNumber: forkBlock,
             },
             timeout: 100_000_000,
         },
         hardhat: {
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
-                blockNumber: 21621658,
+                blockNumber: forkBlock,
             },
         },
         tangent: {

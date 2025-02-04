@@ -1,11 +1,13 @@
 import {parseEther} from "ethers";
 import {MainSetup} from "../../Main.setup";
 import {ethers} from "hardhat";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+
+export type UserMarketParams = Record<string, Record<string, string>>;
 
 export async function executeUserMarketAction(
     mainSetup: MainSetup,
-    userAmountByMarket: Record<string, Record<string, string>>,
+    userAmountByMarket: UserMarketParams,
     actionFn: (market: any, marketAddress: string, user: HardhatEthersSigner, parsedAmount: bigint) => Promise<void>
 ) {
     for (const marketAddress of Object.keys(userAmountByMarket || {})) {
@@ -28,7 +30,7 @@ export async function executeUserMarketAction(
 }
 
 export function prepareUserAmountByMarket(mainSetup: MainSetup, allMarkets: {marketAddress: string}[], amountPerUser: string): Record<string, Record<string, string>> {
-    const userAmountByMarket: Record<string, Record<string, string>> = {};
+    const userAmountByMarket: UserMarketParams = {};
 
     for (const {marketAddress} of allMarkets) {
         userAmountByMarket[marketAddress] = {};

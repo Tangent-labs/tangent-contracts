@@ -9,7 +9,7 @@ export class MainSetup {
     userCount: number;
     erc20Minted = 1_000_000_000;
 
-    constructor(userCount: number | undefined) {
+    constructor(userCount?: number) {
         this.userCount = userCount || 5;
     }
 
