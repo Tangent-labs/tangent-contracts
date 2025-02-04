@@ -27,16 +27,17 @@ export async function swap(mainSetup: MainSetup, lpAddress: string, i: number, j
 }
 
 // Example usage of the swap function
-export async function swapAll() {
-    const mainSetup = new MainSetup();
+export async function swapDefault() {
+    const mainSetup = new MainSetup(5);
     await mainSetup.setupTestUsers();
 
-    const lpAddress = process.env.LP_ADDRESS; // Replace with actual LP address
-    const i = process.env.INPUT_TOKEN_INDEX; // Index of the input token
-    const j = process.env.OUTPUT_TOKEN_INDEX; // Index of the output token
-    const amountIn = process.env.AMOUNT_IN; // Amount to swap
+    const lpAddress = process.env.LP_ADDRESS; 
+    const i = process.env.INPUT_TOKEN_INDEX; 
+    const j = process.env.OUTPUT_TOKEN_INDEX; 
+    const amountIn = process.env.AMOUNT_IN; 
+    if (!lpAddress || !amountIn || i === undefined || j === undefined) throw Error("Missing env variables for swapDefault");
 
-    await swap(mainSetup, lpAddress, i, j, amountIn);
+    await swap(mainSetup, lpAddress, Number(i), Number(j), amountIn);
 }
 
 // Call the main function to execute the swap

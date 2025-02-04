@@ -1,3 +1,6 @@
-import {swapAll} from "../actions/swapCurve";
+import {swapDefault} from "../actions/swapCurve";
 
-swapAll();
+async function main() {
+    await swapDefault();
+}
+main();
