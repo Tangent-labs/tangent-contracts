@@ -5,8 +5,8 @@ import {OracleContext} from "./OracleContext";
 import {UserMarketParams} from "../actions/common";
 import {deposit} from "../actions/deposit";
 import {borrow} from "../actions/borrow";
-import chainViewMarketArtifact from "../../../../artifacts/src/chainview/tgUSD/bot/MarketLiquidationBotInfo.bot.sol/MarketLiquidationBotInfo.json";
-import chainViewAccountArtifact from "../../../../artifacts/src/chainview/tgUSD/bot/AccountLiquidationBotInfo.bot.sol/AccountLiquidationBotInfo.json";
+
+import chainViewMarketAccountArtifact from "../../../../artifacts/src/chainview/tgUSD/bot/MarketAccountLiquidationBotInfo.cv.sol/MarketAccountLiquidationBotInfo.json";
 import {chainView} from "../../../chainView";
 import {parseEther} from "ethers";
 import {ConvexCrvLPMarket, ConvexFxnLPMarket} from "../../../../typechain-types";
@@ -20,11 +20,18 @@ export type LiquidationMarketInfo = {
     collateralUSDPrice: bigint;
     oracleDecimals: bigint;
 };
+export type LiquidationUserInInfo =   {account: string; market: string}
+
 
 export type LiquidationAccountInfo = {
     healthRatio: bigint;
     positionDebt: bigint;
     positionValue: bigint;
+};
+
+export type LiquidationMarketAccountInfo = {
+    markets: LiquidationMarketInfo[];
+    accounts: LiquidationAccountInfo[];
 };
 
 export class LiquidationContext {
@@ -120,10 +127,7 @@ export class LiquidationContext {
     }
 
     async testChainView() {
-        // just to test the  market chain view   execution
-        const marketsData = await chainView<[string[]], [LiquidationMarketInfo[]]>(chainViewMarketArtifact.abi, chainViewMarketArtifact.bytecode, [this.marketAddresses]);
-        //console.log("testGetMarketChainView", marketsData);
-
+  
         // just to test the accounts chain view execution
         const params = this.marketAddresses
             .map((marketAddress) =>
@@ -136,13 +140,13 @@ export class LiquidationContext {
             )
             .flat();
 
-        const accountsData = await chainView<[{account: string; market: string}[]], [LiquidationAccountInfo[]]>(chainViewAccountArtifact.abi, chainViewAccountArtifact.bytecode, [
-            params,
+        // test the full chain view
+        const userAccountsData = await chainView<[string[], LiquidationUserInInfo[]],[LiquidationMarketAccountInfo]>(chainViewMarketAccountArtifact.abi, chainViewMarketAccountArtifact.bytecode, [
+            this.marketAddresses, params
         ]);
-        // console.log("testGetAccountChainView", accountsData);
 
-        const firstAccount = accountsData?.at(0)?.at(0);
-        const firstmarket = marketsData?.at(0)?.at(0);
+        const firstAccount = userAccountsData?.at(0)?.accounts?.at(0);
+        const firstmarket = userAccountsData?.at(0)?.markets?.at(0);
 
         const specifics = this.getSpecificDepositBorrowCase();
         const {borrow, deposit} = specifics[this.marketAddresses[0]][this.userAddresses[0]];
