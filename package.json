@@ -19,21 +19,22 @@
     "swap-curve": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/swap.ts --network localhost",
     "full-tgUSD": "npm run deploy-tgUSD &  npm run distribute-rewards-tgUSD & npm run deposit-markets-tgUSD  & npm run borrow-markets-tgUSD",
     "time-travel": "npx hardhat run js-scripts/hardhat/tgUSD/actions/time-travel.ts --network localhost",
-    "liquidation-context": "npx hardhat run js-scripts/hardhat/tgUSD/actions/liquidationContext.ts --network localhost"
+    "liquidation-context": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/liquidationSetUp.ts --network localhost"
   },
   "author": "Trottoir",
   "license": "ISC",
   "devDependencies": {
+    "@layerzerolabs/lz-definitions": "^3.0.44",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-foundry": "^1.1.2",
     "@nomicfoundation/hardhat-ignition-ethers": "^0.15.9",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "chai": "4.3.7",
     "convergence-defi-tools": "https://github.com/Convergence-fi/convergence-defi-tools.git#main",
-    "ethers": "^6.13.4",
-    "@layerzerolabs/lz-definitions": "^3.0.44"
+    "ethers": "^6.13.4"
   },
   "dependencies": {
+    "dotenv": "^16.4.7",
     "hardhat": "^2.22.17"
   }
 }
