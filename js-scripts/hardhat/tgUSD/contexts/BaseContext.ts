@@ -13,7 +13,6 @@ import {
     IERC20,
     IPegKeeperRegulator,
     IPegKeeperV2,
-    IPriceAggregatorV2,
     IRCalculator,
     IYearnV3Vault,
     LiquidatorProxy,

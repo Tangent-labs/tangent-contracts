@@ -6,7 +6,7 @@ import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.sol";
 
-import {IPriceAggregatorV2} from "../../../interfaces/externals/LlamaLend/IPriceAggregatorV2.sol";
+import {IAggregatorStablePriceV3} from "../../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 import {ERC20Infos, IERC20Metadata} from "../../ERC20Infos.sol";
 import {GetMarketDetails} from "../GetMarketDetails.sol";
 import {IYearnV3Vault} from "../../../interfaces/externals/YearnFi/IYearnV3Vault.sol";
@@ -25,7 +25,7 @@ contract SgUSDUI is GetMarketDetails {
 
     error SgUSDUIOutError(SgUSDUIOut output);
 
-    constructor(address account, IPriceAggregatorV2 tgUSDOracle, IERC20Metadata tgUSD, IYearnV3Vault sgUSD) {
+    constructor(address account, IAggregatorStablePriceV3 tgUSDOracle, IERC20Metadata tgUSD, IYearnV3Vault sgUSD) {
         uint256 tgUSDTotalSupply = tgUSD.totalSupply();
         uint256 tgUSDPrice = tgUSDOracle.price();
         revert SgUSDUIOutError(

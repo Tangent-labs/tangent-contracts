@@ -24,13 +24,7 @@ contract PegKeeperTest is ConvexCurveContext {
         deal(address(tgUSD), address(pegKeeperTgUSD_USDC), 2_000_000 ether);
         deal(address(tgUSD), address(pegKeeperTgUSD_USDT), 2_000_000 ether);
 
-        // console.log(
-        //     AddrClassicERC20.TOKEN_USDC.balanceOf(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"))),
-        //     tgUSD.balanceOf(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")))
-        // );
 
-        // console.log("allowed", pegKeeperRegulator.provide_allowed(address(pegKeeperTgUSD_USDC)));
-        // console.log(pegKeeperTgUSD_USDC.estimate_caller_profit());
         pegKeeperTgUSD_USDC.update(owner);
         pegKeeperTgUSD_USDT.update(owner);
 

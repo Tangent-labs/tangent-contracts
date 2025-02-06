@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-interface IPriceAggregatorV2 {
+interface IAggregatorStablePriceV3 {
     event AddPricePair(uint256 indexed n, address indexed pool, bool is_inverse);
     event RemovePricePair(uint256 indexed n);
     event MovePricePair(uint256 indexed n_from, uint256 indexed n_to);

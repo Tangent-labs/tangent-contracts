@@ -10,7 +10,7 @@ import {OracleTriPoolStable} from "../../../src/tgUSD/Oracles/Pools/OracleTriPoo
 import {sDAIOracle} from "../../../src/tgUSD/Oracles/sDAIOracle.sol";
 
 import {IRCalculator} from "../../../src/tgUSD/Utilities/IRCalculator.sol";
-import {IPriceAggregatorV2} from "../../../src/interfaces/externals/LlamaLend/IPriceAggregatorV2.sol";
+import {IAggregatorStablePriceV3} from "../../../src/interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 import {IPegKeeperRegulator} from "../../../src/interfaces/externals/LlamaLend/IPegKeeperRegulator.sol";
 import {IPegKeeperV2} from "../../../src/interfaces/externals/LlamaLend/IPegKeeperV2.sol";
 
@@ -18,7 +18,7 @@ contract OraclesContext is TgUSDDeployContext {
     IRCalculator public irCalculator;
     mapping(IERC20 => IPriceOracle) public oracles;
 
-    IPriceAggregatorV2 public tgUSDOracle;
+    IAggregatorStablePriceV3 public tgUSDOracle;
 
     IPegKeeperRegulator public pegKeeperRegulator;
 
@@ -29,7 +29,7 @@ contract OraclesContext is TgUSDDeployContext {
         vm.startPrank(owner);
         // Oracle tgUSD
 
-        tgUSDOracle = IPriceAggregatorV2(deployCode("PriceAggregatorV2", abi.encode(tgUSD, uint256(1000000000000000), owner)));
+        tgUSDOracle = IAggregatorStablePriceV3(deployCode("AggregatorStablePriceV3", abi.encode(tgUSD, uint256(1000000000000000), owner)));
         vm.label(address(tgUSDOracle), "Oracle tgUSD");
 
         tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDT")));

@@ -5,7 +5,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 import {IRParams, RCParams, IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
-import {IPriceAggregatorV2} from "../../interfaces/externals/LlamaLend/IPriceAggregatorV2.sol";
+import {IAggregatorStablePriceV3} from "../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {ABDKMath64x64} from "../../libs/ABDKMath64x64.sol";
 
@@ -25,7 +25,7 @@ contract IRCalculator is IIRCalculator, Ownable {
     IControlTower public controlTower;
 
     /// @notice Contract allowing to retrieve the price in dollar of tgUSD.
-    IPriceAggregatorV2 public tgUSDOracle;
+    IAggregatorStablePriceV3 public tgUSDOracle;
 
     /// @notice Gives the parameter of the market
     mapping(address => IRParams) public irParams;
@@ -36,7 +36,7 @@ contract IRCalculator is IIRCalculator, Ownable {
     error IRStartPriceLtOne();
     error CallerNotOwnerOrMarketCreator(address caller);
 
-    constructor(address _owner, IControlTower _controlTower, IPriceAggregatorV2 _tgUSDOracle) Ownable(_owner) {
+    constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle) Ownable(_owner) {
         controlTower = _controlTower;
         tgUSDOracle = _tgUSDOracle;
     }
@@ -56,7 +56,7 @@ contract IRCalculator is IIRCalculator, Ownable {
         _;
     }
 
-    function setTgUSDOracle(IPriceAggregatorV2 _tgUSDOracle) external onlyOwner {
+    function setTgUSDOracle(IAggregatorStablePriceV3 _tgUSDOracle) external onlyOwner {
         tgUSDOracle = _tgUSDOracle;
     }
 

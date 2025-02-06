@@ -32,7 +32,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         hDeposit.depositAndBorrow(collatDeposited, 4_250 ether, true, address(0));
 
         // Dumps tgUSD for USDC => Depegs tgUSD
-        hLpManipulator.dumpCrvPool(lp, 1, 0, 4_500 ether);
+        hLpManipulator.dumpCrvPool(lp, 1, 0, 4_000 ether);
 
         vm.startPrank(usr1);
 
@@ -70,8 +70,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
 
         bytes memory callToSecondaryLiquidator = encoder.encodeLiquidateCallForCurveLP(
             encoder.createCurveRouterStruct(route, swapParams, collatToDump, 0, usr1),
-            encoder.createEmptyMintAndSwapWStable(),
-            2000000
+            encoder.createEmptyMintAndSwapWStable()
         );
 
         market.liquidate(usr1, MAX_UINT, address(liquidator), 0, callToSecondaryLiquidator);
