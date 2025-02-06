@@ -23,18 +23,18 @@ import {IRParams, RCParams, IIRCalculator} from "../../interfaces/internals/tgUS
 import {ILiquidatorProxy} from "../../interfaces/internals/tgUSD/ILiquidatorProxy.sol";
 import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
 
-/// @title Cvg-Finance - CloneFactoryV2
+/// @title MarketCreator
 /// @notice Convergence's factory to deploy clone of contracts
 contract MarketCreator is Ownable {
     using Clones for address;
 
-    /// @notice
+    /// @notice Control tower
     IControlTower public controlTower;
 
-    /// @notice
+    /// @notice TgUSD token
     ITgUSD public tgUSD;
 
-    /// @notice
+    /// @notice IR Calculator
     IIRCalculator public irCalculator;
 
     /// @notice

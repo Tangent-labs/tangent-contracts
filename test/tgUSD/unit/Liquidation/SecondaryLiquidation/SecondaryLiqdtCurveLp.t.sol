@@ -24,7 +24,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
-        hLpManipulator = new HLpManipulator(usr1, market);
+        hLpManipulator = new HLpManipulator(usr1);
     }
 
     function test_secondaryLiquidator_liquidate_with_secondary_liquidator_crvUSD_USDC() external {

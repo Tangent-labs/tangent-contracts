@@ -14,7 +14,6 @@ contract ZapDepositEnso is ConvexCurveContext {
 
     function setUp() public {
         market = deployConvexCurveLPMarket(collatToken);
-
         hZapDeposit = new HZapDepositConvexCrvLP(usr1, market, zapper);
     }
 
@@ -54,7 +53,7 @@ contract ZapDepositEnso is ConvexCurveContext {
     }
 
     function test_zap_deposit_with_erc20_and_no_stake() external {
-        IERC20 tokenIn = AddrClassicERC20.TOKEN_USDT;
+        IERC20 tokenIn = AddrClassicERC20.TOKEN_USDC;
         uint256 amountIn = 10_000 * 10 ** 6;
 
         (, uint256 adjustedQuote) = ensoUtils.getQuote(tokenIn, amountIn, collatToken, 10);

@@ -46,15 +46,14 @@ contract LpDeploymentContext is StdCheats, StdUtils, Test {
         // Give otherStable to owner before LP deployment
         deal(address(otherStable), creator, initialAmount * 10 ** otherStableDecimals);
         vm.startPrank(creator);
-        skip(3000);
 
         ICurveStableSwapNG lpTgUSD = ICurveStableSwapNG(
             AddrCurveStableLP.STABLE_SWAP_FACTORY.deploy_plain_pool(
                 name,
                 symbol,
                 Array.memoryAddress([address(otherStable), address(tgUSD)]),
-                5000,
-                100000000,
+                500,
+                1000000,
                 0,
                 866,
                 0,

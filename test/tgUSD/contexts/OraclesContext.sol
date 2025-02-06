@@ -10,16 +10,32 @@ import {OracleTriPoolStable} from "../../../src/tgUSD/Oracles/Pools/OracleTriPoo
 import {sDAIOracle} from "../../../src/tgUSD/Oracles/sDAIOracle.sol";
 
 import {IRCalculator} from "../../../src/tgUSD/Utilities/IRCalculator.sol";
+import {IPriceAggregatorV2} from "../../../src/interfaces/externals/LlamaLend/IPriceAggregatorV2.sol";
+import {IPegKeeperRegulator} from "../../../src/interfaces/externals/LlamaLend/IPegKeeperRegulator.sol";
+import {IPegKeeperV2} from "../../../src/interfaces/externals/LlamaLend/IPegKeeperV2.sol";
+
 contract OraclesContext is TgUSDDeployContext {
     IRCalculator public irCalculator;
     mapping(IERC20 => IPriceOracle) public oracles;
 
-    constructor() {
-        // Oracle tgUSD
-        oracles[tgUSD] = new StablePriceOracleParams(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), IPriceOracle(address(AddrChainlinkOracle.USDC)));
-        vm.label(address(oracles[tgUSD]), "Oracle tgUSD");
+    IPriceAggregatorV2 public tgUSDOracle;
 
-        irCalculator = new IRCalculator(owner, controlTower, oracles[tgUSD]);
+    IPegKeeperRegulator public pegKeeperRegulator;
+
+    IPegKeeperV2 public pegKeeperTgUSD_USDC;
+    IPegKeeperV2 public pegKeeperTgUSD_USDT;
+
+    constructor() {
+        vm.startPrank(owner);
+        // Oracle tgUSD
+
+        tgUSDOracle = IPriceAggregatorV2(deployCode("PriceAggregatorV2", abi.encode(tgUSD, uint256(100000000000), owner)));
+        vm.label(address(tgUSDOracle), "Oracle tgUSD");
+
+        tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDT")));
+        tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")));
+
+        irCalculator = new IRCalculator(owner, controlTower, tgUSDOracle);
         marketCreator = new MarketCreator(
             owner,
             controlTower,
@@ -32,9 +48,18 @@ contract OraclesContext is TgUSDDeployContext {
             marketNoSociabilizationImplem
         );
 
-        vm.prank(owner);
-        controlTower.toggleMarketCreator(address(marketCreator));
+        pegKeeperRegulator = IPegKeeperRegulator(deployCode("PegKeeperRegulator", abi.encode(tgUSD, tgUSDOracle, feeTreasury, owner, owner)));
 
+        pegKeeperTgUSD_USDC = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 20000, pegKeeperRegulator, owner)));
+        pegKeeperTgUSD_USDT = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-USDT"), 20000, pegKeeperRegulator, owner)));
+        address[] memory pairs = new address[](2);
+        pairs[0] = address(pegKeeperTgUSD_USDC);
+        pairs[1] = address(pegKeeperTgUSD_USDT);
+
+        pegKeeperRegulator.add_peg_keepers(pairs);
+
+        controlTower.toggleMarketCreator(address(marketCreator));
+        vm.stopPrank();
         setupChainlinkOracles();
         setupSimpleTokenOraclesWithCurveLP();
         setupCurveStableLPOracles();

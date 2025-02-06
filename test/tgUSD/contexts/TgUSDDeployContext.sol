@@ -77,7 +77,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     constructor() {
         baseFork = vm.createSelectFork("base", 24379193);
-        mainnetFork = vm.createSelectFork("mainnet", 21738808);
+        mainnetFork = vm.createSelectFork("mainnet", 21779327);
 
         vm.startPrank(owner);
 
@@ -95,7 +95,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         controlTower = new ControlTower(owner, feeTreasury);
 
-        rewardAccumulator = new RewardAccumulator(owner, controlTower, feeTreasury);
+        rewardAccumulator = new RewardAccumulator(owner, controlTower);
 
         // Deploy tgUSD on Base
         tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);

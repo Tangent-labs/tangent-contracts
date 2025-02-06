@@ -34,7 +34,7 @@ contract Liquidator {
     }
 
     /// @notice
-    function liquidateLP(CurveRouterSwap calldata curveRouterSwap, MintAndSwapWStable calldata mintAndSwapWStable, uint256 debtToCover) external {
+    function liquidateLP(CurveRouterSwap calldata curveRouterSwap, MintAndSwapWStable calldata mintAndSwapWStable) external {
         // Approve the collateral on the Curve Router if necessary
         _approveIfNotAllowed(IERC20(curveRouterSwap._route[0]), address(CURVE_ROUTER));
         // Unwrap the LP

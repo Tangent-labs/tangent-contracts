@@ -69,4 +69,11 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
         // Stream rewards to stakers and give rewards to harvester
         _processRewards(harvestFeeReceiver);
     }
+
+    function stakeAll(address receiver) external {
+        // Claim rewards on behalf
+        IERC20 _collatToken = collatToken;
+        _collatToken.transfer(receiver, socFeePending);
+        stakingProxyVault.deposit(_collatToken.balanceOf(address(this)), true);
+    }
 }

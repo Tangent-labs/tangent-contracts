@@ -13,11 +13,9 @@ import "forge-std/console.sol";
 contract RewardAccumulator is IRewardAccumulator, Ownable {
     using SafeERC20 for IERC20;
 
-    address public feeTreasury;
-
     IControlTower public controlTower;
 
-    /// @dev Gives the amount of fee that DAO can withdraw for an ERC20
+    /// @notice Amount of fee that DAO can withdraw for a given token
     mapping(IERC20 => uint256) public cutFeeForToken;
 
     error NoRewardsToClaimFromContract(address contractAddr);
@@ -26,9 +24,8 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     error NoRewardToSimpleClaim();
     error NotAMarketRewards();
 
-    constructor(address _owner, IControlTower _controlTower, address _feeTreasury) Ownable(_owner) {
+    constructor(address _owner, IControlTower _controlTower) Ownable(_owner) {
         controlTower = _controlTower;
-        feeTreasury = _feeTreasury;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -133,7 +130,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      * @param tokens array of token to claim
      */
     function claimCutFees(IERC20[] memory tokens) external {
-        address _feeTreasury = feeTreasury;
+        address _feeTreasury = controlTower.feeTreasury();
         for (uint256 erc20Id; erc20Id < tokens.length; ) {
             IERC20 token = tokens[erc20Id];
             token.transfer(_feeTreasury, cutFeeForToken[token]);

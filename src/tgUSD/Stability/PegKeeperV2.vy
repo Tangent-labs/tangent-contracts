@@ -1,6 +1,6 @@
 # @version 0.3.10
 """
-@title Peg KeeperC V2
+@title Peg Keeper V2
 @license MIT
 @author Curve.Fi
 @notice Peg Keeper
@@ -62,7 +62,7 @@ event SetNewRegulator:
 
 
 # Time between providing/withdrawing coins
-action_delay: public(uint256)
+action_delay: uint256
 ADMIN_ACTIONS_DELAY: constant(uint256) = 3 * 86400
 
 PRECISION: constant(uint256) = 10 ** 18
@@ -86,16 +86,10 @@ admin: public(address)
 future_admin: public(address)
 new_admin_deadline: public(uint256)
 
-# Receiver of profit
-receiver: public(address)
-
-FACTORY: immutable(address)
-
 
 @external
 def __init__(
-    _pool: CurvePool, _caller_share: uint256,
-    _factory: address, _regulator: Regulator, _admin: address,
+    _pool: CurvePool, _caller_share: uint256, _regulator: Regulator, _admin: address
 ):
     """
     @notice Contract constructor
@@ -109,7 +103,6 @@ def __init__(
     pegged: ERC20 = ERC20(_regulator.stablecoin())
     PEGGED = pegged
     pegged.approve(_pool.address, max_value(uint256))
-    pegged.approve(_factory, max_value(uint256))
 
     coins: ERC20[2] = [ERC20(_pool.coins(0)), ERC20(_pool.coins(1))]
     for i in range(2):
@@ -136,15 +129,6 @@ def __init__(
 
     self.action_delay = 12  # 1 block
     log SetNewActionDelay(12)
-
-    FACTORY = _factory
-
-
-@pure
-@external
-def factory() -> address:
-    return FACTORY
-
 
 @pure
 @external
