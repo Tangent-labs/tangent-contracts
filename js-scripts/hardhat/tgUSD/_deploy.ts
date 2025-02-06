@@ -19,18 +19,18 @@ async function main() {
         "tgUSD-USDC",
         [baseContext.coins.usdc, baseContext.tgUSD],
         [parseUnits("1000000", 6), parseEther("1000000")],
-        "5000",
-        "100000000",
+        "500",
+        "1000000",
         "0",
         "866",
         "0"
     );
 
     // Setup and create all oracles
-    await oracleContext.deployAndSetupOracles(baseContext.stableLp);
+    await oracleContext.deployAndSetupOracles(baseContext.tgUSD, baseContext.owner, baseContext.stableLp);
 
     // Deploy other contracts that needed oracles and LP
-    await baseContext.deployContracts2(oracleContext.oracles["tgUSD"]);
+    await baseContext.deployContracts2(oracleContext.tgUSDOracle);
 
     // Define markets to deploy
     const convexCrvMarkets: ConvexCrvMarketKeys[] = ["crvUSD_USDC", "crvUSD_USDT"];

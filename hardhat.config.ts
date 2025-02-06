@@ -3,8 +3,12 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-ignition-ethers";
+import "@nomiclabs/hardhat-vyper";
 import {EndpointId} from "@layerzerolabs/lz-definitions";
 const config: HardhatUserConfig = {
+    vyper: {
+        version: "0.3.10",
+    },
     solidity: {
         compilers: [
             {

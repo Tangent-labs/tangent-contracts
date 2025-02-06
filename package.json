@@ -22,14 +22,15 @@
   "author": "Trottoir",
   "license": "ISC",
   "devDependencies": {
+    "@layerzerolabs/lz-definitions": "^3.0.44",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-foundry": "^1.1.2",
     "@nomicfoundation/hardhat-ignition-ethers": "^0.15.9",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@nomiclabs/hardhat-vyper": "^3.0.8",
     "chai": "4.3.7",
     "convergence-defi-tools": "https://github.com/Convergence-fi/convergence-defi-tools.git#main",
-    "ethers": "^6.13.4",
-    "@layerzerolabs/lz-definitions": "^3.0.44"
+    "ethers": "^6.13.4"
   },
   "dependencies": {
     "hardhat": "^2.22.17"

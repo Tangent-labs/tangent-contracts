@@ -11,6 +11,9 @@ import {
     ConvexFxnLPMarket,
     ICurveStableSwapNG,
     IERC20,
+    IPegKeeperRegulator,
+    IPegKeeperV2,
+    IPriceAggregatorV2,
     IRCalculator,
     IYearnV3Vault,
     LiquidatorProxy,
@@ -20,6 +23,7 @@ import {
     TgUSD,
     Zapper,
 } from "../../../../typechain-types";
+import {oracles} from "../../../../typechain-types/src/tgUSD";
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;
 };
@@ -35,6 +39,9 @@ export class BaseContext extends MainSetup {
     liquidatorProxy!: LiquidatorProxy;
     irCalculator!: IRCalculator;
     marketCreator!: MarketCreator;
+
+    pegKeeperRegulator!: IPegKeeperRegulator;
+    pegKeeperTgUSD_USDC!: IPegKeeperV2;
 
     marketCvxCrvImplem!: ConvexCrvLPMarket;
     marketCvxFxnImplem!: ConvexFxnLPMarket;
@@ -62,7 +69,7 @@ export class BaseContext extends MainSetup {
         this.zapper = await (await ethers.getContractFactory("Zapper")).deploy(this.owner, this.controlTower, this.tgUSD);
         await this.zapper.waitForDeployment();
 
-        this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, this.feeTreso);
+        this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower);
         await this.rewardAccumulator.waitForDeployment();
 
         this.liquidatorProxy = await (await ethers.getContractFactory("LiquidatorProxy")).deploy(this.tgUSD);
@@ -141,6 +148,17 @@ export class BaseContext extends MainSetup {
             this.marketNoSociabilizationImplem
         );
         await this.marketCreator.waitForDeployment();
+        this.pegKeeperRegulator = (await (
+            await ethers.getContractFactory("PegKeeperRegulator")
+        ).deploy(this.tgUSD, tgUSDOracle, this.feeTreso, this.owner, this.owner)) as unknown as IPegKeeperRegulator;
+        await this.pegKeeperRegulator.waitForDeployment();
+
+        this.pegKeeperTgUSD_USDC = (await (
+            await ethers.getContractFactory("PegKeeperV2")
+        ).deploy(this.stableLp["tgUSD-USDC"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
+        await this.pegKeeperTgUSD_USDC.waitForDeployment();
+
+        await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperTgUSD_USDC]);
 
         await this.controlTower.connect(this.owner).toggleMarketCreator(this.marketCreator);
     }

@@ -29,7 +29,7 @@ contract OraclesContext is TgUSDDeployContext {
         vm.startPrank(owner);
         // Oracle tgUSD
 
-        tgUSDOracle = IPriceAggregatorV2(deployCode("PriceAggregatorV2", abi.encode(tgUSD, uint256(100000000000), owner)));
+        tgUSDOracle = IPriceAggregatorV2(deployCode("PriceAggregatorV2", abi.encode(tgUSD, uint256(1000000000000000), owner)));
         vm.label(address(tgUSDOracle), "Oracle tgUSD");
 
         tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDT")));

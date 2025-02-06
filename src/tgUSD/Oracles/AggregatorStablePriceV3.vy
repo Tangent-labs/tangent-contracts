@@ -1,14 +1,15 @@
-# @version 0.3.7
+# @version 0.3.10
 """
-@title AggregatorStablePrice - aggregator of stablecoin prices for crvUSD
+@title AggregatorStablePriceV3 - aggregator of stablecoin prices for crvUSD
 @author Curve.Fi
 @license Copyright (c) Curve.Fi, 2020-2023 - all rights reserved
 """
 # Returns price of stablecoin in "dollars" based on multiple redeemable stablecoins
 # Recommended to use 3+ price sources
+# Version3: Works with -ng pools
 
 interface Stableswap:
-    def price_oracle() -> uint256: view
+    def price_oracle(i: uint256=0) -> uint256: view
     def coins(i: uint256) -> address: view
     def get_virtual_price() -> uint256: view
     def totalSupply() -> uint256: view
@@ -17,6 +18,7 @@ interface Stableswap:
 struct PricePair:
     pool: Stableswap
     is_inverse: bool
+    include_index: bool
 
 
 event AddPricePair:
@@ -36,7 +38,7 @@ event SetAdmin:
 
 
 MAX_PAIRS: constant(uint256) = 20
-MIN_LIQUIDITY: constant(uint256) = 100_000 * 10**18  # Only take into account pools with enough liquidity
+MIN_LIQUIDITY: constant(uint256) = 10_000 * 10**18  # Only take into account pools with enough liquidity
 
 STABLECOIN: immutable(address)
 SIGMA: immutable(uint256)
@@ -70,13 +72,13 @@ def set_admin(_admin: address):
 
 
 @external
-@view
+@pure
 def sigma() -> uint256:
     return SIGMA
 
 
 @external
-@view
+@pure
 def stablecoin() -> address:
     return STABLECOIN
 
@@ -86,6 +88,12 @@ def add_price_pair(_pool: Stableswap):
     assert msg.sender == self.admin
     price_pair: PricePair = empty(PricePair)
     price_pair.pool = _pool
+    success: bool = raw_call(
+        _pool.address, _abi_encode(convert(0, uint256), method_id=method_id("price_oracle(uint256)")),
+        revert_on_failure=False
+    )
+    if success:
+        price_pair.include_index = True
     coins: address[2] = [_pool.coins(0), _pool.coins(1)]
     if coins[0] == STABLECOIN:
         price_pair.is_inverse = True
@@ -106,15 +114,16 @@ def remove_price_pair(n: uint256):
 
     if n < n_max:
         self.price_pairs[n] = self.price_pairs[n_max]
+        self.last_tvl[n] = self.last_tvl[n_max]
         log MovePricePair(n_max, n)
     self.n_price_pairs = n_max
     log RemovePricePair(n)
 
 
 @internal
-@view
+@pure
 def exp(power: int256) -> uint256:
-    if power <= -42139678854452767551:
+    if power <= -41446531673892821376:
         return 0
 
     if power >= 135305999368893231589:
@@ -191,7 +200,11 @@ def _price(tvls: DynArray[uint256, MAX_PAIRS]) -> uint256:
         price_pair: PricePair = self.price_pairs[i]
         pool_supply: uint256 = tvls[i]
         if pool_supply >= MIN_LIQUIDITY:
-            p: uint256 = price_pair.pool.price_oracle()
+            p: uint256 = 0
+            if price_pair.include_index:
+                p = price_pair.pool.price_oracle(0)
+            else:
+                p = price_pair.pool.price_oracle()
             if price_pair.is_inverse:
                 p = 10**36 / p
             prices[i] = p

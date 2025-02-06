@@ -95,7 +95,6 @@ def __init__(
     @notice Contract constructor
     @param _pool Contract pool address
     @param _caller_share Caller's share of profit
-    @param _factory Factory which should be able to take coins away
     @param _regulator Peg Keeper Regulator
     @param _admin Admin account
     """
