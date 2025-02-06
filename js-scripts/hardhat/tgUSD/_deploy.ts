@@ -86,7 +86,7 @@ async function createJSONAddress(baseContext: BaseContext, marketContext: Market
         const oracle = await oracleContext.oracles[prop].getAddress();
         oracles[prop] = oracle;
     }
-
+    oracles["tgUSD"] = await oracleContext.tgUSDOracle.getAddress();
     return {
         utilities: {
             controlTower: await baseContext.controlTower.getAddress(),

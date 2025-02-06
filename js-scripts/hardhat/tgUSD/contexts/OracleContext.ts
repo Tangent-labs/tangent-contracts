@@ -14,7 +14,6 @@ export class OracleContext {
         this.oracles["USDT"] = await ethers.getContractAt("IPriceOracle", "0x3E7d1eAB13ad0104d2750B8863b489D65364e32D");
 
         const StablePriceOracleParamsFactory = await ethers.getContractFactory("StablePriceOracleParams");
-        this.oracles["tgUSD"] = (await StablePriceOracleParamsFactory.deploy(stableLp["tgUSD-USDC"], this.oracles["USDC"])) as unknown as IPriceOracle;
         this.oracles["fxUSD"] = (await StablePriceOracleParamsFactory.deploy(curveLp.CRV_LP_USDC_fxUSD, this.oracles["USDC"])) as unknown as IPriceOracle;
 
         const OracleDuoPoolStableFactory = await ethers.getContractFactory("OracleDuoPoolStable");
