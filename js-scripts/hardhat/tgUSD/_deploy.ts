@@ -92,6 +92,7 @@ async function createJSONAddress(baseContext: BaseContext, marketContext: Market
             controlTower: await baseContext.controlTower.getAddress(),
             rewardAccumulator: await baseContext.rewardAccumulator.getAddress(),
             zapper: await baseContext.zapper.getAddress(),
+            marketCreator: await baseContext.marketCreator.getAddress(),
         },
         tokens: {
             tgUSD: await baseContext.tgUSD.getAddress(),

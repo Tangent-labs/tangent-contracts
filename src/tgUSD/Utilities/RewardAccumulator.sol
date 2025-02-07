@@ -109,7 +109,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
             if (amountClaim != 0) {
                 isSomethingToClaim = true;
                 token.safeTransfer(msg.sender, amountClaim);
-                // Erase transient for the tokenP
+                // Erase transient for the token
                 _tStoreUintForAddress(address(token), 0);
             }
 
