@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 abstract contract BalancesAllowances {
+    uint256 MAX_UINT = uint256(int256(-1));
     struct InputBalancesAllowances {
         IERC20 token;
         address[] spenders;
@@ -32,14 +33,17 @@ abstract contract BalancesAllowances {
             for (uint256 j = 0; j < iba.spenders.length; ) {
                 address spender = iba.spenders[j];
 
-                allowances[j] = Allowance({spender: spender, allowance: token.allowance(user, spender)});
+                uint256 allowance = address(token) == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE ? MAX_UINT : token.allowance(user, spender);
+
+                allowances[j] = Allowance({spender: spender, allowance: allowance});
 
                 unchecked {
                     ++j;
                 }
             }
+            uint256 balance = address(token) == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE ? user.balance : token.balanceOf(user);
 
-            obas[i] = OutputBalanceAllowances({token: iba.token, balance: iba.token.balanceOf(user), allowances: allowances});
+            obas[i] = OutputBalanceAllowances({token: token, balance: balance, allowances: allowances});
             unchecked {
                 ++i;
             }
