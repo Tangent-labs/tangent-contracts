@@ -22,7 +22,7 @@ export class OracleContext {
         this.oracles["USDC_fxUSD"] = (await OracleDuoPoolStableFactory.deploy(curveLp.CRV_LP_USDC_fxUSD, this.oracles["USDC"], this.oracles["fxUSD"])) as unknown as IPriceOracle;
         this.oracles["frxETH_WETH"] = (await OracleDuoPoolStableFactory.deploy(curveLp.FRXETH_ETH_LP, this.oracles["USDT"], this.oracles["crvUSD"])) as unknown as IPriceOracle;
 
-        this.tgUSDOracle = (await (await ethers.getContractFactory("IAggregatorStablePriceV3")).deploy(tgUSD, "1000000000000000", owner)) as unknown as IAggregatorStablePriceV3;
+        this.tgUSDOracle = (await (await ethers.getContractFactory("AggregatorStablePriceV3")).deploy(tgUSD, "1000000000000000", owner)) as unknown as IAggregatorStablePriceV3;
         await this.tgUSDOracle.waitForDeployment();
         this.tgUSDOracle.connect(owner).add_price_pair(stableLp["tgUSD-USDC"]);
     }
