@@ -30,10 +30,12 @@ abstract contract BalancesAllowances {
 
             Allowance[] memory allowances = new Allowance[](iba.spenders.length);
 
+            bool isEth = address(token) == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
             for (uint256 j = 0; j < iba.spenders.length; ) {
                 address spender = iba.spenders[j];
 
-                uint256 allowance = address(token) == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE ? MAX_UINT : token.allowance(user, spender);
+                uint256 allowance = isEth ? MAX_UINT : token.allowance(user, spender);
 
                 allowances[j] = Allowance({spender: spender, allowance: allowance});
 
@@ -41,7 +43,7 @@ abstract contract BalancesAllowances {
                     ++j;
                 }
             }
-            uint256 balance = address(token) == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE ? user.balance : token.balanceOf(user);
+            uint256 balance = isEth ? user.balance : token.balanceOf(user);
 
             obas[i] = OutputBalanceAllowances({token: token, balance: balance, allowances: allowances});
             unchecked {
