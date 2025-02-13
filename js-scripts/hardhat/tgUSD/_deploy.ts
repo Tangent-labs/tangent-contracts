@@ -44,7 +44,7 @@ async function main() {
     await baseContext.approveCurveLP(curveLp.crvUSD_USDC);
 
     // Write JSON with all addresses
-    fs.writeFileSync("./addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext), null, 2));
+    fs.writeFileSync("./addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext)));
 
     console.info("\x1b[32m%s\x1b[0m", "Contracts deployed and setup !");
 }

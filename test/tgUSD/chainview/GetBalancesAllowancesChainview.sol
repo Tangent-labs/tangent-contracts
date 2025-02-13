@@ -15,7 +15,8 @@ contract GetBalancesAllowancesChainview is ConvexCurveContext {
     function test_getBalancesAllowances_ui_returns() public {
         address[] memory spenders = new address[](1);
         spenders[0] = usr1;
-        ibas.push(BalancesAllowances.InputBalancesAllowances({token: AddrClassicERC20.TOKEN_USDC, spenders: spenders}));
+        ibas.push(BalancesAllowances.InputBalancesAllowances({token: IERC20(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE), spenders: spenders}));
+
         try new GetBalancesAllowances(usr1, ibas) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
         }
