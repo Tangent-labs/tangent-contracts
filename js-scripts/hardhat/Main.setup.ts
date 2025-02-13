@@ -6,13 +6,15 @@ import {TOKENS_TO_GIVE} from "./tokensToGive.config";
 
 export class MainSetup {
     users: HardhatEthersSigner[] = [];
-
+    userCount: number;
     erc20Minted = 1_000_000_000;
 
-    constructor() {}
+    constructor(userCount?: number) {
+        this.userCount = userCount || 5;
+    }
 
     async setupTestUsers() {
-        this.users = (await ethers.getSigners()).slice(0, 5);
+        this.users = (await ethers.getSigners()).slice(0, this.userCount);
     }
 
     async giveTokens(

@@ -147,6 +147,7 @@ export class BaseContext extends MainSetup {
             this.marketNoSociabilizationImplem
         );
         await this.marketCreator.waitForDeployment();
+
         this.pegKeeperRegulator = (await (
             await ethers.getContractFactory("PegKeeperRegulator")
         ).deploy(this.tgUSD, tgUSDOracle, this.feeTreso, this.owner, this.owner)) as unknown as IPegKeeperRegulator;
