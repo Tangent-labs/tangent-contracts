@@ -28,15 +28,15 @@ jobs:
       - name: Install dependencies with Forge
         run: |
           forge install
-      
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x' # Ensure Python is installed
+          python-version: "3.x" # Ensure Python is installed
 
       - name: Install Vyper
         run: |
-          pip install vyper
+          pip install vyper--0.3.10
           echo "Vyper version:"
           vyper --version
 

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../contexts/ConvexCurveContext.sol";
-import "../../../../../src/tgUSD/Market/Abstract/DebtIR.sol";
+import "../../../../../src/tgUSD/Market/abstract/DebtIR.sol";
 import "../../../../utils/ERC20BalanceChanges.sol";
 
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
