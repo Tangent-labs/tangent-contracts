@@ -9,6 +9,9 @@ import {StdUtils} from "forge-std/StdUtils.sol";
 import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../../src/libs/Resources/ResourcesYearn.sol";
+
+import "../../../src/tgUSD/tokens/Tan.sol";
+import "../../../src/tgUSD/tokens/RsTan.sol";
 import "../../../src/tgUSD/tokens/TgUSD.sol";
 import "../../../src/tgUSD/tokens/TgStable.sol";
 import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
@@ -65,6 +68,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     Zapper public zapper;
 
     TgUSD public tgUSD;
+    Tan public tan;
+    RsTan public rsTan;
     TgUSD public tgUsdBase;
     IYearnV3Vault public sgUSD;
     RewardAccumulator public rewardAccumulator;
@@ -97,6 +102,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         rewardAccumulator = new RewardAccumulator(owner, controlTower);
 
+        tan = new Tan();
+        rsTan = new RsTan(controlTower, tan);
         // Deploy tgUSD on Base
         tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
         // Deploy tgUSD on Mainnet ETH
@@ -120,6 +127,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(tgUSD), "tgUSD");
         vm.label(address(sgUSD), "sgUSD");
         vm.label(address(controlTower), "ControlTower");
+        vm.label(address(tan), "Tan");
+        vm.label(address(rsTan), "RsTan");
 
         vm.label(address(rewardAccumulator), "RewardAccumulator");
         vm.label(address(AddrRouter.ENSO_ROUTER), "Enso Router");

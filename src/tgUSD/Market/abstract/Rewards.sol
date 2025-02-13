@@ -27,13 +27,13 @@ abstract contract Rewards is Collateral {
     /// @notice List of reward tokens
     IERC20[] public rewardTokens;
 
-    /// @dev Reward data associated to a reward token
+    /// @notice Reward data associated to a reward token
     mapping(IERC20 => Reward) public rewardData; // token => reward data
 
-    /// @dev Reward amount already sent to an user for a reward token
+    /// @notice Reward amount already claimed to an user for a reward token
     mapping(address => mapping(IERC20 => uint256)) public userRewardPerTokenPaid; // user => reward token => amount
 
-    /// @dev Reward amount for a reward token for a user
+    /// @notice Reward amount for a reward token for a user
     mapping(address => mapping(IERC20 => uint256)) public rewards; // user => reward token => amount
 
     event RewardNotified(IERC20 indexed _token, uint256 _reward);
