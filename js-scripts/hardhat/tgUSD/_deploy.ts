@@ -9,7 +9,7 @@ import {deploytgUsd} from "./actions/deploytgUsd";
 async function main() {
     const {baseContext, marketContext, oracleContext} = await deploytgUsd();
 
-    fs.writeFileSync("./addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext), null, 2));
+    fs.writeFileSync("./addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext)));
     console.info("\x1b[32m%s\x1b[0m", "Contracts deployed and setup !");
 }
 
