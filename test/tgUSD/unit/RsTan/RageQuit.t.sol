@@ -68,7 +68,6 @@ contract RageQuit is ConvexCurveContext {
         assertERC20Tracking();
 
         assertEq(rsTan.totalSupplyRsTan(), amount);
-        assertEq(rsTan.amountDecrFromTotal(endLockTime), 0);
         assertEq(rsTan.totalSupply(), 1);
 
         vm.expectRevert(abi.encodeWithSignature("ERC721NonexistentToken(uint256)", 2));
@@ -97,7 +96,6 @@ contract RageQuit is ConvexCurveContext {
         assertERC20Tracking();
 
         assertEq(rsTan.totalSupplyRsTan(), amount);
-        assertEq(rsTan.amountDecrFromTotal(endLockTime), 0);
 
         rsTan.rageQuit(1);
 
@@ -107,7 +105,6 @@ contract RageQuit is ConvexCurveContext {
 
         for (uint256 index; index < 16; index++) {
             skip(1 weeks);
-            rsTan.checkpoint();
         }
     }
 

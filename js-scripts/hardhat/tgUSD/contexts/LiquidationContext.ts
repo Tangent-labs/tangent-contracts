@@ -20,8 +20,7 @@ export type LiquidationMarketInfo = {
     collateralUSDPrice: bigint;
     oracleDecimals: bigint;
 };
-export type LiquidationUserInInfo =   {account: string; market: string}
-
+export type LiquidationUserInInfo = {account: string; market: string};
 
 export type LiquidationAccountInfo = {
     healthRatio: bigint;
@@ -127,7 +126,6 @@ export class LiquidationContext {
     }
 
     async testChainView() {
-  
         // just to test the accounts chain view execution
         const params = this.marketAddresses
             .map((marketAddress) =>
@@ -141,9 +139,11 @@ export class LiquidationContext {
             .flat();
 
         // test the full chain view
-        const userAccountsData = await chainView<[string[], LiquidationUserInInfo[]],[LiquidationMarketAccountInfo]>(chainViewMarketAccountArtifact.abi, chainViewMarketAccountArtifact.bytecode, [
-            this.marketAddresses, params
-        ]);
+        const userAccountsData = await chainView<[string[], LiquidationUserInInfo[]], [LiquidationMarketAccountInfo]>(
+            chainViewMarketAccountArtifact.abi,
+            chainViewMarketAccountArtifact.bytecode,
+            [this.marketAddresses, params]
+        );
 
         const firstAccount = userAccountsData?.at(0)?.accounts?.at(0);
         const firstmarket = userAccountsData?.at(0)?.markets?.at(0);

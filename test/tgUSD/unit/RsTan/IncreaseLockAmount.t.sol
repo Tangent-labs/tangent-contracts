@@ -16,11 +16,10 @@ contract IncreaseLockAmount is ConvexCurveContext {
 
         rsTan.createLock(amount0, true, address(0));
 
-        (uint256 endLockTime0, uint256 amountLocked0) = rsTan.locks(1);
+        (uint256 endLockTime0, ) = rsTan.locks(1);
 
         verifyReceiveERC20(tan, address(rsTan), amount1);
         verifyLostERC20(tan, usr1, amount1);
-
         rsTan.increaseLockAmount(1, amount1, address(0));
 
         assertERC20Tracking();
@@ -41,7 +40,7 @@ contract IncreaseLockAmount is ConvexCurveContext {
 
         rsTan.createLock(amount0, false, address(0));
         uint48 endLockTime = rsTan.nextEndLockTime();
-        (uint256 endLockTime0, uint256 amountLocked0) = rsTan.locks(1);
+        (uint256 endLockTime0, ) = rsTan.locks(1);
 
         verifyReceiveERC20(tan, address(rsTan), amount1);
         verifyLostERC20(tan, usr1, amount1);
@@ -56,7 +55,6 @@ contract IncreaseLockAmount is ConvexCurveContext {
         assertEq(endLockTime0, endLockTime);
 
         assertEq(amountLocked1, fullAmount);
-        assertEq(rsTan.amountDecrFromTotal(endLockTime), fullAmount);
         assertEq(rsTan.totalSupplyRsTan(), fullAmount);
     }
 
@@ -74,10 +72,6 @@ contract IncreaseLockAmount is ConvexCurveContext {
 
         skip(6 weeks);
 
-        rsTan.checkpoint();
-
-        assertEq(rsTan.nextCheckpoint(), ((block.timestamp + 1 weeks) / 1 weeks) * 1 weeks);
-
         verifyReceiveERC20(tan, address(rsTan), amount1);
         verifyLostERC20(tan, usr1, amount1);
 
@@ -93,17 +87,12 @@ contract IncreaseLockAmount is ConvexCurveContext {
         assertEq(endLockTime1, endLockTime0 + 12 weeks);
 
         assertEq(amountLocked1, fullAmount, "Amount locked on the token is right");
-        assertEq(rsTan.amountDecrFromTotal(endLockTime0), 0, "Amount to decrement from total supply on oldLockTime is decreased after the extend");
-        assertEq(rsTan.amountDecrFromTotal(endLockTime1), fullAmount, "Amount to decrement from total Supply on newLockTime is increased after the extend");
 
         assertEq(rsTan.totalSupplyRsTan(), fullAmount + amount0, "Total Supply increased properly");
 
         skip(7 weeks);
 
-        rsTan.checkpoint();
-
         assertEq(rsTan.totalSupplyRsTan(), fullAmount);
-        assertEq(rsTan.nextCheckpoint(), ((block.timestamp + 1 weeks) / 1 weeks) * 1 weeks, "Last checkpoint correct");
 
         verifyReceiveERC20(tan, usr1, amount0);
         verifyLostERC20(tan, address(rsTan), amount0);
@@ -112,7 +101,6 @@ contract IncreaseLockAmount is ConvexCurveContext {
 
         assertEq(rsTan.totalSupplyRsTan(), fullAmount);
         skip(6 weeks);
-        rsTan.checkpoint();
         assertEq(rsTan.totalSupplyRsTan(), 0, "Total supply is now 0");
     }
 

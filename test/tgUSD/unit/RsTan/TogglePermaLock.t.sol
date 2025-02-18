@@ -19,24 +19,21 @@ contract TogglePermaLock is ConvexCurveContext {
     function test_togglePermaLock_from_false_to_true() external {
         vm.startPrank(usr1);
         uint256 oldEndLockTimeExpected = rsTan.nextEndLockTime();
-        (uint48 oldEndLockTime, uint208 amountBefore) = rsTan.locks(2);
+        (uint48 oldEndLockTime, ) = rsTan.locks(2);
         assertEq(oldEndLockTimeExpected, oldEndLockTime);
-        assertEq(rsTan.amountDecrFromTotal(oldEndLockTime), amount, "Only one is for now not permalocked");
 
         rsTan.togglePermaLock(2);
 
         (uint48 newEndLockTime, uint208 amountAfter) = rsTan.locks(2);
         assertEq(rsTan.MAX_UINT48(), newEndLockTime, "Permalocked");
         assertEq(amountAfter, amount);
-        assertEq(rsTan.amountDecrFromTotal(oldEndLockTime), 0, "There is nothing more to remove at the oldEndLock time because both positions are permalocked");
     }
 
     function test_togglePermaLock_from_true_to_false() external {
         vm.startPrank(usr1);
         uint256 nextEndLockTime = rsTan.nextEndLockTime();
-        (uint48 oldEndLockTime, uint208 amountBefore) = rsTan.locks(1);
+        (uint48 oldEndLockTime, ) = rsTan.locks(1);
         assertEq(oldEndLockTime, rsTan.MAX_UINT48());
-        assertEq(rsTan.amountDecrFromTotal(nextEndLockTime), amount, "Only one positions expires");
 
         rsTan.togglePermaLock(1);
 
@@ -44,8 +41,6 @@ contract TogglePermaLock is ConvexCurveContext {
 
         assertEq(nextEndLockTime, newEndLockTime, "Not Permalocked anymore");
         assertEq(amountAfter, amount);
-
-        assertEq(rsTan.amountDecrFromTotal(nextEndLockTime), 2 * amount, "Both positions are ending at the same moment");
     }
 
     function test_togglePermaLock_to_true_fails_bcs_lock_over() external {

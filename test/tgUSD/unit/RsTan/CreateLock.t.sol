@@ -26,7 +26,6 @@ contract CreateLock is ConvexCurveContext {
         (uint256 endLockTime, uint256 lockAmount) = rsTan.locks(1);
         assertEq(endLockTime, rsTan.MAX_UINT48());
         assertEq(lockAmount, amount1);
-        assertEq(rsTan.amountDecrFromTotal(endLockTime), 0);
 
         vm.stopPrank();
 
@@ -54,7 +53,6 @@ contract CreateLock is ConvexCurveContext {
         (endLockTime, lockAmount) = rsTan.locks(2);
         assertEq(endLockTime, expectedEndTime);
         assertEq(lockAmount, amount2);
-        assertEq(rsTan.amountDecrFromTotal(endLockTime), amount2);
 
         vm.stopPrank();
 
@@ -79,8 +77,6 @@ contract CreateLock is ConvexCurveContext {
         (endLockTime, lockAmount) = rsTan.locks(3);
         assertEq(endLockTime, expectedEndTime);
         assertEq(lockAmount, amount2);
-        assertEq(rsTan.amountDecrFromTotal(endLockTime), 2 * amount2);
-        assertEq(rsTan.nextCheckpoint(), nextWeekTimestamp);
     }
 
     function test_fails_to_create_lock() external {

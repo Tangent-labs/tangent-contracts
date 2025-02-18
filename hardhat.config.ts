@@ -6,7 +6,7 @@ import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomiclabs/hardhat-vyper";
 import {EndpointId} from "@layerzerolabs/lz-definitions";
 
-const forkBlock = 21771693;
+const forkBlock = 21872419;
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",

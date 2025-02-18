@@ -31,9 +31,6 @@ contract IncreaseLockTime is ConvexCurveContext {
 
         assertEq(oldEndLockTime + 1 weeks, newEndLockTime, "After time is increased");
         assertEq(amountAfter, amount);
-
-        assertEq(rsTan.amountDecrFromTotal(oldEndLockTime), 0);
-        assertEq(rsTan.amountDecrFromTotal(newEndLockTime), 1 ether);
     }
 
     function test_increase_time_position_not_owned() external {

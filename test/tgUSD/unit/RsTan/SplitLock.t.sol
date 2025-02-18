@@ -40,21 +40,13 @@ contract SplitLock is ConvexCurveContext {
         vm.startPrank(usr1);
         uint208 removedAmount = amount0 / 4;
 
-        uint256 nextCheckpointExpected = 1 weeks + (block.timestamp / 1 weeks) * 1 weeks;
-
-        assertEq(rsTan.nextCheckpoint(), nextCheckpointExpected);
-
         skip(1 weeks);
 
         rsTan.split(2, removedAmount);
 
-        // Verify that checkpoint is working
-        assertEq(rsTan.nextCheckpoint(), nextCheckpointExpected + 1 weeks);
-
         (uint48 endLock1, uint208 amount1After) = rsTan.locks(2);
         (uint48 endLock3, uint208 amount3) = rsTan.locks(3);
         assertEq(endLock1, endLock3);
-        assertEq(endLock1, rsTan.nextEndLockTime() - 1 weeks);
 
         assertEq(amount1After, amount1 - removedAmount);
         assertEq(amount3, removedAmount);

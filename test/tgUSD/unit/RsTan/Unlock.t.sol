@@ -25,10 +25,8 @@ contract Unlock is ConvexCurveContext {
         skip(12 weeks);
         assertEq(rsTan.totalSupply(), 2);
         assertEq(rsTan.totalSupplyRsTan(), 2 * amount);
-        rsTan.checkpoint();
         assertEq(rsTan.totalSupplyRsTan(), 2 * amount);
         skip(1 weeks);
-        rsTan.checkpoint();
 
         verifyLostERC20(tan, address(rsTan), amount, "Tan are unlocked and sent back to user from the rsTan");
         verifyReceiveERC20(tan, usr1, amount, "Tan received by user");
