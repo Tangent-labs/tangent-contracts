@@ -27,13 +27,13 @@ abstract contract Rewards is Collateral {
     /// @notice List of reward tokens
     IERC20[] public rewardTokens;
 
-    /// @dev Reward data associated to a reward token
+    /// @notice Reward data associated to a reward token
     mapping(IERC20 => Reward) public rewardData; // token => reward data
 
-    /// @dev Reward amount already sent to an user for a reward token
+    /// @notice Reward amount already claimed to an user for a reward token
     mapping(address => mapping(IERC20 => uint256)) public userRewardPerTokenPaid; // user => reward token => amount
 
-    /// @dev Reward amount for a reward token for a user
+    /// @notice Reward amount for a reward token for a user
     mapping(address => mapping(IERC20 => uint256)) public rewards; // user => reward token => amount
 
     event RewardNotified(IERC20 indexed _token, uint256 _reward);
@@ -132,24 +132,16 @@ abstract contract Rewards is Collateral {
      */
     function _updateReward(address _account) internal {
         uint256 userBal = collateralBalances[_account];
-
         uint256 rewardLength = rewardTokens.length;
-        console.log("RewardsUpdate for ", _account);
         for (uint256 i; i < rewardLength; ) {
             IERC20 token = rewardTokens[i];
 
-            console.log("Global Before", rewardData[token].rewardPerTokenStored, rewardData[token].lastUpdateTime);
             rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
             rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
-            console.log("Global After", rewardData[token].rewardPerTokenStored, rewardData[token].lastUpdateTime);
 
             if (_account != address(0)) {
-                console.log("User Before", rewards[_account][token], userRewardPerTokenPaid[_account][token]);
-
                 rewards[_account][token] = _earned(_account, token, userBal);
                 userRewardPerTokenPaid[_account][token] = rewardData[token].rewardPerTokenStored;
-
-                console.log("User After", rewards[_account][token], userRewardPerTokenPaid[_account][token]);
             }
 
             unchecked {
@@ -184,15 +176,11 @@ abstract contract Rewards is Collateral {
         for (uint256 tokenIndex; tokenIndex < rewardTokensLength; ) {
             IERC20 rewardToken = _rewardTokens[tokenIndex];
             uint256 rewardToProcess = rewardToken.balanceOf(address(this));
-
-            console.log("RewardToProcess", rewardToProcess);
-
             if (rewardToProcess != 0) {
                 isSomeRewardToProcess = true;
 
                 // Calculate and sends harvester fees
                 uint256 harvesterFees = (rewardToProcess * _harvesterFeePercetage) / DENOMINATOR;
-                console.log("harvesterFees", harvesterFees);
 
                 if (harvesterFees != 0) {
                     rewardToken.safeTransfer(harvestFeeReceiver, harvesterFees);

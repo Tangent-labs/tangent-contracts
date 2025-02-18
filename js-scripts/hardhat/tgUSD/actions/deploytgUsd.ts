@@ -1,35 +1,29 @@
-import {curveLp} from "convergence-defi-tools";
+import {curveLp} from "defi-resources";
 import {parseUnits, parseEther} from "ethers";
 import {BaseContext} from "../contexts/BaseContext";
 import {MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys} from "../contexts/MarketContext";
 import {OracleContext} from "../contexts/OracleContext";
+import {LpDeployContext} from "../contexts/LPDeployContext";
 
 export async function deploytgUsd(userCount: number = 5) {
     const baseContext = new BaseContext(userCount);
     const oracleContext = new OracleContext();
     const marketContext = new MarketContext();
+    const lpDeployContext = new LpDeployContext();
+
     await baseContext.setupTestUsers();
     // Deploy all base contracts
     await baseContext.deployContracts1();
     // Give ERC20 to users
     await baseContext.setUpERC20();
     // Create tgUSD LP
-    await baseContext.deployStableLP(
-        "tgUSD-USDC",
-        [baseContext.coins.usdc, baseContext.tgUSD],
-        [parseUnits("1000000", 6), parseEther("1000000")],
-        "5000",
-        "100000000",
-        "0",
-        "866",
-        "0"
-    );
+    await lpDeployContext.deployAllTgUSDLps(baseContext);
 
     // Setup and create all oracles
-    await oracleContext.deployAndSetupOracles(baseContext.stableLp);
+    await oracleContext.deployAndSetupOracles(baseContext, lpDeployContext);
 
     // Deploy other contracts that needed oracles and LP
-    await baseContext.deployContracts2(oracleContext.oracles["tgUSD"]);
+    await baseContext.deployContracts2(oracleContext.tgUSDOracle, lpDeployContext);
 
     // Define markets to deploy
     const convexCrvMarkets: ConvexCrvMarketKeys[] = ["crvUSD_USDC", "crvUSD_USDT"];
@@ -39,8 +33,8 @@ export async function deploytgUsd(userCount: number = 5) {
     // Deploy Convex FXN markets
     await marketContext.deployConvexFxnMarkets(convexFxnMarkets, baseContext, oracleContext);
     // Approve LPs with test users
-    await baseContext.approveCurveLP(await baseContext.stableLp["tgUSD-USDC"].getAddress());
+    await baseContext.approveCurveLP(await lpDeployContext.stableLp["tgUSD-USDC"].getAddress());
     await baseContext.approveCurveLP(curveLp.crvUSD_USDC);
 
-    return {baseContext, oracleContext, marketContext};
+    return {baseContext, oracleContext, marketContext, lpDeployContext};
 }

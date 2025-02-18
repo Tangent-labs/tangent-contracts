@@ -29,10 +29,21 @@ jobs:
         run: |
           forge install
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10" # Ensure Python is installed
+
+      - name: Install Vyper
+        run: |
+          pip install vyper==0.3.10
+          echo "Vyper version:"
+          vyper --version
+
       - name: Run Forge build
         run: |
           forge --version
-          forge build --sizes
+          forge build
         id: build
 
       - name: Run Forge tests

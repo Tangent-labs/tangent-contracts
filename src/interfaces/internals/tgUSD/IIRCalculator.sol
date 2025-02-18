@@ -22,7 +22,7 @@ struct RCParams {
 interface IIRCalculator {
     function setUpMarketRewards(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external;
     function simulateIR(uint256 tgUSDPrice, uint256 irStartPrice, uint256 sigma, uint256 r0) external view returns (uint256);
-    function computeIRForMarket(address market) external view returns (uint256);
+    function computeIRForMarket(address market) external returns (uint256);
     function simulateRC(
         uint256 tgUSDPrice,
         uint16 stepAmount,
@@ -31,5 +31,5 @@ interface IIRCalculator {
         uint88 startCutPrice,
         uint88 endCutPrice
     ) external pure returns (uint256);
-    function computeRCForMarket(address market) external view returns (uint256);
+    function computeRCForMarket(address market) external returns (uint256);
 }

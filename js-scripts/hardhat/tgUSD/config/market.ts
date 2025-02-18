@@ -1,4 +1,4 @@
-import {commonERC20, convexCrv, convexFxn, curveLp} from "convergence-defi-tools";
+import {commonERC20, convexCrv, convexFxn, curveLp} from "defi-resources";
 import {parseEther} from "ethers";
 
 export const STATIC_CONFIG_CONVEX_CURVE = {

@@ -4,19 +4,12 @@ pragma solidity ^0.8.0;
 import {MintAndSwapWStable, CurveRouterSwap} from "../../src/interfaces/internals/tgUSD/ICurveLPLiquidator.sol";
 
 contract Encoder {
-    function encodeLiquidateCallForCurveLP(
-        CurveRouterSwap calldata curveRouterSwap,
-        MintAndSwapWStable calldata mintAndSwapWStable,
-        uint256 debtToCover
-    ) public pure returns (bytes memory) {
+    function encodeLiquidateCallForCurveLP(CurveRouterSwap calldata curveRouterSwap, MintAndSwapWStable calldata mintAndSwapWStable) public pure returns (bytes memory) {
         return
             abi.encodeWithSelector(
-                bytes4(
-                    keccak256("liquidateLP((address[11],uint256[5][5],uint256,uint256,address[5],address),(address,address,address,address,int128,int128,uint256,uint256),uint256)")
-                ),
+                bytes4(keccak256("liquidateLP((address[11],uint256[5][5],uint256,uint256,address[5],address),(address,address,address,address,int128,int128,uint256,uint256))")),
                 curveRouterSwap,
-                mintAndSwapWStable,
-                debtToCover
+                mintAndSwapWStable
             );
     }
 

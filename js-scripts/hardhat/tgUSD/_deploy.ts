@@ -5,11 +5,12 @@ import * as fs from "fs";
 
 import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "./config/market";
 import {deploytgUsd} from "./actions/deploytgUsd";
+import {LpDeployContext} from "./contexts/LPDeployContext";
 
 async function main() {
-    const {baseContext, marketContext, oracleContext} = await deploytgUsd();
+    const {baseContext, marketContext, oracleContext, lpDeployContext} = await deploytgUsd();
 
-    fs.writeFileSync("./addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext), null, 2));
+    fs.writeFileSync("./addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext, lpDeployContext)));
     console.info("\x1b[32m%s\x1b[0m", "Contracts deployed and setup !");
 }
 
@@ -20,7 +21,7 @@ type Market = {
     marketType: string;
 };
 
-async function createJSONAddress(baseContext: BaseContext, marketContext: MarketContext, oracleContext: OracleContext) {
+async function createJSONAddress(baseContext: BaseContext, marketContext: MarketContext, oracleContext: OracleContext, lpDeployContext: LpDeployContext) {
     const markets: Market[] = [];
     for (const key in marketContext.convexCrvMarkets) {
         const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys];
@@ -51,11 +52,19 @@ async function createJSONAddress(baseContext: BaseContext, marketContext: Market
         oracles[prop] = oracle;
     }
 
+    let lps: {[key: string]: string} = {};
+    for (const prop in lpDeployContext.stableLp) {
+        const lp = await lpDeployContext.stableLp[prop].getAddress();
+        lps[prop] = lp;
+    }
+
+    oracles["tgUSD"] = await oracleContext.tgUSDOracle.getAddress();
     return {
         utilities: {
             controlTower: await baseContext.controlTower.getAddress(),
             rewardAccumulator: await baseContext.rewardAccumulator.getAddress(),
             zapper: await baseContext.zapper.getAddress(),
+            marketCreator: await baseContext.marketCreator.getAddress(),
         },
         tokens: {
             tgUSD: await baseContext.tgUSD.getAddress(),
@@ -63,9 +72,7 @@ async function createJSONAddress(baseContext: BaseContext, marketContext: Market
         },
         markets,
         oracles,
-        lps: {
-            tgUSD_USDC_LP: await baseContext.stableLp["tgUSD-USDC"].getAddress(),
-        },
+        lps,
     };
 }
 

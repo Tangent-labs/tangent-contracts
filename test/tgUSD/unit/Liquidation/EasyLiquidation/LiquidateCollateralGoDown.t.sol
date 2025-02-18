@@ -29,7 +29,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
 
         hDeposit = new HDepositConvexFxnLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
-        hLpManipulator = new HLpManipulator(usr1, market);
+        hLpManipulator = new HLpManipulator(usr1);
 
         hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, true, address(0));
 

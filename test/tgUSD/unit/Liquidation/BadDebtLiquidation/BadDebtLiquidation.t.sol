@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../contexts/ConvexCurveContext.sol";
-import "../../../../../src/tgUSD/Market/Abstract/DebtIR.sol";
+import "../../../../../src/tgUSD/Market/abstract/DebtIR.sol";
 import "../../../../utils/ERC20BalanceChanges.sol";
 
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
@@ -21,16 +21,16 @@ contract BadDebtLiquidation is ConvexCurveContext {
     ERC20BalanceChanges public balanceChanges;
 
     uint256 collatDeposited = 6 ether;
-    uint256 tgUSDBorrowed = 15_000 ether;
+    uint256 tgUSDBorrowed = 13_000 ether;
+    uint256 badDebtToRepay = 7_000 ether;
 
-    IERC20[] rewardTokens;
     function setUp() public {
         collatToken = AddrCurveStableLP.FRXETH_WETH;
         market = deployConvexCurveLPMarket(collatToken);
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
-        hLpManipulator = new HLpManipulator(usr1, market);
+        hLpManipulator = new HLpManipulator(usr1);
 
         hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, true, address(0));
     }
@@ -86,8 +86,6 @@ contract BadDebtLiquidation is ConvexCurveContext {
 
         hDeposit.depositAndBorrow(10 ether, tgUSDBorrowed, true, address(0));
 
-        uint256 badDebtToRepay = 10_000 ether;
-
         verifyLostERC20(tgUSD, usr2, badDebtToRepay, "Verify that the usr2 loose the tgUSD");
         verifyBurnERC20(tgUSD, badDebtToRepay, "Verify that the supply of tgUSD is reduced");
         vm.prank(usr2);
@@ -96,8 +94,10 @@ contract BadDebtLiquidation is ConvexCurveContext {
 
         assertEq(market.badDebt(), tgUSDBorrowed - badDebtToRepay, "Check that bad debt has been reduced");
 
+        vm.startPrank(usr2);
         vm.expectRevert(abi.encodeWithSelector(DebtIR.RepayMoreThanBadDebt.selector));
         market.repayBadDebt(badDebtToRepay);
+        vm.stopPrank();
 
         uint256 remainingDebt = market.badDebt();
         verifyLostERC20(tgUSD, usr2, remainingDebt, "Verify that the usr2 loose the tgUSD");

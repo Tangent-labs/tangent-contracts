@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {ICommonStruct} from "../interfaces/internals/ICommonStruct.sol";
 
-contract ERC20Infos {
+abstract contract ERC20Infos {
     struct ERC20AmountInfos {
         IERC20Metadata token;
         uint256 amount;

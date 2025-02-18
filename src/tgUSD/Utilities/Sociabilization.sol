@@ -3,7 +3,10 @@ pragma solidity ^0.8.22;
 
 import "./LightOwnable.sol";
 abstract contract Sociabilization is LightOwnable {
+    /// @notice Percentage of the sociabilization fee in base 100_000.
     uint256 public socFeePercentage;
+
+    /// @notice Pending sociabilization fee to be claimed by the next staker.
     uint256 public socFeePending;
 
     error ZeroAmountDepositedAfterSociabilization();
@@ -11,10 +14,11 @@ abstract contract Sociabilization is LightOwnable {
 
     /**
      * @notice Computes deposited amount regarding isStake status.
-     *         Allows users
+     *         Increments or decrements the pending sociabilization fee.
      * @param amountDeposited New sociabilization fee on a 100_000 basis
-     * @param isStake         New sociabilization fee on a 100_000 basis
-     * @param denominator     New sociabilization fee on a 100_000 basis
+     * @param isStake         If true, the whole amount of collateral owned by the market is staked in the underlying protocol and the pending fee is taken by caller.
+     *                        Else, the caller is charged a fee and the pending fee is incremented.
+     * @param denominator    Percentage basis.
      */
     function _sociabilizationProcess(uint256 amountDeposited, bool isStake, uint256 denominator) internal returns (uint256) {
         if (isStake) {

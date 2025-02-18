@@ -23,8 +23,6 @@ export async function giveTokensToAddresses(users: Signer[], tokensAmounts: Toke
                 storageSlot = GlobalHelper.calculateStorageSlotEthersSolidity(userAddress, tokenAmount.slotBalance);
             }
             await setStorageAt(tokenAmount.address, storageSlot, parseUnits(tokenAmount.amount.toString(), tokenAmount.decimals));
-            // const erc20 = await ethers.getContractAt("ERC20", tokenAmount.address);
-            // console.log("balance", await erc20.balanceOf(userAddress));
         }
     }
 }

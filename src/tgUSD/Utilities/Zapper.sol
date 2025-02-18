@@ -10,6 +10,8 @@ import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {IZapper} from "../../interfaces/internals/tgUSD/IZapper.sol";
+
+import {IRsTan} from "../../interfaces/internals/tgUSD/IRsTan.sol";
 import "forge-std/console.sol";
 
 contract Zapper is Ownable, IZapper {
@@ -26,6 +28,10 @@ contract Zapper is Ownable, IZapper {
 
     /// @notice Control Tower
     IControlTower public controlTower;
+
+    IERC20 public tan;
+
+    IRsTan public rsTan;
 
     error RouterCallError();
     error MinAmountOutNotReached();
@@ -100,6 +106,16 @@ contract Zapper is Ownable, IZapper {
         return _zapRouterAndVerify(collatToken, msg.sender, minCollatReceived, routerCall);
     }
 
+    function zapCreateLock(IERC20 tokenIn, uint256 amountIn, uint256 minTanReceived, bool isPermaLock, bytes calldata routerCall) external {
+        _transferTokenToZapper(tokenIn, amountIn);
+        rsTan.createLock(uint208(_zapRouterAndVerify(tan, address(rsTan), minTanReceived, routerCall)), isPermaLock, msg.sender);
+    }
+
+    function zapIncreaseLock(IERC20 tokenIn, uint256 amountIn, uint256 minTanReceived, uint256 tokenId, bytes calldata routerCall) external {
+        _transferTokenToZapper(tokenIn, amountIn);
+        rsTan.increaseLockAmount(tokenId, uint208(_zapRouterAndVerify(tan, address(rsTan), minTanReceived, routerCall)), msg.sender);
+    }
+
     /**
      *  @notice Transfer tokens to the Zapper and Swap them through router against Collateral of the Market.
      *  @dev    Receiver of the collateral ise th market
@@ -167,5 +183,13 @@ contract Zapper is Ownable, IZapper {
         require(amountOut >= minAmountOut, MinAmountOutNotReached());
         // Return the amount of token Out received
         return amountOut;
+    }
+
+    function setTan(IERC20 _tan) external onlyOwner {
+        tan = _tan;
+    }
+
+    function setRsTan(IRsTan _rsTan) external onlyOwner {
+        rsTan = _rsTan;
     }
 }

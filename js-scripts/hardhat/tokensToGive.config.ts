@@ -1,4 +1,4 @@
-import {thiefConfig} from "convergence-defi-tools";
+import {thiefConfig} from "defi-resources";
 
 export function TOKENS_TO_GIVE(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;
@@ -14,6 +14,14 @@ export function TOKENS_TO_GIVE(mintedAmount: number) {
         },
         {
             ...obj.crvUSD,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.frxUSD,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.USR,
             amount: mintedAmount,
         },
         {

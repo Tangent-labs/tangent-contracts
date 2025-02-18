@@ -1,4 +1,4 @@
-import {thiefConfig} from "convergence-defi-tools";
+import {thiefConfig} from "defi-resources";
 import {giveTokensToAddresses} from "../thief";
 import {BoosterSetup} from "./Booster.setup";
 import {ethers} from "hardhat";

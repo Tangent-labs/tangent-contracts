@@ -70,6 +70,7 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
 
         collatToken.transfer(to, lpToWithdraw);
     }
+
     /**
      * @notice Claim and process the governance rewards
      * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
@@ -79,5 +80,12 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
         // Claim rewards on behalf
         cvxRewardToken.getReward();
         _processRewards(harvestFeeReceiver);
+    }
+
+    function stakeAll(address receiver) external {
+        // Claim rewards on behalf
+        IERC20 _collatToken = collatToken;
+        _collatToken.transfer(receiver, socFeePending);
+        CVX_BOOSTER.deposit(pid, _collatToken.balanceOf(address(this)), true);
     }
 }

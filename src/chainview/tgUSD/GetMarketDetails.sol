@@ -9,6 +9,7 @@ import {IRewards} from "../../interfaces/internals/tgUSD/IRewards.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
+import {ISociabilization} from "../../interfaces/internals/tgUSD/ISociabilization.sol";
 
 contract GetMarketDetails is BalancesAllowances, ERC20Infos {
     struct CollateralInfos {
@@ -36,16 +37,21 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         uint256 minimumLoan;
         uint256 liquidationThreshold;
     }
+    struct Sociabilization {
+        uint256 socFeePercentage;
+        uint256 socFeePending;
+    }
     struct MarketRow {
         address marketAddress;
         CollateralInfos collateralInfos;
         DebtInfos debtInfos;
         MarketConstants constants;
+        Sociabilization sociabilization;
         BalancesAllowances.OutputBalanceAllowances[] obas;
         ERC20Infos.ERC20StaticInfos[] rewardTokens;
     }
 
-    function getMarketDetails(address account, address market) public view returns (MarketRow memory) {
+    function getMarketDetails(address account, address market) public returns (MarketRow memory) {
         ICollateral marketCollateral = ICollateral(market);
         IPriceOracle priceOracle = marketCollateral.collatOracle();
         IDebtIR marketDebt = IDebtIR(market);
@@ -63,6 +69,15 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
 
         address _account = account;
         address _market = market;
+
+        Sociabilization memory soc;
+
+        try ISociabilization(_market).socFeePercentage() {
+            ISociabilization sociabilization = ISociabilization(_market);
+            soc = Sociabilization({socFeePercentage: sociabilization.socFeePercentage(), socFeePending: sociabilization.socFeePending()});
+        } catch {
+            soc = Sociabilization({socFeePercentage: 0, socFeePending: 0});
+        }
 
         return
             MarketRow({
@@ -91,6 +106,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                     minimumLoan: marketDebt.minimumLoan(),
                     liquidationThreshold: marketCollateral.liquidationThreshold()
                 }),
+                sociabilization: soc,
                 obas: getBalancesAllowances(_account, ibas),
                 rewardTokens: getERC20StaticInfos(IRewards(_market).getRewardTokens())
             });
