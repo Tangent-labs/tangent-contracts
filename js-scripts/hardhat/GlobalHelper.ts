@@ -47,6 +47,20 @@ export class GlobalHelper {
         return hash;
     };
 
+    static calculateERC20OZUpgradeable = (addressKey: string) => {
+        // The storage slot for _balances is the ERC20StorageLocation.
+        // Note: Use the same constant from the contract:
+        const ERC20StorageLocation = "0x52c63247e1f47db19d5ce0460030c497f067ca4cebf71ba98eeadabe20bace00";
+        const abiCoder = new ethers.AbiCoder();
+        const encoded = abiCoder.encode(["address", "uint256"], [addressKey, ERC20StorageLocation]);
+        const index = ethers.keccak256(encoded);
+
+        // Compute the slot for account's balance:
+        // keccak256(abi.encode(key, slot))
+        // const hash = ethers.keccak256(abiCoder.encode(["address", "uint256"], [addressKey, ERC20StorageLocation]));
+        return index;
+    };
+
     static calculateStorageSlotEthersVyper = (addressKey: string, mappingSlot: number) => {
         const paddedSlot = ethers.zeroPadValue(ethers.toBeHex(mappingSlot), 32);
         const paddedAddress = ethers.zeroPadValue(addressKey, 32);

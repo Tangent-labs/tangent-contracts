@@ -2,6 +2,7 @@ import {ethers} from "hardhat";
 import {IERC20Metadata, IAggregatorStablePriceV3, ICurveStableSwapNG, IPriceOracle} from "../../../../typechain-types";
 import {BaseContext} from "./BaseContext";
 import {BigNumberish, MaxUint256, parseEther, parseUnits, ZeroAddress} from "ethers";
+import {WStablesContext} from "./WStableContext";
 
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;
@@ -10,14 +11,17 @@ export type StableLP = {
 export class LpDeployContext {
     stableLp: StableLP = {};
 
-    async deployAllTgUSDLps(baseContext: BaseContext) {
+    async deployAllTgUSDLps(baseContext: BaseContext, wStableContext: WStablesContext) {
+        const amount = 25_000;
         const tgUSD_USDC = "tgUSD-USDC";
+        const tgUSDC = "tgUSDC";
+
         this.stableLp[tgUSD_USDC] = await this.deployStableLP(
             baseContext,
             tgUSD_USDC,
-            "tgUSDC",
+            tgUSDC,
             [baseContext.coins.USDC, baseContext.tgUSD],
-            [1_000_000, 1_000_000],
+            [amount, amount],
             "5000",
             "100000000",
             "0",
@@ -25,13 +29,74 @@ export class LpDeployContext {
             "0"
         );
 
-        const tgUSD_frxUSD = "tgUSD-frxUSD";
-        this.stableLp[tgUSD_frxUSD] = await this.deployStableLP(
+        const tgUSD_wfrxUSD = "tgUSD-wfrxUSD";
+        const tgFrxUSD = "tgFrxUSD";
+        this.stableLp[tgUSD_wfrxUSD] = await this.deployStableLP(
             baseContext,
-            tgUSD_frxUSD,
-            "tgFrxUSD",
-            [baseContext.coins.frxUSD, baseContext.tgUSD],
-            [1_000_000, 1_000_000],
+            tgUSD_wfrxUSD,
+            tgFrxUSD,
+            [wStableContext.wStable.wfrxUSD, baseContext.tgUSD],
+            [amount, amount],
+            "5000",
+            "100000000",
+            "0",
+            "866",
+            "0"
+        );
+
+        const tgUSD_wcrvUSD = "tgUSD-wcrvUSD";
+        const tgCrvUSD = "tgCrvUSD";
+        this.stableLp[tgUSD_wcrvUSD] = await this.deployStableLP(
+            baseContext,
+            tgUSD_wcrvUSD,
+            tgCrvUSD,
+            [wStableContext.wStable.wcrvUSD, baseContext.tgUSD],
+            [amount, amount],
+            "5000",
+            "100000000",
+            "0",
+            "866",
+            "0"
+        );
+
+        const tgUSD_wUSDe = "tgUSD-wUSDe";
+        const tgUSDe = "tgUSDe";
+        this.stableLp[tgUSD_wUSDe] = await this.deployStableLP(
+            baseContext,
+            tgUSD_wUSDe,
+            tgUSDe,
+            [wStableContext.wStable.wUSDe, baseContext.tgUSD],
+            [amount, amount],
+            "5000",
+            "100000000",
+            "0",
+            "866",
+            "0"
+        );
+
+        const tgUSD_wDOLA = "tgUSD-wDOLA";
+        const tgDOLA = "tgDOLA";
+        this.stableLp[tgUSD_wDOLA] = await this.deployStableLP(
+            baseContext,
+            tgUSD_wDOLA,
+            tgDOLA,
+            [wStableContext.wStable.wDOLA, baseContext.tgUSD],
+            [amount, amount],
+            "5000",
+            "100000000",
+            "0",
+            "866",
+            "0"
+        );
+
+        const tgUSD_wUSR = "tgUSD-wUSR";
+        const tgUSR = "tgUSR";
+        this.stableLp[tgUSD_wUSR] = await this.deployStableLP(
+            baseContext,
+            tgUSD_wUSR,
+            tgUSR,
+            [wStableContext.wStable.wUSR, baseContext.tgUSD],
+            [amount, amount],
             "5000",
             "100000000",
             "0",

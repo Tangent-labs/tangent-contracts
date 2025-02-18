@@ -5,43 +5,50 @@ import "./OraclesContext.sol";
 
 contract TgStableContext is OraclesContext {
     uint256 socFeePercentage = 2_000;
-    TgStable public tgCrvUSD;
-    TgStable public tgDAI;
-    TgStable public tgFRAX;
-    TgStable public tgDOLA;
+    TgStable public wfrxUSD;
+    TgStable public wcrvUSD;
+    TgStable public wUSDE;
+    TgStable public wDOLA;
+    TgStable public wUSR;
     constructor() {
         vm.startPrank(owner);
+        // wfrxUSD
+        wfrxUSD = new TgStable("wfrxUSD", "wfrxUSD", controlTower, AddrClassicERC20.TOKEN_FRXUSD, AddrERC4626.S_FRXUSD, owner);
+        deal(address(AddrClassicERC20.TOKEN_FRXUSD), owner, 100_000 ether);
+        AddrClassicERC20.TOKEN_FRXUSD.approve(address(wfrxUSD), MAX_UINT);
+        wfrxUSD.mint(owner, 100_000 ether, false);
 
-        // tgCRVUSD
-        tgCrvUSD = new TgStable("tgCRVUSD", "tgCRVUSD", controlTower, AddrClassicERC20.TOKEN_CRVUSD, AddrERC4626.S_CRVUSD, owner, socFeePercentage);
+        // wcrvUSD
+        wcrvUSD = new TgStable("wcrvUSD", "wcrvUSD", controlTower, AddrClassicERC20.TOKEN_CRVUSD, AddrERC4626.S_CRVUSD, owner);
         deal(address(AddrClassicERC20.TOKEN_CRVUSD), owner, 100_000 ether);
-        AddrClassicERC20.TOKEN_CRVUSD.approve(address(tgCrvUSD), MAX_UINT);
-        tgCrvUSD.mint(owner, 100_000 ether, true);
+        AddrClassicERC20.TOKEN_CRVUSD.approve(address(wcrvUSD), MAX_UINT);
+        wcrvUSD.mint(owner, 100_000 ether, false);
 
-        // tgDAI
-        tgDAI = new TgStable("tgDAI", "tgDAI", controlTower, AddrClassicERC20.TOKEN_DAI, AddrERC4626.S_DAI, owner, socFeePercentage);
-        deal(address(AddrClassicERC20.TOKEN_DAI), owner, 100_000 ether);
-        AddrClassicERC20.TOKEN_DAI.approve(address(tgDAI), MAX_UINT);
-        tgDAI.mint(owner, 100_000 ether, true);
+        // wUSDE
+        wUSDE = new TgStable("wUSDE", "wUSDE", controlTower, AddrClassicERC20.TOKEN_USDE, AddrERC4626.S_USDE, owner);
+        deal(address(AddrClassicERC20.TOKEN_USDE), owner, 100_000 ether);
+        AddrClassicERC20.TOKEN_USDE.approve(address(wUSDE), MAX_UINT);
+        wUSDE.mint(owner, 100_000 ether, false);
 
-        // tgFRAX
-        tgFRAX = new TgStable("tgFRAX", "tgFRAX", controlTower, AddrClassicERC20.TOKEN_FRAX, AddrERC4626.S_FRAX, owner, socFeePercentage);
-        deal(address(AddrClassicERC20.TOKEN_FRAX), owner, 100_000 ether);
-        AddrClassicERC20.TOKEN_FRAX.approve(address(tgFRAX), MAX_UINT);
-        tgFRAX.mint(owner, 100_000 ether, true);
-
-        // tgDOLA
-        tgDOLA = new TgStable("tgDOLA", "tgDOLA", controlTower, AddrClassicERC20.TOKEN_DOLA, AddrERC4626.S_DOLA, owner, socFeePercentage);
+        // wDOLA
+        wDOLA = new TgStable("wDOLA", "wDOLA", controlTower, AddrClassicERC20.TOKEN_DOLA, AddrERC4626.S_DOLA, owner);
         deal(address(AddrClassicERC20.TOKEN_DOLA), owner, 100_000 ether);
-        AddrClassicERC20.TOKEN_DOLA.approve(address(tgDOLA), MAX_UINT);
-        tgDOLA.mint(owner, 100_000 ether, true);
+        AddrClassicERC20.TOKEN_DOLA.approve(address(wDOLA), MAX_UINT);
+        wDOLA.mint(owner, 100_000 ether, false);
 
+        // wUSR
+        wUSR = new TgStable("wUSR", "wUSR", controlTower, AddrClassicERC20.TOKEN_USR, AddrERC4626.WST_USR, owner);
+        deal(address(AddrClassicERC20.TOKEN_USR), owner, 100_000 ether);
+        AddrClassicERC20.TOKEN_USR.approve(address(wUSR), MAX_UINT);
+        wUSR.mint(owner, 100_000 ether, false);
         vm.stopPrank();
 
-        LpDeploymentContext.CreateTgUSDLpStruct[] memory params = new LpDeploymentContext.CreateTgUSDLpStruct[](3);
-        params[0] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: tgCrvUSD, name: "tgUSD-wCrvUSD", symbol: "tgCrvUSD", initialAmount: 5_000});
-        params[1] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: tgDOLA, name: "tgUSD-wDOLA", symbol: "tgDOLA", initialAmount: 5_000});
-        params[2] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: tgDAI, name: "tgUSD-wDAI", symbol: "tgDAI", initialAmount: 5_000});
+        LpDeploymentContext.CreateTgUSDLpStruct[] memory params = new LpDeploymentContext.CreateTgUSDLpStruct[](5);
+        params[0] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wfrxUSD, name: "tgUSD-wfrxUSD", symbol: "tgfrxUSD", initialAmount: 5_000});
+        params[1] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wcrvUSD, name: "tgUSD-wcrvUSD", symbol: "tgcrvUSD", initialAmount: 5_000});
+        params[2] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wUSDE, name: "tgUSD-wUSDE", symbol: "tgUSDE", initialAmount: 5_000});
+        params[3] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wDOLA, name: "tgUSD-wDOLA", symbol: "tgDOLA", initialAmount: 5_000});
+        params[4] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wUSR, name: "tgUSD-wUSR", symbol: "tgUSR", initialAmount: 5_000});
         lpDeploymentContext.createTgUSDLps(owner, params);
     }
 }

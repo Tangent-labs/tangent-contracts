@@ -22,11 +22,10 @@ contract PegKeeperTest is ConvexCurveContext {
         skip(2000);
 
         deal(address(tgUSD), address(pegKeeperTgUSD_USDC), 2_000_000 ether);
-        deal(address(tgUSD), address(pegKeeperTgUSD_USDT), 2_000_000 ether);
-
+        deal(address(tgUSD), address(pegKeeperTgUSD_frxUSD), 2_000_000 ether);
 
         pegKeeperTgUSD_USDC.update(owner);
-        pegKeeperTgUSD_USDT.update(owner);
+        pegKeeperTgUSD_frxUSD.update(owner);
 
         pegKeeperTgUSD_USDC.withdraw_profit();
     }

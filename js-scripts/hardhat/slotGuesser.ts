@@ -24,6 +24,8 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
             let storageSlot;
             if (token.isVyper) {
                 storageSlot = GlobalHelper.calculateStorageSlotEthersVyper(RANDOM_ADDRESS, k);
+            } else if (token.address === "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110") {
+                storageSlot = GlobalHelper.calculateERC20OZUpgradeable(RANDOM_ADDRESS);
             } else {
                 storageSlot = GlobalHelper.calculateStorageSlotEthersSolidity(RANDOM_ADDRESS, k);
             }
@@ -41,7 +43,7 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
     return result;
 }
 
-getSlot([THIEF_TOKEN_CONFIG.WETH_frxETH]).catch((error) => {
+getSlot([{address: "0x865377367054516e17014ccded1e7d814edc9ce4", isVyper: false}]).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

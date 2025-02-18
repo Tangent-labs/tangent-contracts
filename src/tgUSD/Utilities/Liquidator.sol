@@ -48,7 +48,7 @@ contract Liquidator {
             curveRouterSwap._receiver
         );
 
-        // In the case the best route passes through a wStable, we convert the associated stable ( ex : crvUSD => tgCrvUSD)
+        // In the case the best route passes through a wStable, we convert the associated stable ( ex : crvUSD => wcrvUSD)
         // And we swap the wStable for the tgUSD that is used for the liquidation.
         if (mintAndSwapWStable.wStable != address(0)) {
             ITgStable wStable = ITgStable(mintAndSwapWStable.wStable);
