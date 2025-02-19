@@ -70,7 +70,7 @@ contract wUSR is ConvexCurveContext {
         verifyLostERC20(wUSR, usr1, amountIn);
         verifyLostERC20(saving, address(wUSR), saving.previewWithdraw(amountIn));
 
-        vm.startSnapshotGas("wUSR", "Burn wUSR and receives USR");
+        vm.startSnapshotGas("wUSR", "Burn wUSR and receives wstUSR");
         wUSR.burn(usr1, amountIn, true);
         vm.stopSnapshotGas();
 
@@ -87,11 +87,8 @@ contract wUSR is ConvexCurveContext {
 
         uint256 pps = saving.previewDeposit(1e18);
 
+        // Simulate a reward distribution ( increase the index )
         stable.transfer(address(stUSR), amountToDistribute - amountIn);
-
-        // stable.approve(address(stUSR), MAX_UINT);
-        // // Increase the index of wstUSR
-        // address(stUSR).call(abi.encodeWithSelector(bytes4(keccak256("deposit(uint256,address)")), amountToDistribute - amountIn, address(saving)));
 
         skip(1 weeks);
 
