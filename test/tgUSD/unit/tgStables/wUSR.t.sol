@@ -5,93 +5,115 @@ import "../../contexts/ConvexCurveContext.sol";
 contract wUSR is ConvexCurveContext {
     IERC20 stable = AddrClassicERC20.TOKEN_USR;
     IERC4626 saving = AddrERC4626.WST_USR;
+    IERC20 stUSR = AddrClassicERC20.TOKEN_STUSR;
 
-    function test_mint() external {
+    uint256 amountIn = 10_000 ether;
+    function test_mint_with_stable() external {
         vm.startPrank(usr1);
-        uint256 amountIn = 10_000 ether;
         deal(address(stable), usr1, amountIn);
         stable.approve(address(wUSR), MAX_UINT);
-        vm.startSnapshotGas("WStable", "Mint wUSR");
+
+        verifyReceiveERC20(wUSR, usr1, amountIn);
+        verifyLostERC20(stable, usr1, amountIn);
+        verifyReceiveERC20(saving, address(wUSR), saving.convertToShares(amountIn));
+
+        vm.startSnapshotGas("wUSR", "Mint wUSR with USR");
         wUSR.mint(usr1, amountIn, false);
         vm.stopSnapshotGas();
+
+        assertERC20Tracking();
         vm.stopPrank();
-
-        assertEq(stable.balanceOf(usr1), 0);
-        assertEq(wUSR.balanceOf(usr1), amountIn);
-
-        vm.startPrank(usr2);
-        deal(address(stable), usr2, amountIn);
-        stable.approve(address(wUSR), MAX_UINT);
-        wUSR.mint(usr2, amountIn, false);
-        vm.stopPrank();
-
-        assertEq(stable.balanceOf(usr2), 0);
-        assertEq(wUSR.balanceOf(usr2), amountIn);
     }
 
-    // function test_burn() external {
-    //     vm.startPrank(usr1);
-    //     uint256 amountIn = 10_000 ether;
-    //     deal(address(stable), usr1, amountIn);
-    //     stable.approve(address(wUSR), MAX_UINT);
-    //     wUSR.mint(usr1, amountIn, true);
-    //     vm.stopPrank();
+    function test_mint_with_saving() external {
+        vm.startPrank(usr1);
+        deal(address(saving), usr1, amountIn);
+        saving.approve(address(wUSR), MAX_UINT);
 
-    //     vm.startPrank(usr2);
-    //     deal(address(stable), usr2, amountIn);
-    //     stable.approve(address(wUSR), MAX_UINT);
-    //     wUSR.mint(usr2, amountIn, true);
-    //     vm.stopPrank();
+        verifyReceiveERC20(wUSR, usr1, saving.convertToAssets(amountIn));
+        verifyLostERC20(saving, usr1, amountIn);
+        verifyReceiveERC20(saving, address(wUSR), amountIn);
 
-    //     vm.startPrank(usr1);
-    //     vm.startSnapshotGas("WStable", "Burn wUSR");
-    //     wUSR.burn(usr1, amountIn, false);
-    //     vm.stopSnapshotGas();
-    //     vm.stopPrank();
+        vm.startSnapshotGas("wUSR", "Mint wUSR with wstUSR");
+        wUSR.mint(usr1, amountIn, true);
+        vm.stopSnapshotGas();
 
-    //     assertEq(wUSR.balanceOf(usr1), 0);
-    //     assertEq(stable.balanceOf(usr1), amountIn);
+        assertERC20Tracking();
+        vm.stopPrank();
+    }
 
-    //     vm.startPrank(usr2);
-    //     wUSR.burn(usr2, amountIn, false);
-    //     vm.stopPrank();
+    function test_burn_and_receive_stable() external {
+        vm.startPrank(usr1);
+        deal(address(stable), usr1, amountIn);
+        stable.approve(address(wUSR), MAX_UINT);
+        wUSR.mint(usr1, amountIn, false);
 
-    //     assertEq(wUSR.balanceOf(usr2), 0);
-    //     assertEq(stable.balanceOf(usr2), amountIn);
-    // }
+        verifyReceiveERC20(stable, usr1, amountIn);
+        verifyLostERC20(wUSR, usr1, amountIn);
+        verifyLostERC20(saving, address(wUSR), saving.previewWithdraw(amountIn));
 
-    // function test_claimRewards_wUSR() external {
-    //     vm.startPrank(usr1);
-    //     uint256 amountIn = 10_000 ether;
-    //     deal(address(stable), usr1, amountIn);
-    //     stable.approve(address(wUSR), MAX_UINT);
-    //     wUSR.mint(usr1, amountIn, true);
+        vm.startSnapshotGas("wUSR", "Burn wUSR and receives USR");
+        wUSR.burn(usr1, amountIn, false);
+        vm.stopSnapshotGas();
 
-    //     uint256 pps = saving.previewDeposit(1e18);
+        assertERC20Tracking();
+        vm.stopPrank();
+    }
 
-    //     deal(address(stable), address(saving), stable.balanceOf(address(saving)) + 100_000 ether);
-    //     // saving.syncRewardsAndDistribution();
-    //     skip(1 weeks);
+    function test_burn_and_receive_saving() external {
+        vm.startPrank(usr1);
+        deal(address(stable), usr1, amountIn);
+        stable.approve(address(wUSR), MAX_UINT);
+        wUSR.mint(usr1, amountIn, false);
 
-    //     assertLt(saving.previewDeposit(1e18), pps);
+        verifyReceiveERC20(saving, usr1, saving.previewWithdraw(amountIn));
+        verifyLostERC20(wUSR, usr1, amountIn);
+        verifyLostERC20(saving, address(wUSR), saving.previewWithdraw(amountIn));
 
-    //     vm.stopPrank();
+        vm.startSnapshotGas("wUSR", "Burn wUSR and receives USR");
+        wUSR.burn(usr1, amountIn, true);
+        vm.stopSnapshotGas();
 
-    //     verifyReceiveERC20(
-    //         stable,
-    //         feeTreasury,
-    //         saving.maxWithdraw(address(wUSR)) - wUSR.totalSupply(),
-    //         "Fee Treasury must receive the delta between total withdrawable from saving and totalSupply of tgStable"
-    //     );
+        assertERC20Tracking();
+        vm.stopPrank();
+    }
 
-    //     vm.prank(owner);
-    //     wUSR.claimRewards();
+    function test_claimRewards_wUSR() external {
+        uint256 amountToDistribute = 3_000_000 ether;
+        vm.startPrank(usr1);
+        deal(address(stable), usr1, amountToDistribute);
+        stable.approve(address(wUSR), MAX_UINT);
+        wUSR.mint(usr1, amountIn, false);
 
-    //     assertGe(saving.maxWithdraw(address(wUSR)), amountIn, "User must be able to withdraw its crvUSD");
+        uint256 pps = saving.previewDeposit(1e18);
 
-    //     vm.startPrank(usr1);
-    //     wUSR.burn(usr1, amountIn, false);
+        stable.transfer(address(stUSR), amountToDistribute - amountIn);
 
-    //     assertERC20Tracking();
-    // }
+        // stable.approve(address(stUSR), MAX_UINT);
+        // // Increase the index of wstUSR
+        // address(stUSR).call(abi.encodeWithSelector(bytes4(keccak256("deposit(uint256,address)")), amountToDistribute - amountIn, address(saving)));
+
+        skip(1 weeks);
+
+        assertLt(saving.previewDeposit(1e18), pps);
+
+        vm.stopPrank();
+
+        verifyReceiveERC20(
+            stable,
+            feeTreasury,
+            saving.maxWithdraw(address(wUSR)) - wUSR.totalSupply(),
+            "Fee Treasury must receive the delta between total withdrawable from saving and totalSupply of tgStable"
+        );
+
+        vm.prank(owner);
+        wUSR.claimRewards();
+
+        assertGe(saving.maxWithdraw(address(wUSR)), amountIn, "User must be able to withdraw its crvUSD");
+
+        vm.startPrank(usr1);
+        wUSR.burn(usr1, amountIn, false);
+
+        assertERC20Tracking();
+    }
 }

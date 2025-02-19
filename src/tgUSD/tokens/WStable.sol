@@ -72,7 +72,7 @@ contract WStable is ERC20, LightOwnable {
 
         if (isSaving) {
             IERC4626 _savingAccount = savingAccount;
-            _savingAccount.transfer(receiver, _savingAccount.convertToShares(amountToBurn));
+            _savingAccount.transfer(receiver, _savingAccount.previewWithdraw(amountToBurn));
         } else {
             savingAccount.withdraw(amountToBurn, receiver, address(this));
         }

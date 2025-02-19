@@ -19,6 +19,7 @@ contract Labeliser is Test {
         vm.label(address(AddrClassicERC20.TOKEN_FXUSD), "FXUSD");
         vm.label(address(AddrClassicERC20.TOKEN_FRXUSD), "frxUSD");
         vm.label(address(AddrClassicERC20.TOKEN_USR), "USR");
+        vm.label(address(AddrClassicERC20.TOKEN_STUSR), "stUSR");
         vm.label(address(AddrClassicERC20.TOKEN_USDE), "USDE");
 
         vm.label(address(AddrClassicERC20.TOKEN_WETH), "WETH");
@@ -28,12 +29,12 @@ contract Labeliser is Test {
 
     function labelizeERC4626() external {
         vm.label(address(AddrERC4626.S_DAI), "sDAI");
-        vm.label(address(AddrERC4626.S_CRVUSD), "sCRVUSD");
-        vm.label(address(AddrERC4626.REWARD_HANDLER_SCRVUSD), "sCRVUSD Reward Handler");
+        vm.label(address(AddrERC4626.S_CRVUSD), "scrvUSD");
+        vm.label(address(AddrERC4626.REWARD_HANDLER_SCRVUSD), "scrvUSD Reward Handler");
         vm.label(address(AddrERC4626.S_FRAX), "sFRAX");
         vm.label(address(AddrERC4626.S_DOLA), "sDOLA");
         vm.label(address(AddrERC4626.S_FRXUSD), "sfrxUSD");
-        vm.label(address(AddrERC4626.S_USDE), "sUSDE");
+        vm.label(address(AddrERC4626.S_USDE), "sUSDe");
         vm.label(address(AddrERC4626.WST_USR), "wstUSR");
     }
 

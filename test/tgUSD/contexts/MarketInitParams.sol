@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "./TgStableContext.sol";
+import "./WStableContext.sol";
 
-contract MarketInitParams is TgStableContext {
+contract MarketInitParams is WStableContext {
     mapping(address => ParamsInitConvexCurveLPMarket) public cvxCurveLPMaps;
     mapping(address => ParamsInitConvexFxnLPMarket) public cvxFxnLPMaps;
 

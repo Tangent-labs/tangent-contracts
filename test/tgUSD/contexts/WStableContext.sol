@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import "./OraclesContext.sol";
 
-contract TgStableContext is OraclesContext {
+contract WStableContext is OraclesContext {
     uint256 socFeePercentage = 2_000;
     WStable public wfrxUSD;
     WStable public wcrvUSD;
@@ -42,6 +42,12 @@ contract TgStableContext is OraclesContext {
         AddrClassicERC20.TOKEN_USR.approve(address(wUSR), MAX_UINT);
         wUSR.mint(owner, 100_000 ether, false);
         vm.stopPrank();
+
+        vm.label(address(wfrxUSD), "wfrxUSD");
+        vm.label(address(wcrvUSD), "wcrvUSD");
+        vm.label(address(wUSDE), "wUSDE");
+        vm.label(address(wDOLA), "wDOLA");
+        vm.label(address(wUSR), "wUSR");
 
         LpDeploymentContext.CreateTgUSDLpStruct[] memory params = new LpDeploymentContext.CreateTgUSDLpStruct[](5);
         params[0] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wfrxUSD, name: "tgUSD-wfrxUSD", symbol: "tgfrxUSD", initialAmount: 5_000});
