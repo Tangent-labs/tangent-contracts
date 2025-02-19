@@ -19,6 +19,8 @@ export async function giveTokensToAddresses(users: Signer[], tokensAmounts: Toke
             let storageSlot = "";
             if (tokenAmount.isVyper) {
                 storageSlot = GlobalHelper.calculateStorageSlotEthersVyper(userAddress, tokenAmount.slotBalance);
+            } else if (tokenAmount.address === "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110") {
+                storageSlot = GlobalHelper.calculateERC20OZUpgradeable(userAddress);
             } else {
                 storageSlot = GlobalHelper.calculateStorageSlotEthersSolidity(userAddress, tokenAmount.slotBalance);
             }

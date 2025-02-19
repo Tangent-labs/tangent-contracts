@@ -13,7 +13,7 @@ import "../../../src/libs/Resources/ResourcesYearn.sol";
 import "../../../src/tgUSD/tokens/Tan.sol";
 import "../../../src/tgUSD/tokens/RsTan.sol";
 import "../../../src/tgUSD/tokens/TgUSD.sol";
-import "../../../src/tgUSD/tokens/TgStable.sol";
+import "../../../src/tgUSD/tokens/WStable.sol";
 import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";

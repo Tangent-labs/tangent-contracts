@@ -11,7 +11,7 @@ contract wfrxUSD is ConvexCurveContext {
         uint256 amountIn = 10_000 ether;
         deal(address(stable), usr1, amountIn);
         stable.approve(address(wfrxUSD), MAX_UINT);
-        vm.startSnapshotGas("TgStable", "Mint wfrxUSD");
+        vm.startSnapshotGas("WStable", "Mint wfrxUSD");
         wfrxUSD.mint(usr1, amountIn, false);
         vm.stopSnapshotGas();
         vm.stopPrank();
@@ -44,7 +44,7 @@ contract wfrxUSD is ConvexCurveContext {
     //     vm.stopPrank();
 
     //     vm.startPrank(usr1);
-    //     vm.startSnapshotGas("TgStable", "Burn wfrxUSD");
+    //     vm.startSnapshotGas("WStable", "Burn wfrxUSD");
     //     wfrxUSD.burn(usr1, amountIn, false);
     //     vm.stopSnapshotGas();
     //     vm.stopPrank();

@@ -12,7 +12,7 @@ contract wcrvUSD is ConvexCurveContext {
         deal(address(stable), usr1, amountIn);
         stable.approve(address(wcrvUSD), MAX_UINT);
 
-        vm.startSnapshotGas("TgStable", "Mint wcrvUSD");
+        vm.startSnapshotGas("WStable", "Mint wcrvUSD");
         wcrvUSD.mint(usr1, amountIn, false);
         vm.stopSnapshotGas();
 
@@ -46,7 +46,7 @@ contract wcrvUSD is ConvexCurveContext {
         vm.stopPrank();
 
         vm.startPrank(usr1);
-        vm.startSnapshotGas("TgStable", "Burn wcrvUSD");
+        vm.startSnapshotGas("WStable", "Burn wcrvUSD");
         wcrvUSD.burn(usr1, amountIn, false);
         vm.stopSnapshotGas();
         vm.stopPrank();

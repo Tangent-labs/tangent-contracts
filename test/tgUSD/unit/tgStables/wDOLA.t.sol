@@ -11,7 +11,7 @@ contract wDOLA is ConvexCurveContext {
         uint256 amountIn = 10_000 ether;
         deal(address(stable), usr1, amountIn);
         stable.approve(address(wDOLA), MAX_UINT);
-        vm.startSnapshotGas("TgStable", "Mint wDOLA");
+        vm.startSnapshotGas("WStable", "Mint wDOLA");
         wDOLA.mint(usr1, amountIn, false);
         vm.stopSnapshotGas();
         vm.stopPrank();
@@ -44,7 +44,7 @@ contract wDOLA is ConvexCurveContext {
     //     vm.stopPrank();
 
     //     vm.startPrank(usr1);
-    //     vm.startSnapshotGas("TgStable", "Burn wDOLA");
+    //     vm.startSnapshotGas("WStable", "Burn wDOLA");
     //     wDOLA.burn(usr1, amountIn, false);
     //     vm.stopSnapshotGas();
     //     vm.stopPrank();
