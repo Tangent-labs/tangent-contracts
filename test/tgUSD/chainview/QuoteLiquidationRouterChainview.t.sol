@@ -6,9 +6,9 @@ import "../handler/Features/BorrowRepay/HBorrow.sol";
 
 import "../handler/Features/BorrowRepay/HBorrow.sol";
 
-import {QuoteLiquidationRouter, CurveQuote, WStableQuote, QuoteLiquidationRouterIn} from "../../../src/chainview/tgUSD/bot/LiquidatorCurveRouter.cv.sol";
+import {QuoteLiquidationRouter, CurveQuote, WStableQuote, QuoteLiquidationRouterIn} from "../../../src/chainview/tgUSD/bot/QuoteLiquidationRouter.cv.sol";
 
-contract LiquidatorCurveRouterChainview is ConvexCurveContext {
+contract QuoteLiquidationRouterChainview is ConvexCurveContext {
     uint256 constant ZERO = 0;
     // LIST
     function test_quote_curve_router_chainview_without_wStable() public {
