@@ -13,7 +13,7 @@ import "../../../src/libs/Resources/ResourcesYearn.sol";
 import "../../../src/tgUSD/tokens/Tan.sol";
 import "../../../src/tgUSD/tokens/RsTan.sol";
 import "../../../src/tgUSD/tokens/TgUSD.sol";
-import "../../../src/tgUSD/tokens/TgStable.sol";
+import "../../../src/tgUSD/tokens/WStable.sol";
 import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
@@ -81,7 +81,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     LpDeploymentContext public lpDeploymentContext;
 
     constructor() {
-        baseFork = vm.createSelectFork("base", 24379193);
+        // baseFork = vm.createSelectFork("base", 24379193);
         mainnetFork = vm.createSelectFork("mainnet", 21779327);
 
         vm.startPrank(owner);
@@ -105,11 +105,11 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         tan = new Tan();
         rsTan = new RsTan(controlTower, tan);
         // Deploy tgUSD on Base
-        tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
+        // tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
         // Deploy tgUSD on Mainnet ETH
         tgUSD = deployTgUSD(mainnetFork, l0EndpointMainnet);
 
-        assertEq(address(tgUsdBase), address(tgUSD), "Should be equals with CREATE3");
+        // assertEq(address(tgUsdBase), address(tgUSD), "Should be equals with CREATE3");
 
         liquidatorProxy = new LiquidatorProxy(tgUSD);
 

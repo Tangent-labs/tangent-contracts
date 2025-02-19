@@ -133,7 +133,7 @@ export class BaseContext extends MainSetup {
 
         this.pegKeeperTgUSD_frxUSD = (await (
             await ethers.getContractFactory("PegKeeperV2")
-        ).deploy(lpDeployContext.stableLp["tgUSD-frxUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
+        ).deploy(lpDeployContext.stableLp["tgUSD-wfrxUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
         await this.pegKeeperTgUSD_frxUSD.waitForDeployment();
 
         await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperTgUSD_USDC]);
@@ -143,7 +143,22 @@ export class BaseContext extends MainSetup {
 
     async setUpERC20() {
         this.coins["USDC"] = await ethers.getContractAt("IERC20Metadata", commonERC20.USDC);
+
         this.coins["frxUSD"] = await ethers.getContractAt("IERC20Metadata", commonERC20.frxUSD);
+        this.coins["sfrxUSD"] = await ethers.getContractAt("IERC20Metadata", commonERC20.sfrxUSD);
+
+        this.coins["crvUSD"] = await ethers.getContractAt("IERC20Metadata", commonERC20.crvUSD);
+        this.coins["scrvUSD"] = await ethers.getContractAt("IERC20Metadata", commonERC20.scrvUSD);
+
+        this.coins["USDe"] = await ethers.getContractAt("IERC20Metadata", commonERC20.USDe);
+        this.coins["sUSDe"] = await ethers.getContractAt("IERC20Metadata", commonERC20.sUSDe);
+
+        this.coins["DOLA"] = await ethers.getContractAt("IERC20Metadata", commonERC20.DOLA);
+        this.coins["sDOLA"] = await ethers.getContractAt("IERC20Metadata", commonERC20.sDOLA);
+
+        this.coins["USR"] = await ethers.getContractAt("IERC20Metadata", commonERC20.USR);
+        this.coins["wstUSR"] = await ethers.getContractAt("IERC20Metadata", commonERC20.wstUSR);
+
         this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20Metadata", curveLp.crvUSD_USDC);
 
         await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 5, amount: 10_000_000}]);

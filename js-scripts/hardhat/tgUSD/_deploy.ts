@@ -6,11 +6,12 @@ import * as fs from "fs";
 import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "./config/market";
 import {deploytgUsd} from "./actions/deploytgUsd";
 import {LpDeployContext} from "./contexts/LPDeployContext";
+import {WStablesContext} from "./contexts/WStableContext";
 
 async function main() {
-    const {baseContext, marketContext, oracleContext, lpDeployContext} = await deploytgUsd();
+    const {baseContext, marketContext, oracleContext, lpDeployContext, wStableContext} = await deploytgUsd();
 
-    fs.writeFileSync("./addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext, lpDeployContext)));
+    fs.writeFileSync("./addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext, lpDeployContext, wStableContext)));
     console.info("\x1b[32m%s\x1b[0m", "Contracts deployed and setup !");
 }
 
@@ -21,7 +22,13 @@ type Market = {
     marketType: string;
 };
 
-async function createJSONAddress(baseContext: BaseContext, marketContext: MarketContext, oracleContext: OracleContext, lpDeployContext: LpDeployContext) {
+async function createJSONAddress(
+    baseContext: BaseContext,
+    marketContext: MarketContext,
+    oracleContext: OracleContext,
+    lpDeployContext: LpDeployContext,
+    wStableContext: WStablesContext
+) {
     const markets: Market[] = [];
     for (const key in marketContext.convexCrvMarkets) {
         const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys];
@@ -52,10 +59,16 @@ async function createJSONAddress(baseContext: BaseContext, marketContext: Market
         oracles[prop] = oracle;
     }
 
-    let lps: {[key: string]: string} = {};
+    const lps: {[key: string]: string} = {};
     for (const prop in lpDeployContext.stableLp) {
         const lp = await lpDeployContext.stableLp[prop].getAddress();
         lps[prop] = lp;
+    }
+
+    const wStables: {[key: string]: string} = {};
+    for (const prop in wStableContext.wStable) {
+        const wStable = await wStableContext.wStable[prop].getAddress();
+        wStables[prop] = wStable;
     }
 
     oracles["tgUSD"] = await oracleContext.tgUSDOracle.getAddress();
@@ -73,6 +86,7 @@ async function createJSONAddress(baseContext: BaseContext, marketContext: Market
         markets,
         oracles,
         lps,
+        wStables,
     };
 }
 

@@ -25,6 +25,14 @@ export function TOKENS_TO_GIVE(mintedAmount: number) {
             amount: mintedAmount,
         },
         {
+            ...obj.DOLA,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.USDe,
+            amount: mintedAmount,
+        },
+        {
             ...obj.fxUSD,
             amount: mintedAmount,
         },
