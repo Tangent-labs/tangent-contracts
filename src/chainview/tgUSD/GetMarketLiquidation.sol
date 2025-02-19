@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
 
-contract GetMarketLiquidation  {
+contract GetMarketLiquidation {
     struct MarketLiquidationInfo {
         uint256 maxLTV;
         uint256 liquidationThreshold;

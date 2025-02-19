@@ -54,12 +54,12 @@ contract OraclesContext is TgUSDDeployContext {
 
     function setupTgUSDOracle() public {
         tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDT")));
-        tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-frxUSD")));
+        tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD")));
 
         pegKeeperRegulator = IPegKeeperRegulator(deployCode("PegKeeperRegulator", abi.encode(tgUSD, tgUSDOracle, feeTreasury, owner, owner)));
 
         pegKeeperTgUSD_USDC = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 20000, pegKeeperRegulator, owner)));
-        pegKeeperTgUSD_frxUSD = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-frxUSD"), 20000, pegKeeperRegulator, owner)));
+        pegKeeperTgUSD_frxUSD = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD"), 20000, pegKeeperRegulator, owner)));
 
         address[] memory pairs = new address[](2);
         pairs[0] = address(pegKeeperTgUSD_USDC);
