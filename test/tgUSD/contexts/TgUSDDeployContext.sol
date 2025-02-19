@@ -81,7 +81,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     LpDeploymentContext public lpDeploymentContext;
 
     constructor() {
-        baseFork = vm.createSelectFork("base", 24379193);
+        // baseFork = vm.createSelectFork("base", 24379193);
         mainnetFork = vm.createSelectFork("mainnet", 21779327);
 
         vm.startPrank(owner);
@@ -105,7 +105,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         tan = new Tan();
         rsTan = new RsTan(controlTower, tan);
         // Deploy tgUSD on Base
-        tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
+        // tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
         // Deploy tgUSD on Mainnet ETH
         tgUSD = deployTgUSD(mainnetFork, l0EndpointMainnet);
 
