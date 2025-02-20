@@ -2,9 +2,14 @@
 pragma solidity ^0.8.24;
 
 struct IRParams {
-    uint128 sigma;
-    uint128 r0;
-    uint256 irStartPrice;
+    uint32 rMin;
+    uint32 rMax;
+    uint32 pMin;
+    uint32 pInf;
+    uint32 pMax;
+    uint32 a1;
+    uint32 a2;
+    uint32 k;
 }
 
 struct RCParams {
@@ -20,8 +25,8 @@ struct RCParams {
     uint88 endCutPrice;
 }
 interface IIRCalculator {
-    function setUpMarketRewards(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external;
-    function simulateIR(uint256 tgUSDPrice, uint256 irStartPrice, uint256 sigma, uint256 r0) external view returns (uint256);
+    function setUpMarket(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external;
+    function simulateIR(uint256 tgUSDPrice, IRParams memory irParam) external view returns (uint256);
     function computeIRForMarket(address market) external returns (uint256);
     function simulateRC(
         uint256 tgUSDPrice,

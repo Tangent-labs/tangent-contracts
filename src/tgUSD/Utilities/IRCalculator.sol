@@ -19,9 +19,6 @@ contract IRCalculator is IIRCalculator, Ownable {
 
     uint256 public constant ONE_ETHER = 1e18;
 
-    /// @notice Price where the IR stops growing
-    uint256 public priceIRMax = 985 * 10 ** 15;
-
     IControlTower public controlTower;
 
     /// @notice Contract allowing to retrieve the price in dollar of tgUSD.
@@ -42,8 +39,8 @@ contract IRCalculator is IIRCalculator, Ownable {
     }
 
     modifier verifyIRParams(IRParams calldata _irParam) {
-        //TODO Add range check on Sigma & r0
-        require(_irParam.irStartPrice <= ONE_ETHER, IRStartPriceLtOne());
+        //TODO Add check for params
+        // require(_irParam.irStartPrice <= ONE_ETHER, IRStartPriceLtOne());
         _;
     }
 
@@ -60,7 +57,7 @@ contract IRCalculator is IIRCalculator, Ownable {
         tgUSDOracle = _tgUSDOracle;
     }
 
-    function setUpMarketRewards(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external verifyIRParams(_irParam) verifyRCParams(_rcParam) {
+    function setUpMarket(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external verifyIRParams(_irParam) verifyRCParams(_rcParam) {
         require(msg.sender == owner() || controlTower.isMarketCreator(msg.sender), CallerNotOwnerOrMarketCreator(msg.sender));
         irParams[market] = _irParam;
         rcParams[market] = _rcParam;
@@ -68,7 +65,6 @@ contract IRCalculator is IIRCalculator, Ownable {
     }
 
     function updateIRParams(address market, IRParams calldata _irParam) external verifyIRParams(_irParam) onlyOwner {
-        require(_irParam.irStartPrice <= 1 ether, IRStartPriceLtOne());
         irParams[market] = _irParam;
         IDebtIR(market).checkpointIR();
     }
@@ -82,50 +78,91 @@ contract IRCalculator is IIRCalculator, Ownable {
      * @param  market Denominator of the number in exponent. The higher it is, the
      */
     function computeIRForMarket(address market) external returns (uint256) {
-        IRParams memory irParam = irParams[market];
-        return _computeIR(tgUSDOracle.price_w(), irParam.irStartPrice, irParam.sigma, irParam.r0);
+        return _computeIR(tgUSDOracle.price_w(), irParams[market]);
     }
 
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
      * @param  tgUSDPrice   Price of tgUSD in wei on 18 decimals.
-     * @param  irStartPrice Price of tgUSD on which the IR is starting to be higher than 0
-     * @param  sigma      Denominator of the part passed to exp. The smaller it is, the faster the IR grows with depeg
-     * @param  r0         Base coefficient of the IR
+     * @param  irParam      IR parameters
      */
-    function simulateIR(uint256 tgUSDPrice, uint256 irStartPrice, uint256 sigma, uint256 r0) external view returns (uint256) {
-        return _computeIR(tgUSDPrice, irStartPrice, sigma, r0);
+    function simulateIR(uint256 tgUSDPrice, IRParams memory irParam) external view returns (uint256) {
+        return _computeIR(tgUSDPrice, irParam);
+    }
+
+    function _pow(int128 a, int128 b) internal pure returns (int128) {
+        return ABDKMath64x64.exp_2(ABDKMath64x64.mul(ABDKMath64x64.log_2(a), b));
     }
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
      * @param  tgUSDPrice Price of tgUSD in wei.
-     * @param  irStartPrice Price of tgUSD on which the IR is starting to be higher than 0
-     * @param  sigma Denominator of the part passed to exp. The smaller it is, the faster the IR grows with depeg
-     * @param  r0   Base coefficient of the IR
+     * @param  irParam    IR parameters
      */
-    function _computeIR(uint256 tgUSDPrice, uint256 irStartPrice, uint256 sigma, uint256 r0) internal view returns (uint256) {
-        if (tgUSDPrice > irStartPrice) {
-            return 0;
+    function _computeIR(uint256 tgUSDPrice, IRParams memory irParam) internal view returns (uint256) {
+        uint256 nomalizedPMin = uint256(irParam.pMin) * 10 ** 13;
+        uint256 nomalizedPMax = uint256(irParam.pMax) * 10 ** 13;
+        if (tgUSDPrice < nomalizedPMin) {
+            return uint256(irParam.rMax) * 10 ** 13;
         }
-        if (tgUSDPrice < priceIRMax) {
-            tgUSDPrice = priceIRMax;
+        if (tgUSDPrice > nomalizedPMax) {
+            return uint256(irParam.rMin) * 10 ** 13;
         }
 
-        int128 powerIn64x64 = ABDKMath64x64.divu(((1 ether - tgUSDPrice) * ONE_ETHER) / sigma, ONE_ETHER);
+        int128 gammaX = int128(int32(irParam.k) * (int256(tgUSDPrice) - int32(irParam.pInf) * int256(10 ** 13)));
 
-        // Calcul exp(1) en utilisant la méthode exp
-        int128 expIn64x64 = ABDKMath64x64.exp(powerIn64x64);
+        // console.log("gammaParam", ABDKMath64x64.toUInt(ABDKMath64x64.mul(gammaX, ABDKMath64x64.fromUInt(100_000))));
 
-        // Integer part of exp result
-        uint256 integerPart = ABDKMath64x64.toUInt(expIn64x64);
+        int128 exp = ABDKMath64x64.exp(gammaX);
 
-        // Decimal part of the exp in uint256
-        uint256 fractionalAsDecimal = ABDKMath64x64.mulu(expIn64x64 - ABDKMath64x64.fromUInt(integerPart), ONE_ETHER);
+        // console.log("exp", ABDKMath64x64.toUInt(ABDKMath64x64.mul(exp, ABDKMath64x64.fromUInt(100_000))));
 
-        uint256 formulaReturn = integerPart * ONE_ETHER + fractionalAsDecimal;
+        int128 gamma = ABDKMath64x64.div(ABDKMath64x64.fromUInt(1), ABDKMath64x64.fromUInt(1) + exp);
 
-        return (formulaReturn * r0) / ONE_ETHER;
+        console.log("gamma", ABDKMath64x64.toUInt(ABDKMath64x64.mul(gamma, ABDKMath64x64.fromUInt(100_000))));
+
+        int128 alpha = ABDKMath64x64.add(ABDKMath64x64.fromUInt(irParam.a1), ABDKMath64x64.mul(ABDKMath64x64.fromUInt((irParam.a2 - irParam.a1)), gamma));
+
+        console.log("alpha", ABDKMath64x64.toUInt(ABDKMath64x64.mul(alpha, ABDKMath64x64.fromUInt(100_000))));
+
+        uint256 quotient = ((uint256(irParam.pMax) * 10 ** 13) - tgUSDPrice) / (irParam.pMax - irParam.pMin);
+
+        // console.log("quotient", quotient);
+        int128 quotientFixedPoint = ABDKMath64x64.divu(quotient, 10 ** 13);
+
+        int128 priceRatio = _pow(quotientFixedPoint, alpha);
+
+        // console.log("priceRatio", ABDKMath64x64.toUInt(ABDKMath64x64.mul(priceRatio, ABDKMath64x64.fromUInt(100_000))));
+
+        int128 irIncrement = ABDKMath64x64.mul(ABDKMath64x64.fromUInt(uint256(irParam.rMax - irParam.rMin) * 10 ** 8), priceRatio);
+
+        // console.log("irIncrement", ABDKMath64x64.toUInt(ABDKMath64x64.mul(irIncrement, ABDKMath64x64.fromUInt(100_000))));
+
+        return uint256(irParam.rMin) * 10 ** 13 + ABDKMath64x64.toUInt(ABDKMath64x64.mul(irIncrement, ABDKMath64x64.fromUInt(100_000)));
     }
+
+    // function _computeIR(uint256 tgUSDPrice, IRParams calldata irParam) internal view returns (uint256) {
+    //     if (tgUSDPrice > irStartPrice) {
+    //         return 0;
+    //     }
+    //     if (tgUSDPrice < priceIRMax) {
+    //         tgUSDPrice = priceIRMax;
+    //     }
+
+    //     int128 powerIn64x64 = ABDKMath64x64.divu(((1 ether - tgUSDPrice) * ONE_ETHER) / sigma, ONE_ETHER);
+
+    //     // Calcul exp(1) en utilisant la méthode exp
+    //     int128 expIn64x64 = ABDKMath64x64.exp(powerIn64x64);
+
+    //     // Integer part of exp result
+    //     uint256 integerPart = ABDKMath64x64.toUInt(expIn64x64);
+
+    //     // Decimal part of the exp in uint256
+    //     uint256 fractionalAsDecimal = ABDKMath64x64.mulu(expIn64x64 - ABDKMath64x64.fromUInt(integerPart), ONE_ETHER);
+
+    //     uint256 formulaReturn = integerPart * ONE_ETHER + fractionalAsDecimal;
+
+    //     return (formulaReturn * r0) / ONE_ETHER;
+    // }
 
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
@@ -198,9 +235,5 @@ contract IRCalculator is IIRCalculator, Ownable {
             uint256 actualStep = 1 + (startCutPrice - tgUSDPrice) / ((startCutPrice - endCutPrice) / stepsBetween);
             return startCutPercentage + (actualStep * (endCutPercentage - startCutPercentage)) / stepsBetween;
         }
-    }
-
-    function setPriceIRMax(uint256 _priceIRMax) external onlyOwner {
-        priceIRMax = _priceIRMax;
     }
 }
