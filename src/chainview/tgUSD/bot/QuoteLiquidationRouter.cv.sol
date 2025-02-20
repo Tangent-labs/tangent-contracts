@@ -15,7 +15,6 @@ struct WStableQuote {
     address stablePool;
     int128 i;
     int128 j;
-    uint256 amountIn;
 }
 struct QuoteLiquidationRouterIn {
     CurveQuote curveQuote;
@@ -38,7 +37,7 @@ contract QuoteLiquidationRouter {
             uint256 amountReceived = CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, curveQuote._amount, curveQuote._pools);
 
             if (address(wStableQuote.stablePool) != address(0)) {
-                amountReceived = ICurveStableSwapNG(wStableQuote.stablePool).get_dy(wStableQuote.i, wStableQuote.j, wStableQuote.amountIn);
+                amountReceived = ICurveStableSwapNG(wStableQuote.stablePool).get_dy(wStableQuote.i, wStableQuote.j, amountReceived);
             }
 
             quotes[i] = amountReceived;
