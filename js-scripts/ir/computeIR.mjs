@@ -3,8 +3,10 @@ import * as ethers from "ethers";
 export function computeIR(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k) {
     // console.log(tgUSDPrice);
     const tgUSDPriceNumber = Number(ethers.formatEther(BigInt(tgUSDPrice)));
-    const nomalizedPMin = Number(ethers.formatUnits(pMin, 5));
-    const nomalizedPMax = Number(ethers.formatUnits(pMax, 5));
+    const nomalizedPMin = Number(ethers.formatUnits(pMin, 6));
+    const nomalizedPMax = Number(ethers.formatUnits(pMax, 6));
+
+    // console.log(tgUSDPriceNumber, nomalizedPMin, nomalizedPMax);
 
     // console.log(tgUSDPriceNumber, nomalizedPMin, nomalizedPMax);
     if (tgUSDPriceNumber < nomalizedPMin) {
@@ -13,11 +15,18 @@ export function computeIR(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k) {
     if (tgUSDPriceNumber > nomalizedPMax) {
         return ethers.parseUnits(rMin, 13);
     }
-    const gammaX = Number(k) * (tgUSDPriceNumber - Number(ethers.formatUnits(pInf, 5)));
+
+    const priceDelta = tgUSDPriceNumber - Number(ethers.formatUnits(pInf, 6));
+    // console.log("priceDelta", priceDelta);
+
+    const gammaX = Number(k) * priceDelta;
 
     // console.log("gammaX", gammaX);
 
-    const gamma = 1 / (1 + Math.exp(-gammaX));
+    const exp = Math.exp(-gammaX);
+    // console.log("exp", exp);
+
+    const gamma = 1 / (1 + exp);
     // console.log("gamma", gamma);
     const alpha = Number(a1) + (Number(a2) - Number(a1)) * gamma;
 
@@ -25,10 +34,13 @@ export function computeIR(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k) {
 
     const quotient = (nomalizedPMax - tgUSDPriceNumber) / (nomalizedPMax - nomalizedPMin);
 
-    // console.log("quotient", quotient);
+    const priceRatio = quotient ** alpha;
 
-    const irIncrement = Number(ethers.formatUnits(rMax - rMin, 5)) * quotient ** alpha;
+    // console.log("priceRatio", priceRatio);
 
+    const irIncrement = Number(ethers.formatUnits(rMax - rMin, 5)) * priceRatio;
+
+    // console.log("irMin", Number(ethers.formatUnits(rMin, 5)));
     // console.log("irIncrement", irIncrement);
 
     // console.log(irIncrement);

@@ -99,20 +99,34 @@ contract IRCalculator is IIRCalculator, Ownable {
      * @param  irParam    IR parameters
      */
     function _computeIR(uint256 tgUSDPrice, IRParams memory irParam) internal view returns (uint256) {
-        uint256 nomalizedPMin = uint256(irParam.pMin) * 10 ** 13;
-        uint256 nomalizedPMax = uint256(irParam.pMax) * 10 ** 13;
-        if (tgUSDPrice < nomalizedPMin) {
+        // uint256 nomalizedPMin = uint256(irParam.pMin) * 10 ** 12;
+        // uint256 nomalizedPMax = uint256(irParam.pMax) * 10 ** 12;
+
+        // console.log("normalizedP", nomalizedPMin, nomalizedPMax);
+        if (tgUSDPrice < uint256(irParam.pMin) * 10 ** 12) {
             return uint256(irParam.rMax) * 10 ** 13;
         }
-        if (tgUSDPrice > nomalizedPMax) {
+        if (tgUSDPrice > uint256(irParam.pMax) * 10 ** 12) {
             return uint256(irParam.rMin) * 10 ** 13;
         }
+        // console.log(ABDKMath64x64.div(64 - 1));
+        int128 priceDelta = ABDKMath64x64.divi(int256(tgUSDPrice) - int256(int32(irParam.pInf)) * 10 ** 12, 10 ** 18);
+        // console.log("priceDelta", ABDKMath64x64.toInt(ABDKMath64x64.mul(priceDelta, ABDKMath64x64.fromUInt(100_000))));
 
-        int128 gammaX = int128(int32(irParam.k) * (int256(tgUSDPrice) - int32(irParam.pInf) * int256(10 ** 13)));
+        int128 gammaX = -ABDKMath64x64.mul(ABDKMath64x64.fromUInt(irParam.k), priceDelta);
+        // console.log("gammaX", ABDKMath64x64.toUInt(ABDKMath64x64.mul(gammaX, ABDKMath64x64.fromUInt(100))));
+        console.log("gammaX", ABDKMath64x64.toInt(gammaX));
 
-        // console.log("gammaParam", ABDKMath64x64.toUInt(ABDKMath64x64.mul(gammaX, ABDKMath64x64.fromUInt(100_000))));
-
+        // To prevent exp overflow
+        if (ABDKMath64x64.toInt(gammaX) >= 43) {
+            console.log("in");
+            gammaX = ABDKMath64x64.fromUInt(43);
+        }
+        console.log("coucou");
         int128 exp = ABDKMath64x64.exp(gammaX);
+        console.log("coucou");
+
+        // console.log("exp", ABDKMath64x64.toUInt(exp));
 
         // console.log("exp", ABDKMath64x64.toUInt(ABDKMath64x64.mul(exp, ABDKMath64x64.fromUInt(100_000))));
 
@@ -120,24 +134,26 @@ contract IRCalculator is IIRCalculator, Ownable {
 
         console.log("gamma", ABDKMath64x64.toUInt(ABDKMath64x64.mul(gamma, ABDKMath64x64.fromUInt(100_000))));
 
-        int128 alpha = ABDKMath64x64.add(ABDKMath64x64.fromUInt(irParam.a1), ABDKMath64x64.mul(ABDKMath64x64.fromUInt((irParam.a2 - irParam.a1)), gamma));
-
+        int128 alpha = ABDKMath64x64.add(
+            ABDKMath64x64.fromUInt(irParam.a1),
+            ABDKMath64x64.mul(ABDKMath64x64.sub(ABDKMath64x64.fromUInt(irParam.a2), ABDKMath64x64.fromUInt(irParam.a1)), gamma)
+        );
         console.log("alpha", ABDKMath64x64.toUInt(ABDKMath64x64.mul(alpha, ABDKMath64x64.fromUInt(100_000))));
 
-        uint256 quotient = ((uint256(irParam.pMax) * 10 ** 13) - tgUSDPrice) / (irParam.pMax - irParam.pMin);
+        uint256 quotient = ((uint256(irParam.pMax) * 10 ** 12) - tgUSDPrice) / (irParam.pMax - irParam.pMin);
 
         // console.log("quotient", quotient);
-        int128 quotientFixedPoint = ABDKMath64x64.divu(quotient, 10 ** 13);
+        int128 quotientFixedPoint = ABDKMath64x64.divu(quotient, 10 ** 12);
 
         int128 priceRatio = _pow(quotientFixedPoint, alpha);
 
-        // console.log("priceRatio", ABDKMath64x64.toUInt(ABDKMath64x64.mul(priceRatio, ABDKMath64x64.fromUInt(100_000))));
+        console.log("priceRatio", ABDKMath64x64.toUInt(ABDKMath64x64.mul(priceRatio, ABDKMath64x64.fromUInt(100000_000))));
 
-        int128 irIncrement = ABDKMath64x64.mul(ABDKMath64x64.fromUInt(uint256(irParam.rMax - irParam.rMin) * 10 ** 8), priceRatio);
+        uint256 irIncrement = ABDKMath64x64.toUInt(
+            ABDKMath64x64.mul(ABDKMath64x64.mul(ABDKMath64x64.fromUInt(irParam.rMax - irParam.rMin), priceRatio), ABDKMath64x64.fromUInt(10 ** 8))
+        );
 
-        // console.log("irIncrement", ABDKMath64x64.toUInt(ABDKMath64x64.mul(irIncrement, ABDKMath64x64.fromUInt(100_000))));
-
-        return uint256(irParam.rMin) * 10 ** 13 + ABDKMath64x64.toUInt(ABDKMath64x64.mul(irIncrement, ABDKMath64x64.fromUInt(100_000)));
+        return uint256(irParam.rMin) * 10 ** 13 + irIncrement * 10 ** 5;
     }
 
     // function _computeIR(uint256 tgUSDPrice, IRParams calldata irParam) internal view returns (uint256) {
