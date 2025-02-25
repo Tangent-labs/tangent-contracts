@@ -111,24 +111,33 @@ contract IRCalculator is IIRCalculator, Ownable {
             return uint256(irParam.rMin) * E13;
         }
 
-        int128 gammaX = -ABDKMath64x64.mul(
+        // x to pass in the σ(x) function, with x = k . (actualPrice - pInflexion)
+        int128 sigmaX = -ABDKMath64x64.mul(
             ABDKMath64x64.fromUInt(irParam.k),
             ABDKMath64x64.divi(int256(tgUSDPrice) - int256(int32(irParam.pInf)) * int256(E12), int256(ONE_ETHER))
         );
         // To prevent exp overflow
-        if (ABDKMath64x64.toInt(gammaX) >= MAX_EXP) {
-            gammaX = ABDKMath64x64.fromInt(MAX_EXP);
+        if (ABDKMath64x64.toInt(sigmaX) >= MAX_EXP) {
+            sigmaX = ABDKMath64x64.fromInt(MAX_EXP);
         }
         int128 one = ABDKMath64x64.fromUInt(1);
-        int128 gamma = ABDKMath64x64.div(one, one + ABDKMath64x64.exp(gammaX));
+        // σ(x) image with σ(x) = 1 / (1 + exp(-x)) and -x = sigmaX.
+        int128 sigma = ABDKMath64x64.div(one, one + ABDKMath64x64.exp(sigmaX));
         int128 alpha1 = ABDKMath64x64.divu(irParam.a1, 1_000);
-        int128 alpha = ABDKMath64x64.add(alpha1, ABDKMath64x64.mul(ABDKMath64x64.sub(ABDKMath64x64.divu(irParam.a2, 1_000), alpha1), gamma));
+
+        // α(x) image with α(x) = α1 + (α2 - α1).σ(x)
+        int128 alpha = ABDKMath64x64.add(alpha1, ABDKMath64x64.mul(ABDKMath64x64.sub(ABDKMath64x64.divu(irParam.a2, 1_000), alpha1), sigma));
+
+        // Relative delta beween pMax, pMin and actual Price
+        // quotient = (pMax - actualPrice) / (pMax - pMin )
         int128 quotientFixedPoint = ABDKMath64x64.divu(((uint256(irParam.pMax) * E12) - tgUSDPrice) / (irParam.pMax - irParam.pMin), E12);
 
-        uint256 irIncrement = ABDKMath64x64.toUInt(
-            ABDKMath64x64.mul(ABDKMath64x64.mul(ABDKMath64x64.fromUInt(irParam.rMax - irParam.rMin), _pow(quotientFixedPoint, alpha)), ABDKMath64x64.fromUInt(10 ** 8))
-        );
-        return uint256(irParam.rMin) * E13 + irIncrement * 10 ** 5;
+        // Computes the IR to increment to the minimum IR possible on the market.
+        // irIncr = (rMax - rMin) * ((pMax - actualPrice) / (pMax - pMin))^alpha
+
+        uint256 irIncrement = ABDKMath64x64.mulu(ABDKMath64x64.mul(ABDKMath64x64.fromUInt(irParam.rMax - irParam.rMin), _pow(quotientFixedPoint, alpha)), E13);
+
+        return uint256(irParam.rMin) * E13 + irIncrement;
     }
 
     /**

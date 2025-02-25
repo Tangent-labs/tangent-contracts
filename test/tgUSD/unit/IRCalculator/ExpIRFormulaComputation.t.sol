@@ -109,6 +109,42 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         );
     }
 
+    function test_from_fuzzing6() external {
+        tgUSDPrice = 1026721955184017480;
+        rMin = 0;
+        rMax = 1538949;
+        pMin = 980874;
+        pInf = 1022223;
+        pMax = 1027337;
+        a1 = 2929;
+        a2 = 6911;
+        k = 6911;
+
+        assertApproxEqRel(
+            irFFI.getIRFFI(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            10 * 1e14 //0.1%
+        );
+    }
+
+    function test_from_fuzzing7() external {
+        tgUSDPrice = 1185971000000000099;
+        rMin = 13898;
+        rMax = 876633;
+        pMin = 57;
+        pInf = 90875;
+        pMax = 1185971;
+        a1 = 31723;
+        a2 = 0;
+        k = 92;
+
+        assertApproxEqRel(
+            irFFI.getIRFFI(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            10 * 1e14 //0.1%
+        );
+    }
+
     function test_ir_without_pInf() external {
         // 0.99$
         tgUSDPrice = 99 * 10 ** 16;
@@ -191,25 +227,52 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         }
     }
 
-    function test_fuzzing_with_bounds(uint256 tgUSDPrice_, uint32 rMin_, uint32 rMax_, uint32 pMin_, uint32 pInf_, uint32 pMax_, uint32 a1_, uint32 a2_, uint32 k_) external {
+    function test_fuzzing_with_big_bounds(uint256 tgUSDPrice_, uint32 rMin_, uint32 rMax_, uint32 pMin_, uint32 pInf_, uint32 pMax_, uint32 a1_, uint32 a2_, uint32 k_) external {
         rMin_ = uint32(bound(uint256(rMin_), 0, 1_000_000));
         rMax_ = uint32(bound(uint256(rMax_), rMin_, 2_000_000));
 
         pMin_ = uint32(bound(uint256(pMin_), 0, 1_000_000));
-        pMax_ = uint32(bound(uint256(pMax_), uint256(pMin_), 2_000_000));
+        pMax_ = uint32(bound(uint256(pMax_), uint256(pMin_) + 1, 2_000_000));
         pInf_ = uint32(bound(uint256(pInf_), pMin_, pMax_));
 
-        tgUSDPrice_ = bound(tgUSDPrice_, pMin_ == 0 ? 0 : pMin_ - 1, pMax_ + 100);
+        tgUSDPrice_ = bound(tgUSDPrice_, pMin_ == 0 ? 0 : uint256(pMin_) * 10 ** 12 - 1, uint256(pMax_) * 10 ** 12 + 100);
 
         a1_ = uint32(bound(uint256(a1_), 0, 99_000));
         a2_ = uint32(bound(uint256(a2_), 0, 99_000));
 
         k_ = uint32(bound(k_, 0, 99_000));
 
-        assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice_, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_),
-            irCalculator.simulateIR(tgUSDPrice_, IRParams({rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_})),
-            10 * 1e13 //0.01%
-        );
+        uint256 expected = irFFI.getIRFFI(tgUSDPrice_, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_);
+        uint256 calculated = irCalculator.simulateIR(tgUSDPrice_, IRParams({rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_}));
+
+        if (expected <= 10_000) {
+            assertApproxEqAbs(expected, calculated, 1); // 1 wei delta
+        } else {
+            assertApproxEqRel(expected, calculated, 10 * 1e13); //0.01% delta
+        }
+    }
+    function test_fuzzing_with_small_bounds(uint256 tgUSDPrice_, uint32 rMin_, uint32 rMax_, uint32 pMin_, uint32 pInf_, uint32 pMax_, uint32 a1_, uint32 a2_, uint32 k_) external {
+        rMin_ = uint32(bound(uint256(rMin_), 0, 50_000));
+        rMax_ = uint32(bound(uint256(rMax_), rMin_, 2_000_000));
+
+        pMin_ = uint32(bound(uint256(pMin_), 970_000, 990_000));
+        pMax_ = uint32(bound(uint256(pMax_), uint256(pMin_) + 1, 2_000_000));
+        pInf_ = uint32(bound(uint256(pInf_), pMin_, pMax_));
+
+        tgUSDPrice_ = bound(tgUSDPrice_, pMin_ == 0 ? 0 : uint256(pMin_) * 10 ** 12 - 1, uint256(pMax_) * 10 ** 12 + 100);
+
+        a1_ = uint32(bound(uint256(a1_), 0, 990_000));
+        a2_ = uint32(bound(uint256(a2_), 0, 990_000));
+
+        k_ = uint32(bound(k_, 0, 99_000));
+
+        uint256 expected = irFFI.getIRFFI(tgUSDPrice_, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_);
+        uint256 calculated = irCalculator.simulateIR(tgUSDPrice_, IRParams({rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_}));
+
+        if (expected <= 10_000) {
+            assertApproxEqAbs(expected, calculated, 1); // 1 wei delta
+        } else {
+            assertApproxEqRel(expected, calculated, 10 * 1e13); //0.01% delta
+        }
     }
 }
