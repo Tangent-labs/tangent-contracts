@@ -105,7 +105,7 @@ contract MarketCreator is Ownable {
         IConvexCrvLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _cvxRewardToken, _pid, _socFeePercentage);
 
         controlTower.toggleMarket(proxy);
-        irCalculator.setUpMarketRewards(proxy, _irParams, _rcParams);
+        irCalculator.setUpMarket(proxy, _irParams, _rcParams);
 
         emit MarketConvexCrvCreated(proxy);
         return proxy;
@@ -122,7 +122,7 @@ contract MarketCreator is Ownable {
         IConvexFxnLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _pid, _socFeePercentage);
 
         controlTower.toggleMarket(proxy);
-        irCalculator.setUpMarketRewards(proxy, _irParams, _rcParams);
+        irCalculator.setUpMarket(proxy, _irParams, _rcParams);
 
         emit MarketConvexFxnCreated(proxy);
         return proxy;
@@ -133,7 +133,7 @@ contract MarketCreator is Ownable {
         IMarketNoSociabilization(proxy).initialize(_getGlobalParams(), _marketInit);
 
         controlTower.toggleMarket(proxy);
-        irCalculator.setUpMarketRewards(proxy, _irParams, _rcParams);
+        irCalculator.setUpMarket(proxy, _irParams, _rcParams);
 
         emit MarketNoSociabilizationCreated(proxy);
         return proxy;
