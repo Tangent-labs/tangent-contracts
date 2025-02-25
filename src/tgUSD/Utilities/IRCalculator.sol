@@ -17,7 +17,12 @@ import "forge-std/console.sol";
 contract IRCalculator is IIRCalculator, Ownable {
     uint256 public constant DENOMINATOR = 100_000;
 
-    uint256 public constant ONE_ETHER = 1e18;
+    uint256 constant ONE_ETHER = 1e18;
+
+    uint256 constant E12 = 1e12;
+    uint256 constant E13 = 1e13;
+
+    int256 constant MAX_EXP = 43;
 
     IControlTower public controlTower;
 
@@ -99,86 +104,32 @@ contract IRCalculator is IIRCalculator, Ownable {
      * @param  irParam    IR parameters
      */
     function _computeIR(uint256 tgUSDPrice, IRParams memory irParam) internal view returns (uint256) {
-        // uint256 nomalizedPMin = uint256(irParam.pMin) * 10 ** 12;
-        // uint256 nomalizedPMax = uint256(irParam.pMax) * 10 ** 12;
-
-        // console.log("normalizedP", nomalizedPMin, nomalizedPMax);
-        if (tgUSDPrice < uint256(irParam.pMin) * 10 ** 12) {
-            return uint256(irParam.rMax) * 10 ** 13;
+        if (tgUSDPrice <= uint256(irParam.pMin) * E12) {
+            return uint256(irParam.rMax) * E13;
         }
-        if (tgUSDPrice > uint256(irParam.pMax) * 10 ** 12) {
-            return uint256(irParam.rMin) * 10 ** 13;
+        if (tgUSDPrice >= uint256(irParam.pMax) * E12) {
+            return uint256(irParam.rMin) * E13;
         }
-        // console.log(ABDKMath64x64.div(64 - 1));
-        int128 priceDelta = ABDKMath64x64.divi(int256(tgUSDPrice) - int256(int32(irParam.pInf)) * 10 ** 12, 10 ** 18);
-        // console.log("priceDelta", ABDKMath64x64.toInt(ABDKMath64x64.mul(priceDelta, ABDKMath64x64.fromUInt(100_000))));
 
-        int128 gammaX = -ABDKMath64x64.mul(ABDKMath64x64.fromUInt(irParam.k), priceDelta);
-        // console.log("gammaX", ABDKMath64x64.toUInt(ABDKMath64x64.mul(gammaX, ABDKMath64x64.fromUInt(100))));
-        console.log("gammaX", ABDKMath64x64.toInt(gammaX));
-
-        // To prevent exp overflow
-        if (ABDKMath64x64.toInt(gammaX) >= 43) {
-            console.log("in");
-            gammaX = ABDKMath64x64.fromUInt(43);
-        }
-        console.log("coucou");
-        int128 exp = ABDKMath64x64.exp(gammaX);
-        console.log("coucou");
-
-        // console.log("exp", ABDKMath64x64.toUInt(exp));
-
-        // console.log("exp", ABDKMath64x64.toUInt(ABDKMath64x64.mul(exp, ABDKMath64x64.fromUInt(100_000))));
-
-        int128 gamma = ABDKMath64x64.div(ABDKMath64x64.fromUInt(1), ABDKMath64x64.fromUInt(1) + exp);
-
-        console.log("gamma", ABDKMath64x64.toUInt(ABDKMath64x64.mul(gamma, ABDKMath64x64.fromUInt(100_000))));
-
-        int128 alpha = ABDKMath64x64.add(
-            ABDKMath64x64.fromUInt(irParam.a1),
-            ABDKMath64x64.mul(ABDKMath64x64.sub(ABDKMath64x64.fromUInt(irParam.a2), ABDKMath64x64.fromUInt(irParam.a1)), gamma)
+        int128 gammaX = -ABDKMath64x64.mul(
+            ABDKMath64x64.fromUInt(irParam.k),
+            ABDKMath64x64.divi(int256(tgUSDPrice) - int256(int32(irParam.pInf)) * int256(E12), int256(ONE_ETHER))
         );
-        console.log("alpha", ABDKMath64x64.toUInt(ABDKMath64x64.mul(alpha, ABDKMath64x64.fromUInt(100_000))));
-
-        uint256 quotient = ((uint256(irParam.pMax) * 10 ** 12) - tgUSDPrice) / (irParam.pMax - irParam.pMin);
-
-        // console.log("quotient", quotient);
-        int128 quotientFixedPoint = ABDKMath64x64.divu(quotient, 10 ** 12);
-
-        int128 priceRatio = _pow(quotientFixedPoint, alpha);
-
-        console.log("priceRatio", ABDKMath64x64.toUInt(ABDKMath64x64.mul(priceRatio, ABDKMath64x64.fromUInt(100000_000))));
+        // To prevent exp overflow
+        if (ABDKMath64x64.toInt(gammaX) >= MAX_EXP) {
+            gammaX = ABDKMath64x64.fromInt(MAX_EXP);
+        }
+        int128 one = ABDKMath64x64.fromUInt(1);
+        int128 gamma = ABDKMath64x64.div(one, one + ABDKMath64x64.exp(gammaX));
+        int128 alpha1 = ABDKMath64x64.divu(irParam.a1, 1_000);
+        int128 alpha = ABDKMath64x64.add(alpha1, ABDKMath64x64.mul(ABDKMath64x64.sub(ABDKMath64x64.divu(irParam.a2, 1_000), alpha1), gamma));
+        int128 quotientFixedPoint = ABDKMath64x64.divu(((uint256(irParam.pMax) * E12) - tgUSDPrice) / (irParam.pMax - irParam.pMin), E12);
 
         uint256 irIncrement = ABDKMath64x64.toUInt(
-            ABDKMath64x64.mul(ABDKMath64x64.mul(ABDKMath64x64.fromUInt(irParam.rMax - irParam.rMin), priceRatio), ABDKMath64x64.fromUInt(10 ** 8))
+            ABDKMath64x64.mul(ABDKMath64x64.mul(ABDKMath64x64.fromUInt(irParam.rMax - irParam.rMin), _pow(quotientFixedPoint, alpha)), ABDKMath64x64.fromUInt(10 ** 8))
         );
-
-        return uint256(irParam.rMin) * 10 ** 13 + irIncrement * 10 ** 5;
+        return uint256(irParam.rMin) * E13 + irIncrement * 10 ** 5;
     }
-
-    // function _computeIR(uint256 tgUSDPrice, IRParams calldata irParam) internal view returns (uint256) {
-    //     if (tgUSDPrice > irStartPrice) {
-    //         return 0;
-    //     }
-    //     if (tgUSDPrice < priceIRMax) {
-    //         tgUSDPrice = priceIRMax;
-    //     }
-
-    //     int128 powerIn64x64 = ABDKMath64x64.divu(((1 ether - tgUSDPrice) * ONE_ETHER) / sigma, ONE_ETHER);
-
-    //     // Calcul exp(1) en utilisant la méthode exp
-    //     int128 expIn64x64 = ABDKMath64x64.exp(powerIn64x64);
-
-    //     // Integer part of exp result
-    //     uint256 integerPart = ABDKMath64x64.toUInt(expIn64x64);
-
-    //     // Decimal part of the exp in uint256
-    //     uint256 fractionalAsDecimal = ABDKMath64x64.mulu(expIn64x64 - ABDKMath64x64.fromUInt(integerPart), ONE_ETHER);
-
-    //     uint256 formulaReturn = integerPart * ONE_ETHER + fractionalAsDecimal;
-
-    //     return (formulaReturn * r0) / ONE_ETHER;
-    // }
 
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
