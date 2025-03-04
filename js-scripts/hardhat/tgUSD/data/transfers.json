@@ -8,8 +8,13 @@
     },
     {
       "in": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+<<<<<<< HEAD
       "pool": "0x08603801aa981b0F6b5cfbc645D1CBb5b4a090e6",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x9804C30875127246AC92D72D5CDF0630aA356861",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "USDC >> tgUSD-USDC* >> tgUSD* "
     }
   ],
@@ -34,6 +39,7 @@
     },
     {
       "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+<<<<<<< HEAD
       "pool": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "out": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "display": "DOLA >> wDOLA* >> wDOLA* "
@@ -42,6 +48,16 @@
       "in": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "pool": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "out": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "display": "DOLA >> wDOLA* >> wDOLA* "
+    },
+    {
+      "in": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "pool": "0xb96f238D75663CEb962917cEBA631594a4C1d554",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wDOLA* >> tgUSD-wDOLA* >> tgUSD* "
     }
   ],
@@ -60,6 +76,7 @@
     },
     {
       "in": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+<<<<<<< HEAD
       "pool": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "out": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
@@ -68,6 +85,16 @@
       "in": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "pool": "0x459525a49deF2cA421ab83E4f283Cc1cEc09248C",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "out": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
+    },
+    {
+      "in": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "pool": "0x7B707fE05B490b5F334432e345f1c23c72d3f464",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wcrvUSD* >> tgUSD-wcrvUSD* >> tgUSD* "
     }
   ],
@@ -86,6 +113,7 @@
     },
     {
       "in": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
+<<<<<<< HEAD
       "pool": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "out": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "display": "USR >> wUSR* >> wUSR* "
@@ -94,6 +122,16 @@
       "in": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "pool": "0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "out": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "display": "USR >> wUSR* >> wUSR* "
+    },
+    {
+      "in": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "pool": "0x00836Fe54625BE242BcFA286207795405ca4fD10",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSR* >> tgUSD-wUSR* >> tgUSD* "
     }
   ],
@@ -112,6 +150,7 @@
     },
     {
       "in": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+<<<<<<< HEAD
       "pool": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "out": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "display": "USDe >> wUSDe* >> wUSDe* "
@@ -120,6 +159,16 @@
       "in": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "pool": "0x6d18E1a7faeB1F0467A77C0d293872ab685426dc",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "out": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "display": "USDe >> wUSDe* >> wUSDe* "
+    },
+    {
+      "in": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "pool": "0x152ad1044935675Cb31e0d4B205FcBD4C4507d65",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSDe* >> tgUSD-wUSDe* >> tgUSD* "
     }
   ],
@@ -144,6 +193,7 @@
     },
     {
       "in": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
+<<<<<<< HEAD
       "pool": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "out": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
@@ -152,6 +202,16 @@
       "in": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "pool": "0x5b05497fE6C1bD226845c89e42b2bd9f50510996",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "out": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
+    },
+    {
+      "in": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "pool": "0xd0458217512cc5D02391bAEa5aFc01827DD8E779",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wfrxUSD* >> tgUSD-wfrxUSD* >> tgUSD* "
     }
   ],
@@ -164,8 +224,13 @@
     },
     {
       "in": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+<<<<<<< HEAD
       "pool": "0x08603801aa981b0F6b5cfbc645D1CBb5b4a090e6",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x9804C30875127246AC92D72D5CDF0630aA356861",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "USDC >> tgUSD-USDC* >> tgUSD* "
     }
   ],
@@ -184,6 +249,7 @@
     },
     {
       "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+<<<<<<< HEAD
       "pool": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "out": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "display": "DOLA >> wDOLA* >> wDOLA* "
@@ -192,6 +258,16 @@
       "in": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "pool": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "out": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "display": "DOLA >> wDOLA* >> wDOLA* "
+    },
+    {
+      "in": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "pool": "0xb96f238D75663CEb962917cEBA631594a4C1d554",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wDOLA* >> tgUSD-wDOLA* >> tgUSD* "
     }
   ],
@@ -204,6 +280,7 @@
     },
     {
       "in": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+<<<<<<< HEAD
       "pool": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "out": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
@@ -212,6 +289,16 @@
       "in": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "pool": "0x459525a49deF2cA421ab83E4f283Cc1cEc09248C",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "out": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
+    },
+    {
+      "in": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "pool": "0x7B707fE05B490b5F334432e345f1c23c72d3f464",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wcrvUSD* >> tgUSD-wcrvUSD* >> tgUSD* "
     }
   ],
@@ -230,6 +317,7 @@
     },
     {
       "in": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
+<<<<<<< HEAD
       "pool": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "out": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "display": "USR >> wUSR* >> wUSR* "
@@ -238,6 +326,16 @@
       "in": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "pool": "0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "out": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "display": "USR >> wUSR* >> wUSR* "
+    },
+    {
+      "in": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "pool": "0x00836Fe54625BE242BcFA286207795405ca4fD10",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSR* >> tgUSD-wUSR* >> tgUSD* "
     }
   ],
@@ -256,6 +354,7 @@
     },
     {
       "in": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+<<<<<<< HEAD
       "pool": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "out": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "display": "USDe >> wUSDe* >> wUSDe* "
@@ -264,6 +363,16 @@
       "in": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "pool": "0x6d18E1a7faeB1F0467A77C0d293872ab685426dc",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "out": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "display": "USDe >> wUSDe* >> wUSDe* "
+    },
+    {
+      "in": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "pool": "0x152ad1044935675Cb31e0d4B205FcBD4C4507d65",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSDe* >> tgUSD-wUSDe* >> tgUSD* "
     }
   ],
@@ -288,6 +397,7 @@
     },
     {
       "in": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
+<<<<<<< HEAD
       "pool": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "out": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
@@ -296,6 +406,16 @@
       "in": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "pool": "0x5b05497fE6C1bD226845c89e42b2bd9f50510996",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "out": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
+    },
+    {
+      "in": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "pool": "0xd0458217512cc5D02391bAEa5aFc01827DD8E779",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wfrxUSD* >> tgUSD-wfrxUSD* >> tgUSD* "
     }
   ],
@@ -314,8 +434,13 @@
     },
     {
       "in": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+<<<<<<< HEAD
       "pool": "0x08603801aa981b0F6b5cfbc645D1CBb5b4a090e6",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x9804C30875127246AC92D72D5CDF0630aA356861",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "USDC >> tgUSD-USDC* >> tgUSD* "
     }
   ],
@@ -334,6 +459,7 @@
     },
     {
       "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+<<<<<<< HEAD
       "pool": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "out": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "display": "DOLA >> wDOLA* >> wDOLA* "
@@ -342,6 +468,16 @@
       "in": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "pool": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "out": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "display": "DOLA >> wDOLA* >> wDOLA* "
+    },
+    {
+      "in": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "pool": "0xb96f238D75663CEb962917cEBA631594a4C1d554",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wDOLA* >> tgUSD-wDOLA* >> tgUSD* "
     }
   ],
@@ -354,6 +490,7 @@
     },
     {
       "in": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+<<<<<<< HEAD
       "pool": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "out": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
@@ -362,6 +499,16 @@
       "in": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "pool": "0x459525a49deF2cA421ab83E4f283Cc1cEc09248C",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "out": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
+    },
+    {
+      "in": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "pool": "0x7B707fE05B490b5F334432e345f1c23c72d3f464",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wcrvUSD* >> tgUSD-wcrvUSD* >> tgUSD* "
     }
   ],
@@ -386,6 +533,7 @@
     },
     {
       "in": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
+<<<<<<< HEAD
       "pool": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "out": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "display": "USR >> wUSR* >> wUSR* "
@@ -394,6 +542,16 @@
       "in": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "pool": "0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "out": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "display": "USR >> wUSR* >> wUSR* "
+    },
+    {
+      "in": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "pool": "0x00836Fe54625BE242BcFA286207795405ca4fD10",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSR* >> tgUSD-wUSR* >> tgUSD* "
     }
   ],
@@ -418,6 +576,7 @@
     },
     {
       "in": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
+<<<<<<< HEAD
       "pool": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "out": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
@@ -426,6 +585,16 @@
       "in": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "pool": "0x5b05497fE6C1bD226845c89e42b2bd9f50510996",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "out": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
+    },
+    {
+      "in": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "pool": "0xd0458217512cc5D02391bAEa5aFc01827DD8E779",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wfrxUSD* >> tgUSD-wfrxUSD* >> tgUSD* "
     }
   ],
@@ -444,6 +613,7 @@
     },
     {
       "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+<<<<<<< HEAD
       "pool": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "out": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "display": "DOLA >> wDOLA* >> wDOLA* "
@@ -452,6 +622,16 @@
       "in": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "pool": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "out": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "display": "DOLA >> wDOLA* >> wDOLA* "
+    },
+    {
+      "in": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "pool": "0xb96f238D75663CEb962917cEBA631594a4C1d554",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wDOLA* >> tgUSD-wDOLA* >> tgUSD* "
     }
   ],
@@ -476,6 +656,7 @@
     },
     {
       "in": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+<<<<<<< HEAD
       "pool": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "out": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
@@ -484,6 +665,16 @@
       "in": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "pool": "0x459525a49deF2cA421ab83E4f283Cc1cEc09248C",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "out": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
+    },
+    {
+      "in": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "pool": "0x7B707fE05B490b5F334432e345f1c23c72d3f464",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wcrvUSD* >> tgUSD-wcrvUSD* >> tgUSD* "
     }
   ],
@@ -508,6 +699,7 @@
     },
     {
       "in": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
+<<<<<<< HEAD
       "pool": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "out": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "display": "USR >> wUSR* >> wUSR* "
@@ -516,6 +708,16 @@
       "in": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "pool": "0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "out": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "display": "USR >> wUSR* >> wUSR* "
+    },
+    {
+      "in": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "pool": "0x00836Fe54625BE242BcFA286207795405ca4fD10",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSR* >> tgUSD-wUSR* >> tgUSD* "
     }
   ],
@@ -540,6 +742,7 @@
     },
     {
       "in": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
+<<<<<<< HEAD
       "pool": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "out": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
@@ -548,6 +751,16 @@
       "in": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "pool": "0x5b05497fE6C1bD226845c89e42b2bd9f50510996",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "out": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
+    },
+    {
+      "in": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "pool": "0xd0458217512cc5D02391bAEa5aFc01827DD8E779",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wfrxUSD* >> tgUSD-wfrxUSD* >> tgUSD* "
     }
   ],
@@ -560,8 +773,13 @@
     },
     {
       "in": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+<<<<<<< HEAD
       "pool": "0x08603801aa981b0F6b5cfbc645D1CBb5b4a090e6",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x9804C30875127246AC92D72D5CDF0630aA356861",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "USDC >> tgUSD-USDC* >> tgUSD* "
     }
   ],
@@ -586,6 +804,7 @@
     },
     {
       "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+<<<<<<< HEAD
       "pool": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "out": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "display": "DOLA >> wDOLA* >> wDOLA* "
@@ -594,6 +813,16 @@
       "in": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "pool": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "out": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "display": "DOLA >> wDOLA* >> wDOLA* "
+    },
+    {
+      "in": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "pool": "0xb96f238D75663CEb962917cEBA631594a4C1d554",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wDOLA* >> tgUSD-wDOLA* >> tgUSD* "
     }
   ],
@@ -612,6 +841,7 @@
     },
     {
       "in": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+<<<<<<< HEAD
       "pool": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "out": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
@@ -620,6 +850,16 @@
       "in": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "pool": "0x459525a49deF2cA421ab83E4f283Cc1cEc09248C",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "out": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
+    },
+    {
+      "in": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "pool": "0x7B707fE05B490b5F334432e345f1c23c72d3f464",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wcrvUSD* >> tgUSD-wcrvUSD* >> tgUSD* "
     }
   ],
@@ -638,6 +878,7 @@
     },
     {
       "in": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
+<<<<<<< HEAD
       "pool": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "out": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "display": "USR >> wUSR* >> wUSR* "
@@ -646,6 +887,16 @@
       "in": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "pool": "0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "out": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "display": "USR >> wUSR* >> wUSR* "
+    },
+    {
+      "in": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "pool": "0x00836Fe54625BE242BcFA286207795405ca4fD10",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSR* >> tgUSD-wUSR* >> tgUSD* "
     }
   ],
@@ -664,6 +915,7 @@
     },
     {
       "in": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+<<<<<<< HEAD
       "pool": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "out": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "display": "USDe >> wUSDe* >> wUSDe* "
@@ -672,6 +924,16 @@
       "in": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "pool": "0x6d18E1a7faeB1F0467A77C0d293872ab685426dc",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "out": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "display": "USDe >> wUSDe* >> wUSDe* "
+    },
+    {
+      "in": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "pool": "0x152ad1044935675Cb31e0d4B205FcBD4C4507d65",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSDe* >> tgUSD-wUSDe* >> tgUSD* "
     }
   ],
@@ -696,6 +958,7 @@
     },
     {
       "in": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
+<<<<<<< HEAD
       "pool": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "out": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
@@ -704,6 +967,16 @@
       "in": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "pool": "0x5b05497fE6C1bD226845c89e42b2bd9f50510996",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "out": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
+    },
+    {
+      "in": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "pool": "0xd0458217512cc5D02391bAEa5aFc01827DD8E779",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wfrxUSD* >> tgUSD-wfrxUSD* >> tgUSD* "
     }
   ],
@@ -722,8 +995,13 @@
     },
     {
       "in": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+<<<<<<< HEAD
       "pool": "0x08603801aa981b0F6b5cfbc645D1CBb5b4a090e6",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x9804C30875127246AC92D72D5CDF0630aA356861",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "USDC >> tgUSD-USDC* >> tgUSD* "
     }
   ],
@@ -742,6 +1020,7 @@
     },
     {
       "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+<<<<<<< HEAD
       "pool": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "out": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "display": "DOLA >> wDOLA* >> wDOLA* "
@@ -750,6 +1029,16 @@
       "in": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "pool": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "out": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "display": "DOLA >> wDOLA* >> wDOLA* "
+    },
+    {
+      "in": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "pool": "0xb96f238D75663CEb962917cEBA631594a4C1d554",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wDOLA* >> tgUSD-wDOLA* >> tgUSD* "
     }
   ],
@@ -774,6 +1063,7 @@
     },
     {
       "in": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+<<<<<<< HEAD
       "pool": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "out": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
@@ -782,6 +1072,16 @@
       "in": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "pool": "0x459525a49deF2cA421ab83E4f283Cc1cEc09248C",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "out": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
+    },
+    {
+      "in": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "pool": "0x7B707fE05B490b5F334432e345f1c23c72d3f464",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wcrvUSD* >> tgUSD-wcrvUSD* >> tgUSD* "
     }
   ],
@@ -794,6 +1094,7 @@
     },
     {
       "in": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
+<<<<<<< HEAD
       "pool": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "out": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "display": "USR >> wUSR* >> wUSR* "
@@ -802,6 +1103,16 @@
       "in": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "pool": "0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "out": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "display": "USR >> wUSR* >> wUSR* "
+    },
+    {
+      "in": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "pool": "0x00836Fe54625BE242BcFA286207795405ca4fD10",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSR* >> tgUSD-wUSR* >> tgUSD* "
     }
   ],
@@ -826,6 +1137,7 @@
     },
     {
       "in": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+<<<<<<< HEAD
       "pool": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "out": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "display": "USDe >> wUSDe* >> wUSDe* "
@@ -834,6 +1146,16 @@
       "in": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "pool": "0x6d18E1a7faeB1F0467A77C0d293872ab685426dc",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "out": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "display": "USDe >> wUSDe* >> wUSDe* "
+    },
+    {
+      "in": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "pool": "0x152ad1044935675Cb31e0d4B205FcBD4C4507d65",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSDe* >> tgUSD-wUSDe* >> tgUSD* "
     }
   ],
@@ -852,8 +1174,13 @@
     },
     {
       "in": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+<<<<<<< HEAD
       "pool": "0x08603801aa981b0F6b5cfbc645D1CBb5b4a090e6",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x9804C30875127246AC92D72D5CDF0630aA356861",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "USDC >> tgUSD-USDC* >> tgUSD* "
     }
   ],
@@ -878,6 +1205,7 @@
     },
     {
       "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+<<<<<<< HEAD
       "pool": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "out": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "display": "DOLA >> wDOLA* >> wDOLA* "
@@ -886,6 +1214,16 @@
       "in": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "pool": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "out": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "display": "DOLA >> wDOLA* >> wDOLA* "
+    },
+    {
+      "in": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "pool": "0xb96f238D75663CEb962917cEBA631594a4C1d554",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wDOLA* >> tgUSD-wDOLA* >> tgUSD* "
     }
   ],
@@ -904,6 +1242,7 @@
     },
     {
       "in": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+<<<<<<< HEAD
       "pool": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "out": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
@@ -912,6 +1251,16 @@
       "in": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "pool": "0x459525a49deF2cA421ab83E4f283Cc1cEc09248C",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "out": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
+    },
+    {
+      "in": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "pool": "0x7B707fE05B490b5F334432e345f1c23c72d3f464",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wcrvUSD* >> tgUSD-wcrvUSD* >> tgUSD* "
     }
   ],
@@ -936,6 +1285,7 @@
     },
     {
       "in": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
+<<<<<<< HEAD
       "pool": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "out": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "display": "USR >> wUSR* >> wUSR* "
@@ -944,6 +1294,16 @@
       "in": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "pool": "0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "out": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "display": "USR >> wUSR* >> wUSR* "
+    },
+    {
+      "in": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "pool": "0x00836Fe54625BE242BcFA286207795405ca4fD10",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSR* >> tgUSD-wUSR* >> tgUSD* "
     }
   ],
@@ -956,6 +1316,7 @@
     },
     {
       "in": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+<<<<<<< HEAD
       "pool": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "out": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "display": "USDe >> wUSDe* >> wUSDe* "
@@ -964,6 +1325,16 @@
       "in": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
       "pool": "0x6d18E1a7faeB1F0467A77C0d293872ab685426dc",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "out": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "display": "USDe >> wUSDe* >> wUSDe* "
+    },
+    {
+      "in": "0x88777418972fB3F58489303d763d4DaF398A6527",
+      "pool": "0x152ad1044935675Cb31e0d4B205FcBD4C4507d65",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSDe* >> tgUSD-wUSDe* >> tgUSD* "
     }
   ],
@@ -976,6 +1347,7 @@
     },
     {
       "in": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
+<<<<<<< HEAD
       "pool": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "out": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
@@ -984,6 +1356,16 @@
       "in": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "pool": "0x5b05497fE6C1bD226845c89e42b2bd9f50510996",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "out": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
+    },
+    {
+      "in": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "pool": "0xd0458217512cc5D02391bAEa5aFc01827DD8E779",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wfrxUSD* >> tgUSD-wfrxUSD* >> tgUSD* "
     }
   ],
@@ -1002,8 +1384,13 @@
     },
     {
       "in": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+<<<<<<< HEAD
       "pool": "0x08603801aa981b0F6b5cfbc645D1CBb5b4a090e6",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x9804C30875127246AC92D72D5CDF0630aA356861",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "USDC >> tgUSD-USDC* >> tgUSD* "
     }
   ],
@@ -1016,6 +1403,7 @@
     },
     {
       "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+<<<<<<< HEAD
       "pool": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "out": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "display": "DOLA >> wDOLA* >> wDOLA* "
@@ -1024,6 +1412,16 @@
       "in": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "pool": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "out": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "display": "DOLA >> wDOLA* >> wDOLA* "
+    },
+    {
+      "in": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "pool": "0xb96f238D75663CEb962917cEBA631594a4C1d554",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wDOLA* >> tgUSD-wDOLA* >> tgUSD* "
     }
   ],
@@ -1048,6 +1446,7 @@
     },
     {
       "in": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+<<<<<<< HEAD
       "pool": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "out": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
@@ -1056,6 +1455,16 @@
       "in": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "pool": "0x459525a49deF2cA421ab83E4f283Cc1cEc09248C",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "out": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
+    },
+    {
+      "in": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "pool": "0x7B707fE05B490b5F334432e345f1c23c72d3f464",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wcrvUSD* >> tgUSD-wcrvUSD* >> tgUSD* "
     }
   ],
@@ -1068,6 +1477,7 @@
     },
     {
       "in": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
+<<<<<<< HEAD
       "pool": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "out": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "display": "USR >> wUSR* >> wUSR* "
@@ -1076,6 +1486,16 @@
       "in": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
       "pool": "0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "out": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "display": "USR >> wUSR* >> wUSR* "
+    },
+    {
+      "in": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+      "pool": "0x00836Fe54625BE242BcFA286207795405ca4fD10",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wUSR* >> tgUSD-wUSR* >> tgUSD* "
     }
   ],
@@ -1100,6 +1520,7 @@
     },
     {
       "in": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
+<<<<<<< HEAD
       "pool": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "out": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
@@ -1108,6 +1529,16 @@
       "in": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "pool": "0x5b05497fE6C1bD226845c89e42b2bd9f50510996",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "out": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
+    },
+    {
+      "in": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "pool": "0xd0458217512cc5D02391bAEa5aFc01827DD8E779",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wfrxUSD* >> tgUSD-wfrxUSD* >> tgUSD* "
     }
   ],
@@ -1126,6 +1557,7 @@
     },
     {
       "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+<<<<<<< HEAD
       "pool": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "out": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "display": "DOLA >> wDOLA* >> wDOLA* "
@@ -1134,6 +1566,16 @@
       "in": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
       "pool": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "out": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "display": "DOLA >> wDOLA* >> wDOLA* "
+    },
+    {
+      "in": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+      "pool": "0xb96f238D75663CEb962917cEBA631594a4C1d554",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wDOLA* >> tgUSD-wDOLA* >> tgUSD* "
     }
   ],
@@ -1152,6 +1594,7 @@
     },
     {
       "in": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
+<<<<<<< HEAD
       "pool": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "out": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
@@ -1160,6 +1603,16 @@
       "in": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
       "pool": "0x459525a49deF2cA421ab83E4f283Cc1cEc09248C",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "out": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
+    },
+    {
+      "in": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+      "pool": "0x7B707fE05B490b5F334432e345f1c23c72d3f464",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wcrvUSD* >> tgUSD-wcrvUSD* >> tgUSD* "
     }
   ],
@@ -1184,6 +1637,7 @@
     },
     {
       "in": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
+<<<<<<< HEAD
       "pool": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "out": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
@@ -1192,6 +1646,16 @@
       "in": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
       "pool": "0x5b05497fE6C1bD226845c89e42b2bd9f50510996",
       "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
+=======
+      "pool": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "out": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
+    },
+    {
+      "in": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+      "pool": "0xd0458217512cc5D02391bAEa5aFc01827DD8E779",
+      "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+>>>>>>> e47312e (feat: add curve swap test)
       "display": "wfrxUSD* >> tgUSD-wfrxUSD* >> tgUSD* "
     }
   ]
