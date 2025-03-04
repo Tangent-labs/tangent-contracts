@@ -1,18 +1,20 @@
-import {BaseContext} from "./BaseContext";
-import {deploytgUsd} from "../actions/deploytgUsd";
-import {MarketContext} from "./MarketContext";
-import {OracleContext} from "./OracleContext";
-import {UserMarketParams} from "../actions/common";
-import {deposit} from "../actions/deposit";
-import {borrow} from "../actions/borrow";
+import { BaseContext } from "./BaseContext";
+import { deploytgUsd } from "../actions/deploytgUsd";
+import { MarketContext } from "./MarketContext";
+import { OracleContext } from "./OracleContext";
+import { UserMarketParams } from "../actions/common";
+import { deposit } from "../actions/deposit";
+import { borrow } from "../actions/borrow";
+import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 import chainViewMarketAccountArtifact from "../../../../artifacts/src/chainview/tgUSD/bot/MarketAccountLiquidationBotInfo.cv.sol/MarketAccountLiquidationBotInfo.json";
-import {chainView} from "../../../chainView";
-import {parseEther} from "ethers";
-import {ConvexCrvLPMarket, ConvexFxnLPMarket} from "../../../../typechain-types";
-import {swap} from "../actions/swapCurve";
+import { chainView } from "../../../chainView";
+import { parseEther } from "ethers";
+import { ConvexCrvLPMarket, ConvexFxnLPMarket } from "../../../../typechain-types";
+import { swap } from "../actions/swapCurve";
+import { BAL_80BAL_20WETH_ID } from "convergence-defi-tools/build/ressources/lps/balancer";
 
-export type DepositBorrowSpecific = Record<string, Record<string, {deposit: string; borrow: string}>>;
+export type DepositBorrowSpecific = Record<string, Record<string, { deposit: string; borrow: string }>>;
 
 export type LiquidationMarketInfo = {
     maxLTV: bigint;
@@ -20,7 +22,8 @@ export type LiquidationMarketInfo = {
     collateralUSDPrice: bigint;
     oracleDecimals: bigint;
 };
-export type LiquidationUserInInfo = {account: string; market: string};
+export type LiquidationUserInInfo = { account: string; market: string }
+
 
 export type LiquidationAccountInfo = {
     healthRatio: bigint;
@@ -43,7 +46,7 @@ export class LiquidationContext {
     userAddresses: string[] = [];
     markets?: (ConvexCrvLPMarket | ConvexFxnLPMarket)[];
     async doDeploy() {
-        const {baseContext, marketContext, oracleContext} = await deploytgUsd(this.userCount);
+        const { baseContext, marketContext, oracleContext } = await deploytgUsd(this.userCount);
         this.baseContext = baseContext;
         this.marketContext = marketContext;
         this.oracleContext = oracleContext;
@@ -58,11 +61,19 @@ export class LiquidationContext {
     }
 
     getSpecificDepositBorrowCase() {
-        const specificCases: Record<string, Record<string, {deposit: string; borrow: string}>> = {
-            [this.marketAddresses[0]]: {
+        const specificCases: Record<string, Record<string, { deposit: string; borrow: string }>> = {
+            [this.marketAddresses[2]]: {
                 [this.userAddresses[0]]: {
                     deposit: "12000",
                     borrow: "9000",
+                },
+                [this.userAddresses[1]]: {
+                    deposit: "12000",
+                    borrow: "8000",
+                },
+                [this.userAddresses[2]]: {
+                    deposit: "12000",
+                    borrow: "7000",
                 },
             },
         };
@@ -93,7 +104,7 @@ export class LiquidationContext {
             depositParams[marketaddress] = currentMarketDeposit;
             borrowParams[marketaddress] = currentMarketBorrow;
         });
-        return {depositParams, borrowParams};
+        return { depositParams, borrowParams };
     }
 
     async doDepositAndBorrow() {
@@ -101,7 +112,7 @@ export class LiquidationContext {
 
         // generate the params
         const specificCases = this.getSpecificDepositBorrowCase();
-        const {depositParams, borrowParams}: {depositParams: UserMarketParams; borrowParams: UserMarketParams} = this.getBorrowAndDepositParams(
+        const { depositParams, borrowParams }: { depositParams: UserMarketParams; borrowParams: UserMarketParams } = this.getBorrowAndDepositParams(
             this.marketAddresses,
             this.userAddresses,
             specificCases
@@ -113,19 +124,25 @@ export class LiquidationContext {
     }
 
     async unbalanceContext() {
+        const amount = 3_670_000;
+
+
         if (!this.marketAddresses?.length || !this.baseContext) throw new Error("Contracts not depoyed");
-        const lpAddress = await Promise.all(this.markets!.map((m) => m.collatToken()));
+       
+        const toSwapMarketIndex = 2; // others markets are link to chainlink so swap dosen't have an effect on price.
+        const lpAddress = (await this.markets![toSwapMarketIndex].collatToken());
+        await swap(this.baseContext!.users[0], lpAddress, 1, 0, amount.toString());
+      
 
-        const markets = this.markets?.slice(0, 1);
-        //TODO add specifics for [0,1] | [1,0] and amounts
-
-        const promises = markets?.map(async (m, i) => {
-            swap(this.baseContext!, lpAddress[i], 0, 1, "100");
-        });
-        await Promise.all(promises || []);
+        // Time advance
+        const day = 1;
+        const seconds = day * 24 * 60 * 60;
+        await time.increase(seconds);
+        console.info("\x1b[32m%s\x1b[0m", "Time has been incresed by " + day + " day on the test node !");
     }
 
     async testChainView() {
+  
         // just to test the accounts chain view execution
         const params = this.marketAddresses
             .map((marketAddress) =>
