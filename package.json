@@ -23,6 +23,7 @@
     "time-travel": "npx hardhat run js-scripts/hardhat/tgUSD/actions/time-travel.ts --network localhost",
     "liquidation-context": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/liquidationSetUp.ts --network localhost",
     "liquidation-swap": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/liquidationSwap.ts --network localhost",
+    "router-test": "npx hardhat run  js-scripts/hardhat/tgUSD/scripts/curveRoutertest.ts --network localhost ",
     "booster-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost"
   },
   "author": "Trottoir",
@@ -39,8 +40,7 @@
     "defi-resources": "https://github.com/Tangent-labs/defi-resources.git#main",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.4",
-    "hardhat": "^2.22.17",
-    "pg": "^8.14.1"
+    "hardhat": "^2.22.17"
   },
   "dependencies": {
     "decimal.js": "^10.5.0"

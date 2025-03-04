@@ -9,10 +9,10 @@ import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 import chainViewMarketAccountArtifact from "../../../../artifacts/src/chainview/tgUSD/bot/MarketAccountLiquidationBotInfo.cv.sol/MarketAccountLiquidationBotInfo.json";
 import { chainView } from "../../../chainView";
-import { parseEther } from "ethers";
 import { ConvexCrvLPMarket, ConvexFxnLPMarket } from "../../../../typechain-types";
 import { swap } from "../actions/swapCurve";
-import { BAL_80BAL_20WETH_ID } from "convergence-defi-tools/build/ressources/lps/balancer";
+import { LpDeployContext } from "./LPDeployContext";
+import { WStablesContext } from "./WStableContext";
 
 export type DepositBorrowSpecific = Record<string, Record<string, { deposit: string; borrow: string }>>;
 
@@ -37,6 +37,9 @@ export type LiquidationMarketAccountInfo = {
 };
 
 export class LiquidationContext {
+
+    lpDeployContext?: LpDeployContext;
+    wStableContext?: WStablesContext;
     baseContext?: BaseContext;
     marketContext?: MarketContext;
     oracleContext?: OracleContext;
@@ -46,10 +49,13 @@ export class LiquidationContext {
     userAddresses: string[] = [];
     markets?: (ConvexCrvLPMarket | ConvexFxnLPMarket)[];
     async doDeploy() {
-        const { baseContext, marketContext, oracleContext } = await deploytgUsd(this.userCount);
+        const { baseContext, marketContext, oracleContext ,lpDeployContext, wStableContext} = await deploytgUsd();
         this.baseContext = baseContext;
         this.marketContext = marketContext;
         this.oracleContext = oracleContext;
+        this.lpDeployContext = lpDeployContext;
+        this.wStableContext = wStableContext;
+
 
         // get data form context
         this.markets = [...Object.values(this.marketContext.convexCrvMarkets), ...Object.values(this.marketContext.convexFxnMarkets)];

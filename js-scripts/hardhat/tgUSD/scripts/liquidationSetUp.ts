@@ -5,9 +5,10 @@ import {LiquidationContext} from "../contexts/LiquidationContext";
 import * as fs from "fs";
 import { MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys } from "../contexts/MarketContext";
 import { OracleContext } from "../contexts/OracleContext";
+import { LpDeployContext } from "../contexts/LPDeployContext";
+import { WStablesContext } from "../contexts/WStableContext";
 
 async function main() {
-
     const liquidationContext = new LiquidationContext();
     await liquidationContext.doDeploy();
     await liquidationContext.doDepositAndBorrow();
@@ -19,10 +20,8 @@ async function main() {
     await liquidationContext.unbalanceContext();
     console.info("\x1b[32m%s\x1b[0m", "unbalanceContext OK");
 
-   
-
     fs.writeFileSync("./addresses-liquidation.json", JSON.stringify(
-        await createJSONAddress(liquidationContext.baseContext!, liquidationContext.marketContext!, liquidationContext.oracleContext!), null, 2)
+        await createJSONAddress(liquidationContext.baseContext!, liquidationContext.marketContext!, liquidationContext.oracleContext!, liquidationContext.lpDeployContext!, liquidationContext.wStableContext!), null, 2)
     );
 }
 main();
@@ -36,7 +35,14 @@ type Market = {
     marketType: string;
 };
 
-async function createJSONAddress(baseContext: BaseContext, marketContext: MarketContext, oracleContext: OracleContext) {
+
+async function createJSONAddress(
+    baseContext: BaseContext,
+    marketContext: MarketContext,
+    oracleContext: OracleContext,
+    lpDeployContext: LpDeployContext,
+    wStableContext: WStablesContext
+) {
     const markets: Market[] = [];
     for (const key in marketContext.convexCrvMarkets) {
         const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys];
@@ -67,6 +73,19 @@ async function createJSONAddress(baseContext: BaseContext, marketContext: Market
         oracles[prop] = oracle;
     }
 
+    const lps: {[key: string]: string} = {};
+    for (const prop in lpDeployContext.stableLp) {
+        const lp = await lpDeployContext.stableLp[prop].getAddress();
+        lps[prop] = lp;
+    }
+
+    const wStables: {[key: string]: string} = {};
+    for (const prop in wStableContext.wStable) {
+        const wStable = await wStableContext.wStable[prop].getAddress();
+        wStables[prop] = wStable;
+    }
+
+    oracles["tgUSD"] = await oracleContext.tgUSDOracle.getAddress();
     return {
         utilities: {
             controlTower: await baseContext.controlTower.getAddress(),
@@ -80,8 +99,7 @@ async function createJSONAddress(baseContext: BaseContext, marketContext: Market
         },
         markets,
         oracles,
-        lps: {
-            tgUSD_USDC_LP: await baseContext.stableLp["tgUSD-USDC"].getAddress(),
-        },
+        lps,
+        wStables,
     };
 }

@@ -39,10 +39,6 @@ export async function swap(user: Signer, lpAddress: string, i: number, j: number
         console.info("\x1b[38;5;208m%s\x1b[0m", "Error Swap : " + tokenInName + "/ " + tokenOutName, (e as Error).message);
         //console.log(e);
     }
-
-
-
-
 }
 
 // Example usage of the swap function

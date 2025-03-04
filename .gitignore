@@ -27,3 +27,6 @@ broadcast
 snapshots/
 flattened/
 addresses.json
+
+pyproject.toml
+requirements*

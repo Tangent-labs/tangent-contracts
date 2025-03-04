@@ -1,0 +1,6 @@
+Metadata-Version: 2.2
+Name: tangent-contracts
+Version: 0.1.0
+Summary: Tangent Contracts for Foundry and Vyper
+Author-email: Me <me@local.org>
+Requires-Dist: vyper==0.3.10

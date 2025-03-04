@@ -86,3 +86,39 @@ npm run distribute-rewards-rsTan
 ```
 LP=0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E AMOUNT_IN=100 I=0 J=1 npm run swap-curve
 ```
+
+
+## Install vyper with rye 
+1. Install rye  (Scoop is the recommended package manager for Windows developpers)
+
+```bash 
+scoop install rye
+```
+
+2. Create a pyproject.toml file with the following content:
+
+```toml
+[project]
+name = "tangent-contracts"
+version = "0.1.0"
+description = "Tangent Contracts for Foundry and Vyper"
+authors = [ { name = "Me", email = "me@local.org" }]
+dependencies = [
+    "vyper == 0.3.10"
+]
+```
+
+3. Run rye sync to install vyper
+```bash
+rye sync
+```
+
+4.  activate the virtual environment
+```bash
+source .venv/bin/activate
+```
+
+5. Test the vyper compiler
+```bash
+vyper --version
+```
