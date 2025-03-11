@@ -4,13 +4,11 @@ import {commonERC20, curveLp} from "defi-resources";
 
 import {MainSetup} from "../../Main.setup";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {AddressLike, BigNumberish, MaxUint256, ZeroAddress} from "ethers";
+import {AddressLike, MaxUint256, parseEther, ZeroAddress} from "ethers";
 import {
     ControlTower,
     ConvexCrvLPMarket,
     ConvexFxnLPMarket,
-    ICurveStableSwapNG,
-    IERC20,
     IERC20Metadata,
     IPegKeeperRegulator,
     IPegKeeperV2,
@@ -20,6 +18,8 @@ import {
     MarketCreator,
     MarketNoSociabilization,
     RewardAccumulator,
+    RsTan,
+    Tan,
     TgUSD,
     Zapper,
 } from "../../../../typechain-types";
@@ -32,6 +32,8 @@ export class BaseContext extends MainSetup {
     controlTower!: ControlTower;
     tgUSD!: TgUSD;
     sgUSD!: IYearnV3Vault;
+    tan!: Tan;
+    rsTan!: RsTan;
     zapper!: Zapper;
     rewardAccumulator!: RewardAccumulator;
     liquidatorProxy!: LiquidatorProxy;
@@ -63,6 +65,18 @@ export class BaseContext extends MainSetup {
         await this.tgUSD.waitForDeployment();
 
         await this.deploySgUSD();
+
+        this.tan = await (await ethers.getContractFactory("Tan")).deploy();
+        await this.tan.waitForDeployment();
+
+        await this.tan.mint(this.users[0], parseEther("100000"));
+        await this.tan.mint(this.users[1], parseEther("100000"));
+        await this.tan.mint(this.users[2], parseEther("100000"));
+        await this.tan.mint(this.users[3], parseEther("100000"));
+        await this.tan.mint(this.users[4], parseEther("100000"));
+
+        this.rsTan = await (await ethers.getContractFactory("RsTan")).deploy(this.controlTower, this.tan);
+        await this.rsTan.waitForDeployment();
 
         this.zapper = await (await ethers.getContractFactory("Zapper")).deploy(this.owner, this.controlTower, this.tgUSD);
         await this.zapper.waitForDeployment();
