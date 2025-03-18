@@ -16,31 +16,31 @@ contract WStableContext is OraclesContext {
         wfrxUSD = new WStable("wfrxUSD", "wfrxUSD", controlTower, AddrClassicERC20.TOKEN_FRXUSD, AddrERC4626.S_FRXUSD, owner);
         deal(address(AddrClassicERC20.TOKEN_FRXUSD), owner, 100_000 ether);
         AddrClassicERC20.TOKEN_FRXUSD.approve(address(wfrxUSD), MAX_UINT);
-        wfrxUSD.mint(owner, 100_000 ether, false);
+        wfrxUSD.mint(100_000 ether, owner, false);
 
         // wcrvUSD
         wcrvUSD = new WStable("wcrvUSD", "wcrvUSD", controlTower, AddrClassicERC20.TOKEN_CRVUSD, AddrERC4626.S_CRVUSD, owner);
         deal(address(AddrClassicERC20.TOKEN_CRVUSD), owner, 100_000 ether);
         AddrClassicERC20.TOKEN_CRVUSD.approve(address(wcrvUSD), MAX_UINT);
-        wcrvUSD.mint(owner, 100_000 ether, false);
+        wcrvUSD.mint(100_000 ether, owner, false);
 
         // wUSDE
         wUSDE = new WStable("wUSDE", "wUSDE", controlTower, AddrClassicERC20.TOKEN_USDE, AddrERC4626.S_USDE, owner);
         deal(address(AddrClassicERC20.TOKEN_USDE), owner, 100_000 ether);
         AddrClassicERC20.TOKEN_USDE.approve(address(wUSDE), MAX_UINT);
-        wUSDE.mint(owner, 100_000 ether, false);
+        wUSDE.mint(100_000 ether, owner, false);
 
         // wDOLA
         wDOLA = new WStable("wDOLA", "wDOLA", controlTower, AddrClassicERC20.TOKEN_DOLA, AddrERC4626.S_DOLA, owner);
         deal(address(AddrClassicERC20.TOKEN_DOLA), owner, 100_000 ether);
         AddrClassicERC20.TOKEN_DOLA.approve(address(wDOLA), MAX_UINT);
-        wDOLA.mint(owner, 100_000 ether, false);
+        wDOLA.mint(100_000 ether, owner, false);
 
         // wUSR
         wUSR = new WStable("wUSR", "wUSR", controlTower, AddrClassicERC20.TOKEN_USR, AddrERC4626.WST_USR, owner);
         deal(address(AddrClassicERC20.TOKEN_USR), owner, 100_000 ether);
         AddrClassicERC20.TOKEN_USR.approve(address(wUSR), MAX_UINT);
-        wUSR.mint(owner, 100_000 ether, false);
+        wUSR.mint(100_000 ether, owner, false);
         vm.stopPrank();
 
         vm.label(address(wfrxUSD), "wfrxUSD");

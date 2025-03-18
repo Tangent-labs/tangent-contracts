@@ -14,30 +14,30 @@ export class WStablesContext {
         const wfrxUSDContract = await wStableFactory.deploy(wfrxUSD, wfrxUSD, baseContext.controlTower, baseContext.coins.frxUSD, baseContext.coins.sfrxUSD, baseContext.owner);
         this.wStable[wfrxUSD] = wfrxUSDContract;
         await baseContext.coins.frxUSD.connect(baseContext.owner).approve(wfrxUSDContract, MaxUint256);
-        await wfrxUSDContract.connect(baseContext.owner).mint(baseContext.owner, amount, false);
+        await wfrxUSDContract.connect(baseContext.owner).mint(amount, baseContext.owner, false);
 
         const wcrvUSD = "wcrvUSD";
         const wcrvUSDContract = await wStableFactory.deploy(wcrvUSD, wcrvUSD, baseContext.controlTower, baseContext.coins.crvUSD, baseContext.coins.scrvUSD, baseContext.owner);
         this.wStable[wcrvUSD] = wcrvUSDContract;
         await baseContext.coins.crvUSD.connect(baseContext.owner).approve(wcrvUSDContract, MaxUint256);
-        await wcrvUSDContract.connect(baseContext.owner).mint(baseContext.owner, amount, false);
+        await wcrvUSDContract.connect(baseContext.owner).mint(amount, baseContext.owner, false);
 
         const wUSDE = "wUSDe";
         const wUSDEContract = await wStableFactory.deploy(wUSDE, wUSDE, baseContext.controlTower, baseContext.coins.USDe, baseContext.coins.sUSDe, baseContext.owner);
         this.wStable[wUSDE] = wUSDEContract;
         await baseContext.coins.USDe.connect(baseContext.owner).approve(wUSDEContract, MaxUint256);
-        await wUSDEContract.connect(baseContext.owner).mint(baseContext.owner, amount, false);
+        await wUSDEContract.connect(baseContext.owner).mint(amount, baseContext.owner, false);
 
         const wDOLA = "wDOLA";
         const wDOLAContract = await wStableFactory.deploy(wDOLA, wDOLA, baseContext.controlTower, baseContext.coins.DOLA, baseContext.coins.sDOLA, baseContext.owner);
         this.wStable[wDOLA] = wDOLAContract;
         await baseContext.coins.DOLA.connect(baseContext.owner).approve(wDOLAContract, MaxUint256);
-        await wDOLAContract.connect(baseContext.owner).mint(baseContext.owner, amount, false);
+        await wDOLAContract.connect(baseContext.owner).mint(amount, baseContext.owner, false);
 
         const wUSR = "wUSR";
         const wUSRContract = await wStableFactory.deploy(wUSR, wUSR, baseContext.controlTower, baseContext.coins.USR, baseContext.coins.wstUSR, baseContext.owner);
         this.wStable[wUSR] = wUSRContract;
         await baseContext.coins.USR.connect(baseContext.owner).approve(wUSRContract, MaxUint256);
-        await wUSRContract.connect(baseContext.owner).mint(baseContext.owner, amount, false);
+        await wUSRContract.connect(baseContext.owner).mint(amount, baseContext.owner, false);
     }
 }

@@ -236,7 +236,7 @@ contract RsTan is ERC721Enumerable, LightOwnable {
     }
 
     function increaseLockTime(uint256 tokenId) external onlyTokenOwner(tokenId) {
-        (uint48 oldEndLockTime, uint208 amount) = _getLock(tokenId);
+        (uint48 oldEndLockTime, ) = _getLock(tokenId);
         // Cant increase time a position already expired
         require(oldEndLockTime > block.timestamp, LockExpired());
         // Cant increase time a position perma locked
@@ -250,7 +250,7 @@ contract RsTan is ERC721Enumerable, LightOwnable {
     }
 
     function togglePermaLock(uint256 tokenId) external onlyTokenOwner(tokenId) {
-        (uint48 oldEndLockTime, uint208 amount) = _getLock(tokenId);
+        (uint48 oldEndLockTime, ) = _getLock(tokenId);
         require(oldEndLockTime > block.timestamp, LockExpired());
         // Pass in perma lock
 

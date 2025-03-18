@@ -15,7 +15,7 @@ import "forge-std/console.sol";
 ///         It uses directly the router of Curve Finance.
 
 contract Liquidator {
-    ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x16C6521Dff6baB339122a0FE25a9116693265353);
+    ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
 
     /// @notice Router
     address public constant ENSO_ROUTER = 0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E;
@@ -34,7 +34,7 @@ contract Liquidator {
     }
 
     /// @notice
-    function liquidateLP(CurveRouterSwap calldata curveRouterSwap, MintAndSwapWStable calldata mintAndSwapWStable) external {
+    function liquidateLP(CurveRouterSwap calldata curveRouterSwap) external {
         // Approve the collateral on the Curve Router if necessary
         _approveIfNotAllowed(IERC20(curveRouterSwap._route[0]), address(CURVE_ROUTER));
         // Unwrap the LP
@@ -47,28 +47,6 @@ contract Liquidator {
             curveRouterSwap._pools,
             curveRouterSwap._receiver
         );
-
-        // In the case the best route passes through a wStable, we convert the associated stable ( ex : crvUSD => wcrvUSD)
-        // And we swap the wStable for the tgUSD that is used for the liquidation.
-        if (mintAndSwapWStable.wStable != address(0)) {
-            ITgStable wStable = ITgStable(mintAndSwapWStable.wStable);
-            // Swap wrapped stable
-            _approveIfNotAllowed(IERC20(mintAndSwapWStable.stable), mintAndSwapWStable.wStable);
-
-            // Mint the wStable in exchange of
-            wStable.mint(address(this), amountReceived, true);
-
-            _approveIfNotAllowed(wStable, mintAndSwapWStable.stablePool);
-
-            // Swap Wrapped stable for
-            ICurveStableSwapNG(mintAndSwapWStable.stablePool).exchange(
-                mintAndSwapWStable.i,
-                mintAndSwapWStable.j,
-                amountReceived,
-                mintAndSwapWStable.amountMinOut,
-                mintAndSwapWStable.receiver
-            );
-        }
     }
 
     function _approveIfNotAllowed(IERC20 erc20, address spender) internal {
