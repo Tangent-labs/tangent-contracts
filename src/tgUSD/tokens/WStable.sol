@@ -61,6 +61,14 @@ contract WStable is ERC20, LightOwnable {
         _mint(receiver, amountToMint);
     }
 
+    function convertToAssets(uint256 shares) external view returns (uint256 assets) {
+        return shares;
+    }
+
+    function convertToShares(uint256 assets) external view returns (uint256 shares) {
+        return assets;
+    }
+
     //TODO Doc and test
     function deposit(uint256 amountIn, address receiver) external {
         mint(amountIn, receiver, false);
