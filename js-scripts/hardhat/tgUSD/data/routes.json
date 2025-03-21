@@ -1499,8 +1499,12 @@
   {
     "collateral": "scrvUSD/sUSDe",
     "collateralOut": "sUSDe",
-    "wTOkenPool": "wDOLA",
+    "wTOkenPool": "wUSDe",
     "routes": [
+      {
+        "pool": "sUSDe",
+        "out": "USDe"
+      },
       {
         "pool": "DOLA/sUSDe",
         "out": "DOLA"

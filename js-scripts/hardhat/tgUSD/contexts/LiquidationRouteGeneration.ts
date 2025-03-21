@@ -23,14 +23,9 @@ const routerAddress = "0x16c6521dff6bab339122a0fe25a9116693265353";
 const routerAbi = ["function get_dy(address[11], uint256[5][5], uint256, address[5]) external view returns (uint256)"];
 
 export class LiquidationRouteGeneration {
-
-    
-
     missing: MissingData = {
         symbols: new Set<string>(),
     };
-
-    
 
     routeData?: RouteParams[];
     abis?: Record<string, AbiRow[]>;
@@ -81,7 +76,9 @@ export class LiquidationRouteGeneration {
         const names = new Set<string>();
 
         const csvData = fs.readFileSync(this.CSV_PATH, "utf8");
-        const rows = csvData.split("\n").map((row: string) => row.split(";"));
+        console.log(csvData.split("\r").join("------>"), " characters found in the CSV file");
+        const rows = csvData.split("\r").map((row: string) => row.split(";"));
+        console.log(rows.length, " rows found in the CSV file");
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
@@ -89,7 +86,7 @@ export class LiquidationRouteGeneration {
 
             names.add(row[0].trim());
             names.add(row[1].trim());
-            const dynamicRouteCount = 3;
+            const dynamicRouteCount = 4;
             for (let j = 2; j < dynamicRouteCount * 2; j += 2) {
                 const pool = row[j]?.trim();
                 const out = row[j + 1]?.trim();
@@ -124,7 +121,7 @@ export class LiquidationRouteGeneration {
             let wTOkenPool = undefined;
             const routeSteps = [];
 
-            const dynamicRouteCount = 3;
+            const dynamicRouteCount = 4;
 
             // let's get the dynamic portion of the route
             for (let j = 2; j < dynamicRouteCount * 2; j += 2) {
@@ -197,11 +194,11 @@ export class LiquidationRouteGeneration {
                 errors.push({route: routeGroup, error: error.message, params: {routeAddresses, swapParamsFull}});
             }
         }
-        return { stepResults, errors }
+        return {stepResults, errors};
     }
 
     // find the parameters for each
-    async testRouteSteps(transfers: Transfer[][]) : Promise<VerifiedRoutes> {
+    async testRouteSteps(transfers: Transfer[][]): Promise<VerifiedRoutes> {
         const amountIn = ethers.parseUnits("100", 9);
         const pools = new Map<string, Transfer>();
         const params = [];
@@ -274,9 +271,33 @@ export class LiquidationRouteGeneration {
         }
         throw new Error("No valid params found");
     }
+
+    async loadDynamicAssets(addressesData: {lps: Record<string, string>; wStables: Record<string, string>; tokens: {tgUSD: string}}) {
+        try {
+            // Add LP tokens
+            if (addressesData.lps) {
+                Object.entries(addressesData.lps).forEach(([key, value]) => {
+                    (liquidationAssets as any)[`${key}*`] = value;
+                });
+            }
+
+            // Add wrapped stables
+            if (addressesData.wStables) {
+                Object.entries(addressesData.wStables).forEach(([key, value]) => {
+                    (liquidationAssets as any)[`${key}*`] = value;
+                });
+            }
+            liquidationAssets["tgUSD*"] = addressesData.tokens.tgUSD;
+
+            console.log("Dynamic assets loaded successfully");
+        } catch (error) {
+            console.error("Error loading dynamic assets:", error);
+            throw error;
+        }
+    }
 }
 
-export const liquidationAssets = {
+export const liquidationAssets: Record<string, string> = {
     "DOLA/USR": "0x38de22a3175708d45e7c7c64cd78479c8b56f76e",
     "DOLA/FRAXBP": "0xe57180685e3348589e9521aa53af0bcd497e884d",
     FRAXBP: "0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC",
@@ -355,7 +376,6 @@ export type PoolCurveData = {
 type AbiRow = {name: string; type: string; outputs: any[]};
 type MissingData = {
     symbols: Set<String>;
-
 };
 
 interface Transfer {
@@ -383,5 +403,5 @@ type VerifiedRoute = {
 
 export type VerifiedRoutes = {
     params: VerifiedRoute[];
-    errors: {route: Transfer, error: string}[]
+    errors: {route: Transfer; error: string}[];
 };
