@@ -23,12 +23,14 @@ const routerAddress = "0x16c6521dff6bab339122a0fe25a9116693265353";
 const routerAbi = ["function get_dy(address[11], uint256[5][5], uint256, address[5]) external view returns (uint256)"];
 
 export class LiquidationRouteGeneration {
+
+    
+
     missing: MissingData = {
         symbols: new Set<string>(),
-        poolInfo: new Set<string>(),
-        abiContracts: new Set<string>(),
-        pooltypeInfo: new Set<string>(),
     };
+
+    
 
     routeData?: RouteParams[];
     abis?: Record<string, AbiRow[]>;
@@ -353,9 +355,7 @@ export type PoolCurveData = {
 type AbiRow = {name: string; type: string; outputs: any[]};
 type MissingData = {
     symbols: Set<String>;
-    poolInfo: Set<String>;
-    abiContracts: Set<string>;
-    pooltypeInfo: Set<string>;
+
 };
 
 interface Transfer {
