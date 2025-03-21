@@ -2,6 +2,7 @@ import {AddressLike, getAddress, ZeroAddress} from "ethers";
 import fs from "fs";
 import {ethers} from "hardhat";
 import path from "path";
+import {giveTokensoAddresss} from "../../thief";
 
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
 
@@ -20,7 +21,10 @@ import path from "path";
 
 */
 const routerAddress = "0x16c6521dff6bab339122a0fe25a9116693265353";
-const routerAbi = ["function get_dy(address[11], uint256[5][5], uint256, address[5]) external view returns (uint256)"];
+const routerAbi = [
+    "function get_dy(address[11], uint256[5][5], uint256, address[5]) external view returns (uint256)",
+    "function exchange(address[11], uint256[5][5], uint256,uint256, address[5],address) external view returns (uint256)",
+];
 
 export class LiquidationRouteGeneration {
     missing: MissingData = {
@@ -295,6 +299,91 @@ export class LiquidationRouteGeneration {
             throw error;
         }
     }
+
+    async testExchange(finalRoutes: FinalRoute) {
+        const [deployer] = await ethers.getSigners();
+        const router = new ethers.Contract(routerAddress, routerAbi, deployer);
+
+        const results = [];
+        const errors = [];
+        const tgUSDToken = await ethers.getContractAt("IERC20", liquidationAssets["tgUSD*"], deployer);
+
+        for (const routeResult of finalRoutes.stepResults) {
+            try {
+                // Get initial balances
+                const firstStep = routeResult.route[0];
+
+                await giveTokensoAddresss(deployer, firstStep.in, 1000, 5, true);
+
+                const collateralToken = await ethers.getContractAt("IERC20", firstStep.in, deployer);
+
+                const initialCollateralBalance = await collateralToken.balanceOf(deployer.address);
+                console.log(initialCollateralBalance, "initialCollateralBalance");
+                // const initialTgUSDBalance = await tgUSDToken.balanceOf(deployer.address);
+                // console.log(initialTgUSDBalance, "initialTgUSDBalance");
+
+                // Execute the exchange
+                const amountIn = ethers.parseUnits("1000", 18);
+                const amountMin = await router.get_dy(routeResult.params.routeAddresses, routeResult.params.swapParamsFull, amountIn, [
+                    ZeroAddress,
+                    ZeroAddress,
+                    ZeroAddress,
+                    ZeroAddress,
+                    ZeroAddress,
+                ]);
+                console.log(amountMin, "amountMin");
+                // const tx = await router
+                //     .connect(deployer)
+                //     .exchange(
+                //         routeResult.params.routeAddresses,
+                //         routeResult.params.swapParamsFull,
+                //         amountIn,
+                //         amountMin - 100000n,
+                //         [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress],
+                //         deployer.address
+                //     );
+                // await tx.wait();
+
+                // // Get final balances
+                // const finalCollateralBalance = await collateralToken.balanceOf(deployer.address);
+                // const finalTgUSDBalance = await tgUSDToken.balanceOf(deployer.address);
+
+                results.push({
+                    route: routeResult.route.map((step) => step.display).join(" -> "),
+                    success: true,
+                    // balanceChanges: {
+                    //     tgUSD: {
+                    //         before: initialTgUSDBalance.toString(),
+                    //         after: finalTgUSDBalance.toString(),
+                    //         difference: (finalTgUSDBalance - initialTgUSDBalance).toString(),
+                    //     },
+                    //     collateral: {
+                    //         before: initialCollateralBalance.toString(),
+                    //         after: finalCollateralBalance.toString(),
+                    //         difference: (finalCollateralBalance - initialCollateralBalance).toString(),
+                    //     },
+                    // },
+                    expectedOutput: routeResult.output,
+                });
+            } catch (error: any) {
+                errors.push({
+                    route: routeResult.route.map((step) => step.display).join(" -> "),
+                    error: error.message,
+                    params: routeResult.params,
+                });
+            }
+        }
+
+        return {
+            results,
+            errors,
+            summary: {
+                totalRoutes: finalRoutes.stepResults.length,
+                successfulRoutes: results.length,
+                failedRoutes: errors.length,
+            },
+        };
+    }
 }
 
 export const liquidationAssets: Record<string, string> = {
@@ -404,4 +493,26 @@ type VerifiedRoute = {
 export type VerifiedRoutes = {
     params: VerifiedRoute[];
     errors: {route: Transfer; error: string}[];
+};
+
+type FinalRouteStep = {
+    in: string;
+    pool: string;
+    out: string;
+    display: string;
+};
+
+type FinalRouteParams = {
+    routeAddresses: string[];
+    swapParamsFull: number[][];
+};
+
+type FinalRouteResult = {
+    route: FinalRouteStep[];
+    output: string;
+    params: FinalRouteParams;
+};
+
+export type FinalRoute = {
+    stepResults: FinalRouteResult[];
 };
