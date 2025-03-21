@@ -30,3 +30,4 @@ addresses.json
 
 pyproject.toml
 requirements*
+js-scripts/hardhat/tgUSD/data/*.json

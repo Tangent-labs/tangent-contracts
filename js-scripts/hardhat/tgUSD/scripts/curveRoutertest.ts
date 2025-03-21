@@ -27,10 +27,10 @@ async function main() {
         curveRouter: await ethers.getContractAt("ICurveRouter", curveRouterAddress),
         tgUsd: await ethers.getContractAt("IERC20Metadata", deployed.tgUSD),
         collat: await ethers.getContractAt("IERC20Metadata", marketData.collatAddress),
-        usdcTgUSd  :    await ethers.getContractAt("IERC20Metadata", deployed.usdcTgUSd)
+        usdcTgUSd: await ethers.getContractAt("IERC20Metadata", deployed.usdcTgUSd)
 
     }
-    
+
     // console.log('usdcTgUSd' , await contracts.usdcTgUSd.symbol());
     // console.log('tgUsd', await contracts.tgUsd.symbol());
     // console.log('collat', await contracts.collat.symbol());
@@ -55,7 +55,7 @@ async function main() {
     try {
 
         // @ts-ignore
-        await contracts.curveRouter.connect(user).exchange(routes!, swapParams!, amount, 0 , zapPools, userAddress);
+        await contracts.curveRouter.connect(user).exchange(routes!, swapParams!, amount, 0, zapPools, userAddress);
     } catch (e) {
         console.error('------> exchange error', e.message);
     }
@@ -94,9 +94,39 @@ const routeParams = (marketData: { collatAddress: AddressLike }, usdcTgUSd: Addr
 
     const zapPools: AddressLike[] = new Array(5).fill(ZeroAddress);
 
-  //  console.log({ routes, swapParams, zapPools });
+    //  console.log({ routes, swapParams, zapPools });
     return { routes, swapParams, zapPools }
 }
+
+
+const routeParamsDola = () => {
+    const pool = '0xaa5a67c256e27a5d80712c51971408db3370927d' // DOLA-3pool Curve LP
+    // type : Stableswap, Metapool
+}
+
+
+
+
+
+
+export type RouteParams = {
+    collateral: string,
+    name: string
+    collateralOut: string,
+    wTOkenPool?: string, // Leave empty for none wTOken route
+    routes: {
+        pool1: string,
+        token1: string,
+        pool2: string,
+        token2: string,
+        pool3: string,
+        token3: string,
+    }
+    swapParams: number[][],
+    zapPools: AddressLike[]
+}
+
+
 
 
 main();

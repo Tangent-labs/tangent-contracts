@@ -23,8 +23,9 @@
     "time-travel": "npx hardhat run js-scripts/hardhat/tgUSD/actions/time-travel.ts --network localhost",
     "liquidation-context": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/liquidationSetUp.ts --network localhost",
     "liquidation-swap": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/liquidationSwap.ts --network localhost",
+    "booster-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "router-test": "npx hardhat run  js-scripts/hardhat/tgUSD/scripts/curveRoutertest.ts --network localhost ",
-    "booster-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost"
+    "generate-routes":"npx hardhat run  js-scripts/hardhat/tgUSD/scripts/generateLiquidationRoutes.ts  --network localhost "
   },
   "author": "Trottoir",
   "license": "ISC",

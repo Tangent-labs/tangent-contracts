@@ -1,9 +1,9 @@
-import {ethers} from "hardhat";
-import {ContractTransactionReceipt, Interface, InterfaceAbi, LogDescription, MaxUint256} from "ethers";
-import {ConvexCrvLPMarket, ConvexFxnLPMarket} from "../../../../typechain-types";
-import {BaseContext} from "./BaseContext";
-import {OracleContext} from "./OracleContext";
-import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "../config/market";
+import { ethers } from "hardhat";
+import { ContractTransactionReceipt, Interface, InterfaceAbi, LogDescription, MaxUint256 } from "ethers";
+import { ConvexCrvLPMarket, ConvexFxnLPMarket } from "../../../../typechain-types";
+import { BaseContext } from "./BaseContext";
+import { OracleContext } from "./OracleContext";
+import { STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN } from "../config/market";
 
 import * as MarketCreator from "../../../../artifacts/src/tgUSD/Utilities/MarketCreator.sol/MarketCreator.json";
 
@@ -11,13 +11,36 @@ export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;
 
 export class MarketContext {
-    convexCrvMarkets: {[key: string]: ConvexCrvLPMarket} = {};
-    convexFxnMarkets: {[key: string]: ConvexFxnLPMarket} = {};
+    convexCrvMarkets: { [key: string]: ConvexCrvLPMarket } = {};
+    convexFxnMarkets: { [key: string]: ConvexFxnLPMarket } = {};
 
     async deployConvexCrvMarkets(keys: ConvexCrvMarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key];
+
+
+            /*
+              MarketInit memory _marketInit,
+                    ICvxRewardToken _cvxRewardToken,
+                    uint256 _pid,
+                    uint256 _socFeePercentage,
+                    IRParams calldata _irParams,
+                    RCParams calldata _rcParams
+                    
+                    
+                    struct IRParams {
+                        uint32 rMin;
+                        uint32 rMax;
+                        uint32 pMin;
+                        uint32 pInf;
+                        uint32 pMax;
+                        uint32 a1;
+                        uint32 a2;
+                        uint32 k;
+                    }
+                    
+                    */
 
             const receipt = await (
                 await baseContext.marketCreator.connect(baseContext.owner).createConvexCrvMarket(
@@ -33,17 +56,7 @@ export class MarketContext {
                     staticConfig.cvxRewardToken,
                     staticConfig.pid,
                     1_000,
-                    {
-                        isHEC: true,
-                        rMin: 4_000,
-                        rMax: 400_000,
-                        pMin: 980_000,
-                        pMax: 995_000,
-                        pInf: 990_000,
-                        a1: 2_000,
-                        a2: 2_000,
-                        k: 250,
-                    },
+                    { rMin: 4_000, rMax: 400_000, pMin: 980_000, pMax: 1_000_000, pInf: 0, a1: 2, a2: 2, k: 0 },
                     {
                         harvestFeePercentage: 1_000,
                         startCutPercentage: 50_000,
@@ -77,17 +90,7 @@ export class MarketContext {
                     },
                     staticConfig.pid,
                     1_000,
-                    {
-                        isHEC: false,
-                        rMin: 4_000,
-                        rMax: 400_000,
-                        pMin: 980_000,
-                        pMax: 1_000_000,
-                        pInf: 997_500,
-                        a1: 2_000,
-                        a2: 2_750,
-                        k: 250,
-                    },
+                    { rMin: 4_000, rMax: 400_000, pMin: 980_000, pMax: 1_000_000, pInf: 0, a1: 2, a2: 2, k: 0 },
                     {
                         harvestFeePercentage: 1_000,
                         startCutPercentage: 0,
