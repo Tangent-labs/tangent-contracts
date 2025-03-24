@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {ISplitterToken} from "../../interfaces/internals/LendSplitter/ISplitterToken.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -14,7 +14,7 @@ contract LlamaSplitChainviewCommon {
         uint256 userStakedAmount;
         uint256 userStakedDollar;
         bool isProcessed;
-        ICommonStruct.TokenAmount[] tokensClaimable;
+        TokenAmount[] tokensClaimable;
     }
     function _getCrvUSDPrice() public view returns (uint256) {
         IAggregatorV3 crvUSDOracle = IAggregatorV3(0xEEf0C605546958c1f899b6fB336C20671f9cD49F);
@@ -31,7 +31,7 @@ contract LlamaSplitChainviewCommon {
                 totalStakedDollar: (totalStakedAmount * crvUSDPrice) / 10 ** 18,
                 userStakedAmount: 0,
                 userStakedDollar: 0,
-                tokensClaimable: new ICommonStruct.TokenAmount[](0),
+                tokensClaimable: new TokenAmount[](0),
                 isProcessed: _getIsProcessed(splitterToken)
             });
     }

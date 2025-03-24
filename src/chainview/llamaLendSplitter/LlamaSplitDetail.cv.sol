@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
-import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {BalancesAllowances} from "../BalancesAllowances.sol";
 import {LlamaSplitChainviewCommon} from "./LlamaSplitChainviewCommon.sol";

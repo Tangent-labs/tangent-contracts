@@ -3,7 +3,7 @@ pragma solidity ^0.8.27;
 
 import {ISdtUtilities} from "../../interfaces/internals/CVG/ISdtUtilities.sol";
 import {ISdtStaking} from "../../interfaces/internals/CVG/ISdtStaking.sol";
-import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {IGauge} from "../../interfaces/externals/Curve/IGauge.sol";
 import {ICrvPoolPlain} from "../../interfaces/externals/Curve/ICrvPoolPlain.sol";

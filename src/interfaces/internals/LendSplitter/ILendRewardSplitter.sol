@@ -8,7 +8,7 @@ import {ISplitterToken} from "./ISplitterToken.sol";
 import {ISplitterTokenComp} from "./ISplitterTokenComp.sol";
 import {IgUSDCvx} from "./IgUSDCvx.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {ICommonStruct} from "../ICommonStruct.sol";
+import {TokenAmount} from "../ICommonStruct.sol";
 
 interface ILendRewardSplitter {
     enum SDT_TOKEN_TYPE {
@@ -27,7 +27,7 @@ interface ILendRewardSplitter {
         LlamalendVaultAsset
     }
 
-    function incrementDaoFees(ICommonStruct.TokenAmount[] memory tokenAmounts) external;
+    function incrementDaoFees(TokenAmount[] memory tokenAmounts) external;
 
     // function createSdtMarket(IStakeDaoVault stakeDaoVault) external;
 
@@ -40,11 +40,5 @@ interface ILendRewardSplitter {
 
     function scvUSDAutoCompoundPerLlamaVault(ILlamaVault) external view returns (ISplitterTokenComp);
 
-    function depositSCVUSD(
-        ILlamaVault llamaVault,
-        CVX_TOKEN_TYPE inputType,
-        uint256 lendAssetBalance,
-        bool isAutoCompound,
-        bool isDeposit
-    ) external returns (uint256);
+    function depositSCVUSD(ILlamaVault llamaVault, CVX_TOKEN_TYPE inputType, uint256 lendAssetBalance, bool isAutoCompound, bool isDeposit) external returns (uint256);
 }

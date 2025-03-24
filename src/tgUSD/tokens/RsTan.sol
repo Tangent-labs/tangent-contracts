@@ -5,60 +5,66 @@ import {ERC721, ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/ext
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
-import {Reward} from "../../interfaces/internals/tgUSD/IRewards.sol";
+import {Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewards.sol";
 
 import {LightOwnable} from "../Utilities/LightOwnable.sol";
 
 import "forge-std/console.sol";
 /// @notice
 contract RsTan is ERC721Enumerable, LightOwnable {
+    /// @notice Duration for which tokens are locked (13 weeks).
     uint256 public constant LOCK_DURATION = 13 weeks;
-    uint256 public constant ONE_WEEK = 1 weeks;
+    /// @notice One week in seconds.
+    uint256 internal constant ONE_WEEK = 1 weeks;
+    /// @notice Maximum value for a uint48.
+    uint48 internal constant MAX_UINT48 = type(uint48).max;
 
-    uint48 public constant MAX_UINT48 = type(uint48).max;
-
+    /// @notice The ERC20 token that users lock.
     IERC20 public immutable tan;
 
+    /// @notice Parameters for the kick mechanism.
     KickParams public kick;
 
+    /// @notice Reference to the control tower contract.
     IControlTower public controlTower;
+
+    /// @notice Total amount of locked tokens.
     uint256 public totalSupplyRsTan;
+
+    /// @notice The next token ID to be minted.
     uint256 public nextId;
 
+    /// @notice Mapping of token IDs to their lock details.
     mapping(uint256 => Lock) public locks;
 
-    // Rewards
-
-    /// @notice Percentage of reward of rewards to distribute to borrowers. 50_000 = 50%
-    uint256 public rewardCutPercentage = 50_000;
-
-    /// @notice Percentage of reward given to harvester. 1_000 = 1%
-    uint256 public harvesterFeePercentage;
-
-    /// @notice Receiver of all rewards produced by the market
-    address public rsTanRewardAccumulator;
-
-    /// @notice List of reward tokens
-    IERC20[] public rewardTokens;
-
-    /// @notice Reward data associated to a reward token
-    mapping(IERC20 => Reward) public rewardData; // token => reward data
-
-    /// @notice Reward amount already claimed to an user for a reward token
-    mapping(uint256 => mapping(IERC20 => uint256)) public userRewardPerTokenPaid; // position => reward token => amount
-
-    /// @notice Reward amount for a reward token for a user
-    mapping(uint256 => mapping(IERC20 => uint256)) public rewards; // position => reward token => amount
-
+    /// @dev Struct representing a locked position.
+    /// @param endLockTime The timestamp when the lock ends.
+    /// @param amount The amount of tokens locked.
     struct Lock {
         uint48 endLockTime;
         uint208 amount;
     }
 
+    /// @dev Struct representing kick parameters.
+    /// @param delay Delay before a position can be kicked.
+    /// @param percentage Percentage of the locked amount to be penalized.
     struct KickParams {
         uint128 delay;
         uint128 percentage;
     }
+
+    /// @notice List of reward tokens
+    IERC20[] public rewardTokens;
+
+    /// @notice Mapping of reward tokens to their reward data.
+    mapping(IERC20 => Reward) public rewardData; // token => reward data
+
+    /// @notice Mapping of user reward per token paid.
+    /// @dev Tracks rewards paid to users for each token.
+    mapping(uint256 => mapping(IERC20 => uint256)) public userRewardPerTokenPaid; // position => reward token => amount
+
+    /// @notice Mapping of claimable rewards for each token.
+    mapping(uint256 => mapping(IERC20 => uint256)) public rewards; // position => reward token => amount
 
     error ZeroAmount();
     error NotTokenOwner();
@@ -72,25 +78,20 @@ contract RsTan is ERC721Enumerable, LightOwnable {
     error KickDelayIsNotPassed();
 
     error HarvesterFeeToHigh();
+    error NothingToClaim();
     error NothingToProcess();
     error RewardAlreadyAdded(IERC20 erc20);
+    error RewardNotAdded(IERC20 erc20);
 
     event RewardNotified(IERC20 indexed _token, uint256 _reward);
-    event RewardPaid(address indexed _user, IERC20 indexed _rewardToken, uint256 _reward);
-    event Recovered(IERC20 _token, uint256 _amount);
-    event RewardAdded(IERC20 indexed _rewardToken);
-    event RewardDistributorApproved(IERC20 indexed _reward, address indexed _distributor, bool _state);
+    event RewardPaid(uint256 indexed tokenId, IERC20 indexed _rewardToken, uint256 _reward);
 
-    struct ZapToTan {
-        address caller;
-        uint256 minTanReceived;
-        bytes routerCall;
-    }
-    constructor(IControlTower _controlTower, IERC20 _tan) ERC721("RsTan", "RsTan") {
+    constructor(IControlTower _controlTower, address _owner, IERC20 _tan) ERC721("RsTan", "RsTan") {
         tan = _tan;
         nextId = 1;
         controlTower = _controlTower;
-        kick = KickParams({delay: uint128(ONE_WEEK), percentage: uint128(2_000)});
+        kick = KickParams({delay: uint128(ONE_WEEK), percentage: uint128(250)});
+        _transferOwnership(_owner);
     }
 
     modifier onlyTokenOwner(uint256 tokenId) {
@@ -178,6 +179,12 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         return block.timestamp < _finishTime ? uint128(block.timestamp) : uint128(_finishTime);
     }
 
+    /**
+     * @notice Check if the caller is a zapper and return the appropriate address
+     * @param  callerZapper Address of the
+     * @return isZapping Boolean indicating if the caller is a zapper
+     * @return caller Address of the caller or zapper
+     */
     function _checkZapper(address callerZapper) internal view returns (bool, address) {
         bool isZapping;
         if (address(callerZapper) != address(0)) {
@@ -190,24 +197,35 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         return (isZapping, callerZapper);
     }
 
+    /**
+     * @notice Get the lock details for a specific token ID
+     * @param tokenId ID of the locking position
+     * @return endLockTime The end time of the lock
+     * @return amount The amount locked
+     */
     function _getLock(uint256 tokenId) internal view returns (uint48, uint208) {
         Lock memory lock = locks[tokenId];
         return (lock.endLockTime, lock.amount);
     }
 
+    /**
+     * @notice Create a new lock for the specified amount
+     * @param amountIn Amount of tokens to lock
+     * @param isPermaLock Boolean indicating if the lock is permanent
+     * @param callerZapper Address of the zapper (if applicable)
+     */
     function createLock(uint208 amountIn, bool isPermaLock, address callerZapper) external {
         require(amountIn != 0, ZeroAmount());
         (bool isZap, address receiver) = _checkZapper(callerZapper);
 
         uint256 tokenId = nextId++;
-        uint48 endLockTime = isPermaLock ? MAX_UINT48 : _newEndLockTime();
 
         _mint(receiver, tokenId);
 
         _updateReward(tokenId);
 
         // Store the position information
-        locks[tokenId] = Lock({endLockTime: endLockTime, amount: amountIn});
+        locks[tokenId] = Lock({endLockTime: isPermaLock ? MAX_UINT48 : _newEndLockTime(), amount: amountIn});
         // Increase the total amount locked
         totalSupplyRsTan += amountIn;
 
@@ -216,6 +234,12 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         }
     }
 
+    /**
+     * @notice Increase the amount of an existing lock
+     * @param tokenId ID of the locking position
+     * @param amountIn Amount to add to the lock
+     * @param callerZapper Address of the zapper (if applicable)
+     */
     function increaseLockAmount(uint256 tokenId, uint208 amountIn, address callerZapper) external updateReward(tokenId) {
         require(amountIn != 0, ZeroAmount());
         (uint48 oldLockTime, uint208 oldAmount) = _getLock(tokenId);
@@ -235,8 +259,12 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         }
     }
 
+    /**
+     * @notice Increase the lock duration for a specific token
+     * @param tokenId ID of the locking position
+     */
     function increaseLockTime(uint256 tokenId) external onlyTokenOwner(tokenId) {
-        (uint48 oldEndLockTime, uint208 amount) = _getLock(tokenId);
+        uint48 oldEndLockTime = locks[tokenId].endLockTime;
         // Cant increase time a position already expired
         require(oldEndLockTime > block.timestamp, LockExpired());
         // Cant increase time a position perma locked
@@ -249,14 +277,20 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         locks[tokenId].endLockTime = newEnd;
     }
 
+    /**
+     * @notice Toggle the lock to permanent or revert it to a timed lock
+     * @param tokenId ID of the locking position
+     */
     function togglePermaLock(uint256 tokenId) external onlyTokenOwner(tokenId) {
-        (uint48 oldEndLockTime, uint208 amount) = _getLock(tokenId);
+        uint48 oldEndLockTime = locks[tokenId].endLockTime;
         require(oldEndLockTime > block.timestamp, LockExpired());
-        // Pass in perma lock
-
         locks[tokenId].endLockTime = oldEndLockTime != MAX_UINT48 ? MAX_UINT48 : _newEndLockTime();
     }
 
+    /**
+     * @notice Unlock a position after the lock period has ended
+     * @param tokenId ID of the locking position
+     */
     function unlock(uint256 tokenId) external onlyTokenOwner(tokenId) updateReward(0) {
         (uint48 endLockTime, uint208 amount) = _getLock(tokenId);
         require(endLockTime < block.timestamp, LockNotOver());
@@ -269,7 +303,11 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         tan.transfer(msg.sender, amount);
     }
 
-    function rageQuit(uint256 tokenId) external onlyTokenOwner(tokenId) {
+    /**
+     * @notice Exit a lock position early with a penalty
+     * @param tokenId ID of the locking position
+     */
+    function rageQuit(uint256 tokenId) external onlyTokenOwner(tokenId) updateReward(0) {
         (uint48 endLockTime, uint208 amount) = _getLock(tokenId);
         bool isPermaLocked = endLockTime == MAX_UINT48;
 
@@ -290,7 +328,12 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         tan.transfer(controlTower.feeTreasury(), penalty);
     }
 
-    function kickPosition(uint256 tokenId, address receiver) external {
+    /**
+     * @notice Kick a position after the lock period and delay have passed
+     * @param tokenId ID of the locking position
+     * @param receiver Address to receive the kick incentive
+     */
+    function kickPosition(uint256 tokenId, address receiver) external updateReward(0) {
         (uint48 endLockTime, uint208 amount) = _getLock(tokenId);
         KickParams memory _kick = kick;
 
@@ -305,7 +348,12 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         delete locks[tokenId];
     }
 
-    function split(uint256 tokenId, uint208 amountToRemove) external onlyTokenOwner(tokenId) {
+    /**
+     * @notice Split a locked position into two separate positions
+     * @param tokenId ID of the original locking position
+     * @param amountToRemove Amount to remove from the original position
+     */
+    function split(uint256 tokenId, uint208 amountToRemove) external onlyTokenOwner(tokenId) updateReward(0) {
         (uint48 endLockTime, uint208 amount) = _getLock(tokenId);
 
         require(amountToRemove != 0, ZeroAmount());
@@ -318,6 +366,11 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         _mint(msg.sender, newId);
     }
 
+    /**
+     * @notice Merge two locked positions into one
+     * @param tokenIdA ID of the first locking position
+     * @param tokenIdB ID of the second locking position
+     */
     function merge(uint256 tokenIdA, uint256 tokenIdB) external onlyTokenOwner(tokenIdA) onlyTokenOwner(tokenIdB) {
         (uint48 endLockA, uint208 amountA) = _getLock(tokenIdA);
         (uint48 endLockB, uint208 amountB) = _getLock(tokenIdB);
@@ -330,10 +383,18 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         _burn(tokenIdB);
     }
 
+    /**
+     * @notice Get the next end lock time based on the current timestamp
+     * @return The next end lock time
+     */
     function nextEndLockTime() external view returns (uint48) {
         return _newEndLockTime();
     }
 
+    /**
+     * @notice Calculate the new end lock time based on the current timestamp
+     * @return The new end lock time
+     */
     function _newEndLockTime() internal view returns (uint48) {
         return uint48(((block.timestamp + LOCK_DURATION) / ONE_WEEK) * ONE_WEEK);
     }
@@ -343,8 +404,8 @@ contract RsTan is ERC721Enumerable, LightOwnable {
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
-     * @notice Set the percentage of rewards to be sent to the splitter as a DAO fees.
-     * @param _newRewardToken rewards percentage value
+     * @notice Add a new reward token to the contract
+     * @param _newRewardToken Address of the new reward token
      */
     function addNewReward(IERC20 _newRewardToken) external onlyOwner {
         /// @dev If lastUpdateTime is equal to 0, it means the token is not already added as a reward
@@ -353,5 +414,96 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         rewardTokens.push(_newRewardToken);
         rewardData[_newRewardToken].lastUpdateTime = uint128(block.timestamp);
         rewardData[_newRewardToken].periodFinish = uint128(block.timestamp);
+    }
+
+    /**
+     * @notice Process rewards for the specified reward tokens
+     * @param tokenAmounts Array of reward tokens and their amounts to distribute
+     */
+    function processRewards(TokenAmount[] memory tokenAmounts) external onlyOwner {
+        // Reward tokens updated
+        uint256 rewardTokensLength = tokenAmounts.length;
+
+        for (uint256 i; i < rewardTokensLength; ) {
+            IERC20 rewardToken = tokenAmounts[i].token;
+            uint256 amount = tokenAmounts[i].amount;
+
+            Reward memory rData = rewardData[rewardToken];
+
+            require(0 != rData.lastUpdateTime, RewardNotAdded(rewardToken));
+            require(0 != amount, ZeroAmount());
+
+            if (block.timestamp >= rData.periodFinish) {
+                rewardData[rewardToken].rewardRate = amount / ONE_WEEK;
+            } else {
+                uint256 leftover = (rData.periodFinish - block.timestamp) * rData.rewardRate;
+                rewardData[rewardToken].rewardRate = (amount + leftover) / ONE_WEEK;
+            }
+
+            rewardData[rewardToken].lastUpdateTime = uint128(block.timestamp);
+            rewardData[rewardToken].periodFinish = uint128(block.timestamp + ONE_WEEK);
+
+            rewardToken.transferFrom(msg.sender, address(this), amount);
+
+            emit RewardNotified(rewardToken, amount);
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    /**
+     * @notice Claim all pending rewards for a locking position
+     * @dev Only the owner of the position can call the function
+     * @param tokenId ID of the position to claim
+     */
+    function claimRewards(uint256 tokenId) external updateReward(tokenId) onlyTokenOwner(tokenId) {
+        address tokenOwner = ownerOf(tokenId);
+        require(tokenOwner == msg.sender, NotTokenOwner());
+        uint256 rewardTokensLength = rewardTokens.length;
+
+        bool isClaimable;
+
+        for (uint256 i; i < rewardTokensLength; ) {
+            IERC20 _rewardToken = rewardTokens[i];
+            uint256 reward = rewards[tokenId][_rewardToken];
+
+            if (reward > 0) {
+                isClaimable = true;
+                rewards[tokenId][_rewardToken] = 0;
+                emit RewardPaid(tokenId, _rewardToken, reward);
+            }
+
+            _rewardToken.transfer(tokenOwner, reward);
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        require(isClaimable, NothingToClaim());
+    }
+
+    /**
+     * @notice Get the claimable amount of all reward tokens for the given address
+     * @param  tokenId Address of the user
+     * @return userRewards Array of rewards claimable by the position
+     */
+    function claimableRewards(uint256 tokenId) external view returns (TokenAmount[] memory userRewards) {
+        userRewards = new TokenAmount[](rewardTokens.length);
+
+        uint256 rsTanBalance = locks[tokenId].amount;
+        for (uint256 erc20Id; erc20Id < userRewards.length; ) {
+            IERC20 token = rewardTokens[erc20Id];
+            userRewards[erc20Id].token = token;
+            userRewards[erc20Id].amount = _earned(tokenId, token, rsTanBalance);
+
+            unchecked {
+                ++erc20Id;
+            }
+        }
+
+        return userRewards;
     }
 }

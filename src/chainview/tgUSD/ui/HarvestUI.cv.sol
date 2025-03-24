@@ -4,7 +4,7 @@ pragma solidity ^0.8.27;
 import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {ICollateral} from "../../../interfaces/internals/tgUSD/ICollateral.sol";
 
-import {ERC20Infos, IERC20, ICommonStruct} from "../../ERC20Infos.sol";
+import {ERC20Infos, IERC20, TokenAmount} from "../../ERC20Infos.sol";
 
 contract HarvestUI is ERC20Infos {
     struct HarvestUIOut {
@@ -33,7 +33,7 @@ contract HarvestUI is ERC20Infos {
                 IERC20 rewardToken = erc20s[j];
                 (, uint128 lastFinish, , ) = IRewards(market).rewardData(address(rewardToken));
                 lastPeriodFinish = lastPeriodFinish < lastFinish ? lastFinish : lastPeriodFinish;
-                tokenAmounts[j] = getERC20AmountInfos(ICommonStruct.TokenAmount({token: rewardToken, amount: rewardToken.balanceOf(market)}));
+                tokenAmounts[j] = getERC20AmountInfos(TokenAmount({token: rewardToken, amount: rewardToken.balanceOf(market)}));
 
                 unchecked {
                     ++j;

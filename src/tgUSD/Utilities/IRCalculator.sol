@@ -91,7 +91,7 @@ contract IRCalculator is IIRCalculator, Ownable {
      * @param  tgUSDPrice   Price of tgUSD in wei on 18 decimals.
      * @param  irParam      IR parameters
      */
-    function simulateIR(uint256 tgUSDPrice, IRParams memory irParam) external view returns (uint256) {
+    function simulateIR(uint256 tgUSDPrice, IRParams memory irParam) external pure returns (uint256) {
         return _computeIR(tgUSDPrice, irParam);
     }
 
@@ -103,7 +103,7 @@ contract IRCalculator is IIRCalculator, Ownable {
      * @param  tgUSDPrice Price of tgUSD in wei.
      * @param  irParam    IR parameters
      */
-    function _computeIR(uint256 tgUSDPrice, IRParams memory irParam) internal view returns (uint256) {
+    function _computeIR(uint256 tgUSDPrice, IRParams memory irParam) internal pure returns (uint256) {
         if (tgUSDPrice <= uint256(irParam.pMin) * E12) {
             return uint256(irParam.rMax) * E13;
         }

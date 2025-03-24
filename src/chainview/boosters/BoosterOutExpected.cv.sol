@@ -3,7 +3,6 @@ pragma solidity ^0.8.27;
 
 import {ISdtUtilities} from "../../interfaces/internals/CVG/ISdtUtilities.sol";
 import {ISdtStaking} from "../../interfaces/internals/CVG/ISdtStaking.sol";
-import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {IGauge} from "../../interfaces/externals/Curve/IGauge.sol";
 import {ICrvPoolPlain} from "../../interfaces/externals/Curve/ICrvPoolPlain.sol";
@@ -44,9 +43,7 @@ contract BoosterOutExpected {
             }
         }
 
-        revert BoosterConvertError(
-            BoosterConvertOut({sdAssetAmountOut: sdAssetAmountOut, feePercentage: feePercentage, feeOrIncentiveAmount: feeOrIncentiveAmount})
-        );
+        revert BoosterConvertError(BoosterConvertOut({sdAssetAmountOut: sdAssetAmountOut, feePercentage: feePercentage, feeOrIncentiveAmount: feeOrIncentiveAmount}));
     }
 
     function _getDepositResult(ISdAsset sdAsset, uint256 amountIn, bool isLock) internal view returns (uint256, uint256, uint256) {

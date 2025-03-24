@@ -8,7 +8,7 @@ import {ICvxStaking} from "../../interfaces/internals/CVG/ICvxStaking.sol";
 
 import {ISdtStakingManager} from "../../interfaces/internals/CVG/ISdtStakingManager.sol";
 
-import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {AddrBooster} from "../../libs/Resources/ResourcesBooster.sol";
 
@@ -23,7 +23,7 @@ contract BoosterList is SdtPosition {
     struct LockerRow {
         uint256 totalStaked;
         uint256 userStaked;
-        ICommonStruct.TokenAmount[] tokensClaimable;
+        TokenAmount[] tokensClaimable;
         bool isProcessed;
     }
 
@@ -48,7 +48,7 @@ contract BoosterList is SdtPosition {
             LockerRow({
                 totalStaked: cvgSdtStaking.cycleInfo(nextCycle).totalStaked,
                 userStaked: 0,
-                tokensClaimable: new ICommonStruct.TokenAmount[](0),
+                tokensClaimable: new TokenAmount[](0),
                 isProcessed: cvgSdtStaking.cycleInfo(nextCycle - 2).isSdtProcessed
             });
     }
@@ -75,7 +75,7 @@ contract BoosterList is SdtPosition {
             LockerRow({
                 totalStaked: cvgCvxStaking.totalSupply(),
                 userStaked: 0,
-                tokensClaimable: new ICommonStruct.TokenAmount[](0),
+                tokensClaimable: new TokenAmount[](0),
                 isProcessed: cvgCvxStaking.cycleInfo(nextCycle - 2).isCvxProcessed
             });
     }
@@ -84,7 +84,7 @@ contract BoosterList is SdtPosition {
         ICvxStaking cvgCvxStaking = AddrBooster.CVG_CVX_STAKING;
         uint256 nextCycle = cvgCvxStaking.stakingCycle() + 1;
 
-        (, ICommonStruct.TokenAmount[] memory tokensClaimable) = cvgCvxStaking.getAllClaimableAmounts(user);
+        (, TokenAmount[] memory tokensClaimable) = cvgCvxStaking.getAllClaimableAmounts(user);
 
         return
             LockerRow({

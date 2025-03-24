@@ -6,7 +6,7 @@ import {BalancesAllowances} from "./BalancesAllowances.sol";
 import {ISdtStaking} from "../interfaces/internals/CVG/ISdtStaking.sol";
 import {ISdtStakingManager} from "../interfaces/internals/CVG/ISdtStakingManager.sol";
 import {ISdtUtilities} from "../interfaces/internals/CVG/ISdtUtilities.sol";
-import {ICommonStruct} from "../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount} from "../interfaces/internals/ICommonStruct.sol";
 
 contract SdtPosition {
     ISdtStakingManager public constant STAKING_MANAGER = ISdtStakingManager(0x7319662aD7D7ce2d1595073EA042B723F6d0dc48);
@@ -15,23 +15,20 @@ contract SdtPosition {
     struct PositionData {
         uint256 tokenId;
         uint256 deposited;
-        ICommonStruct.TokenAmount[] tokensClaimable;
+        TokenAmount[] tokensClaimable;
     }
 
     function getAllOwnedPositions(address user) public view returns (ISdtStakingManager.TokenStaking[] memory) {
         return STAKING_MANAGER.getTokenIdsAndStakingContracts(user);
     }
 
-    function getPositionsForOneStaking(
-        ISdtStaking sdtStaking,
-        ISdtStakingManager.TokenStaking[] memory allTokensOwned
-    ) public view returns (PositionData[] memory) {
+    function getPositionsForOneStaking(ISdtStaking sdtStaking, ISdtStakingManager.TokenStaking[] memory allTokensOwned) public view returns (PositionData[] memory) {
         PositionData[] memory positionsData = new PositionData[](allTokensOwned.length);
         uint256 counter;
         for (uint256 i; i < allTokensOwned.length; ) {
             uint256 tokenId = allTokensOwned[i].tokenId;
             if (allTokensOwned[i].stakingContract == sdtStaking) {
-                (, ICommonStruct.TokenAmount[] memory tokensClaimable) = sdtStaking.getAllClaimableAmounts(tokenId);
+                (, TokenAmount[] memory tokensClaimable) = sdtStaking.getAllClaimableAmounts(tokenId);
 
                 positionsData[counter] = PositionData({tokenId: tokenId, deposited: sdtStaking.tokenTotalStaked(tokenId), tokensClaimable: tokensClaimable});
                 counter++;
@@ -51,19 +48,16 @@ contract SdtPosition {
 
     struct MergedPositionData {
         uint256 deposited;
-        ICommonStruct.TokenAmount[] tokensClaimable;
+        TokenAmount[] tokensClaimable;
     }
 
-    function getMergedPosition(
-        ISdtStaking sdtStaking,
-        ISdtStakingManager.TokenStaking[] memory allTokensOwned
-    ) public returns (PositionData[] memory, MergedPositionData memory) {
+    function getMergedPosition(ISdtStaking sdtStaking, ISdtStakingManager.TokenStaking[] memory allTokensOwned) public returns (PositionData[] memory, MergedPositionData memory) {
         PositionData[] memory positions = getPositionsForOneStaking(sdtStaking, allTokensOwned);
-        ICommonStruct.TokenAmount[] memory allTokensClaimable;
+        TokenAmount[] memory allTokensClaimable;
         if (positions.length == 0) {
-            allTokensClaimable = new ICommonStruct.TokenAmount[](0);
+            allTokensClaimable = new TokenAmount[](0);
         } else {
-            allTokensClaimable = new ICommonStruct.TokenAmount[](5);
+            allTokensClaimable = new TokenAmount[](5);
         }
 
         uint256 stakedByUser;
@@ -74,13 +68,13 @@ contract SdtPosition {
 
             // We iterate through the claimable tokens
             for (uint256 j; j < positions[i].tokensClaimable.length; ) {
-                ICommonStruct.TokenAmount memory tokenAmount = positions[i].tokensClaimable[j];
+                TokenAmount memory tokenAmount = positions[i].tokensClaimable[j];
                 IERC20 token = tokenAmount.token;
                 uint256 amount = tokenAmount.amount;
 
                 uint256 previousAmount = _tLoadUintForAddress(address(token));
                 if (previousAmount == 0) {
-                    allTokensClaimable[realSizeClaimable] = ICommonStruct.TokenAmount({token: token, amount: 0});
+                    allTokensClaimable[realSizeClaimable] = TokenAmount({token: token, amount: 0});
                     realSizeClaimable++;
                 }
 

@@ -6,7 +6,7 @@ import {SdtPosition} from "../SdtPosition.sol";
 import {ISdtStaking} from "../../interfaces/internals/CVG/ISdtStaking.sol";
 import {ISdtStakingManager} from "../../interfaces/internals/CVG/ISdtStakingManager.sol";
 
-import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {AddrBooster} from "../../libs/Resources/ResourcesBooster.sol";
 
@@ -23,7 +23,7 @@ contract BoosterList is SdtPosition {
     struct BoosterRow {
         uint256 totalStaked;
         uint256 userStaked;
-        ICommonStruct.TokenAmount[] tokensClaimable;
+        TokenAmount[] tokensClaimable;
         PositionData[] positionsDetails;
         bool isProcessed;
     }
@@ -58,7 +58,7 @@ contract BoosterList is SdtPosition {
             BoosterRow({
                 totalStaked: sdtStaking.cycleInfo(nextCycle).totalStaked,
                 userStaked: 0,
-                tokensClaimable: new ICommonStruct.TokenAmount[](0),
+                tokensClaimable: new TokenAmount[](0),
                 positionsDetails: new PositionData[](0),
                 isProcessed: sdtStaking.cycleInfo(nextCycle - 2).isSdtProcessed
             });

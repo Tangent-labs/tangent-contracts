@@ -1,17 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {LightOwnable} from "../../Utilities/LightOwnable.sol";
 
-import "forge-std/console.sol";
-
 /// @notice
 abstract contract DebtIR is LightOwnable, IDebtIR {
-    using Math for uint256;
     uint256 public constant RAY = 1e18; // Facteur de précision ray (1 * 10^27)
 
     /// @notice Computes the interest rate and the cut of rewards.
@@ -88,7 +84,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      */
     function _updateDebts(address account, uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) internal {
         // Recompute the new debt index of the user based on his new debt recomputed with interests and the new debtIndex
-        positionDebtIndex[account] = newUserDebt.mulDiv(RAY, newDebtIndex, Math.Rounding.Floor);
+        positionDebtIndex[account] = (newUserDebt * RAY) / newDebtIndex;
 
         _updateGlobalDebt(newDebtIndex, newTotalDebt);
     }
@@ -127,7 +123,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
         uint256 _lastIr = lastIR;
 
         if (_lastIr != 0) {
-            return _lastIr.mulDiv(timeDelta, 36500 days, Math.Rounding.Floor);
+            return (_lastIr * timeDelta) / 36500 days;
         } else {
             return 0;
         }
@@ -205,6 +201,6 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
     }
 
     function _positionDebt(address account, uint256 newDebtIndex) internal view returns (uint256) {
-        return positionDebtIndex[account].mulDiv(newDebtIndex, RAY, Math.Rounding.Floor);
+        return (positionDebtIndex[account] * newDebtIndex) / RAY;
     }
 }
