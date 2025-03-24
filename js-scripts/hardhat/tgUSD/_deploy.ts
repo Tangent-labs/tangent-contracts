@@ -82,6 +82,8 @@ async function createJSONAddress(
         tokens: {
             tgUSD: await baseContext.tgUSD.getAddress(),
             sgUSD: await baseContext.sgUSD.getAddress(),
+            tan: await baseContext.tan.getAddress(),
+            rsTan: await baseContext.rsTan.getAddress(),
         },
         markets,
         oracles,

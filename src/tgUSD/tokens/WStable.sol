@@ -38,11 +38,11 @@ contract WStable is ERC20, LightOwnable {
      *  @notice Mints tgStable against corresponding stable. A
      *  @dev    When isStaked is true, the ratio of tgStable received / stable send is >= 1 as he'll take also all pending fees.
      *          When isStaked is false, the same ratio is < 1 as a fee is taken and deposited in the contract as "pending".
-     *  @param to       Receiver of the tgStable
      *  @param amountIn Amount of tgStable to deposit in exchange of tgStable
+     *  @param receiver Receiver of the tgStable
      *  @param isSaving For the sociabilization process
      */
-    function mint(address to, uint256 amountIn, bool isSaving) external {
+    function mint(uint256 amountIn, address receiver, bool isSaving) public {
         require(amountIn != 0, ZeroAmount());
 
         uint256 amountToMint = amountIn;
@@ -58,27 +58,44 @@ contract WStable is ERC20, LightOwnable {
 
         // Computes the amount of tgStable to mint regarding 'isStaked'
         // Mints the amount of tgStable for the receiver
-        _mint(to, amountToMint);
+        _mint(receiver, amountToMint);
+    }
+
+    function convertToAssets(uint256 shares) external view returns (uint256) {
+        return shares;
+    }
+
+    function convertToShares(uint256 assets) external view returns (uint256) {
+        return assets;
+    }
+
+    //TODO Doc and test
+    function deposit(uint256 amountIn, address receiver) external {
+        mint(amountIn, receiver, false);
     }
 
     /**
      *  @notice Burns the tgStable from the sender and transfer back stable to the receiver.
      *  @dev    Pending stables on the tgStable contract are the first to be send back to the user.
+     *  @param amount    Amount of tgStable to burn in exchange of stable. Always at 1:1 ratio.
      *  @param receiver  Receiver of the stable
-     *  @param amountToBurn    Amount of tgStable to burn in exchange of stable. Always at 1:1 ratio.
      */
-    function burn(address receiver, uint256 amountToBurn, bool isSaving) external {
-        require(amountToBurn != 0, ZeroAmount());
+    function burn(uint256 amount, address receiver, bool isSaving) public {
+        require(amount != 0, ZeroAmount());
 
         if (isSaving) {
             IERC4626 _savingAccount = savingAccount;
-            _savingAccount.transfer(receiver, _savingAccount.previewWithdraw(amountToBurn));
+            _savingAccount.transfer(receiver, _savingAccount.previewWithdraw(amount));
         } else {
-            savingAccount.withdraw(amountToBurn, receiver, address(this));
+            savingAccount.withdraw(amount, receiver, address(this));
         }
 
         // Burn tgStable from the sender
-        _burn(msg.sender, amountToBurn);
+        _burn(msg.sender, amount);
+    }
+    //TODO Doc and test
+    function redeem(uint256 amount, address receiver, address owner) external {
+        burn(amount, receiver, false);
     }
 
     /**
