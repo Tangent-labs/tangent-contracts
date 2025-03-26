@@ -8,7 +8,7 @@ export class WStablesContext {
 
     async deployWStables(baseContext: BaseContext) {
         const wStableFactory = await ethers.getContractFactory("WStable");
-        const amount = ethers.parseEther("25000");
+        const amount = ethers.parseEther("500000");
 
         const wfrxUSD = "wfrxUSD";
         const wfrxUSDContract = await wStableFactory.deploy(wfrxUSD, wfrxUSD, baseContext.controlTower, baseContext.coins.frxUSD, baseContext.coins.sfrxUSD, baseContext.owner);

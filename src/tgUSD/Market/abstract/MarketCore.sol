@@ -6,7 +6,7 @@ import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extens
 import {IControlTower} from "../../../interfaces/internals/tgUSD/IControlTower.sol";
 import {PauseSettings} from "./PauseSettings.sol";
 import {Rewards} from "./Rewards.sol";
-import {GlobalMarketInitParams, MarketInit, LiquidateCall} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
+import {GlobalMarketInitParams, MarketInit, LiquidateCall, ILiquidatorProxy} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 import "forge-std/console.sol";
 
 /// @notice
@@ -299,15 +299,16 @@ abstract contract MarketCore is PauseSettings, Rewards {
             liquidateCall.newTotalDebt - tgUSDToRepay
         );
 
+        ILiquidatorProxy _liquidatorProxy = liquidatorProxy;
         // Withdraw the collateral from the underlying protocol if needed and
         // Transfer it to the caller when there is no liquidator passed in parameter
         // If a liquidator is passed, we send the collateral to the liquidator
-        _transferCollateralWithdraw(liquidator != address(0) ? liquidator : msg.sender, collatAmountToLiquidate);
+        _transferCollateralWithdraw(liquidator != address(0) ? address(_liquidatorProxy) : msg.sender, collatAmountToLiquidate);
 
         // When liquidator is not zero, it allows to the LiquidatorProxy to receive the collateral.
         // Then, if needed, liquidator will allow the custom Liquidator to sell the collateral for tgUSD in the same transaction.
         if (liquidator != address(0)) {
-            liquidatorProxy.callLiquidate(liquidator, msg.sender, minTgUSDOut, liquidationCall);
+            _liquidatorProxy.callLiquidate(liquidator, msg.sender, collatToken, minTgUSDOut, liquidationCall);
         }
         // Burns tgUSD from the sender.
         // The debt has to be on the caller of the transaction.

@@ -5,8 +5,8 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
     crvUSD_USDC: {
         collatName: "crvUSD_USDC",
         collatToken: convexCrv.CRVUSD_USDC.lp,
-        liquidationThreshold: 93_000,
-        maxLTV: 85_000,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
         rewards: [commonERC20.CRV, commonERC20.CVX],
@@ -16,8 +16,8 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
     crvUSD_USDT: {
         collatName: "crvUSD_USDT",
         collatToken: convexCrv.CRVUSD_USDT.lp,
-        liquidationThreshold: 93_000,
-        maxLTV: 85_000,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
         rewards: [commonERC20.CRV, commonERC20.CVX],
@@ -51,8 +51,8 @@ export const STATIC_CONFIG_CONVEX_FXN = {
     USDC_fxUSD: {
         collatName: "USDC_fxUSD",
         collatToken: convexFxn.USDC_fxUSD.lp,
-        liquidationThreshold: 93_000,
-        maxLTV: 85_000,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
         rewards: [commonERC20.FXN, commonERC20.CRV, commonERC20.CVX],

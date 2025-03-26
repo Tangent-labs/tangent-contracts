@@ -12,7 +12,7 @@ export class LpDeployContext {
     stableLp: StableLP = {};
 
     async deployAllTgUSDLps(baseContext: BaseContext, wStableContext: WStablesContext) {
-        const amount = 25_000;
+        const amount = 500_000;
         const tgUSD_USDC = "tgUSD-USDC";
         const tgUSDC = "tgUSDC";
 

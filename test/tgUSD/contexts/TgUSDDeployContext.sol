@@ -133,7 +133,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(rewardAccumulator), "RewardAccumulator");
         vm.label(address(AddrRouter.ENSO_ROUTER), "Enso Router");
         vm.label(address(mockEnsoRouter), "Mock Odos Router");
-        vm.label(0x16C6521Dff6baB339122a0FE25a9116693265353, "Curve Router");
+        vm.label(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e, "Curve Router");
 
         vm.label(address(liquidator), "Liquidator");
         vm.label(address(liquidatorProxy), "Liquidation Proxy");
