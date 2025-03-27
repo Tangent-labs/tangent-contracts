@@ -17,7 +17,7 @@ contract RsTan is ERC721Enumerable, LightOwnable {
     /// @notice One week in seconds.
     uint256 internal constant ONE_WEEK = 1 weeks;
     /// @notice Maximum value for a uint48.
-    uint48 internal constant MAX_UINT48 = type(uint48).max;
+    uint48 public constant MAX_UINT48 = type(uint48).max;
 
     /// @notice The ERC20 token that users lock.
     IERC20 public immutable tan;

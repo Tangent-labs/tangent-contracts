@@ -4,7 +4,7 @@ pragma solidity ^0.8.27;
 import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {IRsTan} from "../../../interfaces/internals/tgUSD/IRsTan.sol";
 
-import {ERC20Infos, IERC20, ICommonStruct} from "../../ERC20Infos.sol";
+import {ERC20Infos, IERC20, TokenAmount} from "../../ERC20Infos.sol";
 
 contract LockUI is ERC20Infos {
     error LockUIOutError(LockUIOut output);
