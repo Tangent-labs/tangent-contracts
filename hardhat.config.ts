@@ -22,8 +22,8 @@ const config: HardhatUserConfig = {
                 network: "localhost",
                 chainId: 31337,
                 urls: {
-                    apiURL: "http://127.0.0.1:80/api",
-                    browserURL: "http://127.0.0.1:80",
+                    apiURL: "http://176.143.254.58:80/api",
+                    browserURL: "http://176.143.254.58:80",
                 },
             },
         ],
