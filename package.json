@@ -10,16 +10,18 @@
   },
   "scripts": {
     "hh-node": "npx hardhat node --fork https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy --fork-block-number 22030297 --hostname 0.0.0.0",
-    "dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "build": "forge build --skip ./src/LendSplitter/* ./test/lendSplitter/*",
     "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost",
+    "flatten-contracts": "npx ts-node js-scripts/utils/flattenContracts.ts",
+    "verify-contracts-blockscout": "npx ts-node js-scripts/utils/js-scripts/hardhat/tgUSD/verify-contracts/blockscout.ts",
     "distribute-rewards-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/distributeRewards.ts --network localhost",
     "deposit-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/deposit.ts --network localhost",
     "borrow-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/borrow.ts --network localhost",
     "swap-curve": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/swap.ts --network localhost",
     "full-tgUSD": "npm run deploy-tgUSD &  npm run distribute-rewards-tgUSD & npm run deposit-markets-tgUSD  & npm run borrow-markets-tgUSD",
     "time-travel": "npx hardhat run js-scripts/hardhat/tgUSD/actions/time-travel.ts --network localhost",
-    "liquidation-context": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/liquidationSetUp.ts --network localhost"
+    "liquidation-context": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/liquidationSetUp.ts --network localhost",
+    "booster-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost"
   },
   "author": "Trottoir",
   "license": "ISC",
