@@ -54,8 +54,8 @@ contract IncreaseLockAmount is ConvexCurveContext {
         assertEq(endLockTime0, endLockTime1);
         assertEq(endLockTime0, endLockTime);
 
-        assertEq(amountLocked1, fullAmount);
-        assertEq(rsTan.totalSupplyRsTan(), fullAmount);
+        assertEq(amountLocked1, fullAmount, "Amount locked is equal to what has been locked");
+        assertEq(rsTan.totalSupplyRsTan(), fullAmount, "Total supply is equal to the amount of the first position as it's the only one");
     }
 
     function test_increase_lock_amount_not_perma_locked_not_same_week() external {
@@ -87,21 +87,20 @@ contract IncreaseLockAmount is ConvexCurveContext {
         assertEq(endLockTime1, endLockTime0 + 12 weeks);
 
         assertEq(amountLocked1, fullAmount, "Amount locked on the token is right");
-
         assertEq(rsTan.totalSupplyRsTan(), fullAmount + amount0, "Total Supply increased properly");
 
         skip(7 weeks);
 
-        assertEq(rsTan.totalSupplyRsTan(), fullAmount);
+        assertEq(rsTan.totalSupplyRsTan(), fullAmount + amount0, "Position still locked because not kicked yet");
 
         verifyReceiveERC20(tan, usr1, amount0);
         verifyLostERC20(tan, address(rsTan), amount0);
         rsTan.unlock(2);
         assertERC20Tracking();
 
-        assertEq(rsTan.totalSupplyRsTan(), fullAmount);
+        assertEq(rsTan.totalSupplyRsTan(), fullAmount, "Equals to what is on position 1");
         skip(6 weeks);
-        assertEq(rsTan.totalSupplyRsTan(), 0, "Total supply is now 0");
+        assertEq(rsTan.totalSupplyRsTan(), fullAmount, "Total supply is still the same ");
     }
 
     function test_fails_to_increase_lock_on_token_not_owned() external {

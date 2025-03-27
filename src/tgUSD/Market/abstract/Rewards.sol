@@ -3,7 +3,7 @@ pragma solidity ^0.8.22;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {ICommonStruct} from "../../../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 import {IRewards, Reward} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 
@@ -61,10 +61,10 @@ abstract contract Rewards is Collateral {
      *      returns a TokenAmount[] struct and the rewards receiver address
      * @param _address Address to claim rewards for
      */
-    function getAndUpdateRewards(address _address) external updateReward(_address) returns (ICommonStruct.TokenAmount[] memory) {
+    function getAndUpdateRewards(address _address) external updateReward(_address) returns (TokenAmount[] memory) {
         require(msg.sender == address(rewardAccumulator));
         uint256 rewardTokensLength = rewardTokens.length;
-        ICommonStruct.TokenAmount[] memory tokenAmounts = new ICommonStruct.TokenAmount[](rewardTokensLength);
+        TokenAmount[] memory tokenAmounts = new TokenAmount[](rewardTokensLength);
         uint256 counter;
         for (uint256 tokenIndex; tokenIndex < rewardTokensLength; ) {
             IERC20 _rewardToken = rewardTokens[tokenIndex];
@@ -72,7 +72,7 @@ abstract contract Rewards is Collateral {
 
             if (reward > 0) {
                 rewards[_address][_rewardToken] = 0;
-                tokenAmounts[counter++] = ICommonStruct.TokenAmount({token: _rewardToken, amount: reward});
+                tokenAmounts[counter++] = TokenAmount({token: _rewardToken, amount: reward});
                 emit RewardPaid(_address, _rewardToken, reward);
             }
 
@@ -167,7 +167,7 @@ abstract contract Rewards is Collateral {
         // Reward tokens updated
         IERC20[] memory _rewardTokens = rewardTokens;
         uint256 rewardTokensLength = _rewardTokens.length;
-        ICommonStruct.TokenAmount[] memory rewardCutToUpdate = new ICommonStruct.TokenAmount[](rewardTokensLength);
+        TokenAmount[] memory rewardCutToUpdate = new TokenAmount[](rewardTokensLength);
 
         bool isSomeRewardToProcess = false;
         uint256 _harvesterFeePercetage = harvesterFeePercentage;
@@ -195,7 +195,7 @@ abstract contract Rewards is Collateral {
                 uint256 rewardAmountStreamed;
                 if (rewardCut != 0) {
                     uint256 rewardAmountCut = (remainingRewards * rewardCut) / DENOMINATOR;
-                    rewardCutToUpdate[tokenIndex] = ICommonStruct.TokenAmount({token: rewardToken, amount: rewardAmountCut});
+                    rewardCutToUpdate[tokenIndex] = TokenAmount({token: rewardToken, amount: rewardAmountCut});
                     rewardAmountStreamed = remainingRewards - rewardAmountCut;
                 } else {
                     rewardAmountStreamed = remainingRewards;
@@ -253,8 +253,8 @@ abstract contract Rewards is Collateral {
      * @param _account Address of the user
      * @return userRewards Array of rewards
      */
-    function claimableRewards(address _account) external view returns (ICommonStruct.TokenAmount[] memory userRewards) {
-        userRewards = new ICommonStruct.TokenAmount[](rewardTokens.length);
+    function claimableRewards(address _account) external view returns (TokenAmount[] memory userRewards) {
+        userRewards = new TokenAmount[](rewardTokens.length);
 
         uint256 collateralBalance = collateralBalances[_account];
         for (uint256 erc20Id; erc20Id < userRewards.length; ) {

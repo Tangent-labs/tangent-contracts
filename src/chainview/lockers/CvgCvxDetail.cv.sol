@@ -7,7 +7,7 @@ import {SdtPosition} from "../SdtPosition.sol";
 import {ISdtStaking} from "../../interfaces/internals/CVG/ISdtStaking.sol";
 import {ISdtStakingManager} from "../../interfaces/internals/CVG/ISdtStakingManager.sol";
 
-import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {AddrBooster} from "../../libs/Resources/ResourcesBooster.sol";
 import {AddrClassicERC20} from "../../libs/Resources/ResourcesGlobal.sol";
@@ -21,7 +21,7 @@ contract CvgSdtDetail is SdtPosition, BalancesAllowances {
     struct CvgCvxDetailOut {
         uint256 totalStaked;
         uint256 userStaked;
-        ICommonStruct.TokenAmount[] tokensClaimable;
+        TokenAmount[] tokensClaimable;
         bool isProcessed;
     }
 
@@ -46,7 +46,7 @@ contract CvgSdtDetail is SdtPosition, BalancesAllowances {
             CvgCvxDetailOut({
                 totalStaked: AddrBooster.CVG_CVX_STAKING.cycleInfo(nextCycle).totalStaked,
                 userStaked: 0,
-                tokensClaimable: new ICommonStruct.TokenAmount[](0),
+                tokensClaimable: new TokenAmount[](0),
                 isProcessed: AddrBooster.CVG_CVX_STAKING.cycleInfo(nextCycle - 2).isCvxProcessed
             });
     }
@@ -78,7 +78,7 @@ contract CvgSdtDetail is SdtPosition, BalancesAllowances {
 
     function _getDetailConnected(address user) internal view returns (CvgCvxDetailOut memory) {
         uint256 nextCycle = AddrBooster.CVG_CVX_STAKING.stakingCycle() + 1;
-        (, ICommonStruct.TokenAmount[] memory tokensClaimable) = AddrBooster.CVG_CVX_STAKING.getAllClaimableAmounts(user);
+        (, TokenAmount[] memory tokensClaimable) = AddrBooster.CVG_CVX_STAKING.getAllClaimableAmounts(user);
 
         return
             CvgCvxDetailOut({

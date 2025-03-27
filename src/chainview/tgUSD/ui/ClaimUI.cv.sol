@@ -4,7 +4,7 @@ pragma solidity ^0.8.27;
 import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {ICollateral} from "../../../interfaces/internals/tgUSD/ICollateral.sol";
 
-import {ERC20Infos, IERC20, ICommonStruct} from "../../ERC20Infos.sol";
+import {ERC20Infos, IERC20, TokenAmount} from "../../ERC20Infos.sol";
 
 contract ClaimUI is ERC20Infos {
     struct ClaimUIOut {
@@ -23,7 +23,7 @@ contract ClaimUI is ERC20Infos {
         for (uint256 i; i < marketLength; ) {
             address market = markets[i];
 
-            ICommonStruct.TokenAmount[] memory claimable = IRewards(market).claimableRewards(account);
+            TokenAmount[] memory claimable = IRewards(market).claimableRewards(account);
             uint256 claimableLength = claimable.length;
             ERC20Infos.ERC20AmountInfos[] memory claimableTokens = new ERC20Infos.ERC20AmountInfos[](claimableLength);
 
@@ -37,7 +37,7 @@ contract ClaimUI is ERC20Infos {
             output[i] = ClaimUIOut({
                 marketAddress: market,
                 collatStakedUsdValue: ICollateral(market).positionValue(account),
-                collatStaked: getERC20AmountInfos(ICommonStruct.TokenAmount({token: ICollateral(market).collatToken(), amount: ICollateral(market).collateralBalances(account)})),
+                collatStaked: getERC20AmountInfos(TokenAmount({token: ICollateral(market).collatToken(), amount: ICollateral(market).collateralBalances(account)})),
                 claimableTokens: claimableTokens
             });
             unchecked {

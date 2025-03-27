@@ -7,7 +7,7 @@ import {SdtPosition} from "../SdtPosition.sol";
 import {ISdtStaking} from "../../interfaces/internals/CVG/ISdtStaking.sol";
 import {ISdtStakingManager} from "../../interfaces/internals/CVG/ISdtStakingManager.sol";
 
-import {ICommonStruct} from "../../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 
 import {AddrBooster} from "../../libs/Resources/ResourcesBooster.sol";
 import {AddrClassicERC20} from "../../libs/Resources/ResourcesGlobal.sol";
@@ -21,7 +21,7 @@ contract CvgSdtDetail is SdtPosition, BalancesAllowances {
     struct CvgSdtDetailOut {
         uint256 totalStaked;
         uint256 userStaked;
-        ICommonStruct.TokenAmount[] tokensClaimable;
+        TokenAmount[] tokensClaimable;
         PositionData[] positionsDetails;
         bool isProcessed;
     }
@@ -47,7 +47,7 @@ contract CvgSdtDetail is SdtPosition, BalancesAllowances {
             CvgSdtDetailOut({
                 totalStaked: AddrBooster.CVG_SDT_STAKING.cycleInfo(nextCycle).totalStaked,
                 userStaked: 0,
-                tokensClaimable: new ICommonStruct.TokenAmount[](0),
+                tokensClaimable: new TokenAmount[](0),
                 positionsDetails: new PositionData[](0),
                 isProcessed: AddrBooster.CVG_SDT_STAKING.cycleInfo(nextCycle - 2).isSdtProcessed
             });
@@ -72,10 +72,7 @@ contract CvgSdtDetail is SdtPosition, BalancesAllowances {
     function _getDetailConnected(address user) internal returns (CvgSdtDetailOut memory) {
         uint256 nextCycle = AddrBooster.CVG_SDT_STAKING.stakingCycle() + 1;
 
-        (PositionData[] memory positionsDetails, MergedPositionData memory mergedPos) = getMergedPosition(
-            AddrBooster.CVG_SDT_STAKING,
-            getAllOwnedPositions(user)
-        );
+        (PositionData[] memory positionsDetails, MergedPositionData memory mergedPos) = getMergedPosition(AddrBooster.CVG_SDT_STAKING, getAllOwnedPositions(user));
 
         return
             CvgSdtDetailOut({

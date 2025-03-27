@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import {ICommonStruct} from "./../ICommonStruct.sol";
+import {TokenAmount} from "./../ICommonStruct.sol";
 
 interface ISdtStaking {
     struct CycleInfo {
@@ -15,7 +15,7 @@ interface ISdtStaking {
         uint256 pending;
         uint256 totalStaked;
         uint256 cvgClaimable;
-        ICommonStruct.TokenAmount[] sdtClaimable;
+        TokenAmount[] sdtClaimable;
     }
 
     struct TokenInfo {
@@ -32,7 +32,7 @@ interface ISdtStaking {
     function tokenInfoByCycle(uint256 cycleId, uint256 tokenId) external view returns (TokenInfo memory);
     function deposit(uint256 tokenId, uint256 amount, address operator) external;
     function depositPaused() external view returns (bool);
-    function getAllClaimableAmounts(uint256 tokenId) external view returns (uint256, ICommonStruct.TokenAmount[] memory);
+    function getAllClaimableAmounts(uint256 tokenId) external view returns (uint256, TokenAmount[] memory);
     function numberOfSdtRewards() external view returns (uint128);
     function owner() external view returns (address);
     function pendingOwner() external view returns (address);

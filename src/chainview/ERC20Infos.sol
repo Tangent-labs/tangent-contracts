@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {ICommonStruct} from "../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount} from "../interfaces/internals/ICommonStruct.sol";
 
 abstract contract ERC20Infos {
     struct ERC20AmountInfos {
@@ -18,12 +18,12 @@ abstract contract ERC20Infos {
         string symbol;
     }
 
-    function getERC20AmountInfos(ICommonStruct.TokenAmount memory tokenAmount) public view returns (ERC20AmountInfos memory) {
+    function getERC20AmountInfos(TokenAmount memory tokenAmount) public view returns (ERC20AmountInfos memory) {
         IERC20Metadata erc20Meta = IERC20Metadata(address(tokenAmount.token));
         return ERC20AmountInfos({token: erc20Meta, amount: tokenAmount.amount, decimals: erc20Meta.decimals(), symbol: erc20Meta.symbol()});
     }
 
-    function getERC20AmountInfos(ICommonStruct.TokenAmount[] memory tokenAmounts) public view returns (ERC20AmountInfos[] memory) {
+    function getERC20AmountInfos(TokenAmount[] memory tokenAmounts) public view returns (ERC20AmountInfos[] memory) {
         ERC20AmountInfos[] memory amountInfos = new ERC20AmountInfos[](tokenAmounts.length);
         for (uint256 i; i < tokenAmounts.length; ) {
             amountInfos[i] = getERC20AmountInfos(tokenAmounts[i]);

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import {ICommonStruct} from "./../ICommonStruct.sol";
+import {TokenAmount} from "./../ICommonStruct.sol";
 interface ISdtBuffer {
     function acceptOwnership() external;
     function cvgControlTower() external view returns (address);
@@ -9,7 +9,7 @@ interface ISdtBuffer {
     function owner() external view returns (address);
     function pendingOwner() external view returns (address);
     function processorRewardsPercentage() external view returns (uint256);
-    function pullRewards(address processor) external returns (ICommonStruct.TokenAmount[] memory);
+    function pullRewards(address processor) external returns (TokenAmount[] memory);
     function renounceOwnership() external;
     function sdt() external view returns (address);
     function sdtStaking() external view returns (address);

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import {ICommonStruct} from "./../ICommonStruct.sol";
+import {TokenAmount} from "./../ICommonStruct.sol";
 
 interface ICvxStaking {
     struct AccountInfos {
@@ -36,7 +36,7 @@ interface ICvxStaking {
     function deposit(uint256 amountIn, uint8 inTokenType, uint256 minCvgCvxAmountOut, uint256 minCvxAmountOut, bool isLock) external;
     function depositCvxRush(uint256 cvxAmountIn, uint256 minCvxAmountOut, bool isLock, uint256 tokenIdCvxRush) external;
     function depositPaused() external view returns (bool);
-    function getAllClaimableAmounts(address user) external view returns (uint256, ICommonStruct.TokenAmount[] memory);
+    function getAllClaimableAmounts(address user) external view returns (uint256, TokenAmount[] memory);
 
     function getHistoryLengthForAccount(address account) external view returns (uint256);
 

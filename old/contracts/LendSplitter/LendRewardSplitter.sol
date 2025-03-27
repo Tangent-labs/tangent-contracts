@@ -88,13 +88,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
         _disableInitializers();
     }
 
-    function initialize(
-        address _owner,
-        address _feeTreasury,
-        address _gUSDBeaconCvx,
-        address _scvUSDBeaconCvx,
-        address _autoCompoundBeacon
-    ) external initializer {
+    function initialize(address _owner, address _feeTreasury, address _gUSDBeaconCvx, address _scvUSDBeaconCvx, address _autoCompoundBeacon) external initializer {
         feeTreasury = _feeTreasury;
         GUSDBeaconCvx = _gUSDBeaconCvx;
         SCVUSDBeaconCvx = _scvUSDBeaconCvx;
@@ -177,22 +171,11 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
      *  @param doDeposit          If true, stakes all Llama LP in convex. Else, only deposits Llama LP in gUSD.
      *  @return mintedAmount of scvUSD minted to the msg.sender
      */
-    function depositGUSD(
-        ILlamaVault llamaVault,
-        ILendRewardSplitter.CVX_TOKEN_TYPE inType,
-        uint256 inAmount,
-        bool doDeposit
-    ) external returns (uint256 mintedAmount) {
+    function depositGUSD(ILlamaVault llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE inType, uint256 inAmount, bool doDeposit) external returns (uint256 mintedAmount) {
         return _depositGUSD(llamaVault, inType, inAmount, doDeposit, false);
     }
 
-    function _depositGUSD(
-        ILlamaVault llamaVault,
-        ILendRewardSplitter.CVX_TOKEN_TYPE inType,
-        uint256 inAmount,
-        bool doDeposit,
-        bool isZap
-    ) internal returns (uint256 mintedAmount) {
+    function _depositGUSD(ILlamaVault llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE inType, uint256 inAmount, bool doDeposit, bool isZap) internal returns (uint256 mintedAmount) {
         IgUSDCvx gUSD = gUSDPerLlamaVault[llamaVault];
 
         /// @dev Deposit the 'in' token and retrieve Llama Lend LP. Returns the amount of Llama LP deposited or minted so the amount of shares.
@@ -256,13 +239,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
         return mintedAmount;
     }
 
-    function _depositTransfer(
-        ILlamaVault llamaVault,
-        ILendRewardSplitter.CVX_TOKEN_TYPE inType,
-        IgUSDCvx gUSD,
-        uint256 amount,
-        bool isZap
-    ) internal returns (uint256) {
+    function _depositTransfer(ILlamaVault llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE inType, IgUSDCvx gUSD, uint256 amount, bool isZap) internal returns (uint256) {
         if (inType == ILendRewardSplitter.CVX_TOKEN_TYPE.LlamalendVaultAsset) {
             /// @dev Transfer the vault asset of LlamaLend
             llamaVault.safeTransferFrom(msg.sender, address(gUSD), amount);
@@ -301,12 +278,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
      *  @param amount         Amount of scvUsd or shares in autocompound to burn
      *  @param isAutoCompound Type of position to withdraw
      */
-    function withdrawSCVUSD(
-        ILlamaVault llamaVault,
-        ILendRewardSplitter.CVX_TOKEN_TYPE outType,
-        uint256 amount,
-        bool isAutoCompound
-    ) external returns (uint256) {
+    function withdrawSCVUSD(ILlamaVault llamaVault, ILendRewardSplitter.CVX_TOKEN_TYPE outType, uint256 amount, bool isAutoCompound) external returns (uint256) {
         require(amount != 0, Errors.ZeroAmount());
 
         /// @dev If the withdraw is from the autocompounder
@@ -459,10 +431,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
                     new BeaconProxy(
                         SCVUSDBeaconCvx,
                         //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
-                        abi.encodeCall(
-                            scvUSDCvx.initialize,
-                            (owner(), "Stable USD/CRV", "scvUSD-CRV", ILendRewardSplitter(address(this)), _llamaVault, address(rewardToken))
-                        )
+                        abi.encodeCall(scvUSDCvx.initialize, (owner(), "Stable USD/CRV", "scvUSD-CRV", ILendRewardSplitter(address(this)), _llamaVault, address(rewardToken)))
                     )
                 )
             );
@@ -485,16 +454,7 @@ contract LendRewardSplitter is Ownable2StepUpgradeable, ILendRewardSplitter {
                         //TODO: Get name of the lend token to personalize name/symbol for gUSD and scvUSD
                         abi.encodeCall(
                             gUSDCvx.initialize,
-                            (
-                                owner(),
-                                "Governance USD/CRV",
-                                "gUSD-CRV",
-                                ILendRewardSplitter(address(this)),
-                                rewardToken,
-                                _llamaVault,
-                                IERC20(cvxVaultToken),
-                                _scvUSD
-                            )
+                            (owner(), "Governance USD/CRV", "gUSD-CRV", ILendRewardSplitter(address(this)), rewardToken, _llamaVault, IERC20(cvxVaultToken), _scvUSD)
                         )
                     )
                 )

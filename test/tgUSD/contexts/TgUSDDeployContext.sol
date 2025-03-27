@@ -10,11 +10,11 @@ import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../../src/libs/Resources/ResourcesYearn.sol";
 
-import "../../../src/tgUSD/tokens/Tan.sol";
-import "../../../src/tgUSD/tokens/RsTan.sol";
-import "../../../src/tgUSD/tokens/TgUSD.sol";
-import "../../../src/tgUSD/tokens/WStable.sol";
-import "../../../src/tgUSD/Utilities/RewardAccumulator.sol";
+import "../../../src/tgUSD/Tokens/Tan.sol";
+import "../../../src/tgUSD/Tokens/RsTan.sol";
+import "../../../src/tgUSD/Tokens/TgUSD.sol";
+import "../../../src/tgUSD/Tokens/WStable.sol";
+import "../../../src/tgUSD/Rewards/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
 import "../../../src/tgUSD/Utilities/MarketCreator.sol";
@@ -103,13 +103,15 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         rewardAccumulator = new RewardAccumulator(owner, controlTower);
 
         tan = new Tan();
-        rsTan = new RsTan(controlTower, tan);
+        rsTan = new RsTan(controlTower, owner, tan);
         // Deploy tgUSD on Base
         // tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
         // Deploy tgUSD on Mainnet ETH
         tgUSD = deployTgUSD(mainnetFork, l0EndpointMainnet);
 
         // assertEq(address(tgUsdBase), address(tgUSD), "Should be equals with CREATE3");
+
+        rsTan.addNewReward(tgUSD);
 
         liquidatorProxy = new LiquidatorProxy(tgUSD);
 
