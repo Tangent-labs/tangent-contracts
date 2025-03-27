@@ -16,13 +16,16 @@ contract LiquidatorProxy is ILiquidatorProxy {
     error LiquidatorCallError();
     error MinAmountOutNotReached();
 
-    function callLiquidate(address liquidator, address receiver, uint256 minTgUSDReceived, bytes calldata routerCall) external payable {
+    function callLiquidate(address liquidator, address receiver, IERC20 assetToLiquidate, uint256 minTgUSDReceived, bytes calldata routerCall) external payable {
+        if (assetToLiquidate.allowance(address(this), liquidator) != (type(uint256).max)) {
+            assetToLiquidate.approve(liquidator, type(uint256).max);
+        }
         IERC20 _tgUSD = tgUSD;
         uint256 bal = _tgUSD.balanceOf(receiver);
         // Call router router and perform the swaps with raw data following recommendations.
-        (bool isrouterCallSuccess, ) = liquidator.call{value: msg.value}(routerCall);
+        (bool isRouterCallSuccess, ) = liquidator.call{value: msg.value}(routerCall);
         // Verify the call to router was successfull
-        require(isrouterCallSuccess, LiquidatorCallError());
+        require(isRouterCallSuccess, LiquidatorCallError());
 
         bal = _tgUSD.balanceOf(receiver) - bal;
 

@@ -6,10 +6,30 @@ import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomiclabs/hardhat-vyper";
 import {EndpointId} from "@layerzerolabs/lz-definitions";
 
-const forkBlock = 21872419;
+const forkBlock = 22030297;
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",
+    },
+
+    etherscan: {
+        apiKey: {
+            // Is not required by blockscout. Can be any non-empty string
+            localhost: "abc",
+        },
+        customChains: [
+            {
+                network: "localhost",
+                chainId: 31337,
+                urls: {
+                    apiURL: "http://127.0.0.1:80/api",
+                    browserURL: "http://127.0.0.1:80",
+                },
+            },
+        ],
+    },
+    sourcify: {
+        enabled: false,
     },
     solidity: {
         compilers: [
@@ -38,26 +58,27 @@ const config: HardhatUserConfig = {
         localhost: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "http://127.0.0.1:8545",
-            mining: {
-                auto: true,
-                interval: 5000,
-            },
+            // mining: {
+            //     auto: true,
+            //     interval: 5000,
+            // },
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
                 blockNumber: forkBlock,
             },
             timeout: 100_000_000,
         },
-        hardhat: {
-            mining: {
-                auto: true,
-                interval: 5000,
-            },
-            forking: {
-                url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
-                blockNumber: forkBlock,
-            },
-        },
+        // hardhat: {
+        //     // mining: {
+        //     //     auto: true,
+        //     //     interval: 5000,
+        //     // },
+        //     forking: {
+        //         url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
+        //         blockNumber: forkBlock,
+        //     },
+        //     timeout: 100_000_000,
+        // },
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "https://io.convergence-finance.network:8545",
