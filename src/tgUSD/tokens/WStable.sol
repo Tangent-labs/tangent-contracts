@@ -70,8 +70,9 @@ contract WStable is ERC20, LightOwnable {
     }
 
     //TODO Doc and test
-    function deposit(uint256 amountIn, address receiver) external {
+    function deposit(uint256 amountIn, address receiver) external returns (uint256) {
         mint(amountIn, receiver, false);
+        return amountIn;
     }
 
     /**
@@ -94,8 +95,9 @@ contract WStable is ERC20, LightOwnable {
         _burn(msg.sender, amount);
     }
     //TODO Doc and test
-    function redeem(uint256 amount, address receiver, address owner) external {
+    function redeem(uint256 amount, address receiver, address owner) external returns (uint256) {
         burn(amount, receiver, false);
+        return amount;
     }
 
     /**
