@@ -9,11 +9,11 @@
     "test": "test"
   },
   "scripts": {
-    "hh-node": "npx hardhat node --fork https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy --fork-block-number 22030297 --hostname 0.0.0.0",
-    "build": "forge build --skip ./src/LendSplitter/* ./test/lendSplitter/*",
+    "hh-node": "npx hardhat node --fork https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy --fork-block-number 22137441 --hostname 0.0.0.0",
+    "dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost",
     "flatten-contracts": "npx ts-node js-scripts/utils/flattenContracts.ts",
-    "verify-contracts-blockscout": "npx ts-node js-scripts/utils/js-scripts/hardhat/tgUSD/verify-contracts/blockscout.ts",
+    "verify-contracts-blockscout": "npx ts-node js-scripts/hardhat/tgUSD/verify-contracts/blockscout.ts",
     "distribute-rewards-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/distributeRewards.ts --network localhost",
     "deposit-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/deposit.ts --network localhost",
     "borrow-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/borrow.ts --network localhost",

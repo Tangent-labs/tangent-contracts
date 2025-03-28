@@ -28,9 +28,6 @@ const config: HardhatUserConfig = {
             },
         ],
     },
-    sourcify: {
-        enabled: false,
-    },
     solidity: {
         compilers: [
             {
