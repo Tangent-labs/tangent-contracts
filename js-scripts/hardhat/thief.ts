@@ -1,7 +1,7 @@
 import {setStorageAt} from "@nomicfoundation/hardhat-network-helpers";
 import {GlobalHelper} from "./GlobalHelper";
-import {ethers} from "hardhat";
-import {parseUnits, Signer, toQuantity} from "ethers";
+
+import {parseUnits, Signer} from "ethers";
 
 export interface TokenAmounts {
     slotBalance: number;
@@ -29,7 +29,7 @@ export async function giveTokensToAddresses(users: Signer[], tokensAmounts: Toke
     }
 }
 
-export async function giveTokensoAddresss(user: Signer, address: string, amount: number, slotBalance: number, isVyper: boolean) {
+export async function giveTokensoAddresss(user: Signer, address: string, amount: bigint, slotBalance: number, isVyper: boolean) {
     const userAddress = await user.getAddress();
     let storageSlot = "";
     if (isVyper) {
@@ -40,5 +40,5 @@ export async function giveTokensoAddresss(user: Signer, address: string, amount:
         storageSlot = GlobalHelper.calculateStorageSlotEthersSolidity(userAddress, slotBalance);
     }
 
-    await setStorageAt(address, storageSlot, parseUnits(amount.toString(), 18));
+    await setStorageAt(address, storageSlot, amount);
 }

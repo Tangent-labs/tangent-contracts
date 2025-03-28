@@ -9,7 +9,7 @@ import {EndpointId} from "@layerzerolabs/lz-definitions";
 
 import * as dotenv from "dotenv";
 dotenv.config();
-const forkBlock = 22195130;
+const forkBlock = 22095422;
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",

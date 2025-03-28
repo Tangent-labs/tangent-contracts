@@ -1,5 +1,5 @@
 import readline from "readline";
-import {LiquidationRouteGeneration} from "../contexts/LiquidationRouteGeneration";
+import { LiquidationRouteGeneration, Transfer } from "../contexts/LiquidationRouteGeneration";
 import path from "path";
 import liquidationAddresses from "../../../../addresses-liquidation.json";
 
@@ -24,9 +24,38 @@ function askToContinue(step: string): Promise<boolean> {
     });
 }
 
+
+
+//main();
+mainStepTargetTed(); 
+
+
+
+
+async function mainStepTargetTed() {
+
+    const transfers = [
+        [
+            {
+                "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+                "pool": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
+                "out": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
+                "display": "DOLA >> wDOLA* >> wDOLA* "
+              } as Transfer
+        ]
+    ]
+
+    const verifiedRoutes = await svc.testRouteSteps(transfers);
+    console.log(JSON.stringify(verifiedRoutes, null, 2));
+}
+
+
+
+
+
 async function main() {
     // Step 1: Validate CSV
-    const {valid, mising} = svc.validateCsv();
+    const { valid, mising } = svc.validateCsv();
     if (!valid) {
         console.error("-------------------------");
         console.error(' ❌ Some strings are not associated to an address \n See "js-scripts/hardhat/tgUSD/contexts/LiquidationRouteGeneration:liquidationAssets" \n');
@@ -47,7 +76,6 @@ async function main() {
     svc.saveFile("routesRaw", routes);
     console.log(`✅ file ${stripDirname(svc.PATHS.routesRaw)} generated`);
     console.log(`Next step : Extract all the transfers from the routes`);
-
     if (!(await askToContinue("routes extraction"))) {
         rl.close();
         return;
@@ -70,7 +98,8 @@ async function main() {
 
     if (verifiedRoutes.errors.length > 0) {
         console.error("❌ -------------------------");
-        Array.from(verifiedRoutes.errors).map((s) => console.log(` -> \x1b[38;5;214m${s.route.display}\x1b[0m`));
+        //Array.from(verifiedRoutes.errors).map((s) => console.log(` -> \x1b[38;5;214m${s.route.display}\x1b[0m`));
+        console.log("OK route => ", verifiedRoutes.params.length, "errors => ", verifiedRoutes.errors.length);
         console.error("-------------------------");
     } else {
         console.log(`✅ file ${stripDirname(svc.PATHS.verifiedRoutes)} generated`);
@@ -89,5 +118,3 @@ async function main() {
 
     rl.close();
 }
-
-main();
