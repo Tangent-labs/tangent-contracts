@@ -32,12 +32,14 @@
     "@nomicfoundation/hardhat-ignition-ethers": "^0.15.9",
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
     "@nomiclabs/hardhat-vyper": "^3.0.8",
+    "@types/pg": "^8.11.11",
     "chai": "4.3.7",
     "defi-resources": "https://github.com/Tangent-labs/defi-resources.git#main",
     "ethers": "^6.13.4"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
-    "hardhat": "^2.22.17"
+    "hardhat": "^2.22.17",
+    "pg": "^8.14.1"
   }
 }

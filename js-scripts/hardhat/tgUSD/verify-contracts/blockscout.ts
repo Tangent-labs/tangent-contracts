@@ -1,81 +1,249 @@
-import * as fs from "fs";
-import * as addresses from "addresses.json";
+import {Client} from "pg";
 
-async function verifyContract(address: string, name: string) {
-    let flattened = fs.readFileSync(`flattened/${name}_flat.sol`);
-    const response = await fetch(`http://176.143.254.58/api/v2/smart-contracts/${address}/verification/via/flattened-code`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            compiler_version: "v0.8.28+commit.7893614a",
-            license_type: 3,
-            source_code: flattened.toString(),
-            contract_name: name,
-            // autodetect_constructor_args: true,
-        }),
+async function connectDb() {
+    const client = new Client({
+        user: "blockscout",
+        host: "176.143.254.58",
+        database: "blockscout",
+        password: "ceWb1MeLBEeOIfk65gU8EjF8",
+        port: 7432, // Par défaut PostgreSQL utilise 5432
     });
-    const data = await response.json();
-    console.log(response);
+    client.connect();
+    return client;
+}
+async function insertAddresses(address: string, name: string) {
+    const client = await connectDb();
+
+    const query = `INSERT INTO public.addresses(fetched_coin_balance, fetched_coin_balance_block_number, hash, contract_code, inserted_at, updated_at, nonce, decompiled, verified, gas_used, transactions_count, token_transfers_count) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;`;
+    const values = [0, 0, Buffer.from(address, "hex"), 0, new Date(), new Date(), 0, 0, 1, 0, 0, 0];
+
+    try {
+        const res = await client.query(query, values);
+        console.log("✅ Addresses added :", res.rows[0]);
+    } catch (err) {
+        console.error("❌ Erreur lors de l’insertion", err);
+    } finally {
+        client.end();
+    }
 }
 
-async function main() {
-    await verifyContract(addresses.utilities.controlTower, "ControlTower");
+async function insertSmartContract(address: string, name: string) {
+    const abi = [
+        {
+            constant: true,
+            inputs: [],
+            name: "totalSupply",
+            outputs: [
+                {
+                    name: "",
+                    type: "uint256",
+                },
+            ],
+            payable: false,
+            stateMutability: "view",
+            type: "function",
+        },
+        {
+            constant: true,
+            inputs: [
+                {
+                    name: "_owner",
+                    type: "address",
+                },
+            ],
+            name: "balanceOf",
+            outputs: [
+                {
+                    name: "balance",
+                    type: "uint256",
+                },
+            ],
+            payable: false,
+            stateMutability: "view",
+            type: "function",
+        },
+        {
+            constant: false,
+            inputs: [
+                {
+                    name: "_spender",
+                    type: "address",
+                },
+                {
+                    name: "_value",
+                    type: "uint256",
+                },
+            ],
+            name: "approve",
+            outputs: [
+                {
+                    name: "success",
+                    type: "bool",
+                },
+            ],
+            payable: false,
+            stateMutability: "nonpayable",
+            type: "function",
+        },
+        {
+            constant: true,
+            inputs: [
+                {
+                    name: "_owner",
+                    type: "address",
+                },
+                {
+                    name: "_spender",
+                    type: "address",
+                },
+            ],
+            name: "allowance",
+            outputs: [
+                {
+                    name: "remaining",
+                    type: "uint256",
+                },
+            ],
+            payable: false,
+            stateMutability: "view",
+            type: "function",
+        },
+        {
+            constant: false,
+            inputs: [
+                {
+                    name: "_to",
+                    type: "address",
+                },
+                {
+                    name: "_value",
+                    type: "uint256",
+                },
+            ],
+            name: "transfer",
+            outputs: [
+                {
+                    name: "success",
+                    type: "bool",
+                },
+            ],
+            payable: false,
+            stateMutability: "nonpayable",
+            type: "function",
+        },
+        {
+            constant: false,
+            inputs: [
+                {
+                    name: "_from",
+                    type: "address",
+                },
+                {
+                    name: "_to",
+                    type: "address",
+                },
+                {
+                    name: "_value",
+                    type: "uint256",
+                },
+            ],
+            name: "transferFrom",
+            outputs: [
+                {
+                    name: "success",
+                    type: "bool",
+                },
+            ],
+            payable: false,
+            stateMutability: "nonpayable",
+            type: "function",
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    name: "from",
+                    type: "address",
+                },
+                {
+                    indexed: true,
+                    name: "to",
+                    type: "address",
+                },
+                {
+                    indexed: false,
+                    name: "value",
+                    type: "uint256",
+                },
+            ],
+            name: "Transfer",
+            type: "event",
+        },
+        {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    name: "owner",
+                    type: "address",
+                },
+                {
+                    indexed: true,
+                    name: "spender",
+                    type: "address",
+                },
+                {
+                    indexed: false,
+                    name: "value",
+                    type: "uint256",
+                },
+            ],
+            name: "Approval",
+            type: "event",
+        },
+    ];
 
-    // // Control Tower
-    // await run("verify:verify", {
-    //     address: addresses.utilities.controlTower,
-    //     constructorArguments: [owner, feeTreasury],
-    // });
-    // // Reward Accumulator
-    // await run("verify:verify", {
-    //     address: addresses.utilities.rewardAccumulator,
-    //     constructorArguments: [owner, addresses.utilities.controlTower],
-    // });
-    // // Zapper
-    // await run("verify:verify", {
-    //     address: addresses.utilities.zapper,
-    //     constructorArguments: [owner, addresses.utilities.controlTower, addresses.tokens.tgUSD],
-    // });
-    // // // Market Creator
-    // // await run("verify:verify", {
-    // //     address: addresses.utilities.marketCreator,
-    // //     constructorArguments: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", "0xB1fC11F03b084FfF8daE95fA08e8D69ad2547Ec1"],
-    // // });
-    // // TgUSD
-    // await run("verify:verify", {
-    //     address: addresses.tokens.tgUSD,
-    //     constructorArguments: ["Tangent USD", "tgUSD", l0EndpointAddress, l0Delegate, owner, addresses.utilities.controlTower],
-    // });
-    // // SgUSD
-    // await run("verify:verify", {
-    //     address: addresses.tokens.sgUSD,
-    //     constructorArguments: [],
-    // });
-    // // Tan
-    // await run("verify:verify", {
-    //     address: addresses.tokens.tan,
-    //     constructorArguments: [],
-    // });
-    // // RsTan
-    // await run("verify:verify", {
-    //     address: addresses.tokens.rsTan,
-    //     constructorArguments: [addresses.utilities.controlTower, addresses.tokens.tan],
-    // });
-    // // Markets
-    // for (const [_, marketData] of Object.entries(addresses.markets)) {
-    //     await run("verify:verify", {
-    //         address: marketData.marketAddress,
-    //         constructorArguments: [],
-    //     });
-    // }
-    // // Deployed tgUSD LP
-    // for (const [_, lpAddress] of Object.entries(addresses.lps)) {
-    //     await run("verify:verify", {
-    //         address: lpAddress,
-    //         constructorArguments: [],
-    //     });
-    // }
+    const client = await connectDb();
+    const query = `INSERT INTO public.smart_contracts(name, compiler_version, optimization, contract_source_code, abi, address_hash, inserted_at, updated_at, constructor_arguments, optimization_runs, evm_version, external_libraries, verified_via_sourcify, is_vyper_contract, partially_verified, file_path, is_changed_bytecode, bytecode_checked_at, contract_code_md5, compiler_settings, verified_via_eth_bytecode_db, license_type, verified_via_verifier_alliance, certified, is_blueprint, language)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26);`;
+    const values = [
+        name,
+        "v0.8.28+commit.7893614a",
+        true,
+        12,
+        JSON.stringify(abi),
+        Buffer.from(address, "hex"),
+        new Date(),
+        new Date(),
+        null,
+        250,
+        0,
+        null,
+        true,
+        true,
+        0,
+        0,
+        0,
+        null,
+        0,
+        null,
+        null,
+        0, //License type
+        null,
+        null,
+        null,
+        1,
+    ];
+
+    try {
+        const res = await client.query(query, values);
+        console.log("✅ SmartContract added :", res.rows[0]);
+    } catch (err) {
+        console.error("❌ Erreur lors de l’insertion", err);
+    } finally {
+        client.end();
+    }
 }
-main();
+
+insertSmartContract("4DEcE678ceceb27446b35C672dC7d61F30bAD69E", "crvUSD-USDC");
