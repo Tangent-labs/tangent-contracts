@@ -4,8 +4,8 @@ import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomiclabs/hardhat-vyper";
-import {EndpointId} from "@layerzerolabs/lz-definitions";
-
+import * as dotenv from "dotenv";
+dotenv.config();
 const forkBlock = 22030297;
 const config: HardhatUserConfig = {
     vyper: {
@@ -22,8 +22,8 @@ const config: HardhatUserConfig = {
                 network: "localhost",
                 chainId: 31337,
                 urls: {
-                    apiURL: "http://176.143.254.58:80/api",
-                    browserURL: "http://176.143.254.58:80",
+                    apiURL: process.env.BLOCKSCOUT_HOST_HTTP + ":80/api",
+                    browserURL: process.env.BLOCKSCOUT_HOST_HTTP + ":80",
                 },
             },
         ],

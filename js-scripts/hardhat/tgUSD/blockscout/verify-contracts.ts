@@ -10,9 +10,9 @@ import {artifacts} from "hardhat";
 export async function verifyContracts() {
     const client = new Client({
         user: "blockscout",
-        host: "176.143.254.58",
+        host: process.env.BLOCKSCOUT_HOST,
         database: "blockscout",
-        password: "ceWb1MeLBEeOIfk65gU8EjF8",
+        password: process.env.BLOCKSCOUT_DB_PASSWORD,
         port: 7432,
     });
     await client.connect();
