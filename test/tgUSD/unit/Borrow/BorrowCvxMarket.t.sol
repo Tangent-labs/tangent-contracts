@@ -54,7 +54,11 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         assertEq(market.debtIndex(), 10 ** 18, "Debt index didn't moove");
 
-        skip(15 days);
+        uint256 timeToPass = 15 days;
+        uint256 expectedIRMintable = (market.lastIR() * timeToPass * borrowedAmount) / 365 days / 10 ** 18;
+        skip(timeToPass);
+
+        assertApproxEqAbs(market.pendingInterests(), expectedIRMintable, 10 ** 18, "Interest mintable is correct");
 
         assertEq(market.positionDebt(usr1), market.totalDebt());
 

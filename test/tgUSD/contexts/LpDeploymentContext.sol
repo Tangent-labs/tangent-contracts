@@ -30,7 +30,7 @@ contract LpDeploymentContext is StdCheats, StdUtils, Test {
     constructor(address creator, IERC20 _tgUSD) {
         tgUSD = _tgUSD;
         CreateTgUSDLpStruct[] memory params = new CreateTgUSDLpStruct[](1);
-        params[0] = CreateTgUSDLpStruct({otherStable: AddrClassicERC20.TOKEN_USDC, name: "tgUSD-USDC", symbol: "tgUSDC", initialAmount: 5_000});
+        params[0] = CreateTgUSDLpStruct({otherStable: AddrClassicERC20.TOKEN_USDC, name: "tgUSD-USDC", symbol: "tgUSDC", initialAmount: 500_000});
         createTgUSDLps(creator, params);
     }
 

@@ -14,11 +14,12 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
     HDepositConvexCrvLP public hDeposit;
     HBorrow public hBorrow;
     HLpManipulator public hLpManipulator;
-    ICurveStableSwapNG public lp;
-
+    ICurveStableSwapNG public lpTgUSD_USDC;
+    ICurveStableSwapNG public lpTgUSD_wfrxUSD;
     function setUp() public {
         collatToken = AddrCurveStableLP.CRVUSD_USDC;
-        lp = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
+        lpTgUSD_USDC = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
+        lpTgUSD_wfrxUSD = lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD");
 
         market = deployConvexCurveLPMarket(collatToken);
 
@@ -32,12 +33,13 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         hDeposit.depositAndBorrow(collatDeposited, 4_250 ether, true, address(0));
 
         // Dumps tgUSD for USDC => Depegs tgUSD
-        hLpManipulator.dumpCrvPool(lp, 1, 0, 4_000 ether);
+        hLpManipulator.dumpCrvPool(lpTgUSD_USDC, 1, 0, 500_000 ether);
+        hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 1, 0, 500_000 ether);
 
         vm.startPrank(usr1);
 
         skip(800);
-
+        market.lastIR();
         // Update IR on the market
         market.checkpointIR();
 
@@ -59,7 +61,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         uint256 amountToRetrive = collatLp.calc_withdraw_one_coin(collatToDump, 0);
 
         address[] memory route = Array.memoryAddress(
-            [address(AddrCurveStableLP.CRVUSD_USDC), address(AddrCurveStableLP.CRVUSD_USDC), address(AddrClassicERC20.TOKEN_USDC), address(lp), address(tgUSD)]
+            [address(AddrCurveStableLP.CRVUSD_USDC), address(AddrCurveStableLP.CRVUSD_USDC), address(AddrClassicERC20.TOKEN_USDC), address(lpTgUSD_USDC), address(tgUSD)]
         );
         uint256[][] memory swapParams = new uint256[][](2);
         uint256[] memory unwrapLPToUSDC = Array.memoryUint256([zero, zero, uint256(6), uint256(10), uint256(2)]);

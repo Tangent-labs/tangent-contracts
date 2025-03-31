@@ -123,7 +123,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
         uint256 _lastIr = lastIR;
 
         if (_lastIr != 0) {
-            return (_lastIr * timeDelta) / 36500 days;
+            return (_lastIr * timeDelta) / 365 days;
         } else {
             return 0;
         }

@@ -50,11 +50,11 @@ contract WStableContext is OraclesContext {
         vm.label(address(wUSR), "wUSR");
 
         LpDeploymentContext.CreateTgUSDLpStruct[] memory params = new LpDeploymentContext.CreateTgUSDLpStruct[](5);
-        params[0] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wfrxUSD, name: "tgUSD-wfrxUSD", symbol: "tgfrxUSD", initialAmount: 5_000});
-        params[1] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wcrvUSD, name: "tgUSD-wcrvUSD", symbol: "tgcrvUSD", initialAmount: 5_000});
-        params[2] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wUSDE, name: "tgUSD-wUSDe", symbol: "tgUSDE", initialAmount: 5_000});
-        params[3] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wDOLA, name: "tgUSD-wDOLA", symbol: "tgDOLA", initialAmount: 5_000});
-        params[4] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wUSR, name: "tgUSD-wUSR", symbol: "tgUSR", initialAmount: 5_000});
+        params[0] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wfrxUSD, name: "tgUSD-wfrxUSD", symbol: "tgfrxUSD", initialAmount: 500_000});
+        params[1] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wcrvUSD, name: "tgUSD-wcrvUSD", symbol: "tgcrvUSD", initialAmount: 500_000});
+        params[2] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wUSDE, name: "tgUSD-wUSDe", symbol: "tgUSDE", initialAmount: 500_000});
+        params[3] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wDOLA, name: "tgUSD-wDOLA", symbol: "tgDOLA", initialAmount: 500_000});
+        params[4] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wUSR, name: "tgUSD-wUSR", symbol: "tgUSR", initialAmount: 500_000});
         lpDeploymentContext.createTgUSDLps(owner, params);
     }
 }
