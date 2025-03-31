@@ -85,6 +85,11 @@ async function createJSONAddress(
             tan: await baseContext.tan.getAddress(),
             rsTan: await baseContext.rsTan.getAddress(),
         },
+        implementations: {
+            convexCrvMarket: await baseContext.marketCvxCrvImplem.getAddress(),
+            convexFxnMarket: await baseContext.marketCvxFxnImplem.getAddress(),
+            noSociabilizationMarket: await baseContext.marketNoSociabilizationImplem.getAddress(),
+        },
         markets,
         oracles,
         lps,

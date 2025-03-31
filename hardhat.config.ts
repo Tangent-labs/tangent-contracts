@@ -4,8 +4,8 @@ import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomiclabs/hardhat-vyper";
-import {EndpointId} from "@layerzerolabs/lz-definitions";
-
+import * as dotenv from "dotenv";
+dotenv.config();
 const forkBlock = 22030297;
 const config: HardhatUserConfig = {
     vyper: {
@@ -22,14 +22,11 @@ const config: HardhatUserConfig = {
                 network: "localhost",
                 chainId: 31337,
                 urls: {
-                    apiURL: "http://176.143.254.58:80/api",
-                    browserURL: "http://176.143.254.58:80",
+                    apiURL: process.env.BLOCKSCOUT_HOST_HTTP + ":80/api",
+                    browserURL: process.env.BLOCKSCOUT_HOST_HTTP + ":80",
                 },
             },
         ],
-    },
-    sourcify: {
-        enabled: false,
     },
     solidity: {
         compilers: [
@@ -82,18 +79,6 @@ const config: HardhatUserConfig = {
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "https://io.convergence-finance.network:8545",
-            timeout: 100_000_000,
-        },
-        "avalanche-fuji": {
-            eid: EndpointId.AVALANCHE_V2_TESTNET,
-            chainId: 43113,
-            url: "https://rpc.ankr.com/avalanche_fuji",
-            timeout: 100_000_000,
-        },
-        "polygon-amoy": {
-            eid: EndpointId.AMOY_V2_TESTNET,
-            chainId: 80002,
-            url: "https://polygon-amoy-bor-rpc.publicnode.com",
             timeout: 100_000_000,
         },
     },

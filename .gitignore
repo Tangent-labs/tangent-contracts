@@ -25,3 +25,4 @@ artifacts
 typechain-types
 broadcast
 snapshots/
+flattened/
