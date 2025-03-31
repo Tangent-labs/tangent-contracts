@@ -13,7 +13,7 @@
     "dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost",
     "flatten-contracts": "npx ts-node js-scripts/utils/flattenContracts.ts",
-    "verify-contracts-blockscout": "npx ts-node js-scripts/hardhat/tgUSD/verify-contracts/blockscout.ts",
+    "verify-contracts-blockscout": "npx ts-node js-scripts/hardhat/tgUSD/blockscout/verify-contracts.ts",
     "distribute-rewards-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/actions/distributeRewards.ts --network localhost",
     "deposit-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/deposit.ts --network localhost",
     "borrow-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/borrow.ts --network localhost",

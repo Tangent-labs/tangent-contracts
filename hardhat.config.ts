@@ -81,18 +81,6 @@ const config: HardhatUserConfig = {
             url: "https://io.convergence-finance.network:8545",
             timeout: 100_000_000,
         },
-        "avalanche-fuji": {
-            eid: EndpointId.AVALANCHE_V2_TESTNET,
-            chainId: 43113,
-            url: "https://rpc.ankr.com/avalanche_fuji",
-            timeout: 100_000_000,
-        },
-        "polygon-amoy": {
-            eid: EndpointId.AMOY_V2_TESTNET,
-            chainId: 80002,
-            url: "https://polygon-amoy-bor-rpc.publicnode.com",
-            timeout: 100_000_000,
-        },
     },
 };
 
