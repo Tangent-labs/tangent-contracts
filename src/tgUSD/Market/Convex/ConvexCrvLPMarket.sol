@@ -82,8 +82,8 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
         _processRewards(harvestFeeReceiver);
     }
 
+    //TODO Seems strange to me, enters maybe in collision with sociabilization pending fees.
     function stakeAll(address receiver) external {
-        // Claim rewards on behalf
         IERC20 _collatToken = collatToken;
         _collatToken.transfer(receiver, socFeePending);
         CVX_BOOSTER.deposit(pid, _collatToken.balanceOf(address(this)), true);

@@ -15,6 +15,7 @@ export async function forceAbi(client: Client, address: string, name: string, is
         await upsertAddressNames(client, encodedAddress, slicedAddress, name, now);
 
         await client.query("COMMIT");
+        console.log("Contract verified: ", name);
     } catch (e) {
         await client.query("ROLLBACK");
         throw e;
@@ -41,7 +42,7 @@ async function upsertAddressNames(client: Client, encodedAddress: string, sliced
         const updateAddressNamesQuery = `UPDATE public.address_names
         SET name=$2, "primary"=true, inserted_at=$3, updated_at=$3
         WHERE UPPER(ENCODE(address_hash, 'hex')) = $1;`;
-        res = await client.query(updateAddressNamesQuery, [slicedAddress, name, now]);
+        res = await client.query(updateAddressNamesQuery, [slicedAddress.toUpperCase(), name, now]);
     }
 }
 
@@ -121,7 +122,7 @@ async function upsertSmartContracts(client: Client, name: string, encodedAddress
         const updateAddressesQuery = `UPDATE public.smart_contracts
         SET name=$2, abi=$3, is_vyper_contract=$4, partially_verified=true
         WHERE UPPER(ENCODE(address_hash, 'hex')) = $1;`;
-        const updateParams = [slicedAddress, name, abi, isVyper];
+        const updateParams = [slicedAddress.toUpperCase(), name, abi, isVyper];
         res = await client.query(updateAddressesQuery, updateParams);
     }
 }
