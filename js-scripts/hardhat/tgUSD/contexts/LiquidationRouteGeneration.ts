@@ -1,9 +1,11 @@
-import { AddressLike,  parseEther,  ZeroAddress } from "ethers";
+import { AddressLike, MaxUint256, parseEther, ZeroAddress } from "ethers";
 import fs from "fs";
 import { ethers } from "hardhat";
 import path from "path";
 import { giveTokensoAddresss } from "../../thief";
 import { commonERC20, thiefConfig } from "defi-resources";
+import { token } from "../../../../typechain-types/@openzeppelin/contracts";
+import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
 
 /*
@@ -28,85 +30,120 @@ export const lpTokensINfo = [
         address: value.address,
         slot: value.slotBalance,
         isVyper: value.isVyper,
+        decimals: value.decimals,
     })),
-      {
+    {
+        token: 'deUSD',
+        address: '0x15700b564ca08d9439c58ca5053166e8317aa138',
+        slot: 0,
+        isVyper: false,
+        decimals: 18
+    },
+    {
+        token: 'sUSDS',
+        address: '0xa3931d71877c0e7a3148cb7eb4463524fec27fbd',
+        slot: 2,
+        isVyper: false,
+        decimals: 18
+    },
+    {
+        token: 'scrvUSD',
+        address: '0x0655977feb2f289a4ab78af67bab0d17aab84367',
+        slot: 18,
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'USDC/fxUSD',
         address: '0x5018be882dcce5e3f2f3b0913ae2096b9b3fb61f',
         slot: 38,
-        isVyper: true
-      },
-      {
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'USDC/crvUSD',
         address: '0x4dece678ceceb27446b35c672dc7d61f30bad69e',
         slot: 20,
-        isVyper: true
-      },
-      {
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'USDT/crvUSD',
         address: '0x390f3595bca2df7d23783dfd126427cceb997bf4',
         slot: 20,
-        isVyper: true
-      },
-      {
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'sDAI/sUSDe',
         address: '0x167478921b907422f8e88b43c4af2b8bea278d3a',
         slot: 38,
-        isVyper: true
-      },
-      {
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'USDC/USDT',
         address: '0x4f493b7de8aac7d55f71853688b1f7c8f0243c85',
         slot: 38,
-        isVyper: true
-      },
-      {
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'USR/RLP',
         address: '0xc907ba505c2e1cbc4658c395d4a2c7e6d2c32656',
         slot: 19,
-        isVyper: true
-      },
-      {
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'frxUSD/USDe',
         address: '0xdbb1d219d84eacefb850ee04cacf2f1830934580',
         slot: 38,
-        isVyper: true
-      },
-      {
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'DOLA/USR',
         address: '0x38de22a3175708d45e7c7c64cd78479c8b56f76e',
         slot: 38,
-        isVyper: true
-      },
-      {
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'scrvUSD/sUSDe',
         address: '0xd29f8980852c2c76fc3f6e96a7aa06e0bedcc1b1',
         slot: 38,
-        isVyper: true
-      },
-      {
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'crvUSD/USDe',
         address: '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
         slot: 1,
-        isVyper: true
-      },
-      {
+        isVyper: true,
+        decimals: 18
+    },
+    {
         token: 'USDe',
         address: '0x9d39a5de30e57443bff2a8307a4256c8797a3497',
         slot: 4,
-        isVyper: false
-      },
-      {
+        isVyper: false,
+        decimals: 18
+    },
+    {
         token: 'sUSDe',
         address: '0x9D39A5DE30e57443BfF2A8307A4256c8797A3497',
         slot: 4,
-        isVyper: false
-      },
-      {
+        isVyper: false,
+        decimals: 18
+    },
+    {
         token: 'sDAI',
         address: '0x83F20F44975D03b1b09e64809B757c47f942BEeA',
         slot: 1,
-        isVyper: false
-      }
+        isVyper: false,
+        decimals: 18
+    }
 ];
 
 export class LiquidationRouteGeneration {
@@ -238,32 +275,34 @@ export class LiquidationRouteGeneration {
     async testRoute(verifiedRoutes: VerifiedRoutes, transfers: Transfer[][]) {
         const verifiedParamsMap = new Map<string, any>();
         verifiedRoutes.params.forEach((param: any) => {
-            verifiedParamsMap.set(param.route.display.trim(), param.result);
+            verifiedParamsMap.set(param.route.display.trim(), param.swapParams);
         });
 
-        const [deployer] = await ethers.getSigners();
-        const router = await ethers.getContractAt("ICurveRouter", routerAddress, deployer)
+        console.log("verifiedParamsMap", verifiedParamsMap);
+ 
+        const [,,,,,user] = await ethers.getSigners();
+        const router = await ethers.getContractAt("ICurveRouter", routerAddress, user)
 
-        const stepResults: any[] = [];
+        const results: any[] = [];
         const errors: any[] = [];
 
-        const amountIn = ethers.parseUnits("100", 9);
-        await transfers.forEach(async (routeGroup) => {
-
+        const amountIn = ethers.parseUnits("100", 10);
+        const promises = transfers.map(async (routeGroup) => {
+            //console.log( "test route ==> ",routeGroup?.at(0)?.display , routeGroup?.at(-1)?.display)
 
             const routeAddresses = [];
             const swapParamsFull = [];
             routeAddresses.push(routeGroup[0].in);
             routeGroup.forEach(step => {
-                if (!verifiedParamsMap.has(step.display)) {
-                    errors.push({ step, error: "Missing verified route parameters" });
+                if (!verifiedParamsMap.has(step.display.trim())) {
+                    errors.push({ step, error: `Missing verified route parameters ${step.display.trim()}` });
                     return;
                 }
 
                 routeAddresses.push(step.pool);
                 routeAddresses.push(step.out);
                 const stepParams = verifiedParamsMap.get(step.display.trim());
-                swapParamsFull.push(stepParams.swapParams);
+                swapParamsFull.push(stepParams);
             })
             if (errors?.length) {
                 return
@@ -277,29 +316,30 @@ export class LiquidationRouteGeneration {
             try {
                 //@ts-ignore
                 const output = await router.get_dy(routeAddresses, swapParamsFull, amountIn, [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]);
-                stepResults.push({ route: routeGroup, output: output.toString(), params: { routeAddresses, swapParamsFull } });
+                results.push({ route: routeGroup, output: output.toString(), params: { routeAddresses, swapParamsFull } });
             } catch (error: any) {
-                errors.push({ route: routeGroup, error: error.message, params: { routeAddresses, swapParamsFull } });
+                console.log('error', error.message)
+                errors.push({ route: routeGroup.map(r =>  r.display).join(" >> "), error: error.message, params: { routeAddresses, swapParamsFull } });
             }
         })
 
-
+        await Promise.all(promises)
 
         // Fill remaining slots with ZeroAddress and default swap params
 
 
 
-        return { stepResults, errors };
+        return { results, errors };
     }
 
     async testOneRoute(routeGroup: Transfer[], routeAddresses: string[], swapParamsFull: number[][], amountIn: bigint) {
     }
 
     async testRouteSteps(transfers: Transfer[][]): Promise<VerifiedRoutes> {
-       // const amountIn = ethers.parseUnits("100", 9);
-        
 
-         const amountIn = parseEther("10");
+
+
+        //const amountIn = parseEther("10");
         const pools = new Map<string, Transfer>();
         const params = [];
         const errors = [];
@@ -319,10 +359,10 @@ export class LiquidationRouteGeneration {
             try {
                 coins = ['noONe']
                 // No more RPC call; we use tokenIn & tokenOut from JSON
-                const { coins: _coins ,symbol} = await this._getPoolInfo(route.pool);
+                const { coins: _coins, symbol } = await this._getPoolInfo(route.pool);
                 coins = _coins;
-                console.log({poolSymbol : symbol})
-                const result = await this._determineSwapParams(route.pool, route, amountIn);
+                // console.log({poolSymbol : symbol})
+                const result = await this._determineSwapParams(route.pool, route);
                 params.push({ route, coins: result.coins, swapParams: result.swapParams });
             } catch (error: any) {
                 errors.push({ error: error.message, route, coins });
@@ -331,11 +371,17 @@ export class LiquidationRouteGeneration {
         return { params, errors };
     }
 
-    async _getPoolInfo(poolAddress: AddressLike): Promise<{ coins: string[], lp: string ,symbol:string}> {
-        const poolAbi = ["function coins(uint256) external view returns (address)",'function symbol() external view returns (string memory)'];
+    async _getPoolInfo(poolAddress: AddressLike): Promise<{ coins: string[], lp: string, symbol: string }> {
+        const poolAbi = ["function coins(uint256) external view returns (address)", 'function symbol() external view returns (string memory)'];
 
         const poolContract = await ethers.getContractAt(poolAbi, poolAddress as string);
-            const symbol = await poolContract.symbol();
+        let symbol = "";
+        try {
+            symbol = await poolContract.symbol();
+        } catch (e) {
+         //   console.log("❌ Error  > ", poolAddress, '\x1b[38;5;214m No symbol \x1b[0m');
+           // throw new Error(`No symbol for  ${poolAddress}`);
+        }
         const coinCount = 4;
         const coins: string[] = [];
 
@@ -349,98 +395,77 @@ export class LiquidationRouteGeneration {
 
 
 
-        return { coins, lp ,symbol};
+        return { coins, lp, symbol };
     }
 
-    async _determineSwapParamsDy(poolAddress: AddressLike, route: Transfer, amountIn: bigint) {
-        const { coins } = await this._getPoolInfo(poolAddress);
+    async prepareUserForExchange(route: Transfer, user: SignerWithAddress, amount: number) {
+        const giveData = lpTokensINfo.reverse().find((token) => token.address.toLowerCase() === route.in.toLowerCase());
+        const isTgtAsset = route.display.split(">>")[0].trim().endsWith('*')
+        const inContract = await ethers.getContractAt("IERC20Metadata", route.in);
+        let initialInBalance = await inContract.balanceOf(user.address);
+        const amountIn = ethers.parseUnits(amount.toString(), giveData?.decimals || 18);
+        if (giveData || isTgtAsset) {
+            if (initialInBalance < amountIn) {
+                await giveTokensoAddresss(user, route.in, amountIn, giveData?.slot || 0, !!giveData ? giveData.isVyper : !isTgtAsset);
+                initialInBalance = await inContract.balanceOf(user.address);
+            }
 
-        const [deployer] = await ethers.getSigners();
+        } else {
+            // console.log("No initialCollateralBalance for  ", route.in, route.display);
+            throw new Error(`No giveData for for  ${route.display} / ${route.in}`);
+        }
+        try {
+            {
+                const txApprove = await inContract.connect(user).approve(routerAddress, 0);
+                await txApprove.wait();
+            }
+            const txApprove = await inContract.connect(user).approve(routerAddress, MaxUint256);
+            await txApprove.wait();
+        } catch (e) {
+            console.log("❌ Error  > ", route.display, '\x1b[38;5;214m Approve \x1b[0m');
+            throw new Error(`Approve error for  ${route.display} : ${(e as Error).message}`);
+        }
+
+        const allowance = await inContract.allowance(user.address, routerAddress);
+        if (allowance < amountIn) {
+            console.log("❌ Error  > ", route.display, '\x1b[38;5;214m No allowance \x1b[0m');
+            throw new Error(`No allowance for  ${route.display}`);
+        }          
+        return { initialInBalance, inContract ,isTgtAsset,giveData,amountIn};
+    }
+
+    async _determineSwapParams(poolAddress: AddressLike, route: Transfer) {
+        const { coins } = await this._getPoolInfo(poolAddress);
+        const zapPools = [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]
+        const [, , , , , , , , user] = await ethers.getSigners();
         const router = await ethers.getContractAt("ICurveRouter", routerAddress)
         const routeAddresses = [route.in, poolAddress, route.out, ...Array(8).fill(ZeroAddress)];
         const ZEROS = [0, 0, 0, 0, 0];
         const swapTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         const poolTypes = [1, 2, 3, 4, 10, 20, 30];
 
-        for (let i = 0; i < poolTypes.length; i++) {
-            for (let j = 0; j < swapTypes.length; j++) {
-                const currentSwapParams = [0, 1, swapTypes[j], poolTypes[i], coins.length];
-                const swapParamsFull = [currentSwapParams, ZEROS, ZEROS, ZEROS, ZEROS];
-                try {
-                    //@ts-ignore
-                    const output = await router.get_dy(routeAddresses, swapParamsFull, amountIn, [route.pool, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]);
-                    if (output > 0n) {
-                        return { swapType: swapTypes[j], poolType: poolTypes[i], swapParams: currentSwapParams, ...route, coins };
-                    }
-                } catch (e: any) {
-                    // Ignore errors
-                }
-            }
-        }
-        throw new Error("No valid params found");
-    }
+        const {  inContract ,amountIn} = await this.prepareUserForExchange(route, user, 10);
+        const outContract = await ethers.getContractAt("IERC20", route.out, user)
 
-    async _determineSwapParams(poolAddress: AddressLike, route: Transfer, amountIn: bigint) {
-        const { coins } = await this._getPoolInfo(poolAddress);
-        const zapPools= [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]
-        const [deployer] = await ethers.getSigners();
-        const router = await ethers.getContractAt("ICurveRouter", routerAddress)
-        const routeAddresses = [route.in, poolAddress, route.out, ...Array(8).fill(ZeroAddress)];
-        const ZEROS = [0, 0, 0, 0, 0];
-    //    const swapTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    //    const poolTypes = [1, 2, 3, 4, 10, 20, 30];
-        const swapTypes = [ 9];
-        const poolTypes = [0];
-        const collateralTokenAddress = routeAddresses[0];
-        const giveData = lpTokensINfo.reverse().find((token) => token.address.toLowerCase() === collateralTokenAddress.toLowerCase());
-
-        const isTgtAsset = route.display.split(">>")[0].trim().endsWith('*')
-
-       
-        if (giveData || isTgtAsset) {  
-           // console.log(`giveTokensoAddresss(deployer, ${collateralTokenAddress}, ${amountIn}, ${giveData?.slot || 0}, ${giveData ? giveData.isVyper :!isTgtAsset})`,giveData);
-            await giveTokensoAddresss(deployer, collateralTokenAddress, amountIn, giveData?.slot || 0, !!giveData ? giveData.isVyper :!isTgtAsset);
-        } else {
-           // console.log("No initialCollateralBalance for  ", route.in, route.display);
-            throw new Error(`No giveData for for  ${route.display} / ${route.in}`);
-        }
-        const outContract = await ethers.getContractAt("IERC20", route.out, deployer)
-        const inContract = await ethers.getContractAt("IERC20", route.in, deployer);
-        const initialInBalance = await inContract.balanceOf(deployer.address);
-        if (initialInBalance === 0n) {
-            console.log("❌ Error  > " ,  route.display , "\x1b[38;5;214m No initialCollateralBalance \x1b[0m");
-            throw new Error(`No initialCollateralBalance for  ${route.display}`);
-        }
-
-
-        const txApprove = await inContract.connect(deployer).approve(routerAddress, amountIn);
-        await txApprove.wait();
-        const allowance = await inContract.allowance(deployer.address, routerAddress);
-        if (allowance < amountIn) {
-            console.log("❌ Error  > ",route.display, '\x1b[38;5;214m No allowance \x1b[0m');
-            throw new Error(`No allowance for  ${route.display}`);
-        }
-
-
-        let indexPossibilities: [number, number][] = [[0,0],[0, 1], [1, 0],[1,1]];
+        let indexPossibilities: [number, number][] = [[0, 1], [1, 0]];
         if (coins.length === 0) {
             indexPossibilities = [[0, 1]];
         }
-        if (route.in === route.pool && route.in === route.pool) {
-            indexPossibilities = [[0, 0],];
+        if (route.in === route.pool && route.out === route.pool) {
+            indexPossibilities = [[0, 0]];
         }
         else if (route.in === route.pool) {
-            indexPossibilities = [[0, 1], [0, 0]];
+            indexPossibilities = [[1, 0], [0, 1], [0, 0]];
         }
         else if (route.out === route.pool) {
             indexPossibilities = [[0, 0], [1, 0]];
         }
 
-        indexPossibilities = [[0,1]]
+
         if (coins?.length > 2) {
             console.error("Add case for more than 2 coins");
         }
-        
+
 
 
         let testedParamsCount = 0;
@@ -448,52 +473,44 @@ export class LiquidationRouteGeneration {
             for (let j = 0; j < swapTypes.length; j++) {
                 for (let k = 0; k < indexPossibilities.length; k++) {
                     const [inIndex, outIndex] = indexPossibilities[k];
-                    const currentSwapParams = [inIndex, outIndex, swapTypes[j], poolTypes[i], coins.length];
-
-                    console.log(currentSwapParams)
+                    const currentSwapParams = [inIndex, outIndex, swapTypes[j], poolTypes[i], coins.length === 1 ? 0 : coins.length];
                     testedParamsCount++;
                     const swapParamsFull = [currentSwapParams, ZEROS, ZEROS, ZEROS, ZEROS];
                     let output = 0n;
                     let dy = 0n;
                     try {
-                        const initialCollateralBalance = await inContract.balanceOf(deployer.address);
-                        const initialOutBalance = await outContract.balanceOf(deployer.address);
+                        const initialCollateralBalance = await inContract.balanceOf(user.address);
+                        const initialOutBalance = await outContract.balanceOf(user.address);
 
                         //@ts-ignore
-                        dy = await router.connect(deployer).get_dy(routeAddresses!, swapParamsFull!, amountIn!, zapPools!);
-                        //min = await router.connect(deployer).get_dy(routeAddresses, swapParamsFull, amountIn, [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]);
-
+                        dy = await router.connect(user).get_dy(routeAddresses!, swapParamsFull!, amountIn!, zapPools!);
+                    
                         //@ts-ignore
-                        // 
-                        
-                       // const tx = await router.connect(deployer).exchange(routeAddresses, swapParamsFull, amountIn, min, [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]);
-                        //await tx.wait();
-                        //@ts-ignore
-                        await router.connect(deployer).exchange(routeAddresses!, swapParamsFull!, amountIn, dy- (dy*10n/100n), zapPools, await deployer.getAddress());
+                        await router.connect(user).exchange(routeAddresses!, swapParamsFull!, amountIn, dy - (dy * 10n / 100n), zapPools, await user.getAddress());
 
-                        const afterCollateralBalance = await inContract.balanceOf(deployer.address);
-                        const afterOutBalance = await outContract.balanceOf(deployer.address);
+                        const afterCollateralBalance = await inContract.balanceOf(user.address);
+                        const afterOutBalance = await outContract.balanceOf(user.address);
                         if (afterCollateralBalance - initialCollateralBalance === 0n || afterOutBalance - initialOutBalance === 0n) {
                             //console.error("No balance change");
                             console.log("try", { swap: swapParamsFull.at(0), amountIn, error: "No balance change", output });
                             continue;
                         } else {
-                            console.log('✅ Sucess > '  , route.display)
+                            console.log('✅ Sucess > ', route.display)
                             return { swapType: swapTypes[j], poolType: poolTypes[i], swapParams: currentSwapParams, ...route, coins };
                         }
 
 
                     } catch (e: any) {
 
-                        if(currentSwapParams.map(s => s.toString()).join(',') === '0,1,9,0,0'){
-                            console.log(routeAddresses, swapParamsFull,dy)
-                            console.error(e, "error");
-                        }
+                        // if(currentSwapParams.map(s => s.toString()).join(',') === '0,0,1,1,2'){
+                        //     console.log(routeAddresses, swapParamsFull,dy)
+                        //     console.error(e, "error");
+                        // }
                     }
                 }
             }
         }
-        console.log('❌ Error  > ', route.display,"\x1b[38;5;214m No combnaison found \x1b[0m")
+        console.log('❌ Error  > ', route.display, "\x1b[38;5;214m No combnaison found \x1b[0m")
         throw new Error(`No valid params found, tested ${testedParamsCount} params`);
     }
 
@@ -644,13 +661,13 @@ export const liquidationAssets: Record<string, string> = {
     "sDAI savings": commonERC20.sDAI,
     DAI: commonERC20.DAI,
     sDAI: commonERC20.sDAI,
-    USDT:  commonERC20.USDT,
+    USDT: commonERC20.USDT,
     sUSDS: commonERC20.sUSDS,
     scrvUSD: commonERC20.scrvUSD,
     FRAX: commonERC20.FRAX,
     deUSD: commonERC20.deUSD,
     DOLA: commonERC20.DOLA,
-    USR: commonERC20.USR, 
+    USR: commonERC20.USR,
     USDC: commonERC20.USDC,
     crvUSD: commonERC20.crvUSD,
     frxUSD: commonERC20.frxUSD,

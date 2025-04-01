@@ -6,7 +6,27 @@ import "../../handler/Features/ConvexCrv/HZapDepositConvexCrvLP.sol";
 
 contract CurveRouterTest is ConvexCurveContext {
     ICurveRouter ROUTER = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
-    uint256 amount = 10 * 10 ** 9;
+    uint256 amount = 10 * 10 ** 18;
+
+    function test_curve() external {
+        vm.startPrank(usr1);
+            //USDC/crvUSD >> USDC/crvUSD >> crvUSD
+        IERC20 tokenIn = IERC20(AddrCurveStableLP.CRVUSD_USDC);
+        deal(address(tokenIn), usr1, amount);
+        tokenIn.approve(address(ROUTER), amount);
+        IERC20 pool = IERC20(address(AddrCurveStableLP.CRVUSD_USDC));
+        IERC20 tokenOut = IERC20(address(AddrClassicERC20.TOKEN_CRVUSD));
+
+        address[] memory route = Array.memoryAddress([address(tokenIn), address(pool), address(tokenOut)]);
+        uint256[][] memory swapParams = new uint256[][](1);
+        uint256[] memory wrapToWStable = Array.memoryUint256([uint256(0), uint256(1), uint256(6), uint256(10), uint256(2)]);
+        swapParams[0] = wrapToWStable;
+
+        CurveRouterSwap memory routerSwap = encoder.createCurveRouterStruct(route, swapParams, amount, 0, usr1);
+
+        ROUTER.exchange(routerSwap._route, routerSwap._swap_params, amount, 1, routerSwap._pools, usr1);
+
+    }
 
     function test_stable_to_wStable() external {
         vm.startPrank(usr1);
@@ -22,7 +42,7 @@ contract CurveRouterTest is ConvexCurveContext {
 
         CurveRouterSwap memory routerSwap = encoder.createCurveRouterStruct(route, swapParams, amount, 0, usr1);
 
-        ROUTER.exchange(routerSwap._route, routerSwap._swap_params, amount, 1, routerSwap._pools, usr1);
+      ROUTER.exchange(routerSwap._route, routerSwap._swap_params, amount, 1, routerSwap._pools, usr1);
     }
 
     function test_stable_to_sStable() external {

@@ -26,8 +26,8 @@ function askToContinue(step: string): Promise<boolean> {
 
 
 
-//main();
-mainStepTargetTed(); 
+ main();
+//mainStepTargetTed(); 
 
 
 
@@ -37,10 +37,10 @@ async function mainStepTargetTed() {
     const transfers = [
         [
             {
-                "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-                "pool": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
-                "out": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
-                "display": "DOLA >> wDOLA* >> wDOLA* "
+                "in": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "pool": "0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2",
+                "out": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+                "display": "USDC >> FRAX/USDC >> FRAX "
               } as Transfer
         ]
     ]

@@ -33,8 +33,8 @@ async function getRouteTokenSlots(): Promise<BalanceOfSlot[]> {
     //     }
     // });
 
-    tokens.set('0x865377367054516e17014CcdED1e7d814EDC9ce4' , 'DOLA')
-    //tokens.set('0x0655977feb2f289a4ab78af67bab0d17aab84367' , 'scrvUSD') 
+    tokens.set('0x15700b564ca08d9439c58ca5053166e8317aa138' , 'deUSD')
+    tokens.set('0xa3931d71877c0e7a3148cb7eb4463524fec27fbd' , 'sUSDS') 
     // tokens.set('0x83F20F44975D03b1b09e64809B757c47f942BEeA' , 'sDAI')  
     // tokens.set('0x15700b564ca08d9439c58ca5053166e8317aa138' , 'deUSD')
     // Convert to array of unique tokens
@@ -47,7 +47,7 @@ async function getRouteTokenSlots(): Promise<BalanceOfSlot[]> {
 
     for (const token of uniqueTokens) {
         const erc20 = await ethers.getContractAt("ERC20", token.address);
-        const isVyper = token.name.includes("/") || token?.name === 'sUSDS' || token.name === 'scrvUSD' || token.name === 'deUSD';
+        const isVyper = token.name.includes("/") || token.name === 'scrvUSD' ;
         // Try slots 0 to 500
         for (let k = 0; k < 10000; k++) {
             // Default to Vyper mapping calculation
