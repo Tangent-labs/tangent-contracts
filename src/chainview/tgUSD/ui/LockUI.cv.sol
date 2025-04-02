@@ -31,7 +31,7 @@ contract LockUI {
             uint256 tokenId = rsTan.tokenOfOwnerByIndex(user, i);
             (uint48 endLockTime, uint208 amount) = rsTan.locks(tokenId);
 
-            positions[i] = LockedPosition({tokenId: tokenId, endLockTime: endLockTime, amount: amount, claimable: rsTan.claimableRewards(tokenId)});
+            positions[i] = LockedPosition({tokenId: tokenId, endLockTime: endLockTime, amount: amount, claimable: rsTan.claimableRewards(tokenId)[0].amount});
             unchecked {
                 ++i;
             }
@@ -45,7 +45,7 @@ struct LockedPosition {
     uint256 tokenId;
     uint48 endLockTime;
     uint208 amount;
-    TokenAmount[] claimable;
+    uint256 claimable;
 }
 
 struct LockUIOut {
