@@ -66,7 +66,7 @@ contract HDepositConvexCrvLP is HMarketBase {
         uint256 balanceCollateralBefore,
         uint256 socFeePending,
         uint256 feeToTake
-    ) internal {
+    ) internal view {
         if (isStaked) {
             uint256 collatIncrease = lpDeposited + socFeePending;
             assertEq(0, marketCrvLP.socFeePending(), "When staked, fee pending are deleted");

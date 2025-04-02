@@ -24,7 +24,7 @@ abstract contract HMarketBase is HandlerBase {
         }
     }
 
-    function _afterCheckpointGlobal(MarketCore _market, uint256 interests, uint256 newDebtIndex, uint256 mintableInterests) internal {
+    function _afterCheckpointGlobal(MarketCore _market, uint256 interests, uint256 newDebtIndex, uint256 mintableInterests) internal view {
         assertEq(_market.debtIndex(), newDebtIndex, "New total debt index incremented");
         assertEq(_market.tgUSD().mintableInterests(), mintableInterests + interests, "New interests increments mintableInterests");
         assertEq(_market.blockLastIRTimestamp(), block.timestamp, "Last block IR changed has been updated");
@@ -35,7 +35,7 @@ abstract contract HMarketBase is HandlerBase {
         verifyReceiveERC20(_market.tgUSD(), receiver, borrowedAmount, "tgUSD borrowed is received by receiver");
     }
 
-    function _afterBorrowCheck(MarketCore _market, uint256 borrowedAmount, uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt) internal {
+    function _afterBorrowCheck(MarketCore _market, uint256 borrowedAmount, uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt) internal view {
         assertEq(borrowedAmount + interests, _market.lastDebt() - lastDebt, "Total debt added is equal to borrowed amount + the interests");
         assertEq(_market.positionDebtIndex(sender), ((positionDebt + borrowedAmount) * RAY) / newDebtIndex, "New position debt index updated");
     }
@@ -53,7 +53,7 @@ abstract contract HMarketBase is HandlerBase {
         uint256 interests,
         uint256 newDebtIndex,
         uint256 positionDebt
-    ) internal {
+    ) internal view {
         assertEq(lastDebt + interests - _market.lastDebt(), repayedAmount, "Total new debt didn't decrease");
 
         assertEq(_market.positionDebtIndex(account), ((positionDebt - repayedAmount) * RAY) / newDebtIndex, "New position debt index updated");
