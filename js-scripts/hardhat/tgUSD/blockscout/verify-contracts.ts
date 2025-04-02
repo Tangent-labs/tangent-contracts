@@ -21,6 +21,7 @@ export async function verifyContracts() {
 
     await forceAbi(client, curveLp.crvUSD_USDC, "crvUSD/USDC", true, curveStableSwapNG.abi);
     await forceAbi(client, curveLp.crvUSD_USDT, "crvUSD/USDT", true, curveStableSwapNG.abi);
+    await forceAbi(client, curveLp.CRV_DUO_frxETH_ETH, "frxETH/ETH", true, curveStableSwapNG.abi);
 
     // Utilities
     const controlTower = "ControlTower";
@@ -32,7 +33,7 @@ export async function verifyContracts() {
     const marketCreator = "MarketCreator";
     await forceAbi(client, addresses.utilities.controlTower, marketCreator, false, (await artifacts.readArtifact(marketCreator)).abi);
 
-    // // Tokens
+    // Tokens
     const tgUSD = "TgUSD";
     await forceAbi(client, addresses.tokens.tgUSD, tgUSD, false, (await artifacts.readArtifact(tgUSD)).abi);
     const sgUSD = "SgUSD";
@@ -41,6 +42,31 @@ export async function verifyContracts() {
     await forceAbi(client, addresses.tokens.tan, tan, false, (await artifacts.readArtifact(tan)).abi);
     const rsTan = "RsTan";
     await forceAbi(client, addresses.tokens.rsTan, rsTan, false, (await artifacts.readArtifact(rsTan)).abi);
+
+    // Oracles
+    const Oracle_USDC = "Oracle USDC";
+    await forceAbi(client, addresses.oracles.USDC, Oracle_USDC, false, (await artifacts.readArtifact("IAggregatorV3")).abi);
+
+    const Oracle_USDT = "Oracle USDT";
+    await forceAbi(client, addresses.oracles.USDT, Oracle_USDT, false, (await artifacts.readArtifact("IAggregatorV3")).abi);
+
+    const Oracle_fxUSD = "Oracle fxUSD";
+    await forceAbi(client, addresses.oracles.fxUSD, Oracle_fxUSD, false, (await artifacts.readArtifact("StablePriceOracleParams")).abi);
+
+    const Oracle_crvUSD_USDC = "Oracle crvUSD/USDC";
+    await forceAbi(client, addresses.oracles.crvUSD_USDC, Oracle_crvUSD_USDC, false, (await artifacts.readArtifact("OracleDuoPoolStable")).abi);
+
+    const Oracle_crvUSD_USDT = "Oracle crvUSD/USDT";
+    await forceAbi(client, addresses.oracles.crvUSD_USDT, Oracle_crvUSD_USDT, false, (await artifacts.readArtifact("OracleDuoPoolStable")).abi);
+
+    const Oracle_USDC_fxUSD = "Oracle USDC/fxUSD";
+    await forceAbi(client, addresses.oracles.USDC_fxUSD, Oracle_USDC_fxUSD, false, (await artifacts.readArtifact("OracleDuoPoolStable")).abi);
+
+    const Oracle_frxETH_WETH = "Oracle frxETH/WETH";
+    await forceAbi(client, addresses.oracles.frxETH_WETH, Oracle_frxETH_WETH, false, (await artifacts.readArtifact("OracleDuoPoolStable")).abi);
+
+    const OracleTgUSD = "Oracle tgUSD";
+    await forceAbi(client, addresses.oracles.tgUSD, OracleTgUSD, true, (await artifacts.readArtifact("AggregatorStablePriceV3")).abi);
 
     // Markets Convex CRV
     for (const marketObject of Object.values(addresses.markets)) {
@@ -69,5 +95,4 @@ export async function verifyContracts() {
     await client.end();
 }
 verifyContracts();
-
 // npx hardhat run js-scripts/hardhat/tgUSD/blockscout/verify-contracts.ts
