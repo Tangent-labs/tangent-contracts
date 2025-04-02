@@ -77,6 +77,7 @@ export class BaseContext extends MainSetup {
 
         this.rsTan = await (await ethers.getContractFactory("RsTan")).deploy(this.controlTower, this.owner, this.tan);
         await this.rsTan.waitForDeployment();
+        await this.rsTan.addNewReward(this.tgUSD);
 
         this.zapper = await (await ethers.getContractFactory("Zapper")).deploy(this.owner, this.controlTower, this.tgUSD);
         await this.zapper.waitForDeployment();
