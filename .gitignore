@@ -26,3 +26,4 @@ typechain-types
 broadcast
 snapshots/
 flattened/
+addresses.json

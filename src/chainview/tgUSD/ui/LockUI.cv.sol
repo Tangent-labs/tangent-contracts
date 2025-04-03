@@ -6,7 +6,7 @@ import {IRsTan} from "../../../interfaces/internals/tgUSD/IRsTan.sol";
 
 import {ERC20Infos, IERC20, TokenAmount} from "../../ERC20Infos.sol";
 
-contract LockUI is ERC20Infos {
+contract LockUI {
     error LockUIOutError(LockUIOut output);
 
     constructor(address user, IRsTan rsTan, IERC20 tan) {
@@ -31,7 +31,7 @@ contract LockUI is ERC20Infos {
             uint256 tokenId = rsTan.tokenOfOwnerByIndex(user, i);
             (uint48 endLockTime, uint208 amount) = rsTan.locks(tokenId);
 
-            positions[i] = LockedPosition({tokenId: tokenId, endLockTime: endLockTime, amount: amount, claimable: 100 * 10 ** 18});
+            positions[i] = LockedPosition({tokenId: tokenId, endLockTime: endLockTime, amount: amount, claimable: rsTan.claimableRewards(tokenId)[0].amount});
             unchecked {
                 ++i;
             }

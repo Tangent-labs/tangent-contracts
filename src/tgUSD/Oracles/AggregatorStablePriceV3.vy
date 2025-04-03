@@ -38,7 +38,7 @@ event SetAdmin:
 
 
 MAX_PAIRS: constant(uint256) = 20
-MIN_LIQUIDITY: constant(uint256) = 10_000 * 10**18  # Only take into account pools with enough liquidity
+MIN_LIQUIDITY: constant(uint256) = 100_000 * 10**18  # Only take into account pools with enough liquidity
 
 STABLECOIN: immutable(address)
 SIGMA: immutable(uint256)

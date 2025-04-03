@@ -124,7 +124,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         controlTower.toggleZapper(address(zapper));
 
-        deal(address(tgUSD), owner, 1_000_000 ether);
+        deal(address(tgUSD), owner, 3_000_000 ether);
 
         vm.label(address(tgUSD), "tgUSD");
         vm.label(address(sgUSD), "sgUSD");

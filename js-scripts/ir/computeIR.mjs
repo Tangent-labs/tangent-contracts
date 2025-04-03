@@ -1,6 +1,6 @@
 import * as ethers from "ethers";
 
-export function computeIR(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k) {
+export function computeIR(tgUSDPrice, isHEC, rMin, rMax, pMin, pInf, pMax, a1, a2, k) {
     const tgUSDPriceNumber = Number(ethers.formatEther(BigInt(tgUSDPrice)));
     const nomalizedPMin = Number(ethers.formatUnits(pMin, 6));
     const nomalizedPMax = Number(ethers.formatUnits(pMax, 6));
@@ -8,6 +8,9 @@ export function computeIR(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k) {
         return ethers.parseUnits(rMax, 13);
     }
     if (tgUSDPriceNumber >= nomalizedPMax) {
+        if (isHEC === "true") {
+            return "0";
+        }
         return ethers.parseUnits(rMin, 13);
     }
     const priceDelta = tgUSDPriceNumber - Number(ethers.formatUnits(pInf, 6));

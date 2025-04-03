@@ -3,6 +3,7 @@ pragma solidity ^0.8.22;
 
 import {ERC721, ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewards.sol";
@@ -12,6 +13,7 @@ import {LightOwnable} from "../Utilities/LightOwnable.sol";
 import "forge-std/console.sol";
 /// @notice
 contract RsTan is ERC721Enumerable, LightOwnable {
+    using SafeERC20 for IERC20;
     /// @notice Duration for which tokens are locked (13 weeks).
     uint256 public constant LOCK_DURATION = 13 weeks;
     /// @notice One week in seconds.
@@ -368,8 +370,9 @@ contract RsTan is ERC721Enumerable, LightOwnable {
 
     /**
      * @notice Merge two locked positions into one
-     * @param tokenIdA ID of the first locking position
-     * @param tokenIdB ID of the second locking position
+     * @dev    Burns the second token ID and adds the amount to the first token ID
+     * @param tokenIdA ID of the first locking position. Receives the amount of the second position.
+     * @param tokenIdB ID of the second locking position. Is burnt in the process
      */
     function merge(uint256 tokenIdA, uint256 tokenIdB) external onlyTokenOwner(tokenIdA) onlyTokenOwner(tokenIdB) {
         (uint48 endLockA, uint208 amountA) = _getLock(tokenIdA);
@@ -458,31 +461,94 @@ contract RsTan is ERC721Enumerable, LightOwnable {
      * @dev Only the owner of the position can call the function
      * @param tokenId ID of the position to claim
      */
-    function claimRewards(uint256 tokenId) external updateReward(tokenId) onlyTokenOwner(tokenId) {
-        address tokenOwner = ownerOf(tokenId);
-        require(tokenOwner == msg.sender, NotTokenOwner());
+    function claimSimple(uint256 tokenId) external updateReward(tokenId) onlyTokenOwner(tokenId) {
         uint256 rewardTokensLength = rewardTokens.length;
 
         bool isClaimable;
 
-        for (uint256 i; i < rewardTokensLength; ) {
-            IERC20 _rewardToken = rewardTokens[i];
+        for (uint256 rewardIndex; rewardIndex < rewardTokensLength; ) {
+            IERC20 _rewardToken = rewardTokens[rewardIndex];
             uint256 reward = rewards[tokenId][_rewardToken];
 
             if (reward > 0) {
                 isClaimable = true;
                 rewards[tokenId][_rewardToken] = 0;
                 emit RewardPaid(tokenId, _rewardToken, reward);
+                _rewardToken.transfer(msg.sender, reward);
             }
 
-            _rewardToken.transfer(tokenOwner, reward);
+            unchecked {
+                ++rewardIndex;
+            }
+        }
 
+        require(isClaimable, NothingToClaim());
+    }
+
+    /**
+     *  @notice Claim rewards on one staking contract only
+     *  @param positionIds Array of position IDs to claim rewards from
+     */
+    function claimMultiple(uint256[] calldata positionIds) external {
+        // We save this length on his own variable, to not miss with the assembly manipulations
+        uint256 positionsLen = positionIds.length;
+        uint256 rewardTokenLen = rewardTokens.length;
+        TokenAmount[] memory tokenAmount = new TokenAmount[](rewardTokens.length);
+
+        // Initialize TokenAmount array
+        for (uint256 i; i < tokenAmount.length; ) {
+            tokenAmount[i] = TokenAmount({token: rewardTokens[i], amount: 0});
             unchecked {
                 ++i;
             }
         }
 
-        require(isClaimable, NothingToClaim());
+        // Iterates through all of the vaults
+        for (uint256 positionIndex; positionIndex < positionsLen; ) {
+            uint256 positionId = positionIds[positionIndex];
+            // User input verification
+            require(ownerOf(positionId) == msg.sender, NotTokenOwner());
+
+            _updateReward(positionId);
+
+            // If the rewards returned by the gUSD is an empty array,
+            bool isClaimable;
+
+            for (uint256 rewardIndex; rewardIndex < rewardTokenLen; ) {
+                IERC20 _rewardToken = rewardTokens[rewardIndex];
+                uint256 reward = rewards[positionId][_rewardToken];
+
+                if (reward > 0) {
+                    isClaimable = true;
+                    rewards[positionId][_rewardToken] = 0;
+                    emit RewardPaid(positionId, _rewardToken, reward);
+                    tokenAmount[rewardIndex].amount += reward;
+                }
+
+                unchecked {
+                    ++rewardIndex;
+                }
+            }
+            require(isClaimable, NothingToClaim());
+
+            unchecked {
+                ++positionIndex;
+            }
+        }
+
+        // Iterate through tokenList
+        for (uint256 rewardIndex; rewardIndex < tokenAmount.length; ) {
+            IERC20 token = tokenAmount[rewardIndex].token;
+            uint256 amount = tokenAmount[rewardIndex].amount;
+
+            if (amount != 0) {
+                token.safeTransfer(msg.sender, amount);
+            }
+
+            unchecked {
+                ++rewardIndex;
+            }
+        }
     }
 
     /**

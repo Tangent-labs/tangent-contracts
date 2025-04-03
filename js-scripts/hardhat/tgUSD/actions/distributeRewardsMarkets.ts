@@ -2,7 +2,7 @@ import {parseEther} from "ethers";
 import {ethers} from "hardhat";
 import * as contractAddresses from "../../../../addresses.json";
 
-export async function distributeRewards() {
+export async function distributeRewardsMarkets() {
     const allMarkets = contractAddresses.markets;
     for (let i = 0; i < allMarkets.length; i++) {
         const market = await ethers.getContractAt("IRewards", allMarkets[i].marketAddress);
@@ -13,7 +13,7 @@ export async function distributeRewards() {
             await erc20.transfer(market, parseEther("1000"));
         }
     }
-    console.info("\x1b[32m%s\x1b[0m", "Rewards distributed with success !");
+    console.info("\x1b[32m%s\x1b[0m", "Rewards distributed to all markets with success !");
 }
 
-distributeRewards();
+distributeRewardsMarkets();

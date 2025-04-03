@@ -65,14 +65,14 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         controlTower.isContractsMarkets(markets);
 
         // Iterates through all of the vaults
-        for (uint256 splitterTokenIndex; splitterTokenIndex < marketsLen; ) {
-            address splitterToken = markets[splitterTokenIndex];
+        for (uint256 marketIndex; marketIndex < marketsLen; ) {
+            address market = markets[marketIndex];
             // User input verification
 
             // Get and update the amount of rewards to claim
-            TokenAmount[] memory tokenAmountsToClaim = IRewards(splitterToken).getAndUpdateRewards(msg.sender);
+            TokenAmount[] memory tokenAmountsToClaim = IRewards(market).getAndUpdateRewards(msg.sender);
             // If the rewards returned by the gUSD is an empty array,
-            require(tokenAmountsToClaim.length != 0, NoRewardsToClaimFromContract(address(splitterToken)));
+            require(tokenAmountsToClaim.length != 0, NoRewardsToClaimFromContract(address(market)));
             // Iterates over all erc20 received from the claim on the gUSD
             for (uint256 tokenIndex; tokenIndex < tokenAmountsToClaim.length; ) {
                 IERC20 erc20 = tokenAmountsToClaim[tokenIndex].token;
@@ -94,7 +94,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
             }
 
             unchecked {
-                ++splitterTokenIndex;
+                ++marketIndex;
             }
         }
 

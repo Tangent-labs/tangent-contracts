@@ -24,6 +24,7 @@ import {
     Zapper,
 } from "../../../../typechain-types";
 import {LpDeployContext} from "./LPDeployContext";
+import {setStorageAt} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 export class BaseContext extends MainSetup {
     owner!: HardhatEthersSigner;
@@ -77,6 +78,7 @@ export class BaseContext extends MainSetup {
 
         this.rsTan = await (await ethers.getContractFactory("RsTan")).deploy(this.controlTower, this.owner, this.tan);
         await this.rsTan.waitForDeployment();
+        await this.rsTan.addNewReward(this.tgUSD);
 
         this.zapper = await (await ethers.getContractFactory("Zapper")).deploy(this.owner, this.controlTower, this.tgUSD);
         await this.zapper.waitForDeployment();
@@ -175,7 +177,11 @@ export class BaseContext extends MainSetup {
 
         this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20Metadata", curveLp.crvUSD_USDC);
 
-        await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 5, amount: 10_000_000}]);
+        const tgUSDToGivePerUser = 3_000_000;
+
+        await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 5, amount: tgUSDToGivePerUser}]);
+
+        await setStorageAt(await this.tgUSD.getAddress(), 7, parseEther((tgUSDToGivePerUser * this.users.length).toString()));
     }
 
     async approveCurveLP(lp: string) {

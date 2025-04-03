@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {IERC721Enumerable} from "@openzeppelin/contracts/interfaces/IERC721Enumerable.sol";
-
+import {TokenAmount} from "../ICommonStruct.sol";
 interface IRsTan is IERC721Enumerable {
     function totalSupplyRsTan() external view returns (uint256);
 
@@ -11,4 +11,6 @@ interface IRsTan is IERC721Enumerable {
     function createLock(uint208 amountIn, bool isPermaLock, address callerZapper) external;
 
     function increaseLockAmount(uint256 tokenId, uint208 amountIn, address callerZapper) external;
+
+    function claimableRewards(uint256 tokenId) external view returns (TokenAmount[] memory);
 }
