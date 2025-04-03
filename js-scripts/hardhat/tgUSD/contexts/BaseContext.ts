@@ -43,7 +43,7 @@ export class BaseContext extends MainSetup {
 
     pegKeeperRegulator!: IPegKeeperRegulator;
     pegKeeperTgUSD_USDC!: IPegKeeperV2;
-    pegKeeperTgUSD_frxUSD!: IPegKeeperV2;
+    pegKeeperTgUSD_wfrxUSD!: IPegKeeperV2;
 
     marketCvxCrvImplem!: ConvexCrvLPMarket;
     marketCvxFxnImplem!: ConvexFxnLPMarket;
@@ -147,10 +147,10 @@ export class BaseContext extends MainSetup {
         ).deploy(lpDeployContext.stableLp["tgUSD-USDC"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
         await this.pegKeeperTgUSD_USDC.waitForDeployment();
 
-        this.pegKeeperTgUSD_frxUSD = (await (
+        this.pegKeeperTgUSD_wfrxUSD = (await (
             await ethers.getContractFactory("PegKeeperV2")
         ).deploy(lpDeployContext.stableLp["tgUSD-wfrxUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
-        await this.pegKeeperTgUSD_frxUSD.waitForDeployment();
+        await this.pegKeeperTgUSD_wfrxUSD.waitForDeployment();
 
         await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperTgUSD_USDC]);
 
