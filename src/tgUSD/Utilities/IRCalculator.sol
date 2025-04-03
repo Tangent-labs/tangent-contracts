@@ -43,12 +43,13 @@ contract IRCalculator is IIRCalculator, Ownable {
         tgUSDOracle = _tgUSDOracle;
     }
 
+    //TODO Add check for params
     modifier verifyIRParams(IRParams calldata _irParam) {
-        //TODO Add check for params
         // require(_irParam.irStartPrice <= ONE_ETHER, IRStartPriceLtOne());
         _;
     }
 
+    //TODO Add check for params
     modifier verifyRCParams(RCParams calldata _rcParam) {
         require(_rcParam.startCutPrice <= ONE_ETHER);
         if (_rcParam.stepAmount == 2) {
@@ -79,8 +80,8 @@ contract IRCalculator is IIRCalculator, Ownable {
     }
 
     /**
-     * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
-     * @param  market Denominator of the number in exponent. The higher it is, the
+     * @notice Computes the intest rate regarding the tgUSD price and parameters of the market
+     * @param  market address of the market
      */
     function computeIRForMarket(address market) external returns (uint256) {
         return _computeIR(tgUSDOracle.price_w(), irParams[market]);
@@ -108,6 +109,9 @@ contract IRCalculator is IIRCalculator, Ownable {
             return uint256(irParam.rMax) * E13;
         }
         if (tgUSDPrice >= uint256(irParam.pMax) * E12) {
+            if (irParam.isHEC) {
+                return 0;
+            }
             return uint256(irParam.rMin) * E13;
         }
 

@@ -370,8 +370,9 @@ contract RsTan is ERC721Enumerable, LightOwnable {
 
     /**
      * @notice Merge two locked positions into one
-     * @param tokenIdA ID of the first locking position
-     * @param tokenIdB ID of the second locking position
+     * @dev    Burns the second token ID and adds the amount to the first token ID
+     * @param tokenIdA ID of the first locking position. Receives the amount of the second position.
+     * @param tokenIdB ID of the second locking position. Is burnt in the process
      */
     function merge(uint256 tokenIdA, uint256 tokenIdB) external onlyTokenOwner(tokenIdA) onlyTokenOwner(tokenIdB) {
         (uint48 endLockA, uint208 amountA) = _getLock(tokenIdA);
@@ -493,7 +494,6 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         uint256 positionsLen = positionIds.length;
         uint256 rewardTokenLen = rewardTokens.length;
         TokenAmount[] memory tokenAmount = new TokenAmount[](rewardTokens.length);
-        uint256 actualErc20Index;
 
         // Initialize TokenAmount array
         for (uint256 i; i < tokenAmount.length; ) {

@@ -2,7 +2,8 @@
 pragma solidity ^0.8.24;
 
 struct IRParams {
-    uint32 rMin;
+    bool isHEC;
+    uint24 rMin;
     uint32 rMax;
     uint32 pMin;
     uint32 pInf;

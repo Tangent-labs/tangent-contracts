@@ -1,7 +1,7 @@
 import {ethers} from "hardhat";
-import {IERC20Metadata, IAggregatorStablePriceV3, ICurveStableSwapNG, IPriceOracle} from "../../../../typechain-types";
+import {IERC20Metadata, ICurveStableSwapNG} from "../../../../typechain-types";
 import {BaseContext} from "./BaseContext";
-import {BigNumberish, MaxUint256, parseEther, parseUnits, ZeroAddress} from "ethers";
+import {BigNumberish, MaxUint256, parseUnits, ZeroAddress} from "ethers";
 import {WStablesContext} from "./WStableContext";
 
 export type StableLP = {
@@ -135,6 +135,18 @@ export class LpDeployContext {
             .connect(deployer)
             ["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
 
+        await this._usersApproveLp(baseContext, coins, lp);
+
         return lp;
+    }
+
+    async _usersApproveLp(baseContext: BaseContext, coins: IERC20Metadata[], lp: ICurveStableSwapNG) {
+        const users = baseContext.users;
+
+        for (let i = 0; i < users.length; i++) {
+            const user = users[i];
+            await coins[0].connect(user).approve(lp, MaxUint256);
+            await coins[1].connect(user).approve(lp, MaxUint256);
+        }
     }
 }

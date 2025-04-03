@@ -10,7 +10,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
     IRCalculationFFI irFFI = new IRCalculationFFI();
 
     uint256 tgUSDPrice;
-    uint32 rMin;
+    uint24 rMin;
     uint32 rMax;
     uint32 pMin;
     uint32 pInf;
@@ -31,8 +31,8 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         k = 10109;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
@@ -49,8 +49,8 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         k = 27580;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
@@ -67,8 +67,8 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         k = 20441;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
@@ -85,8 +85,8 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         k = 8;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
@@ -103,8 +103,8 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         k = 5062;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
@@ -121,8 +121,8 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         k = 6911;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
@@ -139,8 +139,8 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         k = 92;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
@@ -157,7 +157,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         a2 = 2_000;
         k = 0;
 
-        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
+        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
 
         assertEq(calculated, 1030000000000000000, "103% IR with these conditions");
     }
@@ -173,7 +173,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         a2 = 2;
         k = 0;
 
-        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
+        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
 
         assertEq(calculated, 4000000000000000000, "Equals to the maximum rate, 400%");
     }
@@ -189,7 +189,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         a2 = 2;
         k = 0;
 
-        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
+        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
 
         assertEq(calculated, 40000000000000000, "Equals to the maximum rate, 4%");
     }
@@ -216,7 +216,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         testResults[3] = DoubleAmount(9_935 * 10 ** 14, 4175 * 10 ** 14); // 0.9935$ => 41.75%
         testResults[4] = DoubleAmount(9_840 * 10 ** 14, 25687 * 10 ** 14); // 0.9840$ => 256.87%
 
-        IRParams memory params = IRParams({rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k});
+        IRParams memory params = IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k});
 
         for (uint256 i; i < testResults.length; i++) {
             assertApproxEqRel(
@@ -227,8 +227,19 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         }
     }
 
-    function test_fuzzing_with_big_bounds(uint256 tgUSDPrice_, uint32 rMin_, uint32 rMax_, uint32 pMin_, uint32 pInf_, uint32 pMax_, uint32 a1_, uint32 a2_, uint32 k_) external {
-        rMin_ = uint32(bound(uint256(rMin_), 0, 1_000_000));
+    function test_fuzzing_with_big_bounds(
+        uint256 tgUSDPrice_,
+        bool isHEC,
+        uint24 rMin_,
+        uint32 rMax_,
+        uint32 pMin_,
+        uint32 pInf_,
+        uint32 pMax_,
+        uint32 a1_,
+        uint32 a2_,
+        uint32 k_
+    ) external {
+        rMin_ = uint24(bound(uint256(rMin_), 0, 1_000_000));
         rMax_ = uint32(bound(uint256(rMax_), rMin_, 2_000_000));
 
         pMin_ = uint32(bound(uint256(pMin_), 0, 1_000_000));
@@ -242,8 +253,11 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
 
         k_ = uint32(bound(k_, 0, 99_000));
 
-        uint256 expected = irFFI.getIRFFI(tgUSDPrice_, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_);
-        uint256 calculated = irCalculator.simulateIR(tgUSDPrice_, IRParams({rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_}));
+        uint256 expected = irFFI.getIRFFI(tgUSDPrice_, isHEC, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_);
+        uint256 calculated = irCalculator.simulateIR(
+            tgUSDPrice_,
+            IRParams({isHEC: isHEC, rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_})
+        );
 
         if (expected <= 10_000) {
             assertApproxEqAbs(expected, calculated, 1); // 1 wei delta
@@ -251,8 +265,19 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
             assertApproxEqRel(expected, calculated, 10 * 1e13); //0.01% delta
         }
     }
-    function test_fuzzing_with_small_bounds(uint256 tgUSDPrice_, uint32 rMin_, uint32 rMax_, uint32 pMin_, uint32 pInf_, uint32 pMax_, uint32 a1_, uint32 a2_, uint32 k_) external {
-        rMin_ = uint32(bound(uint256(rMin_), 0, 50_000));
+    function test_fuzzing_with_small_bounds(
+        uint256 tgUSDPrice_,
+        bool isHEC,
+        uint24 rMin_,
+        uint32 rMax_,
+        uint32 pMin_,
+        uint32 pInf_,
+        uint32 pMax_,
+        uint32 a1_,
+        uint32 a2_,
+        uint32 k_
+    ) external {
+        rMin_ = uint24(bound(uint256(rMin_), 0, 50_000));
         rMax_ = uint32(bound(uint256(rMax_), rMin_, 2_000_000));
 
         pMin_ = uint32(bound(uint256(pMin_), 970_000, 990_000));
@@ -266,8 +291,11 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
 
         k_ = uint32(bound(k_, 0, 99_000));
 
-        uint256 expected = irFFI.getIRFFI(tgUSDPrice_, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_);
-        uint256 calculated = irCalculator.simulateIR(tgUSDPrice_, IRParams({rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_}));
+        uint256 expected = irFFI.getIRFFI(tgUSDPrice_, isHEC, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_);
+        uint256 calculated = irCalculator.simulateIR(
+            tgUSDPrice_,
+            IRParams({isHEC: isHEC, rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_})
+        );
 
         if (expected <= 10_000) {
             assertApproxEqAbs(expected, calculated, 1); // 1 wei delta
