@@ -63,7 +63,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
         liquidationThreshold = _marketInit.liquidationThreshold;
         maxMarketDebt = _marketInit.maxMarketDebt;
         minimumLoan = _marketInit.minimumLoan;
-
+        // TODO Replace this here
         lastIR = 10 * RAY; // 10%
         blockLastIRTimestamp = block.timestamp;
         debtIndex = RAY;

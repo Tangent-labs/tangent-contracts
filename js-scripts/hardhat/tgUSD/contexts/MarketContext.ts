@@ -34,6 +34,7 @@ export class MarketContext {
                     staticConfig.pid,
                     1_000,
                     {
+                        isHEC: true,
                         rMin: 4_000,
                         rMax: 400_000,
                         pMin: 980_000,
@@ -76,6 +77,7 @@ export class MarketContext {
                     staticConfig.pid,
                     1_000,
                     {
+                        isHEC: false,
                         rMin: 4_000,
                         rMax: 400_000,
                         pMin: 980_000,

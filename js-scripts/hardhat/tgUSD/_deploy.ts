@@ -78,6 +78,8 @@ async function createJSONAddress(
             rewardAccumulator: await baseContext.rewardAccumulator.getAddress(),
             zapper: await baseContext.zapper.getAddress(),
             marketCreator: await baseContext.marketCreator.getAddress(),
+            irCalculator: await baseContext.irCalculator.getAddress(),
+            pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
         },
         tokens: {
             tgUSD: await baseContext.tgUSD.getAddress(),
@@ -94,6 +96,10 @@ async function createJSONAddress(
         oracles,
         lps,
         wStables,
+        pegKeepers: {
+            "tgUSD-USDC": await baseContext.pegKeeperTgUSD_USDC.getAddress(),
+            "tgUSD-wfrxUSD": await baseContext.pegKeeperTgUSD_wfrxUSD.getAddress(),
+        },
     };
 }
 

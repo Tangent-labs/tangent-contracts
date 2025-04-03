@@ -1,6 +1,5 @@
 import {Client} from "pg";
 import * as addresses from "../../../../addresses.json";
-import * as wStable from "../../../../artifacts/src/tgUSD/tokens/WStable.sol/WStable.json";
 import * as curveStableSwapNG from "../../../../artifacts/src/interfaces/externals/Curve/ICurveStableSwapNG.sol/ICurveStableSwapNG.json";
 
 import {curveLp} from "defi-resources";
@@ -21,6 +20,7 @@ export async function verifyContracts() {
 
     await forceAbi(client, curveLp.crvUSD_USDC, "crvUSD/USDC", true, curveStableSwapNG.abi);
     await forceAbi(client, curveLp.crvUSD_USDT, "crvUSD/USDT", true, curveStableSwapNG.abi);
+    await forceAbi(client, curveLp.CRV_LP_USDC_fxUSD, "USDC/fxUSD", true, curveStableSwapNG.abi);
     await forceAbi(client, curveLp.CRV_DUO_frxETH_ETH, "frxETH/ETH", true, curveStableSwapNG.abi);
 
     // Utilities
@@ -32,6 +32,10 @@ export async function verifyContracts() {
     await forceAbi(client, addresses.utilities.controlTower, zapper, false, (await artifacts.readArtifact(zapper)).abi);
     const marketCreator = "MarketCreator";
     await forceAbi(client, addresses.utilities.controlTower, marketCreator, false, (await artifacts.readArtifact(marketCreator)).abi);
+    const irCalculator = "IRCalculator";
+    await forceAbi(client, addresses.utilities.irCalculator, irCalculator, false, (await artifacts.readArtifact(irCalculator)).abi);
+    const pegKeeperRegulator = "PegKeeperRegulator";
+    await forceAbi(client, addresses.utilities.pegKeeperRegulator, pegKeeperRegulator, true, (await artifacts.readArtifact(pegKeeperRegulator)).abi);
 
     // Tokens
     const tgUSD = "TgUSD";
@@ -69,16 +73,18 @@ export async function verifyContracts() {
     await forceAbi(client, addresses.oracles.tgUSD, OracleTgUSD, true, (await artifacts.readArtifact("AggregatorStablePriceV3")).abi);
 
     // Markets Convex CRV
+    const abiMarketConvexCrv = (await artifacts.readArtifact("ConvexCrvLPMarket")).abi;
     for (const marketObject of Object.values(addresses.markets)) {
         if (marketObject.marketType === "Convex_CRV") {
-            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Convex_CRV", false, (await artifacts.readArtifact("ConvexCrvLPMarket")).abi);
+            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Convex_CRV", false, abiMarketConvexCrv);
         }
     }
 
     // Markets Convex FXN
+    const abiMarketConvexFxn = (await artifacts.readArtifact("ConvexFxnLPMarket")).abi;
     for (const marketObject of Object.values(addresses.markets)) {
         if (marketObject.marketType === "Convex_FXN") {
-            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Convex_FXN", false, (await artifacts.readArtifact("ConvexFxnLPMarket")).abi);
+            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Convex_FXN", false, abiMarketConvexFxn);
         }
     }
 
@@ -87,9 +93,16 @@ export async function verifyContracts() {
         await forceAbi(client, address, name, true, curveStableSwapNG.abi);
     }
 
+    const abiWStable = (await artifacts.readArtifact("WStable")).abi;
     // WStables
     for (const [name, address] of Object.entries(addresses.wStables)) {
-        await forceAbi(client, address, name, false, wStable.abi);
+        await forceAbi(client, address, name, false, abiWStable);
+    }
+
+    const abiPegKeeperV2 = (await artifacts.readArtifact("PegKeeperV2")).abi;
+    // PegKeepers
+    for (const [name, address] of Object.entries(addresses.pegKeepers)) {
+        await forceAbi(client, address, "PegKeeper " + name, true, abiPegKeeperV2);
     }
 
     await client.end();
