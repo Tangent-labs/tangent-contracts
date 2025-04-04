@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import {ERC721, ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
+import {IRsTanERC721} from "../../interfaces/internals/tgUSD/IRsTanERC721.sol";
+
 import {Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewards.sol";
 
 import {LightOwnable} from "../Utilities/LightOwnable.sol";
 
-import "forge-std/console.sol";
 /// @notice
-contract RsTan is ERC721Enumerable, LightOwnable {
+contract RsTanService is LightOwnable {
     using SafeERC20 for IERC20;
     /// @notice Duration for which tokens are locked (13 weeks).
     uint256 public constant LOCK_DURATION = 13 weeks;
@@ -24,6 +24,8 @@ contract RsTan is ERC721Enumerable, LightOwnable {
     /// @notice The ERC20 token that users lock.
     IERC20 public immutable tan;
 
+    IRsTanERC721 public rsTanERC721;
+
     /// @notice Parameters for the kick mechanism.
     KickParams public kick;
 
@@ -32,9 +34,6 @@ contract RsTan is ERC721Enumerable, LightOwnable {
 
     /// @notice Total amount of locked tokens.
     uint256 public totalSupplyRsTan;
-
-    /// @notice The next token ID to be minted.
-    uint256 public nextId;
 
     /// @notice Mapping of token IDs to their lock details.
     mapping(uint256 => Lock) public locks;
@@ -88,17 +87,12 @@ contract RsTan is ERC721Enumerable, LightOwnable {
     event RewardNotified(IERC20 indexed _token, uint256 _reward);
     event RewardPaid(uint256 indexed tokenId, IERC20 indexed _rewardToken, uint256 _reward);
 
-    constructor(IControlTower _controlTower, address _owner, IERC20 _tan) ERC721("RsTan", "RsTan") {
+    constructor(IRsTanERC721 _rsTanERC721, IControlTower _controlTower, address _owner, IERC20 _tan) {
         tan = _tan;
-        nextId = 1;
+        rsTanERC721 = _rsTanERC721;
         controlTower = _controlTower;
         kick = KickParams({delay: uint128(ONE_WEEK), percentage: uint128(250)});
         _transferOwnership(_owner);
-    }
-
-    modifier onlyTokenOwner(uint256 tokenId) {
-        require(ownerOf(tokenId) == msg.sender, NotTokenOwner());
-        _;
     }
 
     modifier updateReward(uint256 tokenId) {
@@ -220,9 +214,7 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         require(amountIn != 0, ZeroAmount());
         (bool isZap, address receiver) = _checkZapper(callerZapper);
 
-        uint256 tokenId = nextId++;
-
-        _mint(receiver, tokenId);
+        uint256 tokenId = rsTanERC721.mintForCreate(receiver);
 
         _updateReward(tokenId);
 
@@ -249,7 +241,7 @@ contract RsTan is ERC721Enumerable, LightOwnable {
 
         (bool isZap, address tokenOwner) = _checkZapper(callerZapper);
 
-        require(ownerOf(tokenId) == tokenOwner, NotTokenOwner());
+        require(rsTanERC721.ownerOf(tokenId) == tokenOwner, NotTokenOwner());
 
         locks[tokenId] = Lock({endLockTime: oldLockTime != MAX_UINT48 ? _newEndLockTime() : MAX_UINT48, amount: oldAmount + amountIn});
 
@@ -265,7 +257,9 @@ contract RsTan is ERC721Enumerable, LightOwnable {
      * @notice Increase the lock duration for a specific token
      * @param tokenId ID of the locking position
      */
-    function increaseLockTime(uint256 tokenId) external onlyTokenOwner(tokenId) {
+    function increaseLockTime(uint256 tokenId) external {
+        require(rsTanERC721.ownerOf(tokenId) == msg.sender, NotTokenOwner());
+
         uint48 oldEndLockTime = locks[tokenId].endLockTime;
         // Cant increase time a position already expired
         require(oldEndLockTime > block.timestamp, LockExpired());
@@ -283,7 +277,9 @@ contract RsTan is ERC721Enumerable, LightOwnable {
      * @notice Toggle the lock to permanent or revert it to a timed lock
      * @param tokenId ID of the locking position
      */
-    function togglePermaLock(uint256 tokenId) external onlyTokenOwner(tokenId) {
+    function togglePermaLock(uint256 tokenId) external {
+        require(rsTanERC721.ownerOf(tokenId) == msg.sender, NotTokenOwner());
+
         uint48 oldEndLockTime = locks[tokenId].endLockTime;
         require(oldEndLockTime > block.timestamp, LockExpired());
         locks[tokenId].endLockTime = oldEndLockTime != MAX_UINT48 ? MAX_UINT48 : _newEndLockTime();
@@ -293,11 +289,11 @@ contract RsTan is ERC721Enumerable, LightOwnable {
      * @notice Unlock a position after the lock period has ended
      * @param tokenId ID of the locking position
      */
-    function unlock(uint256 tokenId) external onlyTokenOwner(tokenId) updateReward(0) {
+    function unlock(uint256 tokenId) external updateReward(0) {
         (uint48 endLockTime, uint208 amount) = _getLock(tokenId);
         require(endLockTime < block.timestamp, LockNotOver());
 
-        _burn(tokenId);
+        rsTanERC721.burnForUnlock(tokenId, msg.sender);
 
         totalSupplyRsTan -= amount;
         delete locks[tokenId];
@@ -309,7 +305,7 @@ contract RsTan is ERC721Enumerable, LightOwnable {
      * @notice Exit a lock position early with a penalty
      * @param tokenId ID of the locking position
      */
-    function rageQuit(uint256 tokenId) external onlyTokenOwner(tokenId) updateReward(0) {
+    function rageQuit(uint256 tokenId) external updateReward(0) {
         (uint48 endLockTime, uint208 amount) = _getLock(tokenId);
         bool isPermaLocked = endLockTime == MAX_UINT48;
 
@@ -323,7 +319,7 @@ contract RsTan is ERC721Enumerable, LightOwnable {
 
         uint256 penalty = (amount * ((isPermaLocked ? _newEndLockTime() : endLockTime) - block.timestamp)) / LOCK_DURATION;
 
-        _burn(tokenId);
+        rsTanERC721.burnForUnlock(tokenId, msg.sender);
         delete locks[tokenId];
 
         tan.transfer(msg.sender, amount - penalty);
@@ -343,10 +339,11 @@ contract RsTan is ERC721Enumerable, LightOwnable {
 
         uint256 kickIncentivization = (_kick.percentage * amount) / 100_000;
 
-        tan.transfer(ownerOf(tokenId), amount - kickIncentivization);
+        address tokenOwner = rsTanERC721.burKickPosition(tokenId);
+
+        tan.transfer(tokenOwner, amount - kickIncentivization);
         tan.transfer(receiver, kickIncentivization);
 
-        _burn(tokenId);
         delete locks[tokenId];
     }
 
@@ -355,17 +352,17 @@ contract RsTan is ERC721Enumerable, LightOwnable {
      * @param tokenId ID of the original locking position
      * @param amountToRemove Amount to remove from the original position
      */
-    function split(uint256 tokenId, uint208 amountToRemove) external onlyTokenOwner(tokenId) updateReward(0) {
+    function split(uint256 tokenId, uint208 amountToRemove) external updateReward(0) {
         (uint48 endLockTime, uint208 amount) = _getLock(tokenId);
 
         require(amountToRemove != 0, ZeroAmount());
         require(amountToRemove < amount, BiggerThanInitialPosition());
         require(endLockTime > block.timestamp, LockExpired());
 
-        uint256 newId = nextId++;
+        uint256 newId = rsTanERC721.mintForSplit(msg.sender, tokenId);
+
         locks[newId] = Lock({endLockTime: endLockTime, amount: amountToRemove});
         locks[tokenId].amount = amount - amountToRemove;
-        _mint(msg.sender, newId);
     }
 
     /**
@@ -374,7 +371,7 @@ contract RsTan is ERC721Enumerable, LightOwnable {
      * @param tokenIdA ID of the first locking position. Receives the amount of the second position.
      * @param tokenIdB ID of the second locking position. Is burnt in the process
      */
-    function merge(uint256 tokenIdA, uint256 tokenIdB) external onlyTokenOwner(tokenIdA) onlyTokenOwner(tokenIdB) {
+    function merge(uint256 tokenIdA, uint256 tokenIdB) external {
         (uint48 endLockA, uint208 amountA) = _getLock(tokenIdA);
         (uint48 endLockB, uint208 amountB) = _getLock(tokenIdB);
 
@@ -383,7 +380,7 @@ contract RsTan is ERC721Enumerable, LightOwnable {
 
         locks[tokenIdA] = Lock({endLockTime: endLockA < endLockB ? endLockB : endLockA, amount: amountA + amountB});
         delete locks[tokenIdB];
-        _burn(tokenIdB);
+        rsTanERC721.burnForMerge(tokenIdA, tokenIdB, msg.sender);
     }
 
     /**
@@ -461,7 +458,9 @@ contract RsTan is ERC721Enumerable, LightOwnable {
      * @dev Only the owner of the position can call the function
      * @param tokenId ID of the position to claim
      */
-    function claimSimple(uint256 tokenId) external updateReward(tokenId) onlyTokenOwner(tokenId) {
+    function claimSimple(uint256 tokenId) external updateReward(tokenId) {
+        require(rsTanERC721.ownerOf(tokenId) == msg.sender, NotTokenOwner());
+
         uint256 rewardTokensLength = rewardTokens.length;
 
         bool isClaimable;
@@ -490,6 +489,8 @@ contract RsTan is ERC721Enumerable, LightOwnable {
      *  @param positionIds Array of position IDs to claim rewards from
      */
     function claimMultiple(uint256[] calldata positionIds) external {
+        // User input verification
+        rsTanERC721.verifyTokenIdsOwned(msg.sender, positionIds);
         // We save this length on his own variable, to not miss with the assembly manipulations
         uint256 positionsLen = positionIds.length;
         uint256 rewardTokenLen = rewardTokens.length;
@@ -506,8 +507,6 @@ contract RsTan is ERC721Enumerable, LightOwnable {
         // Iterates through all of the vaults
         for (uint256 positionIndex; positionIndex < positionsLen; ) {
             uint256 positionId = positionIds[positionIndex];
-            // User input verification
-            require(ownerOf(positionId) == msg.sender, NotTokenOwner());
 
             _updateReward(positionId);
 

@@ -10,10 +10,13 @@ import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../../src/libs/Resources/ResourcesYearn.sol";
 
+import "../../../src/tgUSD/Lock/RsTanService.sol";
+import "../../../src/tgUSD/Lock/RsTanERC721.sol";
+
 import "../../../src/tgUSD/Tokens/Tan.sol";
-import "../../../src/tgUSD/Tokens/RsTan.sol";
 import "../../../src/tgUSD/Tokens/TgUSD.sol";
 import "../../../src/tgUSD/Tokens/WStable.sol";
+
 import "../../../src/tgUSD/Rewards/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
@@ -69,7 +72,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     TgUSD public tgUSD;
     Tan public tan;
-    RsTan public rsTan;
+    RsTanService public rsTanService;
+    RsTanERC721 public rsTanERC721;
     TgUSD public tgUsdBase;
     IYearnV3Vault public sgUSD;
     RewardAccumulator public rewardAccumulator;
@@ -103,15 +107,18 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         rewardAccumulator = new RewardAccumulator(owner, controlTower);
 
         tan = new Tan();
-        rsTan = new RsTan(controlTower, owner, tan);
+        rsTanERC721 = new RsTanERC721(owner);
+        rsTanService = new RsTanService(rsTanERC721, controlTower, owner, tan);
+        rsTanERC721.setService(address(rsTanService));
+
         // Deploy tgUSD on Base
         // tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
         // Deploy tgUSD on Mainnet ETH
-        tgUSD = deployTgUSD(mainnetFork, l0EndpointMainnet);
+        tgUSD = deployTgUSD(mainnetFork);
 
         // assertEq(address(tgUsdBase), address(tgUSD), "Should be equals with CREATE3");
 
-        rsTan.addNewReward(tgUSD);
+        rsTanService.addNewReward(tgUSD);
 
         liquidatorProxy = new LiquidatorProxy(tgUSD);
 
@@ -130,7 +137,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(sgUSD), "sgUSD");
         vm.label(address(controlTower), "ControlTower");
         vm.label(address(tan), "Tan");
-        vm.label(address(rsTan), "RsTan");
+        vm.label(address(rsTanService), "RsTanService");
+        vm.label(address(rsTanERC721), "RsTanERC721");
 
         vm.label(address(rewardAccumulator), "RewardAccumulator");
         vm.label(address(AddrRouter.ENSO_ROUTER), "Enso Router");
@@ -150,20 +158,20 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         lpDeploymentContext = new LpDeploymentContext(owner, tgUSD);
     }
 
-    function getBytecodeWithConstructorArgs(address endpointAddress) public view returns (bytes memory) {
+    function getBytecodeWithConstructorArgs() public view returns (bytes memory) {
         string memory json = vm.readFile("./out/TgUSD.sol/TgUSD.json");
         bytes memory bytecode = abi.decode(vm.parseJson(json, ".bytecode.object"), (bytes));
         // console.logBytes(bytecode);
 
         // Encodez les arguments pour le constructeur
-        bytes memory constructorArgs = abi.encode("Tangent StableCoin", "tgUSD", endpointAddress, owner, owner, controlTower);
+        bytes memory constructorArgs = abi.encode("Tangent StableCoin", "tgUSD", owner, controlTower);
 
         // Concaténez le bytecode et les arguments
         return abi.encodePacked(bytecode, constructorArgs);
     }
 
-    function deployTgUSD(uint256 forkId, address endpoint) public returns (TgUSD) {
+    function deployTgUSD(uint256 forkId) public returns (TgUSD) {
         vm.selectFork(forkId);
-        return TgUSD(create3Factory.deploy(bytes32(0), getBytecodeWithConstructorArgs(endpoint)));
+        return TgUSD(create3Factory.deploy(bytes32(0), getBytecodeWithConstructorArgs()));
     }
 }

@@ -18,7 +18,8 @@ import {
     MarketCreator,
     MarketNoSociabilization,
     RewardAccumulator,
-    RsTan,
+    RsTanERC721,
+    RsTanService,
     Tan,
     TgUSD,
     Zapper,
@@ -34,7 +35,8 @@ export class BaseContext extends MainSetup {
     tgUSD!: TgUSD;
     sgUSD!: IYearnV3Vault;
     tan!: Tan;
-    rsTan!: RsTan;
+    rsTanService!: RsTanService;
+    rsTanERC721!: RsTanERC721;
     zapper!: Zapper;
     rewardAccumulator!: RewardAccumulator;
     liquidatorProxy!: LiquidatorProxy;
@@ -76,9 +78,14 @@ export class BaseContext extends MainSetup {
         await this.tan.mint(this.users[3], parseEther("100000"));
         await this.tan.mint(this.users[4], parseEther("100000"));
 
-        this.rsTan = await (await ethers.getContractFactory("RsTan")).deploy(this.controlTower, this.owner, this.tan);
-        await this.rsTan.waitForDeployment();
-        await this.rsTan.addNewReward(this.tgUSD);
+        this.rsTanERC721 = await (await ethers.getContractFactory("RsTanERC721")).deploy(this.owner);
+        await this.rsTanERC721.waitForDeployment();
+
+        this.rsTanService = await (await ethers.getContractFactory("RsTanService")).deploy(this.rsTanERC721, this.controlTower, this.owner, this.tan);
+        await this.rsTanService.waitForDeployment();
+        await this.rsTanService.addNewReward(this.tgUSD);
+
+        await this.rsTanERC721.setService(this.rsTanService);
 
         this.zapper = await (await ethers.getContractFactory("Zapper")).deploy(this.owner, this.controlTower, this.tgUSD);
         await this.zapper.waitForDeployment();

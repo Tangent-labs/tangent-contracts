@@ -10,9 +10,9 @@ contract SplitLock is ConvexCurveContext {
     function setUp() external {
         vm.startPrank(usr1);
         deal(address(tan), usr1, 2 * amount0);
-        tan.approve(address(rsTan), 2 * amount0);
-        rsTan.createLock(amount0, true, address(0));
-        rsTan.createLock(amount1, false, address(0));
+        tan.approve(address(rsTanService), 2 * amount0);
+        rsTanService.createLock(amount0, true, address(0));
+        rsTanService.createLock(amount1, false, address(0));
         vm.stopPrank();
     }
 
@@ -20,20 +20,20 @@ contract SplitLock is ConvexCurveContext {
         vm.startPrank(usr1);
         uint208 removedAmount = amount0 / 3;
 
-        rsTan.split(1, removedAmount);
+        rsTanService.split(1, removedAmount);
 
-        (uint48 endLock1, uint208 amount1After) = rsTan.locks(1);
-        (uint48 endLock3, uint208 amount3) = rsTan.locks(3);
+        (uint48 endLock1, uint208 amount1After) = rsTanService.locks(1);
+        (uint48 endLock3, uint208 amount3) = rsTanService.locks(3);
         assertEq(endLock1, endLock3);
-        assertEq(endLock1, rsTan.MAX_UINT48());
+        assertEq(endLock1, rsTanService.MAX_UINT48());
 
         assertEq(amount1After, amount0 - removedAmount);
         assertEq(amount3, removedAmount);
 
-        assertEq(rsTan.ownerOf(1), usr1);
-        assertEq(rsTan.ownerOf(3), usr1);
-        assertEq(rsTan.balanceOf(usr1), 3);
-        assertEq(rsTan.totalSupply(), 3);
+        assertEq(rsTanERC721.ownerOf(1), usr1);
+        assertEq(rsTanERC721.ownerOf(3), usr1);
+        assertEq(rsTanERC721.balanceOf(usr1), 3);
+        assertEq(rsTanERC721.totalSupply(), 3);
     }
 
     function test_split_not_perma_lock() external {
@@ -42,39 +42,39 @@ contract SplitLock is ConvexCurveContext {
 
         skip(1 weeks);
 
-        rsTan.split(2, removedAmount);
+        rsTanService.split(2, removedAmount);
 
-        (uint48 endLock1, uint208 amount1After) = rsTan.locks(2);
-        (uint48 endLock3, uint208 amount3) = rsTan.locks(3);
+        (uint48 endLock1, uint208 amount1After) = rsTanService.locks(2);
+        (uint48 endLock3, uint208 amount3) = rsTanService.locks(3);
         assertEq(endLock1, endLock3);
 
         assertEq(amount1After, amount1 - removedAmount);
         assertEq(amount3, removedAmount);
 
-        assertEq(rsTan.ownerOf(1), usr1);
-        assertEq(rsTan.ownerOf(3), usr1);
-        assertEq(rsTan.balanceOf(usr1), 3);
-        assertEq(rsTan.totalSupply(), 3);
+        assertEq(rsTanERC721.ownerOf(1), usr1);
+        assertEq(rsTanERC721.ownerOf(3), usr1);
+        assertEq(rsTanERC721.balanceOf(usr1), 3);
+        assertEq(rsTanERC721.totalSupply(), 3);
     }
 
     function test_split_fails_bcs_token_not_owned() external {
         vm.startPrank(usr2);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.NotTokenOwner.selector));
-        rsTan.split(2, 100);
+        vm.expectRevert(abi.encodeWithSelector(RsTanService.NotTokenOwner.selector));
+        rsTanService.split(2, 100);
     }
 
     function test_split_fails_bcs_split_more_than_balance() external {
         vm.startPrank(usr1);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.BiggerThanInitialPosition.selector));
-        rsTan.split(2, amount1);
+        vm.expectRevert(abi.encodeWithSelector(RsTanService.BiggerThanInitialPosition.selector));
+        rsTanService.split(2, amount1);
     }
 
     function test_split_fails_bcs_split_and_remove_zero() external {
         vm.startPrank(usr1);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.ZeroAmount.selector));
-        rsTan.split(2, 0);
+        vm.expectRevert(abi.encodeWithSelector(RsTanService.ZeroAmount.selector));
+        rsTanService.split(2, 0);
     }
 }

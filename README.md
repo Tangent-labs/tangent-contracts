@@ -71,9 +71,9 @@ Distribute rewards into markets in order to be processed. We are transfering rew
 npm run distribute-rewards-markets
 ```
 
-### Distribute and streams tgUSD rewards into RsTan
+### Distribute and streams tgUSD rewards into RsTanService
 
-Distribute rewards tgUSD into RsTan and start the streaming process.
+Distribute rewards tgUSD into RsTanService and start the streaming process.
 
 ```
 npm run distribute-rewards-rsTan
