@@ -5,11 +5,11 @@ import * as contractAddresses from "../../../../addresses.json";
 export async function distributeRewardsRsTan() {
     const tgUSD = await ethers.getContractAt("TgUSD", contractAddresses.tokens.tgUSD);
 
-    const rsTan = await ethers.getContractAt("RsTanService", contractAddresses.tokens.rsTan);
+    const rsTanService = await ethers.getContractAt("RsTanService", contractAddresses.lock.rsTanService);
 
-    await tgUSD.approve(rsTan, MaxUint256);
+    await tgUSD.approve(rsTanService, MaxUint256);
 
-    await rsTan.processRewards([{token: contractAddresses.tokens.tgUSD, amount: parseEther("1000")}]);
+    await rsTanService.processRewards([{token: contractAddresses.tokens.tgUSD, amount: parseEther("1000")}]);
 
     console.info("\x1b[32m%s\x1b[0m", "Rewards distributed to RsTanService with success !");
 }

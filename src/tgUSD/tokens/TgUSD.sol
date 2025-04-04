@@ -15,22 +15,11 @@ contract TgUSD is ERC20, Ownable, ITgUSD {
 
     uint256 public mintableInterests;
 
-    bool public isBridgePermisionless;
-
-    IBridgeChecker public bridgeChecker;
-
     error CallerNotMinterBurner();
     error OnlyOwnerCanBridgeIfPermisionlessNotActive();
     error BridgingNotAllowed();
 
-    constructor(
-        string memory _name,
-        string memory _symbol,
-        address _lzEndpoint,
-        address _delegate,
-        address _owner,
-        IControlTower _controlTower
-    ) ERC20(_name, _symbol) Ownable(_owner) {
+    constructor(string memory _name, string memory _symbol, address _owner, IControlTower _controlTower) ERC20(_name, _symbol) Ownable(_owner) {
         controlTower = _controlTower;
     }
 

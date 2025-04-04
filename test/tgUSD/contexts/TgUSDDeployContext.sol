@@ -114,7 +114,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         // Deploy tgUSD on Base
         // tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
         // Deploy tgUSD on Mainnet ETH
-        tgUSD = deployTgUSD(mainnetFork, l0EndpointMainnet);
+        tgUSD = deployTgUSD(mainnetFork);
 
         // assertEq(address(tgUsdBase), address(tgUSD), "Should be equals with CREATE3");
 
@@ -158,20 +158,20 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         lpDeploymentContext = new LpDeploymentContext(owner, tgUSD);
     }
 
-    function getBytecodeWithConstructorArgs(address endpointAddress) public view returns (bytes memory) {
+    function getBytecodeWithConstructorArgs() public view returns (bytes memory) {
         string memory json = vm.readFile("./out/TgUSD.sol/TgUSD.json");
         bytes memory bytecode = abi.decode(vm.parseJson(json, ".bytecode.object"), (bytes));
         // console.logBytes(bytecode);
 
         // Encodez les arguments pour le constructeur
-        bytes memory constructorArgs = abi.encode("Tangent StableCoin", "tgUSD", endpointAddress, owner, owner, controlTower);
+        bytes memory constructorArgs = abi.encode("Tangent StableCoin", "tgUSD", owner, controlTower);
 
         // Concaténez le bytecode et les arguments
         return abi.encodePacked(bytecode, constructorArgs);
     }
 
-    function deployTgUSD(uint256 forkId, address endpoint) public returns (TgUSD) {
+    function deployTgUSD(uint256 forkId) public returns (TgUSD) {
         vm.selectFork(forkId);
-        return TgUSD(create3Factory.deploy(bytes32(0), getBytecodeWithConstructorArgs(endpoint)));
+        return TgUSD(create3Factory.deploy(bytes32(0), getBytecodeWithConstructorArgs()));
     }
 }
