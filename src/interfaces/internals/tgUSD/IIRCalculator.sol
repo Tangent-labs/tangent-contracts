@@ -2,14 +2,31 @@
 pragma solidity ^0.8.24;
 
 struct IRParams {
+    /// @dev Flag to determine if a Market is HEC or LEC
     bool isHEC;
+    /// @dev Minimum IR reached at pMax.
+    ///      1_000 <=> 1% / 100_000 <=> 100%.
     uint24 rMin;
+    /// @dev Maximum IR reached at pMin.
+    ///      1_000 <=> 1% / 100_000 <=> 100%.
     uint32 rMax;
+    /// @dev Minimum price of tgUSD where rMax is reached.
+    ///      980_000 <=> 0.98$ / 1_000_000 <=> 1$
     uint32 pMin;
+    /// @dev Inflexion price of tgUSD where IR starts to increases more significantly.
+    ///      980_000 <=> 0.98$ / 1_000_000 <=> 1$
     uint32 pInf;
+    /// @dev Maximum price of tgUSD where IR increases more significantly.
+    ///      980_000 <=> 0.98$ / 1_000_000 <=> 1$
     uint32 pMax;
+    /// @dev TODO
+    ///      2_000 <=> 2 / 4_500 <=> 4.5
     uint32 a1;
+    /// @dev TODO
+    ///      2_000 <=> 2 / 4_500 <=> 4.5
     uint32 a2;
+    /// @dev TODO
+    ///      It's an integer. 250 <=> 250
     uint32 k;
 }
 

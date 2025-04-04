@@ -44,9 +44,12 @@ export async function verifyContracts() {
     await forceAbi(client, addresses.tokens.sgUSD, sgUSD, true, (await artifacts.readArtifact("IYearnV3Vault")).abi);
     const tan = "Tan";
     await forceAbi(client, addresses.tokens.tan, tan, false, (await artifacts.readArtifact(tan)).abi);
-    const rsTan = "RsTan";
-    await forceAbi(client, addresses.tokens.rsTan, rsTan, false, (await artifacts.readArtifact(rsTan)).abi);
 
+    // Lock
+    const rsTanService = "RsTanService";
+    await forceAbi(client, addresses.lock.rsTanService, rsTanService, false, (await artifacts.readArtifact(rsTanService)).abi);
+    const rsTanERC721 = "rsTanERC721";
+    await forceAbi(client, addresses.lock.rsTanERC721, rsTanERC721, false, (await artifacts.readArtifact(rsTanERC721)).abi);
     // Oracles
     const Oracle_USDC = "Oracle USDC";
     await forceAbi(client, addresses.oracles.USDC, Oracle_USDC, false, (await artifacts.readArtifact("IAggregatorV3")).abi);

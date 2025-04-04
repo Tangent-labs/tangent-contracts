@@ -10,34 +10,34 @@ contract TogglePermaLock is ConvexCurveContext {
     function setUp() external {
         vm.startPrank(usr1);
         deal(address(tan), usr1, 2 * amount);
-        tan.approve(address(rsTan), 2 * amount);
-        rsTan.createLock(amount, true, address(0));
-        rsTan.createLock(amount, false, address(0));
+        tan.approve(address(rsTanService), 2 * amount);
+        rsTanService.createLock(amount, true, address(0));
+        rsTanService.createLock(amount, false, address(0));
         vm.stopPrank();
     }
 
     function test_togglePermaLock_from_false_to_true() external {
         vm.startPrank(usr1);
-        uint256 oldEndLockTimeExpected = rsTan.nextEndLockTime();
-        (uint48 oldEndLockTime, ) = rsTan.locks(2);
+        uint256 oldEndLockTimeExpected = rsTanService.nextEndLockTime();
+        (uint48 oldEndLockTime, ) = rsTanService.locks(2);
         assertEq(oldEndLockTimeExpected, oldEndLockTime);
 
-        rsTan.togglePermaLock(2);
+        rsTanService.togglePermaLock(2);
 
-        (uint48 newEndLockTime, uint208 amountAfter) = rsTan.locks(2);
-        assertEq(rsTan.MAX_UINT48(), newEndLockTime, "Permalocked");
+        (uint48 newEndLockTime, uint208 amountAfter) = rsTanService.locks(2);
+        assertEq(rsTanService.MAX_UINT48(), newEndLockTime, "Permalocked");
         assertEq(amountAfter, amount);
     }
 
     function test_togglePermaLock_from_true_to_false() external {
         vm.startPrank(usr1);
-        uint256 nextEndLockTime = rsTan.nextEndLockTime();
-        (uint48 oldEndLockTime, ) = rsTan.locks(1);
-        assertEq(oldEndLockTime, rsTan.MAX_UINT48());
+        uint256 nextEndLockTime = rsTanService.nextEndLockTime();
+        (uint48 oldEndLockTime, ) = rsTanService.locks(1);
+        assertEq(oldEndLockTime, rsTanService.MAX_UINT48());
 
-        rsTan.togglePermaLock(1);
+        rsTanService.togglePermaLock(1);
 
-        (uint48 newEndLockTime, uint208 amountAfter) = rsTan.locks(1);
+        (uint48 newEndLockTime, uint208 amountAfter) = rsTanService.locks(1);
 
         assertEq(nextEndLockTime, newEndLockTime, "Not Permalocked anymore");
         assertEq(amountAfter, amount);
@@ -47,14 +47,14 @@ contract TogglePermaLock is ConvexCurveContext {
         vm.startPrank(usr1);
         skip(13 weeks);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.LockExpired.selector));
-        rsTan.togglePermaLock(2);
+        vm.expectRevert(abi.encodeWithSelector(RsTanService.LockExpired.selector));
+        rsTanService.togglePermaLock(2);
     }
 
     function test_togglePermaLock_fails_bcs_token_not_owned() external {
         vm.startPrank(usr2);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.NotTokenOwner.selector));
-        rsTan.togglePermaLock(2);
+        vm.expectRevert(abi.encodeWithSelector(RsTanService.NotTokenOwner.selector));
+        rsTanService.togglePermaLock(2);
     }
 }

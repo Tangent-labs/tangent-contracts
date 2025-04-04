@@ -11,7 +11,8 @@ import "../../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../../src/libs/Resources/ResourcesYearn.sol";
 
 import "../../../src/tgUSD/Tokens/Tan.sol";
-import "../../../src/tgUSD/Tokens/RsTan.sol";
+import "../../../src/tgUSD/Tokens/RsTanService.sol";
+import "../../../src/tgUSD/Tokens/RsTanERC721.sol";
 import "../../../src/tgUSD/Tokens/TgUSD.sol";
 import "../../../src/tgUSD/Tokens/WStable.sol";
 import "../../../src/tgUSD/Rewards/RewardAccumulator.sol";
@@ -69,7 +70,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     TgUSD public tgUSD;
     Tan public tan;
-    RsTan public rsTan;
+    RsTanService public rsTanService;
+    RsTanERC721 public rsTanERC721;
     TgUSD public tgUsdBase;
     IYearnV3Vault public sgUSD;
     RewardAccumulator public rewardAccumulator;
@@ -103,7 +105,10 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         rewardAccumulator = new RewardAccumulator(owner, controlTower);
 
         tan = new Tan();
-        rsTan = new RsTan(controlTower, owner, tan);
+        rsTanERC721 = new RsTanERC721(owner);
+        rsTanService = new RsTanService(rsTanERC721, controlTower, owner, tan);
+        rsTanERC721.setService(address(rsTanService));
+
         // Deploy tgUSD on Base
         // tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
         // Deploy tgUSD on Mainnet ETH
@@ -111,7 +116,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         // assertEq(address(tgUsdBase), address(tgUSD), "Should be equals with CREATE3");
 
-        rsTan.addNewReward(tgUSD);
+        rsTanService.addNewReward(tgUSD);
 
         liquidatorProxy = new LiquidatorProxy(tgUSD);
 
@@ -130,7 +135,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(sgUSD), "sgUSD");
         vm.label(address(controlTower), "ControlTower");
         vm.label(address(tan), "Tan");
-        vm.label(address(rsTan), "RsTan");
+        vm.label(address(rsTanService), "RsTanService");
+        vm.label(address(rsTanERC721), "RsTanERC721");
 
         vm.label(address(rewardAccumulator), "RewardAccumulator");
         vm.label(address(AddrRouter.ENSO_ROUTER), "Enso Router");

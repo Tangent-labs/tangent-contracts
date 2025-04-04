@@ -81,11 +81,14 @@ async function createJSONAddress(
             irCalculator: await baseContext.irCalculator.getAddress(),
             pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
         },
+        lock: {
+            rsTanService: await baseContext.rsTanService.getAddress(),
+            rsTanERC721: await baseContext.rsTanERC721.getAddress(),
+        },
         tokens: {
             tgUSD: await baseContext.tgUSD.getAddress(),
             sgUSD: await baseContext.sgUSD.getAddress(),
             tan: await baseContext.tan.getAddress(),
-            rsTan: await baseContext.rsTan.getAddress(),
         },
         implementations: {
             convexCrvMarket: await baseContext.marketCvxCrvImplem.getAddress(),

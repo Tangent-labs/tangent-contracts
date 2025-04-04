@@ -40,16 +40,16 @@ export class MarketContext {
                         pMin: 980_000,
                         pMax: 1_000_000,
                         pInf: 997_500,
-                        a1: 2,
-                        a2: 2,
+                        a1: 2_000,
+                        a2: 2_000,
                         k: 250,
                     },
                     {
                         startCutPercentage: 50_000,
                         endCutPercentage: 100_000,
                         stepAmount: 4,
-                        startCutPrice: 995000000000000000n,
-                        endCutPrice: 900000000000000000n,
+                        startCutPrice: 1000000000000000000n,
+                        endCutPrice: 995000000000000000n,
                     }
                 )
             ).wait();
@@ -81,18 +81,18 @@ export class MarketContext {
                         rMin: 4_000,
                         rMax: 400_000,
                         pMin: 980_000,
-                        pMax: 995_000,
-                        pInf: 0,
-                        a1: 2,
-                        a2: 2,
-                        k: 0,
+                        pMax: 1_000_000,
+                        pInf: 997_500,
+                        a1: 2_000,
+                        a2: 2_750,
+                        k: 250,
                     },
                     {
-                        startCutPercentage: 50_000,
-                        endCutPercentage: 100_000,
-                        stepAmount: 4,
-                        startCutPrice: 995000000000000000n,
-                        endCutPrice: 900000000000000000n,
+                        startCutPercentage: 0,
+                        endCutPercentage: 0,
+                        stepAmount: 1,
+                        startCutPrice: 0,
+                        endCutPrice: 0,
                     }
                 )
             ).wait();
