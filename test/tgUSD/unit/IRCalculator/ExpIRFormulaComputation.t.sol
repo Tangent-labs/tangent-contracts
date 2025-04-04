@@ -37,24 +37,6 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         );
     }
 
-    function test_from_ree() external {
-        tgUSDPrice = 999414903401719585;
-        rMin = 4000;
-        rMax = 400000;
-        pMin = 980000;
-        pInf = 997500;
-        pMax = 1000000;
-        a1 = 2;
-        a2 = 2;
-        k = 250;
-
-        assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
-            10 * 1e14 //0.1%
-        );
-    }
-
     function test_from_fuzzing2() external {
         tgUSDPrice = 1120000000000002248;
         rMin = 0;

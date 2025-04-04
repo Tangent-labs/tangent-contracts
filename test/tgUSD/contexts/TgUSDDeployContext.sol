@@ -10,11 +10,13 @@ import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../../src/libs/Resources/ResourcesYearn.sol";
 
+import "../../../src/tgUSD/Lock/RsTanService.sol";
+import "../../../src/tgUSD/Lock/RsTanERC721.sol";
+
 import "../../../src/tgUSD/Tokens/Tan.sol";
-import "../../../src/tgUSD/Tokens/RsTanService.sol";
-import "../../../src/tgUSD/Tokens/RsTanERC721.sol";
 import "../../../src/tgUSD/Tokens/TgUSD.sol";
 import "../../../src/tgUSD/Tokens/WStable.sol";
+
 import "../../../src/tgUSD/Rewards/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
