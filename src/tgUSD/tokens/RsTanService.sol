@@ -293,7 +293,7 @@ contract RsTanService is LightOwnable {
         (uint48 endLockTime, uint208 amount) = _getLock(tokenId);
         require(endLockTime < block.timestamp, LockNotOver());
 
-        rsTanERC721.burnCheckCallerOwner(tokenId, msg.sender);
+        rsTanERC721.burnForUnlock(tokenId, msg.sender);
 
         totalSupplyRsTan -= amount;
         delete locks[tokenId];
@@ -319,7 +319,7 @@ contract RsTanService is LightOwnable {
 
         uint256 penalty = (amount * ((isPermaLocked ? _newEndLockTime() : endLockTime) - block.timestamp)) / LOCK_DURATION;
 
-        rsTanERC721.burnCheckCallerOwner(tokenId, msg.sender);
+        rsTanERC721.burnForUnlock(tokenId, msg.sender);
         delete locks[tokenId];
 
         tan.transfer(msg.sender, amount - penalty);
@@ -339,7 +339,7 @@ contract RsTanService is LightOwnable {
 
         uint256 kickIncentivization = (_kick.percentage * amount) / 100_000;
 
-        address tokenOwner = rsTanERC721.burnAndGetOwner(tokenId);
+        address tokenOwner = rsTanERC721.burKickPosition(tokenId);
 
         tan.transfer(tokenOwner, amount - kickIncentivization);
         tan.transfer(receiver, kickIncentivization);

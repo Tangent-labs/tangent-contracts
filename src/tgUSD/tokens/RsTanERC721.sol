@@ -30,6 +30,10 @@ contract RsTanERC721 is ERC721Enumerable, LightOwnable, IRsTanERC721 {
         _;
     }
 
+    modifier onlyTokenOwner(uint256 tokenId, address caller) {
+        require(ownerOf(tokenId) == caller, NotTokenOwner());
+        _;
+    }
     error CallerNotService();
     error NotTokenOwner();
 
@@ -49,29 +53,21 @@ contract RsTanERC721 is ERC721Enumerable, LightOwnable, IRsTanERC721 {
      * @dev    Only callable by the service contract
      * @param receiver Receiver of the NFT
      */
-    function mintForSplit(address receiver, uint256 tokenId) external onlyService returns (uint256) {
-        require(ownerOf(tokenId) == receiver, NotTokenOwner());
+    function mintForSplit(address receiver, uint256 tokenId) external onlyService onlyTokenOwner(tokenId, receiver) returns (uint256) {
         tokenId = nextId++;
         _mint(receiver, tokenId);
         return tokenId;
     }
 
-    function burnForMerge(uint256 tokenIdA, uint256 tokenIdB, address caller) external onlyService {
-        require(caller == ownerOf(tokenIdA), NotTokenOwner());
-        require(caller == ownerOf(tokenIdB), NotTokenOwner());
+    function burnForMerge(uint256 tokenIdA, uint256 tokenIdB, address caller) external onlyService onlyTokenOwner(tokenIdA, caller) onlyTokenOwner(tokenIdB, caller) {
         _burn(tokenIdB);
     }
 
-    function burnCheckCallerOwner(uint256 tokenId, address caller) external onlyService {
-        require(caller == ownerOf(tokenId), NotTokenOwner());
+    function burnForUnlock(uint256 tokenId, address caller) external onlyService onlyTokenOwner(tokenId, caller) {
         _burn(tokenId);
     }
 
-    function burn(uint256 tokenId) external onlyService {
-        _burn(tokenId);
-    }
-
-    function burnAndGetOwner(uint256 tokenId) external onlyService returns (address) {
+    function burKickPosition(uint256 tokenId) external onlyService returns (address) {
         address _owner = ownerOf(tokenId);
         _burn(tokenId);
         return _owner;
