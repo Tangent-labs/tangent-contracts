@@ -6,7 +6,7 @@ import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomiclabs/hardhat-vyper";
 import * as dotenv from "dotenv";
 dotenv.config();
-const forkBlock = 22030297;
+const forkBlock = 22195130;
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",

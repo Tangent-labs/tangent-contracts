@@ -48,7 +48,7 @@ export async function verifyContracts() {
     // Lock
     const rsTanService = "RsTanService";
     await forceAbi(client, addresses.lock.rsTanService, rsTanService, false, (await artifacts.readArtifact(rsTanService)).abi);
-    const rsTanERC721 = "rsTanERC721";
+    const rsTanERC721 = "RsTanERC721";
     await forceAbi(client, addresses.lock.rsTanERC721, rsTanERC721, false, (await artifacts.readArtifact(rsTanERC721)).abi);
     // Oracles
     const Oracle_USDC = "Oracle USDC";
