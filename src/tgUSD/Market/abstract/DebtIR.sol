@@ -178,8 +178,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
     /**
      *  @notice  Returns IR generated since the last checkpoint
      */
-    function pendingInterests() public view returns (uint256) {
-        return (lastDebt * _indexIncrease(block.timestamp - blockLastIRTimestamp)) / RAY;
+    function pendingInterests() external view returns (uint256) {
+        return _pendingInterests(lastDebt);
     }
 
     function _pendingInterests(uint256 _lastDebt) internal view returns (uint256) {
