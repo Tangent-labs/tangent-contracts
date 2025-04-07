@@ -104,8 +104,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         controlTower = new ControlTower(owner, feeTreasury);
 
-        rewardAccumulator = new RewardAccumulator(owner, controlTower);
-
         tan = new Tan();
         rsTanERC721 = new RsTanERC721(owner);
         rsTanService = new RsTanService(rsTanERC721, controlTower, owner, tan);

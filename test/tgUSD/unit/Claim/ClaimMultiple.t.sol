@@ -24,8 +24,8 @@ contract ClaimMultiple is ConvexCurveContext {
         collatToken = AddrCurveStableLP.CRVUSD_USDC;
         market = deployConvexCurveLPMarket(collatToken);
         market2 = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_FXUSD);
-        hRewards = new HProcessRewards(usr1, market);
-        hRewards2 = new HProcessRewards(usr1, market2);
+        hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
+        hRewards2 = new HProcessRewards(usr1, market2, rewardAccumulator);
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hDeposit2 = new HDepositConvexFxnLP(usr1, market2);
         hBorrow = new HBorrow(usr1, market);
@@ -52,9 +52,9 @@ contract ClaimMultiple is ConvexCurveContext {
         vm.startPrank(usr1);
 
         rewardAccumulator.claimMultiple(Array.memoryAddress([address(market), address(market2)]), 3);
-        rewardAccumulator.claimCutFees(market.getRewardTokens());
+        rewardAccumulator.claimCutFees(rewardAccumulator.getRewardTokens(address(market)));
 
-        assertLt(market.rewardTokens(0).balanceOf(address(rewardAccumulator)), 10 ** 7);
+        assertLt(rewardAccumulator.rewardTokens(address(market), 0).balanceOf(address(rewardAccumulator)), 10 ** 7);
 
         vm.stopPrank();
     }

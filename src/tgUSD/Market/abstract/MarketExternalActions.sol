@@ -25,6 +25,11 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     error DepositPaused();
     error BorrowPaused();
     error LeveragePaused();
+
+    modifier updateRewards(address _for) {
+        rewardAccumulator.updateRewards(_for);
+        _;
+    }
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         USER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -122,7 +127,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         emit Repay(account, repayer, tgUSDToRepay, isZapping);
     }
 
-    function liquidate(address account, uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external updateReward(account) {
+    function liquidate(address account, uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external updateRewards(account) {
         // Checkpoint IR
         (uint256 newDebtIndex, uint256 newTotalDebt, uint256 userDebt, uint256 collatBalance) = _preLiquidate(account);
         // Can liquidate only if the health ratio is below 1
@@ -136,7 +141,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         );
     }
 
-    function selfLiquidate(uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata routerCall) external updateReward(msg.sender) {
+    function selfLiquidate(uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata routerCall) external updateRewards(msg.sender) {
         // Checkpoint IR
         (uint256 newDebtIndex, uint256 newTotalDebt, uint256 userDebt, uint256 collatBalance) = _preLiquidate(msg.sender);
 
@@ -155,7 +160,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         );
     }
 
-    function liquidateBadDebt(address account) external updateReward(account) {
+    function liquidateBadDebt(address account) external updateRewards(account) {
         // Checkpoint IR
         (uint256 newDebtIndex, uint256 newTotalDebt, uint256 userDebt, uint256 collatBalance) = _preLiquidate(account);
 
@@ -172,7 +177,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         address zapper,
         bool isStaked,
         bytes calldata routerCall
-    ) external payable updateReward(msg.sender) {
+    ) external payable updateRewards(msg.sender) {
         require(!isDepositPaused, DepositPaused());
         require(!isBorrowPaused, BorrowPaused());
         require(!isLeveragePaused, LeveragePaused());
