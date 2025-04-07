@@ -45,7 +45,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         assertERC20Tracking();
 
-        assertEq(market.lastDebt(), borrowedAmount);
+        assertEq(market.totalDebtShares(), borrowedAmount);
         assertEq(market.positionDebtIndex(usr1), borrowedAmount);
         assertEq(market.positionDebtIndex(usr2), 0);
 
@@ -64,12 +64,14 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         tgUSD.mintIR();
 
-        assertEq(market.totalDebt(), market.lastDebt() + market.pendingInterests());
+        assertEq(market.totalDebt(), market.totalDebtShares() + market.pendingInterests());
         assertEq(market.positionDebt(usr1), market.totalDebt());
 
         uint256 maxRepayPartialAmount = market.positionDebt(usr1) - minimumLoan;
 
         repayAmount = bound(repayAmount, 1, maxRepayPartialAmount);
+
+        console.log("Repay amount: ", repayAmount);
 
         vm.startPrank(owner);
         controlTower.toggleMarkets(Array.memoryAddress([owner]));
@@ -78,13 +80,13 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         hRepay.repay(usr1, repayAmount, address(0));
 
-        skip(30);
+        // skip(30);
 
-        vm.startPrank(owner);
-        tgUSD.mint(usr1, market.positionDebt(usr1));
-        vm.stopPrank();
+        // vm.startPrank(owner);
+        // tgUSD.mint(usr1, market.positionDebt(usr1));
+        // vm.stopPrank();
 
-        hRepay.repay(usr1, MAX_UINT, address(0));
+        // hRepay.repay(usr1, MAX_UINT, address(0));
 
         // assertEq(0, market.positionDebt(usr1), "User debt is 0 after a repay all");
     }

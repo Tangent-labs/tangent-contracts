@@ -63,7 +63,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         assertApproxEqAbs(market.positionDebt(usr2), borrowedAmount2, 1, "Position debt displays the real debt for a user");
 
         // TODO See if it's possible to get closer
-        assertApproxEqAbs(market.totalDebt(), market.positionDebt(usr1) + market.positionDebt(usr2), 1, "Total Debt equals sum of all debt");
+        assertEq(market.totalDebt(), market.positionDebt(usr1) + market.positionDebt(usr2), "Total Debt equals sum of all debt");
 
         assertEq(market.socFeePending(), 0);
 

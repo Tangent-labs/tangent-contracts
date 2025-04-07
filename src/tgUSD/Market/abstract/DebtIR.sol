@@ -17,7 +17,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
     /// @notice Global debt index. Represents the accumulation of the interest rate among time.
     uint256 public debtIndex;
     /// @notice Last total debt of the market.
-    uint256 public lastDebt;
+    uint256 public totalDebtShares;
     /// @notice Last interest rate since previous interaction with the market. In RAY.
     uint256 public lastIR;
     /// @notice Last time interest rate has been updated.
@@ -28,6 +28,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
     uint256 public minimumLoan;
     /// @notice Bad debt amount in tgUSD of the market.
     uint256 public badDebt;
+
+    uint256 public materializedIr;
 
     /// @notice Debt in amount of tgUSD per user.
     mapping(address => uint256) public positionDebtIndex;
@@ -77,34 +79,32 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @notice  Updates the Total debt and the User debt
      *  @dev     Called during all function modifying the debt of a user such as borrow and repay.
      *  @param account           Address of the account to update
-     *  @param newUserDebt       New debt of the account
      *  @param newDebtIndex      New index of the debt
-     *  @param newTotalDebt      New total debt of the market
+     *  @param newTotalDebtShares      New total debt of the market
      *
      */
-    function _updateDebts(address account, uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) internal {
+    function _updateDebts(address account, uint256 newUserShare, uint256 newDebtIndex, uint256 newTotalDebtShares) internal {
         // Recompute the new debt index of the user based on his new debt recomputed with interests and the new debtIndex
-        positionDebtIndex[account] = (newUserDebt * RAY) / newDebtIndex;
+        positionDebtIndex[account] = newUserShare;
 
-        _updateGlobalDebt(newDebtIndex, newTotalDebt);
+        // Update the totalDebt
+        totalDebtShares = newTotalDebtShares;
+
+        _updateGlobalDebt(newDebtIndex);
     }
 
     /**
      *  @notice  Updates the Total debt.
      *  @dev     Called each time an interaction is done with this contract.
-     *  @param newDebtIndex      New index of the debt
-     *  @param newTotalDebt      New total debt of the market
+     *  @param newDebtIndex       New index of the debt
      *
      */
-    function _updateGlobalDebt(uint256 newDebtIndex, uint256 newTotalDebt) internal {
+    function _updateGlobalDebt(uint256 newDebtIndex) internal {
         // Update the debtIndex
         debtIndex = newDebtIndex;
 
         // Update the last block timestamp with the actual
         blockLastIRTimestamp = block.timestamp;
-
-        // Update the totalDebt
-        lastDebt = newTotalDebt;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -130,8 +130,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
     }
 
     function checkpointIR() external {
-        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
-        _updateGlobalDebt(newDebtIndex, newTotalDebt);
+        (uint256 newDebtIndex, uint256 _totalDebtShares) = _checkpointIR();
+        _updateGlobalDebt(newDebtIndex);
     }
 
     /**
@@ -145,22 +145,19 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
     function _checkpointIR() internal returns (uint256, uint256) {
         // Time elapsed between now and the last checkpoint
         uint256 timeDelta = block.timestamp - blockLastIRTimestamp;
-        uint256 newTotalDebt = lastDebt;
-        uint256 newDebtIndex = debtIndex;
+        uint256 _debtIndex = debtIndex;
+        uint256 _totalDebtShares = totalDebtShares;
 
         if (timeDelta != 0) {
             uint256 indexIncrease = _indexIncrease(timeDelta);
-            newDebtIndex += indexIncrease;
 
-            uint256 interestsGenerated = (newTotalDebt * indexIncrease) / RAY;
+            _debtIndex += indexIncrease;
 
-            tgUSD.increaseMintableInterests(interestsGenerated);
-
-            newTotalDebt += interestsGenerated;
+            tgUSD.increaseMintableInterests((_totalDebtShares * indexIncrease) / RAY);
         }
         lastIR = irCalculator.computeIRForMarket(address(this));
 
-        return (newDebtIndex, newTotalDebt);
+        return (_debtIndex, _totalDebtShares);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -171,19 +168,22 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @dev     Takes the last registered debt and applies it the IR accumulated since last checkpoint.
      */
     function totalDebt() public view returns (uint256) {
-        uint256 _lastDebt = lastDebt;
-        return badDebt + _lastDebt + _pendingInterests(_lastDebt);
+        uint256 _totalDebtShares = totalDebtShares;
+        uint256 indexIncrease = _indexIncrease(block.timestamp - blockLastIRTimestamp);
+        uint256 _totalDebt = (_totalDebtShares * debtIndex) / RAY;
+
+        return badDebt + _totalDebt + _pendingInterests(_totalDebtShares);
     }
 
     /**
      *  @notice  Returns IR generated since the last checkpoint
      */
     function pendingInterests() external view returns (uint256) {
-        return _pendingInterests(lastDebt);
+        return _pendingInterests(totalDebtShares);
     }
 
-    function _pendingInterests(uint256 _lastDebt) internal view returns (uint256) {
-        return (_lastDebt * _indexIncrease(block.timestamp - blockLastIRTimestamp)) / RAY;
+    function _pendingInterests(uint256 _totalDebtShares) internal view returns (uint256) {
+        return (((_totalDebtShares * debtIndex) / RAY) * _indexIncrease(block.timestamp - blockLastIRTimestamp)) / RAY;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

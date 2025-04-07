@@ -81,15 +81,15 @@ abstract contract MarketCore is PauseSettings, Rewards {
      *        Called during depositAndBorrow, withdrawAndReway, liquidate and selfLiquidate functions.
      *  @param account           Address of the account to update
      *  @param newCollatBalance  New collateral balance of account
-     *  @param newUserDebt       New debt of the account
+     *  @param newUserShare       New debt of the account
      *  @param newDebtIndex      New index of the debt
      *  @param newTotalDebt      New total debt of the market
      */
-    function _updateCollatAndDebts(address account, uint256 newCollatBalance, uint256 newTotalCollat, uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) internal {
+    function _updateCollatAndDebts(address account, uint256 newCollatBalance, uint256 newTotalCollat, uint256 newUserShare, uint256 newDebtIndex, uint256 newTotalDebt) internal {
         _updateCollateral(account, newCollatBalance, newTotalCollat);
 
         // Updates global and user debt
-        _updateDebts(account, newUserDebt, newDebtIndex, newTotalDebt);
+        _updateDebts(account, newUserShare, newDebtIndex, newTotalDebt);
     }
 
     /**
@@ -98,12 +98,11 @@ abstract contract MarketCore is PauseSettings, Rewards {
      *  @param account           Address of the account to update
      *  @param newCollatBalance  New collateral balance of account
      *  @param newDebtIndex      New index of the debt
-     *  @param newTotalDebt      New total debt of the market
      */
-    function _updateCollatAndGlobalDebt(address account, uint256 newCollatBalance, uint256 newTotalCollat, uint256 newDebtIndex, uint256 newTotalDebt) internal {
+    function _updateCollatAndGlobalDebt(address account, uint256 newCollatBalance, uint256 newTotalCollat, uint256 newDebtIndex) internal {
         _updateCollateral(account, newCollatBalance, newTotalCollat);
         // Updates global debt
-        _updateGlobalDebt(newDebtIndex, newTotalDebt);
+        _updateGlobalDebt(newDebtIndex);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -114,10 +113,10 @@ abstract contract MarketCore is PauseSettings, Rewards {
 
     function _deposit(address _for, uint256 amountDeposited) internal {
         // Verify that newDebt is over the minimum loan
-        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
+        (uint256 newDebtIndex, ) = _checkpointIR();
 
         // Increase collateral balance of the position and update total debt
-        _updateCollatAndGlobalDebt(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited, newDebtIndex, newTotalDebt);
+        _updateCollatAndGlobalDebt(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited, newDebtIndex);
     }
 
     function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, bool isZapping) internal {
@@ -153,8 +152,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
             msg.sender,
             _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _positionDebt(msg.sender, newDebtIndex)),
             totalCollateral - amountToWithdraw,
-            newDebtIndex,
-            newTotalDebt
+            newDebtIndex
         );
     }
 
@@ -166,15 +164,17 @@ abstract contract MarketCore is PauseSettings, Rewards {
 
     function _borrow(address borrower, address receiver, uint256 tgUSDToBorrow, uint256 collatAmount, bool isLeverage) internal returns (uint256, uint256, uint256) {
         require(tgUSDToBorrow != 0, ZeroDebtAmount());
-        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
+        (uint256 newDebtIndex, uint256 _totalDebtShares) = _checkpointIR();
 
-        newTotalDebt += tgUSDToBorrow;
+        uint256 newShares = (tgUSDToBorrow * RAY) / newDebtIndex;
 
         //  Cache the new value in tgUSD of the debt
-        uint256 newUserDebt = _positionDebt(borrower, newDebtIndex) + tgUSDToBorrow;
+        uint256 newUserShare = positionDebtIndex[borrower] + newShares;
+
+        uint256 newUserDebt = (newUserShare * newDebtIndex) / RAY;
 
         //  Verify that the new total debt is not bigger the max debt
-        require(newTotalDebt + badDebt <= maxMarketDebt, TotalDebtTooHigh());
+        // require(newTotalDebt + badDebt <= maxMarketDebt, TotalDebtTooHigh());
         //  Verify that newDebt is over the minimum loan
         require(newUserDebt >= minimumLoan, PositionDebtTooLow());
 
@@ -187,16 +187,16 @@ abstract contract MarketCore is PauseSettings, Rewards {
             tgUSD.mint(receiver, tgUSDToBorrow);
         }
 
-        return (newUserDebt, newDebtIndex, newTotalDebt);
+        return (newUserShare, newDebtIndex, _totalDebtShares + newUserShare);
     }
 
     function _depositAndBorrow(address borrower, uint256 amountDeposited, uint256 tgUSDToBorrow, bool isLeverage) internal {
         // Collat amount after the deposit
         uint256 newCollatAmount = collateralBalances[borrower] + amountDeposited;
 
-        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(borrower, borrower, tgUSDToBorrow, newCollatAmount, isLeverage);
+        (uint256 newUserShare, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(borrower, borrower, tgUSDToBorrow, newCollatAmount, isLeverage);
 
-        _updateCollatAndDebts(borrower, newCollatAmount, totalCollateral + amountDeposited, newUserDebt, newDebtIndex, newTotalDebt);
+        _updateCollatAndDebts(borrower, newCollatAmount, totalCollateral + amountDeposited, newUserShare, newDebtIndex, newTotalDebt);
     }
 
     /* --------
@@ -208,10 +208,15 @@ abstract contract MarketCore is PauseSettings, Rewards {
         require(tgUSDToRepay != 0, ZeroDebtAmount());
 
         // Update interests rate, computes new debt index and total debt.
-        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
+        (uint256 newDebtIndex, uint256 _totalDebtShares) = _checkpointIR();
+
+        uint256 newShares = (tgUSDToRepay * RAY) / newDebtIndex;
+
+        //  Cache the new value in tgUSD of the debt
+        uint256 newUserShare = positionDebtIndex[account] - newShares;
 
         // Retrieve the position of the user
-        uint256 newUserDebt = _positionDebt(account, newDebtIndex);
+        uint256 newUserDebt = (newUserShare * newDebtIndex) / RAY;
         // Cannot repay an empty position
         require(newUserDebt != 0, PositionDebtZero());
 
@@ -235,7 +240,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
 
         // Burns tgUSD from the burnAddress as a repayment of the debt
         tgUSD.burnFrom(burnAddress, tgUSDToRepay);
-        return (newUserDebt, newDebtIndex, newTotalDebt - tgUSDToRepay);
+        return (newUserDebt, newDebtIndex, _totalDebtShares - newShares);
     }
 
     function _withdrawAndRepay(uint256 amountToWithdraw, uint256 tgUSDToRepay, address caller) internal {

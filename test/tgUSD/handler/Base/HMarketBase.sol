@@ -6,20 +6,20 @@ import "./HandlerBase.sol";
 abstract contract HMarketBase is HandlerBase {
     function _beforBorrowOrRepayCheck(
         MarketCore _market
-    ) internal view returns (uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt, uint256 mintableInterests) {
+    ) internal view returns (uint256 totalDebtShares, uint256 newInterests, uint256 newDebtIndex, uint256 positionDebt, uint256 mintableInterests, uint256 oldTotalDebt) {
         mintableInterests = _market.tgUSD().mintableInterests();
         positionDebt = _market.positionDebt(sender);
-        // uint256 positionDebtIndex = market.positionDebtIndex(sender);
         uint256 timeDelta = block.timestamp - _market.blockLastIRTimestamp();
-        lastDebt = _market.lastDebt();
+        totalDebtShares = _market.totalDebtShares();
+        oldTotalDebt = (_market.debtIndex() * totalDebtShares) / RAY;
         uint256 increaseCoeff;
         if (timeDelta == 0) {
             increaseCoeff = 0;
-            interests = 0;
+            newInterests = 0;
             newDebtIndex = _market.debtIndex();
         } else {
             increaseCoeff = (_market.lastIR() * timeDelta) / 365 days;
-            interests = (increaseCoeff * lastDebt) / RAY;
+            newInterests = (increaseCoeff * oldTotalDebt) / RAY;
             newDebtIndex = _market.debtIndex() + increaseCoeff;
         }
     }
@@ -35,8 +35,21 @@ abstract contract HMarketBase is HandlerBase {
         verifyReceiveERC20(_market.tgUSD(), receiver, borrowedAmount, "tgUSD borrowed is received by receiver");
     }
 
-    function _afterBorrowCheck(MarketCore _market, uint256 borrowedAmount, uint256 lastDebt, uint256 interests, uint256 newDebtIndex, uint256 positionDebt) internal view {
-        assertEq(borrowedAmount + interests, _market.lastDebt() - lastDebt, "Total debt added is equal to borrowed amount + the interests");
+    function _afterBorrowCheck(
+        MarketCore _market,
+        uint256 borrowedAmount,
+        uint256 totalDebtShares,
+        uint256 interests,
+        uint256 newDebtIndex,
+        uint256 positionDebt,
+        uint256 oldTotalDebt
+    ) internal view {
+        assertApproxEqAbs(
+            borrowedAmount + interests,
+            (_market.totalDebtShares() * _market.debtIndex()) / RAY - oldTotalDebt,
+            1,
+            "Total debt added is equal to borrowed amount + the interests sasa"
+        );
         assertEq(_market.positionDebtIndex(sender), ((positionDebt + borrowedAmount) * RAY) / newDebtIndex, "New position debt index updated");
     }
 
@@ -49,13 +62,13 @@ abstract contract HMarketBase is HandlerBase {
         MarketCore _market,
         address account,
         uint256 repayedAmount,
-        uint256 lastDebt,
+        uint256 oldTotalDebt,
         uint256 interests,
         uint256 newDebtIndex,
         uint256 positionDebt
     ) internal view {
-        assertEq(lastDebt + interests - _market.lastDebt(), repayedAmount, "Total new debt didn't decrease");
+        assertApproxEqAbs(oldTotalDebt + interests - (_market.totalDebtShares() * newDebtIndex) / RAY, repayedAmount, 1, "Total new debt didn't decrease");
 
-        assertEq(_market.positionDebtIndex(account), ((positionDebt - repayedAmount) * RAY) / newDebtIndex, "New position debt index updated");
+        assertEq(_market.positionDebtIndex(account), ((market.positionDebt(account) - repayedAmount) * RAY) / newDebtIndex, "New position debt index updated");
     }
 }

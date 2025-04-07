@@ -101,8 +101,8 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      */
     function borrow(address receiver, uint256 tgUSDToBorrow) external {
         require(!isBorrowPaused, BorrowPaused());
-        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(msg.sender, receiver, tgUSDToBorrow, collateralBalances[msg.sender], false);
-        _updateDebts(msg.sender, newUserDebt, newDebtIndex, newTotalDebt);
+        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebtShares) = _borrow(msg.sender, receiver, tgUSDToBorrow, collateralBalances[msg.sender], false);
+        _updateDebts(msg.sender, newUserDebt, newDebtIndex, newTotalDebtShares);
 
         emit Borrow(msg.sender, receiver, tgUSDToBorrow);
     }
@@ -116,8 +116,8 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function repay(address account, uint256 tgUSDToRepay, address callerZapper) external {
         (bool isZapping, address repayer) = _checkZapper(callerZapper);
 
-        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _repay(account, tgUSDToRepay, repayer);
-        _updateDebts(account, newUserDebt, newDebtIndex, newTotalDebt);
+        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebtShares) = _repay(account, tgUSDToRepay, repayer);
+        _updateDebts(account, newUserDebt, newDebtIndex, newTotalDebtShares);
 
         emit Repay(account, repayer, tgUSDToRepay, isZapping);
     }
