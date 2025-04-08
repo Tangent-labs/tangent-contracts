@@ -283,7 +283,7 @@ export class LiquidationRouteGeneration {
         const results: any[] = [];
         const errors: any[] = [];
 
-        const amountIn = ethers.parseUnits("100", 10);
+        const amountIn = ethers.parseUnits("100", 18);
         const promises = transfers.map(async (routeGroup) => {
             //console.log( "test route ==> ",routeGroup?.at(0)?.display , routeGroup?.at(-1)?.display)
 

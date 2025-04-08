@@ -11,12 +11,16 @@ contract CurveRouterTest is ConvexCurveContext {
         //  "route": "USDC/fxUSD >> USDC/fxUSD >> USDC  >> USDC >> tgUSD-USDC* >> tgUSD* ",
     function test_curve_full_route2() external {
        
+        
+        
+        address inLp = address(AddrCurveStableLP.USDC_FXUSD);
         string memory lpKey = "tgUSD-USDC";
-        ICurveStableSwapNG lp = lpDeploymentContext.tgUSDLPs(lpKey);
+        
+
 
         address[] memory route =  new address[](11);
-        route[0] = address(lp);
-        route[1] =address(lp);
+        route[0] = inLp;
+        route[1] =inLp;
         route[2] = address(AddrClassicERC20.TOKEN_USDC);
         route[3] = address(lpDeploymentContext.tgUSDLPs(lpKey)) ;
         route[4] = address(tgUSD);
