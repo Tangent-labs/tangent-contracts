@@ -10,7 +10,7 @@ import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol"
 import {IBridgeChecker} from "../../interfaces/internals/tgUSD/IBridgeChecker.sol";
 import "forge-std/console.sol";
 /// @notice
-contract TgUSD is ERC20, Ownable, ITgUSD {
+contract TgUSD is Ownable, ERC20, ITgUSD {
     IControlTower public controlTower;
 
     uint256 public mintableInterests;

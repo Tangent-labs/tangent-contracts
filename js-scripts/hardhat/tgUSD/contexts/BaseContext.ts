@@ -64,7 +64,7 @@ export class BaseContext extends MainSetup {
         this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
         await this.controlTower.waitForDeployment();
 
-        this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy("Tangent USD", "tgUSD", l0EndpointAddress, l0Delegate, this.owner, this.controlTower);
+        this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy("Tangent USD", "tgUSD", this.owner, this.controlTower);
         await this.tgUSD.waitForDeployment();
 
         await this.deploySgUSD();
@@ -186,9 +186,9 @@ export class BaseContext extends MainSetup {
 
         const tgUSDToGivePerUser = 3_000_000;
 
-        await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 5, amount: tgUSDToGivePerUser}]);
+        await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 1, amount: tgUSDToGivePerUser}]);
 
-        await setStorageAt(await this.tgUSD.getAddress(), 7, parseEther((tgUSDToGivePerUser * this.users.length).toString()));
+        await setStorageAt(await this.tgUSD.getAddress(), 3, parseEther((tgUSDToGivePerUser * this.users.length).toString()));
     }
 
     async approveCurveLP(lp: string) {

@@ -27,7 +27,7 @@ export async function deploytgUsd(userCount: number = 5) {
     await baseContext.deployContracts2(oracleContext.tgUSDOracle, lpDeployContext);
 
     // Define markets to deploy
-    const convexCrvMarkets: ConvexCrvMarketKeys[] = ["crvUSD_USDC", "crvUSD_USDT"];
+    const convexCrvMarkets: ConvexCrvMarketKeys[] = ["crvUSD_USDC", "crvUSD_USDT", "frxETH_WETH"];
     const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD"];
     // Deploy Convex CRV markets
     await marketContext.deployConvexCrvMarkets(convexCrvMarkets, baseContext, oracleContext);
