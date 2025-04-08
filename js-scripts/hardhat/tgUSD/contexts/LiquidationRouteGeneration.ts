@@ -1,10 +1,9 @@
-import { AddressLike, MaxUint256, parseEther, ZeroAddress } from "ethers";
+import { AddressLike, MaxUint256,  ZeroAddress } from "ethers";
 import fs from "fs";
 import { ethers } from "hardhat";
 import path from "path";
 import { giveTokensoAddresss } from "../../thief";
 import { commonERC20, thiefConfig } from "defi-resources";
-import { token } from "../../../../typechain-types/@openzeppelin/contracts";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
 
@@ -277,8 +276,6 @@ export class LiquidationRouteGeneration {
         verifiedRoutes.params.forEach((param: any) => {
             verifiedParamsMap.set(param.route.display.trim(), param.swapParams);
         });
-
-        console.log("verifiedParamsMap", verifiedParamsMap);
  
         const [,,,,,user] = await ethers.getSigners();
         const router = await ethers.getContractAt("ICurveRouter", routerAddress, user)
@@ -298,7 +295,6 @@ export class LiquidationRouteGeneration {
                     errors.push({ step, error: `Missing verified route parameters ${step.display.trim()}` });
                     return;
                 }
-
                 routeAddresses.push(step.pool);
                 routeAddresses.push(step.out);
                 const stepParams = verifiedParamsMap.get(step.display.trim());
@@ -316,7 +312,11 @@ export class LiquidationRouteGeneration {
             try {
                 //@ts-ignore
                 const output = await router.get_dy(routeAddresses, swapParamsFull, amountIn, [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]);
-                results.push({ route: routeGroup, output: output.toString(), params: { routeAddresses, swapParamsFull } });
+                if(output.toString() === '0'){
+                    errors.push({ route: routeGroup.map(r =>  r.display).join(" >> "), error: "No output", params: { routeAddresses, swapParams: swapParamsFull } });
+                    return;
+                }
+                results.push({ start:routeGroup?.at(0)?.in, end:routeGroup?.at(-1)?.out, display: routeGroup.map(r => r.display).join(" >> "),  params: { routeAddresses, swapParams: swapParamsFull } });
             } catch (error: any) {
                 console.log('error', error.message)
                 errors.push({ route: routeGroup.map(r =>  r.display).join(" >> "), error: error.message, params: { routeAddresses, swapParamsFull } });
@@ -324,15 +324,7 @@ export class LiquidationRouteGeneration {
         })
 
         await Promise.all(promises)
-
-        // Fill remaining slots with ZeroAddress and default swap params
-
-
-
         return { results, errors };
-    }
-
-    async testOneRoute(routeGroup: Transfer[], routeAddresses: string[], swapParamsFull: number[][], amountIn: bigint) {
     }
 
     async testRouteSteps(transfers: Transfer[][]): Promise<VerifiedRoutes> {
@@ -538,123 +530,6 @@ export class LiquidationRouteGeneration {
         }
     }
 
-    async testExchange(finalRoutes: FinalRoute) {
-        const [deployer] = await ethers.getSigners();
-        const router = await ethers.getContractAt("ICurveRouter", routerAddress, deployer)
-        const tgUsdContract = await ethers.getContractAt("IERC20", liquidationAssets['tgUSD*'], deployer)
-
-        const results = [];
-        const errors = [];
-
-
-        let i = 0;
-        for (const routeResult of finalRoutes.stepResults) {
-            //  if (i++ > 0) continue;
-
-            try {
-
-
-
-                const amountIn = ethers.parseUnits("10", 18);
-                // Get initial balances
-                const inTokenAddress = routeResult.params.routeAddresses[0];
-                const { lp } = await this._getPoolInfo(inTokenAddress);
-                console.log('lp', lp);
-                const giveData = lpTokensINfo.find((token) => token.address.toLowerCase() === inTokenAddress.toLowerCase());
-                if (giveData) {
-                    await giveTokensoAddresss(deployer, giveData.address, amountIn, giveData.slot, true);
-                } else {
-                    console.log("No give data found", inTokenAddress);
-                    errors.push(`No give data found ${inTokenAddress}`);
-                    continue;
-
-                }
-
-                const inTokenContract = await ethers.getContractAt("IERC20", inTokenAddress, deployer);
-                const txApprove = await inTokenContract.approve(routerAddress, amountIn);
-                await txApprove.wait();
-                const initialOutBalance = await tgUsdContract.balanceOf(deployer.address);
-                const initialInBalance = await inTokenContract.balanceOf(deployer.address);
-                // const initialTgUSDBalance = await tgUSDContract.balanceOf(deployer.address);
-                if (initialInBalance === 0n) {
-                    errors.push(`No initial In Balance  ${inTokenAddress}`);
-                    continue;
-
-                }
-
-                // Execute the exchange
-                // @ts-ignore
-                const amountMin = await router.get_dy(routeResult.params.routeAddresses, routeResult.params.swapParamsFull, amountIn, [
-                    ZeroAddress,
-                    ZeroAddress,
-                    ZeroAddress,
-                    ZeroAddress,
-                    ZeroAddress,
-                ]);
-
-                //@ts-ignore
-                const amountOut = await router.exchange(routeResult.params.routeAddresses,
-                    routeResult.params.swapParamsFull,
-                    amountIn,
-                    amountMin,
-                    [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress],
-                    deployer.address
-                );
-
-                // Get final balances
-                const finalInBalance = await inTokenContract.balanceOf(deployer.address);
-                const finalOutBalance = await tgUsdContract.balanceOf(deployer.address);
-
-                if (finalInBalance - initialInBalance === 0n) {
-                    //console.log("No change in balance", { amountOut, initialInBalance, finalInBalance });
-                    errors.push({
-                        route: routeResult.route.map((step) => step.display).join(" -> "),
-                        error: "No change in balance",
-                        params: routeResult.params,
-                        amountOut: amountOut.toString(),
-                    });
-                    continue;
-                }
-
-                results.push({
-                    route: routeResult.route.map((step) => step.display).join(" -> "),
-                    params: { routeAddresses: routeResult.params.routeAddresses },
-                    success: true,
-                    balanceChanges: {
-                        collateral: {
-                            before: initialInBalance.toString(),
-                            after: finalInBalance.toString(),
-                            difference: (initialInBalance - finalInBalance).toString(),
-                        },
-                        tgUSD: {
-                            before: initialOutBalance.toString(),
-                            after: finalOutBalance.toString(),
-                            difference: (initialOutBalance - finalOutBalance).toString(),
-                        },
-
-                    },
-                    expectedOutput: routeResult.output,
-                });
-            } catch (error: any) {
-                //console.error({ code: error.code, message: error.message }, "error");
-                errors.push({
-                    route: routeResult.route.map((step) => step.display).join(" -> "),
-                    error: error.message,
-                    params: routeResult.params,
-                });
-            }
-        }
-
-        return {
-            results,
-            errors,
-            summary: {
-                totalRoutes: finalRoutes.stepResults.length,
-                successfulRoutes: results.length,
-                failedRoutes: errors.length,
-            },
-        };
-    }
 }
 
 export const liquidationAssets: Record<string, string> = {

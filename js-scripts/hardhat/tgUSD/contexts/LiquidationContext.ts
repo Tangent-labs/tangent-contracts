@@ -43,13 +43,15 @@ export class LiquidationContext {
     baseContext?: BaseContext;
     marketContext?: MarketContext;
     oracleContext?: OracleContext;
-    userCount: number = 5;
+    userCount: number = 10;
     baseDeposit = 2000;
     marketAddresses: string[] = [];
     userAddresses: string[] = [];
     markets?: (ConvexCrvLPMarket | ConvexFxnLPMarket)[];
+    fxUSDindex:number   = 0;
+
     async doDeploy() {
-        const { baseContext, marketContext, oracleContext ,lpDeployContext, wStableContext} = await deploytgUsd();
+        const { baseContext, marketContext, oracleContext, lpDeployContext, wStableContext } = await deploytgUsd(this.userCount);
         this.baseContext = baseContext;
         this.marketContext = marketContext;
         this.oracleContext = oracleContext;
@@ -59,6 +61,9 @@ export class LiquidationContext {
 
         // get data form context
         this.markets = [...Object.values(this.marketContext.convexCrvMarkets), ...Object.values(this.marketContext.convexFxnMarkets)];
+        this.fxUSDindex = 2;
+        this.markets = [...Object.values(this.marketContext.convexFxnMarkets)]
+        this.fxUSDindex = 0;
         const users = this.baseContext.users;
 
         // extract the address for process
@@ -67,22 +72,17 @@ export class LiquidationContext {
     }
 
     getSpecificDepositBorrowCase() {
-        const specificCases: Record<string, Record<string, { deposit: string; borrow: string }>> = {
-            [this.marketAddresses[2]]: {
-                [this.userAddresses[0]]: {
-                    deposit: "12000",
-                    borrow: "9000",
-                },
-                [this.userAddresses[1]]: {
-                    deposit: "12000",
-                    borrow: "8000",
-                },
-                [this.userAddresses[2]]: {
-                    deposit: "12000",
-                    borrow: "7000",
-                },
-            },
-        };
+
+        let i = 0;
+
+        const specificCases = { [this.marketAddresses[this.fxUSDindex]]: {} } as Record<string, Record<string, { deposit: string; borrow: string }>>;
+        for (i = 0; i < this.userCount; i++) {
+            specificCases[this.marketAddresses[this.fxUSDindex]][this.userAddresses[i]] = {
+                deposit: "12000",
+                borrow: (10500 - (i * 25)).toString(),
+            }
+        }
+        console.log(Object.values(specificCases).map(o =>o.borrow).join( ' / '))
         return specificCases as DepositBorrowSpecific;
     }
 
@@ -130,15 +130,15 @@ export class LiquidationContext {
     }
 
     async unbalanceContext() {
-        const amount = 3_670_000;
+        const amount = 6_900_000;
 
 
         if (!this.marketAddresses?.length || !this.baseContext) throw new Error("Contracts not depoyed");
-       
-        const toSwapMarketIndex = 2; // others markets are link to chainlink so swap dosen't have an effect on price.
+
+        const toSwapMarketIndex = this.fxUSDindex; // others markets are link to chainlink so swap dosen't have an effect on price.
         const lpAddress = (await this.markets![toSwapMarketIndex].collatToken());
         await swap(this.baseContext!.users[0], lpAddress, 1, 0, amount.toString());
-      
+
 
         // Time advance
         const day = 1;
@@ -148,7 +148,7 @@ export class LiquidationContext {
     }
 
     async testChainView() {
-  
+
         // just to test the accounts chain view execution
         const params = this.marketAddresses
             .map((marketAddress) =>

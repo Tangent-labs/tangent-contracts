@@ -23,17 +23,13 @@ async function main() {
         // console.log(`Failed: ${results.summary.failedRoutes}`);
 
         console.log("\n=== Successful Routes ===> ", results.results.length);
-        results.results.forEach((result) => {
-            console.log(`\nRoute: ${result.route}`);
-            // console.log("tgUSD Balance Change:", result.balanceChanges.tgUSD.difference);
-            // console.log("Collateral Balance Change:", result.balanceChanges.collateral.difference);
-        });
+        
         fs.writeFileSync( "./js-scripts/hardhat/tgUSD/data/successRoutes.json", JSON.stringify(results.results, null, 2));
         if (results.errors.length > 0) {
             console.log("\n=== Failed Routes ===");
             results.errors.forEach((error) => {
                 //  console.log(`\nRoute: ${error.route}`);
-                console.log("Error:", error.error);
+                console.log("Error:", error.route,  error.error);
             });
             fs.writeFileSync( "./js-scripts/hardhat/tgUSD/data/failedRoutes.json", JSON.stringify(results.errors, null, 2));
 

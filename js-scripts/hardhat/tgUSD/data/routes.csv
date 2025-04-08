@@ -19,7 +19,6 @@ USDT/crvUSD;crvUSD;crvUSD/FRAX;FRAX;FRAX/frxUSD;frxUSD;wfrxUSD*;wfrxUSD*;tgUSD-w
 sDAI/sUSDe;sUSDe;DOLA/sUSDe;DOLA;wDOLA*;wDOLA*;tgUSD-wDOLA*;tgUSD*;;;;;;tgUSD*;;;;;;;;;
 sDAI/sUSDe;sUSDe;scrvUSD/sUSDe;scrvUSD;scrvUSD;crvUSD;wcrvUSD*;wcrvUSD*;tgUSD-wcrvUSD*;tgUSD*;;;;tgUSD*;;;;;;;;;
 sDAI/sUSDe;sUSDe;DOLA/sUSDe;DOLA;DOLA/USR;USR;wUSR*;wUSR*;tgUSD-wUSR*;tgUSD*;;;;tgUSD*;;;;;;;;;
-sDAI/sUSDe;sUSDe;sUSDe;USDe;wUSDe*;wUSDe*;tgUSD-wUSDe*;tgUSD*;;;;;;tgUSD*;;;;;;;;;
 sDAI/sUSDe;sDAI;sDAI/FRAX;FRAX;FRAX/frxUSD;frxUSD;wfrxUSD*;wfrxUSD*;tgUSD-wfrxUSD*;tgUSD*;;;;tgUSD*;;;;;;;;;
 USDC/USDT;USDC;tgUSD-USDC*;tgUSD*;;;;;;;;;;tgUSD*;;;;;;;;;
 USDC/USDT;USDT;deUSD/USDT;deUSD;deUSD/DOLA;DOLA;wDOLA*;wDOLA*;tgUSD-wDOLA*;tgUSD*;;;;tgUSD*;;;;;;;;;
