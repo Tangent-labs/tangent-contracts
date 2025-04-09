@@ -39,7 +39,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         assertEq(market.collateralBalances(usr1), collatDeposited1, "Collateral deposited must be equal to collateralBalances");
         assertEq(market.totalCollateral(), collatDeposited1, "Total collateral is not right");
         assertEq(market.positionDebt(usr1), borrowedAmount1, "Position debt should be equal to the borrowed amount");
-        assertEq(market.positionDebtIndex(usr1), borrowedAmount1, "Position debt index should be 0");
+        assertEq(market.userDebtShares(usr1), borrowedAmount1, "Position debt index should be 0");
         assertEq(market.totalDebt(), borrowedAmount1, "Total debt should be 0");
         assertEq(market.socFeePending(), 0);
 

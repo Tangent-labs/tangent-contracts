@@ -64,7 +64,6 @@ abstract contract MarketCore is PauseSettings, Rewards {
         maxMarketDebt = _marketInit.maxMarketDebt;
         minimumLoan = _marketInit.minimumLoan;
         // TODO Replace this here
-        lastIR = 10 * RAY; // 10%
         blockLastIRTimestamp = block.timestamp;
         debtIndex = RAY;
 
@@ -79,17 +78,24 @@ abstract contract MarketCore is PauseSettings, Rewards {
     /**
      *  @dev  Updates in the storage the Total debt, User debt and Collateral owned by an account
      *        Called during depositAndBorrow, withdrawAndReway, liquidate and selfLiquidate functions.
-     *  @param account           Address of the account to update
-     *  @param newCollatBalance  New collateral balance of account
-     *  @param newUserShare       New debt of the account
-     *  @param newDebtIndex      New index of the debt
-     *  @param newTotalDebt      New total debt of the market
+     *  @param account             Address of the account to update
+     *  @param newCollatBalance    New collateral balance of account
+     *  @param newUserDebtShares   New user debt shares of the account
+     *  @param newDebtIndex        New index of the debt
+     *  @param newTotalDebtShares  New total debt shares of the market
      */
-    function _updateCollatAndDebts(address account, uint256 newCollatBalance, uint256 newTotalCollat, uint256 newUserShare, uint256 newDebtIndex, uint256 newTotalDebt) internal {
+    function _updateCollatAndDebts(
+        address account,
+        uint256 newCollatBalance,
+        uint256 newTotalCollat,
+        uint256 newUserDebtShares,
+        uint256 newDebtIndex,
+        uint256 newTotalDebtShares
+    ) internal {
         _updateCollateral(account, newCollatBalance, newTotalCollat);
 
         // Updates global and user debt
-        _updateDebts(account, newUserShare, newDebtIndex, newTotalDebt);
+        _updateDebts(account, newUserDebtShares, newDebtIndex, newTotalDebtShares);
     }
 
     /**
@@ -166,12 +172,17 @@ abstract contract MarketCore is PauseSettings, Rewards {
         require(tgUSDToBorrow != 0, ZeroDebtAmount());
         (uint256 newDebtIndex, uint256 _totalDebtShares) = _checkpointIR();
 
-        uint256 newShares = (tgUSDToBorrow * RAY) / newDebtIndex;
+        uint256 oldUserDebtShares = userDebtShares[borrower];
+
+        console.log("pipi", _positionDebt(borrower, newDebtIndex));
+        uint256 newUserDebt = tgUSDToBorrow + _positionDebt(borrower, newDebtIndex);
 
         //  Cache the new value in tgUSD of the debt
-        uint256 newUserShare = positionDebtIndex[borrower] + newShares;
+        uint256 newUserDebtShares = (newUserDebt * RAY) / newDebtIndex;
 
-        uint256 newUserDebt = (newUserShare * newDebtIndex) / RAY;
+        console.log("newUserDebt", newUserDebt);
+        console.log("newUserDebtShares", newUserDebtShares);
+        console.log("newDebtIndex", newDebtIndex);
 
         //  Verify that the new total debt is not bigger the max debt
         // require(newTotalDebt + badDebt <= maxMarketDebt, TotalDebtTooHigh());
@@ -179,7 +190,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
         require(newUserDebt >= minimumLoan, PositionDebtTooLow());
 
         // Verify that the newDebt of the loan is not over the maximum borrrowable
-        require(_maxBorrowable(collatAmount) >= newUserDebt, PositionDebtTooHigh());
+        require(_maxBorrowable(collatAmount) >= newUserDebtShares, PositionDebtTooHigh());
 
         // If it's a leverage transaction, tgUSD is already minted before
         if (!isLeverage) {
@@ -187,7 +198,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
             tgUSD.mint(receiver, tgUSDToBorrow);
         }
 
-        return (newUserShare, newDebtIndex, _totalDebtShares + newUserShare);
+        return (newUserDebtShares, newDebtIndex, _totalDebtShares + (newUserDebtShares - oldUserDebtShares));
     }
 
     function _depositAndBorrow(address borrower, uint256 amountDeposited, uint256 tgUSDToBorrow, bool isLeverage) internal {
@@ -209,51 +220,59 @@ abstract contract MarketCore is PauseSettings, Rewards {
 
         // Update interests rate, computes new debt index and total debt.
         (uint256 newDebtIndex, uint256 _totalDebtShares) = _checkpointIR();
+        uint256 oldPositionDebt = _positionDebt(account, newDebtIndex);
 
-        uint256 newShares = (tgUSDToRepay * RAY) / newDebtIndex;
+        uint256 userDebtShares = userDebtShares[account];
 
-        //  Cache the new value in tgUSD of the debt
-        uint256 newUserShare = positionDebtIndex[account] - newShares;
-
-        // Retrieve the position of the user
-        uint256 newUserDebt = (newUserShare * newDebtIndex) / RAY;
         // Cannot repay an empty position
-        require(newUserDebt != 0, PositionDebtZero());
+        require(userDebtShares != 0, PositionDebtZero());
+
+        uint256 newUserDebtShares;
+        uint256 sharesToRemove;
 
         // Repay all case
         // When IR != 0, debt of the user is increasing every block.
-        // It is so complicated to provide the exact amount that a user have to repay to close his loan.
+        // It is so complicated to provide the exact amount that a user has to repay to close his loan.
         // To cover this, any debt given in parameter that is equal or bigger than the debt will close the loan.
-        if (tgUSDToRepay >= newUserDebt) {
+        if (tgUSDToRepay >= oldPositionDebt) {
+            console.log("acab");
             // User shouldn't repay more than his debt so we rearrange the amount of tgUSD to repay.
-            tgUSDToRepay = newUserDebt;
+            tgUSDToRepay = oldPositionDebt;
             // As we are repaying all the debt, the new debt of the user is 0.
-            newUserDebt = 0;
+            newUserDebtShares = 0;
+
+            sharesToRemove = userDebtShares;
         }
         // Partial repay case
         else {
-            // We are adjusting the debt of the user by decrementing the amount the user wants to repay.
-            newUserDebt -= tgUSDToRepay;
+            // Retrieve the real debt of the user
+            uint256 newUserDebt = oldPositionDebt - tgUSDToRepay;
+
+            newUserDebtShares = (newUserDebt * RAY) / newDebtIndex;
+
             // We need to verify that the partial repay is not decreasing the debt lower than the minimum loan.
             require(newUserDebt >= minimumLoan, PositionDebtTooLow());
+
+            sharesToRemove = userDebtShares - newUserDebtShares;
         }
 
         // Burns tgUSD from the burnAddress as a repayment of the debt
         tgUSD.burnFrom(burnAddress, tgUSDToRepay);
-        return (newUserDebt, newDebtIndex, _totalDebtShares - newShares);
+        return (newUserDebtShares, newDebtIndex, _totalDebtShares - sharesToRemove);
     }
 
     function _withdrawAndRepay(uint256 amountToWithdraw, uint256 tgUSDToRepay, address caller) internal {
         // Call _repay function in order to checkpoint the total debt, computes new User debt and burn corresponding amount of tgUSD.
-        (uint256 newUserDebt, uint256 newDebtIndex, uint256 newTotalDebt) = _repay(caller, tgUSDToRepay, caller);
+        (uint256 newUserDebtShares, uint256 newDebtIndex, uint256 newTotalDebtShares) = _repay(caller, tgUSDToRepay, caller);
 
+        //TODO Problem with the _getBalanceAfterWithdrawAndCheckMaxBorrowable
         _updateCollatAndDebts(
             caller,
-            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, newUserDebt),
+            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, newUserDebtShares),
             totalCollateral - amountToWithdraw,
-            newUserDebt,
+            newUserDebtShares,
             newDebtIndex,
-            newTotalDebt
+            newTotalDebtShares
         );
     }
 

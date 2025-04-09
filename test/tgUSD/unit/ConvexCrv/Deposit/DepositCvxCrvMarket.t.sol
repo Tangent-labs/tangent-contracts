@@ -38,7 +38,7 @@ contract DepositCvxCrvMarket is ConvexCurveContext {
         assertEq(market.totalCollateral(), 100 ether, "Total collateral is not right");
 
         assertEq(market.positionDebt(usr1), 0, "Position debt should be 0");
-        assertEq(market.positionDebtIndex(usr1), 0, "Position debt index should be 0");
+        assertEq(market.userDebtShares(usr1), 0, "Position debt index should be 0");
         assertEq(market.totalDebt(), 0, "Total debt should be 0");
 
         assertEq(market.healthRatio(usr1), MAX_UINT);
@@ -73,7 +73,7 @@ contract DepositCvxCrvMarket is ConvexCurveContext {
         assertEq(market.collateralBalances(usr1), amountStaked, "Collateral deposited must be equal to collateralBalances");
 
         assertEq(market.positionDebt(usr1), 0, "Position debt should be 0");
-        assertEq(market.positionDebtIndex(usr1), 0, "Position debt index should be 0");
+        assertEq(market.userDebtShares(usr1), 0, "Position debt index should be 0");
         assertEq(market.totalDebt(), 0, "Total debt should be 0");
 
         assertEq(market.healthRatio(usr1), MAX_UINT);
@@ -105,7 +105,7 @@ contract DepositCvxCrvMarket is ConvexCurveContext {
         assertEq(market.collateralBalances(usr1), amountStaked + amountIn, "Collateral deposited must be equal to collateralBalances");
 
         assertEq(market.positionDebt(usr1), 0, "Position debt should be 0");
-        assertEq(market.positionDebtIndex(usr1), 0, "Position debt index should be 0");
+        assertEq(market.userDebtShares(usr1), 0, "Position debt index should be 0");
         assertEq(market.totalDebt(), 0, "Total debt should be 0");
 
         assertEq(market.healthRatio(usr1), MAX_UINT);
