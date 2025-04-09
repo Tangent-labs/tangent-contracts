@@ -21,7 +21,7 @@ contract DepositCvxFxnMarket is ConvexCurveContext {
         market = deployConvexFxnLPMarket(collatToken);
 
         hBorrow = new HBorrow(usr1, market);
-        hRewards = new HProcessRewards(usr1, market);
+        hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
 
         hDeposit = new HDepositConvexFxnLP(usr1, market);
         hWithdraw = new HWithdrawConvexFxnLP(usr1, market);

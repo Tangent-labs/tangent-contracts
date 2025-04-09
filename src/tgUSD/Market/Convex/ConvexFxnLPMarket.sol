@@ -2,6 +2,7 @@
 pragma solidity ^0.8.22;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {ICvxFxnBooster} from "../../../interfaces/externals/Convex/ICvxFxnBooster.sol";
+import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {IStakingProxyERC20} from "../../../interfaces/externals/Convex/IStakingProxyERC20.sol";
 import {MarketInit, GlobalMarketInitParams} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 
@@ -33,7 +34,7 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
                         DEPOSIT  
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateReward(_for) returns (uint256, IERC20) {
+    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateRewards(_for) returns (uint256, IERC20) {
         // Verify collat amount added > 0
         require(lpDeposited != 0, ZeroCollatAmount());
         return (_sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR), collatToken);
@@ -62,11 +63,10 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
      * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
      *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
-    function processRewards(address harvestFeeReceiver) external override updateReward(address(0)) {
+    function processRewards(address harvestFeeReceiver) external {
         // Claim rewards of Convex FXN market
         stakingProxyVault.getReward();
 
-        // Stream rewards to stakers and give rewards to harvester
         _processRewards(harvestFeeReceiver);
     }
 

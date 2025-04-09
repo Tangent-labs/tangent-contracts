@@ -15,7 +15,7 @@ contract TgUSD is Ownable, ERC20, ITgUSD {
 
     uint256 public mintableInterests;
 
-    error CallerNotMinterBurner();
+    error CallerNotMarket();
     error OnlyOwnerCanBridgeIfPermisionlessNotActive();
     error BridgingNotAllowed();
 
@@ -24,7 +24,7 @@ contract TgUSD is Ownable, ERC20, ITgUSD {
     }
 
     modifier onlyMarketCaller() {
-        require(controlTower.isMarket(msg.sender), CallerNotMinterBurner());
+        require(controlTower.isMarket(msg.sender), CallerNotMarket());
         _;
     }
 

@@ -47,7 +47,7 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
                         DEPOSIT  
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateReward(_for) returns (uint256, IERC20) {
+    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateRewards(_for) returns (uint256, IERC20) {
         // Verify collat amount added > 0
         require(lpDeposited != 0, ZeroCollatAmount());
         return (_sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR), collatToken);
@@ -76,7 +76,7 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
      * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
      *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
-    function processRewards(address harvestFeeReceiver) external override updateReward(address(0)) {
+    function processRewards(address harvestFeeReceiver) external updateRewards(address(0)) {
         // Claim rewards on behalf
         cvxRewardToken.getReward();
         _processRewards(harvestFeeReceiver);

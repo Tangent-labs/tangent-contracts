@@ -17,7 +17,7 @@ contract DepositCvxCrvMarket is ConvexCurveContext {
         collatToken = AddrCurveStableLP.CRVUSD_USDC;
         market = deployConvexCurveLPMarket(collatToken);
 
-        hRewards = new HProcessRewards(usr1, market);
+        hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
     }

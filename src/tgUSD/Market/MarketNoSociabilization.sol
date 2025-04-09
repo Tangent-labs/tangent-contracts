@@ -15,7 +15,7 @@ contract MarketNoSociabilization is MarketExternalActions {
         _initializationCommon(_marketConstants, _marketInit);
     }
 
-    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateReward(_for) returns (uint256, IERC20) {
+    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateRewards(_for) returns (uint256, IERC20) {
         require(lpDeposited != 0, ZeroCollatAmount());
         return (lpDeposited, collatToken);
     }
@@ -29,7 +29,7 @@ contract MarketNoSociabilization is MarketExternalActions {
      * @dev Streams all accumulated rewards to the stakers.
      *      Anyone can trigger this function and will be incentivized with an harvester fee.
      */
-    function processRewards(address harvestFeeReceiver) external override updateReward(address(0)) {
+    function processRewards(address harvestFeeReceiver) external updateRewards(address(0)) {
         // Stream rewards to stakers and give rewards to harvester
         _processRewards(harvestFeeReceiver);
     }

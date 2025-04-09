@@ -33,6 +33,9 @@ contract OraclesContext is TgUSDDeployContext {
         vm.label(address(tgUSDOracle), "Oracle tgUSD");
 
         irCalculator = new IRCalculator(owner, controlTower, tgUSDOracle);
+
+        rewardAccumulator = new RewardAccumulator(owner, controlTower, irCalculator);
+
         marketCreator = new MarketCreator(
             owner,
             controlTower,

@@ -3,21 +3,20 @@
 pragma solidity ^0.8.22;
 import "../Base/HandlerBase.sol";
 
-import "../../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
-import "../../../../src/interfaces/internals/tgUSD/IRewardAccumulator.sol";
+import "../../../../src/tgUSD/Rewards/RewardAccumulator.sol";
 
 contract HProcessRewards is HandlerBase {
     MarketExternalActions marketRewards;
-
-    constructor(address _sender, MarketExternalActions _market) HandlerBase(_sender, _market) {
+    RewardAccumulator rewardAccumulator;
+    constructor(address _sender, MarketExternalActions _market, RewardAccumulator _rewardAccumulator) HandlerBase(_sender, _market) {
         marketRewards = MarketExternalActions(address(_market));
+        rewardAccumulator = _rewardAccumulator;
     }
 
     function processRewards(address harvestFeeReceiver) external handler {
-        IERC20[] memory rewardTokens = marketRewards.getRewardTokens();
-        uint256 harvesterFeePercentage = marketRewards.harvesterFeePercentage();
-        IRewardAccumulator rewardAccumulator = marketRewards.rewardAccumulator();
-        uint256 rewardCut = marketRewards.rewardCutPercentage();
+        IERC20[] memory rewardTokens = rewardAccumulator.getRewardTokens(address(marketRewards));
+        uint256 harvesterFeePercentage = rewardAccumulator.harvesterFeePercentage(address(marketRewards));
+        uint256 rewardCut = rewardAccumulator.lastRewardCuts(address(marketRewards));
 
         uint256[] memory receivedByHarvestor = new uint256[](rewardTokens.length);
         uint256[] memory receivedByAccumulator = new uint256[](rewardTokens.length);
