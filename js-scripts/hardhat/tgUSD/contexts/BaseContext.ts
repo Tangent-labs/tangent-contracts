@@ -90,9 +90,6 @@ export class BaseContext extends MainSetup {
         this.zapper = await (await ethers.getContractFactory("Zapper")).deploy(this.owner, this.controlTower, this.tgUSD);
         await this.zapper.waitForDeployment();
 
-        this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower);
-        await this.rewardAccumulator.waitForDeployment();
-
         this.liquidatorProxy = await (await ethers.getContractFactory("LiquidatorProxy")).deploy(this.tgUSD);
         await this.liquidatorProxy.waitForDeployment();
 
@@ -128,6 +125,9 @@ export class BaseContext extends MainSetup {
     async deployContracts2(tgUSDOracle: AddressLike, lpDeployContext: LpDeployContext) {
         this.irCalculator = await (await ethers.getContractFactory("IRCalculator")).deploy(this.owner, this.controlTower, tgUSDOracle);
         await this.irCalculator.waitForDeployment();
+
+        this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, this.irCalculator);
+        await this.rewardAccumulator.waitForDeployment();
 
         this.marketCreator = await (
             await ethers.getContractFactory("MarketCreator")
