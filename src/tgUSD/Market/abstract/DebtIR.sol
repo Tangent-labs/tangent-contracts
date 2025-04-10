@@ -130,7 +130,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
     }
 
     function checkpointIR() external {
-        (uint256 newDebtIndex, uint256 _totalDebtShares) = _checkpointIR();
+        (uint256 newDebtIndex, ) = _checkpointIR();
         _updateGlobalDebt(newDebtIndex);
     }
 
@@ -175,6 +175,10 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
         return badDebt + _totalDebt + _pendingInterests(_totalDebt, _indexIncrease(block.timestamp - blockLastIRTimestamp));
     }
 
+    function tt() public view returns (uint256) {
+        return (totalDebtShares * (debtIndex + _indexIncrease(block.timestamp - blockLastIRTimestamp))) / RAY;
+    }
+
     /**
      *  @notice  Returns IR generated since the last checkpoint
      */
@@ -196,10 +200,10 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @param   account Address of the position to check the debt on
      */
     function positionDebt(address account) public view returns (uint256) {
-        return _positionDebt(account, debtIndex + _indexIncrease(block.timestamp - blockLastIRTimestamp));
+        return _positionDebt(userDebtShares[account], debtIndex + _indexIncrease(block.timestamp - blockLastIRTimestamp));
     }
 
-    function _positionDebt(address account, uint256 newDebtIndex) internal view returns (uint256) {
-        return (userDebtShares[account] * newDebtIndex) / RAY;
+    function _positionDebt(uint256 _userDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
+        return (_userDebtShares * newDebtIndex) / RAY;
     }
 }
