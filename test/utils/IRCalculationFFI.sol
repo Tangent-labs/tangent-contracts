@@ -20,4 +20,14 @@ contract IRCalculationFFI is Test, LowLevel {
         inputs[11] = vm.toString(uint256(k));
         return stringToUint(string(vm.ffi(inputs)));
     }
+
+    function getIndexFFI(uint256 oldIndex, uint256 ir, uint256 timeDelta) external returns (uint256) {
+        string[] memory inputs = new string[](5);
+        inputs[0] = "node";
+        inputs[1] = "./js-scripts/ffi/irComputation/printIndex.mjs";
+        inputs[2] = vm.toString(oldIndex);
+        inputs[3] = vm.toString(ir);
+        inputs[4] = vm.toString(timeDelta);
+        return stringToUint(string(vm.ffi(inputs)));
+    }
 }

@@ -55,4 +55,8 @@ interface IIRCalculator {
         uint88 endCutPrice
     ) external pure returns (uint256);
     function computeRCForMarket(address market) external returns (uint256);
+
+    function computeNewIndex(address market, uint256 oldIndex, uint256 timeDelta) external returns (uint256);
+
+    function debtCheckpointMarket(address market, uint256 oldIndex, uint256 timeDelta) external returns (uint256);
 }

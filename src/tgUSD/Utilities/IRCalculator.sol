@@ -35,6 +35,9 @@ contract IRCalculator is IIRCalculator, Ownable {
     /// @notice Gives the parameter of the market
     mapping(address => RCParams) public rcParams;
 
+    /// @notice Last interest rate since previous interaction with the market. In RAY.
+    mapping(address => uint256) public lastIRs;
+
     error IRStartPriceLtOne();
     error CallerNotOwnerOrMarketCreator(address caller);
 
@@ -83,7 +86,7 @@ contract IRCalculator is IIRCalculator, Ownable {
      * @notice Computes the intest rate regarding the tgUSD price and parameters of the market
      * @param  market address of the market
      */
-    function computeIRForMarket(address market) external returns (uint256) {
+    function computeIRForMarket(address market) public returns (uint256) {
         return _computeIR(tgUSDOracle.price_w(), irParams[market]);
     }
 
@@ -98,6 +101,30 @@ contract IRCalculator is IIRCalculator, Ownable {
 
     function _pow(int128 a, int128 b) internal pure returns (int128) {
         return ABDKMath64x64.exp_2(ABDKMath64x64.mul(ABDKMath64x64.log_2(a), b));
+    }
+
+    // newIndex = oldIndex * exp(ir * timeRatio)
+    function simulateNewDebtIndex(uint256 oldIndex, uint256 ir, uint256 timeDelta) external pure returns (uint256) {
+        return _computeNewDebtIndex(oldIndex, ir, timeDelta);
+    }
+
+    //TODO OnlyMarket
+    function debtCheckpointMarket(address market, uint256 oldIndex, uint256 timeDelta) external returns (uint256) {
+        uint256 _lastIR = lastIRs[market];
+        uint256 newIR = computeIRForMarket(market);
+        return _computeNewDebtIndex(oldIndex, _lastIR, timeDelta);
+    }
+
+    // newIndex = oldIndex * exp(ir * timeRatio)
+    function _computeNewDebtIndex(uint256 oldIndex, uint256 ir, uint256 timeDelta) internal pure returns (uint256) {
+        int128 expContent = ABDKMath64x64.mul(ABDKMath64x64.divu(ir, ONE_ETHER), ABDKMath64x64.divu(timeDelta, 365 days));
+
+        // To prevent exp overflow
+        if (ABDKMath64x64.toInt(expContent) >= MAX_EXP) {
+            expContent = ABDKMath64x64.fromInt(MAX_EXP);
+        }
+
+        return (ABDKMath64x64.mulu(ABDKMath64x64.exp(expContent), ONE_ETHER) * oldIndex) / ONE_ETHER;
     }
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market

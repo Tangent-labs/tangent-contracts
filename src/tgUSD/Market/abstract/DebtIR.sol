@@ -6,6 +6,8 @@ import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {LightOwnable} from "../../Utilities/LightOwnable.sol";
 
+import "forge-std/console.sol";
+
 /// @notice
 abstract contract DebtIR is LightOwnable, IDebtIR {
     uint256 public constant RAY = 1e18; // Facteur de précision ray (1 * 10^27)
@@ -18,8 +20,6 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
     uint256 public debtIndex;
     /// @notice Last total debt of the market.
     uint256 public totalDebtShares;
-    /// @notice Last interest rate since previous interaction with the market. In RAY.
-    uint256 public lastIR;
     /// @notice Last time interest rate has been updated.
     uint256 public blockLastIRTimestamp;
     /// @notice Maximum debt of the market
@@ -148,12 +148,11 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
         uint256 _debtIndex = debtIndex;
         uint256 _totalDebtShares = totalDebtShares;
 
+        uint256 newDebtIndex = irCalculator.debtCheckpointMarket(address(this), _debtIndex, timeDelta);
+
         if (timeDelta != 0) {
-            uint256 indexIncrease = _indexIncrease(timeDelta);
-
-            tgUSD.increaseMintableInterests((((_totalDebtShares * _debtIndex) / RAY) * indexIncrease) / RAY);
-
-            _debtIndex += indexIncrease;
+            uint256 indexIncrease = newDebtIndex - _debtIndex;
+            tgUSD.increaseMintableInterests((_totalDebtShares * indexIncrease) / RAY);
         }
         lastIR = irCalculator.computeIRForMarket(address(this));
 
@@ -168,11 +167,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @dev     Takes the last registered debt and applies it the IR accumulated since last checkpoint.
      */
     function totalDebt() public view returns (uint256) {
-        uint256 _totalDebtShares = totalDebtShares;
-        uint256 _debtIndex = debtIndex;
-        uint256 _totalDebt = (_totalDebtShares * _debtIndex) / RAY;
-
-        return badDebt + _totalDebt + _pendingInterests(_totalDebt, _indexIncrease(block.timestamp - blockLastIRTimestamp));
+        return badDebt + (totalDebtShares * (debtIndex + _indexIncrease(block.timestamp - blockLastIRTimestamp))) / RAY;
     }
 
     function tt() public view returns (uint256) {
@@ -183,11 +178,11 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @notice  Returns IR generated since the last checkpoint
      */
     function pendingInterests() external view returns (uint256) {
-        return _pendingInterests((totalDebtShares * debtIndex) / RAY, _indexIncrease(block.timestamp - blockLastIRTimestamp));
+        return _pendingInterests(totalDebtShares, _indexIncrease(block.timestamp - blockLastIRTimestamp));
     }
 
-    function _pendingInterests(uint256 _totalDebt, uint256 indexIncrease) internal pure returns (uint256) {
-        return (_totalDebt * indexIncrease) / RAY;
+    function _pendingInterests(uint256 _totalDebtShares, uint256 indexIncrease) internal pure returns (uint256) {
+        return (_totalDebtShares * indexIncrease) / RAY;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

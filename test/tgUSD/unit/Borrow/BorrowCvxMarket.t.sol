@@ -36,8 +36,6 @@ contract BorrowCvxMarket is ConvexCurveContext {
         uint256 collatDeposited = 100_000 ether;
         uint256 borrowedAmount1 = 60_000 ether;
         uint256 borrowedAmount2 = 10_000 ether;
-        uint256 repayAmount1 = 50_000 ether;
-        uint256 repayAmount2 = 50_000 ether;
 
         hDeposit.deposit(usr1, collatDeposited, true);
 
@@ -63,9 +61,12 @@ contract BorrowCvxMarket is ConvexCurveContext {
         uint256 interestGeneratedExpected2 = ((positionDebt1 + borrowedAmount2) * market.lastIR()) / 1e18;
         skip(365 days);
 
-        // assertEq(market.totalDebt(), positionDebt1 + borrowedAmount2 + interestGeneratedExpected2, "Pouloulou"); // 72400 + 72400*0.04 = 75296
+        // market.checkpointIR();
 
         assertEq(market.positionDebt(usr1), market.totalDebt());
+
+        // Interests must be equals to the totalDebt minus what has been deposited
+        assertEq(tgUSD.mintableInterests() + market.pendingInterests(), market.totalDebt() - borrowedAmount1 - borrowedAmount2);
     }
 
     function test_borrow_fuzzing(uint256 collatDeposited, uint256 borrowedAmount, uint256 repayAmount) external {
