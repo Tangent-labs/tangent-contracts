@@ -93,10 +93,18 @@ contract OraclesContext is TgUSDDeployContext {
         // Oracle CRVUSD_USDC
         oracles[AddrCurveStableLP.CRVUSD_USDC] = new OracleDuoPoolStable(
             AddrCurveStableLP.CRVUSD_USDC,
-            IPriceOracle(address(AddrChainlinkOracle.CRVUSD)),
-            IPriceOracle(address(AddrChainlinkOracle.USDC))
+            IPriceOracle(address(AddrChainlinkOracle.USDC)),
+            IPriceOracle(address(AddrChainlinkOracle.CRVUSD))
         );
         vm.label(address(oracles[AddrCurveStableLP.CRVUSD_USDC]), "Oracle LP crvUSD/USDC");
+
+        // Oracle CRVUSD_USDT
+        oracles[AddrCurveStableLP.CRVUSD_USDT] = new OracleDuoPoolStable(
+            AddrCurveStableLP.CRVUSD_USDT,
+            IPriceOracle(address(AddrChainlinkOracle.USDT)),
+            IPriceOracle(address(AddrChainlinkOracle.CRVUSD))
+        );
+        vm.label(address(oracles[AddrCurveStableLP.CRVUSD_USDT]), "Oracle LP crvUSD/USDT");
 
         // Oracle USDC_FXUSD
         oracles[AddrCurveStableLP.USDC_FXUSD] = new OracleDuoPoolStable(

@@ -63,8 +63,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
         liquidationThreshold = _marketInit.liquidationThreshold;
         maxMarketDebt = _marketInit.maxMarketDebt;
         minimumLoan = _marketInit.minimumLoan;
-        // TODO Replace this here
-        blockLastIRTimestamp = block.timestamp;
+
         debtIndex = RAY;
 
         // Gives ownership to the DAO
@@ -95,7 +94,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
         _updateCollateral(account, newCollatBalance, newTotalCollat);
 
         // Updates global and user debt
-        _updateDebts(account, newUserDebtShares, newDebtIndex, newTotalDebtShares);
+        _updateDebts(account, newDebtIndex, newUserDebtShares, newTotalDebtShares);
     }
 
     /**
@@ -108,7 +107,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
     function _updateCollatAndGlobalDebt(address account, uint256 newCollatBalance, uint256 newTotalCollat, uint256 newDebtIndex) internal {
         _updateCollateral(account, newCollatBalance, newTotalCollat);
         // Updates global debt
-        _updateGlobalDebt(newDebtIndex);
+        debtIndex = newDebtIndex;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -231,7 +230,6 @@ abstract contract MarketCore is PauseSettings, Rewards {
         // It is so complicated to provide the exact amount that a user has to repay to close his loan.
         // To cover this, any debt given in parameter that is equal or bigger than the debt will close the loan.
         if (tgUSDToRepay >= oldPositionDebt) {
-            console.log("acab");
             // User shouldn't repay more than his debt so we rearrange the amount of tgUSD to repay.
             tgUSDToRepay = oldPositionDebt;
             // As we are repaying all the debt, the new debt of the user is 0.
@@ -244,12 +242,12 @@ abstract contract MarketCore is PauseSettings, Rewards {
             // Retrieve the real debt of the user
             uint256 newUserDebt = oldPositionDebt - tgUSDToRepay;
 
-            newUserDebtShares = (newUserDebt * RAY) / newDebtIndex;
+            sharesToRemove = (tgUSDToRepay * RAY) / newDebtIndex;
+
+            newUserDebtShares = _userDebtShares - sharesToRemove;
 
             // We need to verify that the partial repay is not decreasing the debt lower than the minimum loan.
             require(newUserDebt >= minimumLoan, PositionDebtTooLow());
-
-            sharesToRemove = _userDebtShares - newUserDebtShares;
         }
 
         // Burns tgUSD from the burnAddress as a repayment of the debt

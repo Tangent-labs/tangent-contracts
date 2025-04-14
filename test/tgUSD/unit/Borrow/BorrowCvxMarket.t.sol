@@ -47,7 +47,9 @@ contract BorrowCvxMarket is ConvexCurveContext {
         skip(365 days);
         assertEq(market.positionDebt(usr1), market.totalDebt());
 
-        uint256 interestGenerated = (borrowedAmount1 * market.lastIR()) / 1e18;
+        (uint256 ir, uint256 timestamp) = IIRCalculator(irCalculator).irCheckpoint(address(market));
+
+        uint256 interestGenerated = (borrowedAmount1 * ir) / 1e18;
 
         uint256 positionDebt1 = borrowedAmount1 + interestGenerated; // 60 000 + 60 000 * 0.04 =60 000 + 2 400 = 62 400
         assertEq(market.positionDebt(usr1), borrowedAmount1 + interestGenerated, "Position debt increased with interest rate");
@@ -58,7 +60,9 @@ contract BorrowCvxMarket is ConvexCurveContext {
         assertEq(market.userDebtShares(usr1), market.totalDebtShares());
         assertApproxEqAbs(market.positionDebt(usr1), positionDebt1 + borrowedAmount2, 1, "Position debt increased with interest rate"); // 62400 + 10000 = 72400
 
-        uint256 interestGeneratedExpected2 = ((positionDebt1 + borrowedAmount2) * market.lastIR()) / 1e18;
+        (ir, timestamp) = IIRCalculator(irCalculator).irCheckpoint(address(market));
+
+        uint256 interestGeneratedExpected2 = ((positionDebt1 + borrowedAmount2) * ir) / 1e18;
         skip(365 days);
 
         // market.checkpointIR();
@@ -91,8 +95,9 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         assertEq(market.debtIndex(), 1e18, "Debt index didn't moove");
 
+        (uint256 ir, uint256 timestamp) = IIRCalculator(irCalculator).irCheckpoint(address(market));
         uint256 timeToPass = 900 days;
-        uint256 expectedIRMintable = (market.lastIR() * timeToPass * borrowedAmount) / 365 days / 1e18;
+        uint256 expectedIRMintable = (ir * timeToPass * borrowedAmount) / 365 days / 1e18;
         skip(timeToPass);
 
         assertApproxEqAbs(market.pendingInterests(), expectedIRMintable, 1e18, "Interest mintable is correct");

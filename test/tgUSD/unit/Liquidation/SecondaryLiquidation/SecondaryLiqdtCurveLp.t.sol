@@ -39,11 +39,13 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         vm.startPrank(usr1);
 
         skip(800);
-        market.lastIR();
+
         // Update IR on the market
         market.checkpointIR();
 
-        assertGt(market.lastIR(), 40 ether, "IR skyrockets as peg of tgUSD is low");
+        (uint256 ir, uint256 timestamp) = IIRCalculator(irCalculator).irCheckpoint(address(market));
+
+        assertGt(ir, 40 ether, "IR skyrockets as peg of tgUSD is low");
 
         // Skip time to be able to liquidate
         skip(100 days);
@@ -75,7 +77,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
             encoder.createEmptyMintAndSwapWStable()
         );
 
-        market.liquidate(usr1, MAX_UINT, address(liquidator), 0, callToSecondaryLiquidator);
+        market.liquidate(usr1, MAX_UINT, address(AddrCurveStableLP.ROUTER_CURVE), 0, callToSecondaryLiquidator);
 
         assertEq(market.positionDebt(usr1), 0);
         assertEq(market.totalDebt(), 0);

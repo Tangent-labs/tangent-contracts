@@ -3,7 +3,7 @@ pragma solidity ^0.8.22;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import {IRParams, RCParams, IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {IRParams, RCParams, IIRCalculator, IRCheckpoint} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IAggregatorStablePriceV3} from "../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
@@ -17,6 +17,7 @@ import "forge-std/console.sol";
 contract IRCalculator is IIRCalculator, Ownable {
     uint256 public constant DENOMINATOR = 100_000;
 
+    uint256 constant RAY = 1e27;
     uint256 constant ONE_ETHER = 1e18;
 
     uint256 constant E12 = 1e12;
@@ -36,14 +37,20 @@ contract IRCalculator is IIRCalculator, Ownable {
     mapping(address => RCParams) public rcParams;
 
     /// @notice Last interest rate since previous interaction with the market. In RAY.
-    mapping(address => uint256) public lastIRs;
+    mapping(address => IRCheckpoint) public irCheckpoint;
 
     error IRStartPriceLtOne();
     error CallerNotOwnerOrMarketCreator(address caller);
+    error CallerNotMarket();
 
     constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle) Ownable(_owner) {
         controlTower = _controlTower;
         tgUSDOracle = _tgUSDOracle;
+    }
+
+    modifier onlyMarketCaller() {
+        require(controlTower.isMarket(msg.sender), CallerNotMarket());
+        _;
     }
 
     //TODO Add check for params
@@ -61,6 +68,10 @@ contract IRCalculator is IIRCalculator, Ownable {
         }
         _;
     }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                        OWNER ACTIONS 
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function setTgUSDOracle(IAggregatorStablePriceV3 _tgUSDOracle) external onlyOwner {
         tgUSDOracle = _tgUSDOracle;
@@ -82,6 +93,10 @@ contract IRCalculator is IIRCalculator, Ownable {
         rcParams[market] = _rcParam;
     }
 
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                    IR COMPUTATION
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters of the market
      * @param  market address of the market
@@ -99,33 +114,6 @@ contract IRCalculator is IIRCalculator, Ownable {
         return _computeIR(tgUSDPrice, irParam);
     }
 
-    function _pow(int128 a, int128 b) internal pure returns (int128) {
-        return ABDKMath64x64.exp_2(ABDKMath64x64.mul(ABDKMath64x64.log_2(a), b));
-    }
-
-    // newIndex = oldIndex * exp(ir * timeRatio)
-    function simulateNewDebtIndex(uint256 oldIndex, uint256 ir, uint256 timeDelta) external pure returns (uint256) {
-        return _computeNewDebtIndex(oldIndex, ir, timeDelta);
-    }
-
-    //TODO OnlyMarket
-    function debtCheckpointMarket(address market, uint256 oldIndex, uint256 timeDelta) external returns (uint256) {
-        uint256 _lastIR = lastIRs[market];
-        uint256 newIR = computeIRForMarket(market);
-        return _computeNewDebtIndex(oldIndex, _lastIR, timeDelta);
-    }
-
-    // newIndex = oldIndex * exp(ir * timeRatio)
-    function _computeNewDebtIndex(uint256 oldIndex, uint256 ir, uint256 timeDelta) internal pure returns (uint256) {
-        int128 expContent = ABDKMath64x64.mul(ABDKMath64x64.divu(ir, ONE_ETHER), ABDKMath64x64.divu(timeDelta, 365 days));
-
-        // To prevent exp overflow
-        if (ABDKMath64x64.toInt(expContent) >= MAX_EXP) {
-            expContent = ABDKMath64x64.fromInt(MAX_EXP);
-        }
-
-        return (ABDKMath64x64.mulu(ABDKMath64x64.exp(expContent), ONE_ETHER) * oldIndex) / ONE_ETHER;
-    }
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
      * @param  tgUSDPrice Price of tgUSD in wei.
@@ -169,6 +157,48 @@ contract IRCalculator is IIRCalculator, Ownable {
         uint256 irIncrement = ABDKMath64x64.mulu(ABDKMath64x64.mul(ABDKMath64x64.fromUInt(irParam.rMax - irParam.rMin), _pow(quotientFixedPoint, alpha)), E13);
 
         return uint256(irParam.rMin) * E13 + irIncrement;
+    }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                    DEBT INDEX COMPUTATION
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    // newIndex = oldIndex * exp(ir * timeRatio)
+    function simulateNewDebtIndex(uint256 oldIndex, uint256 ir, uint256 timeDelta) external pure returns (uint256) {
+        return _computeNewDebtIndex(oldIndex, ir, timeDelta);
+    }
+
+    function newDebtIndex(address market, uint256 oldIndex) external view returns (uint256) {
+        IRCheckpoint memory _irCheckpoint = irCheckpoint[market];
+        return _computeNewDebtIndex(oldIndex, _irCheckpoint.ir, block.timestamp - _irCheckpoint.timestamp);
+    }
+
+    //TODO OnlyMarket
+    function checkpointIR(uint256 oldIndex) external onlyMarketCaller returns (uint256) {
+        IRCheckpoint memory _irCheckpoint = irCheckpoint[msg.sender];
+
+        irCheckpoint[msg.sender] = IRCheckpoint({ir: computeIRForMarket(msg.sender), timestamp: block.timestamp});
+
+        return _computeNewDebtIndex(oldIndex, _irCheckpoint.ir, block.timestamp - _irCheckpoint.timestamp);
+    }
+
+    // newIndex = oldIndex * exp(ir * timeRatio)
+    function _computeNewDebtIndex(uint256 oldIndex, uint256 ir, uint256 timeDelta) internal pure returns (uint256) {
+        if (timeDelta == 0) {
+            return oldIndex;
+        }
+        int128 expContent = ABDKMath64x64.mul(ABDKMath64x64.divu(ir, ONE_ETHER), ABDKMath64x64.divu(timeDelta, 365 days));
+
+        // To prevent exp overflow
+        if (ABDKMath64x64.toInt(expContent) >= MAX_EXP) {
+            expContent = ABDKMath64x64.fromInt(MAX_EXP);
+        }
+
+        return (ABDKMath64x64.mulu(ABDKMath64x64.exp(expContent), RAY) * oldIndex) / RAY;
+    }
+
+    function _pow(int128 a, int128 b) internal pure returns (int128) {
+        return ABDKMath64x64.exp_2(ABDKMath64x64.mul(ABDKMath64x64.log_2(a), b));
     }
 
     /**

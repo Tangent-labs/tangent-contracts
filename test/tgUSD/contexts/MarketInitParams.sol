@@ -41,7 +41,7 @@ contract MarketInitParams is WStableContext {
         cvxCurveLPMaps[address(AddrCurveStableLP.CRVUSD_USDC)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
                 collat: AddrCurveStableLP.CRVUSD_USDC,
-                maxLTV: 85_000,
+                maxLTV: 90_000,
                 liquidationThreshold: 93_000,
                 minimumLoan: 3_000 ether,
                 maxMarketDebt: 1_000_000 ether,
@@ -49,6 +49,21 @@ contract MarketInitParams is WStableContext {
             }),
             cvxRewardToken: AddrCvxRewardTokens.CRVUSD_USDC_LP,
             pid: PidCvxCrvBooster.CRVUSD_USDC_LP,
+            socFeePercentage: 1_000
+        });
+
+        // Convex Curve - CRVUSD-USDT
+        cvxCurveLPMaps[address(AddrCurveStableLP.CRVUSD_USDT)] = ParamsInitConvexCurveLPMarket({
+            marketInit: MarketInitSimplified({
+                collat: AddrCurveStableLP.CRVUSD_USDT,
+                maxLTV: 90_000,
+                liquidationThreshold: 93_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether,
+                _rewardTokens: _rewardsCrvCvx
+            }),
+            cvxRewardToken: AddrCvxRewardTokens.CRVUSD_USDT_LP,
+            pid: PidCvxCrvBooster.CRVUSD_USDT_LP,
             socFeePercentage: 1_000
         });
 

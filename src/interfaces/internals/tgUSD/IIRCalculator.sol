@@ -42,6 +42,11 @@ struct RCParams {
     /// @dev Price of tgUSD on which the reward cut is at its maximum
     uint88 endCutPrice;
 }
+
+struct IRCheckpoint {
+    uint256 ir;
+    uint256 timestamp;
+}
 interface IIRCalculator {
     function setUpMarket(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external;
     function simulateIR(uint256 tgUSDPrice, IRParams memory irParam) external view returns (uint256);
@@ -56,7 +61,11 @@ interface IIRCalculator {
     ) external pure returns (uint256);
     function computeRCForMarket(address market) external returns (uint256);
 
-    function computeNewIndex(address market, uint256 oldIndex, uint256 timeDelta) external returns (uint256);
+    function checkpointIR(uint256 oldIndex) external returns (uint256);
 
-    function debtCheckpointMarket(address market, uint256 oldIndex, uint256 timeDelta) external returns (uint256);
+    function simulateNewDebtIndex(uint256 oldIndex, uint256 ir, uint256 timeDelta) external returns (uint256);
+
+    function newDebtIndex(address market, uint256 oldIndex) external view returns (uint256);
+
+    function irCheckpoint(address market) external view returns (uint256, uint256);
 }

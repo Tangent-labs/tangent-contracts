@@ -81,7 +81,9 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         assertEq(market.positionDebt(usr1), 0);
         assertEq(market.totalDebt(), tgUSDBorrowed * 2, "Total debt wrong");
 
-        assertEq(market.lastIR(), 0);
+        (uint256 ir, uint256 timestamp) = IIRCalculator(irCalculator).irCheckpoint(address(market));
+
+        assertEq(ir, 0);
 
         skip(1 days);
 
@@ -166,7 +168,10 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         assertERC20Tracking();
         assertEq(market.positionDebt(usr1), 4_000 ether);
         assertEq(market.totalDebt(), tgUSDBorrowed * 2 + 4_000 ether);
-        assertEq(market.lastIR(), 0);
+
+        (uint256 ir, uint256 timestamp) = IIRCalculator(irCalculator).irCheckpoint(address(market));
+
+        assertEq(ir, 0);
 
         uint256 tgUSDToRepay = 100;
         verifyLostERC20(tgUSD, usr1, tgUSDToRepay, "tgUSD burnt from sender");

@@ -21,7 +21,6 @@ import "../../../src/tgUSD/Rewards/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
 import "../../../src/tgUSD/Utilities/MarketCreator.sol";
-import "../../../src/tgUSD/Utilities/Liquidator.sol";
 import "../../../src/tgUSD/Utilities/LiquidatorProxy.sol";
 import "../../../test/tgUSD/mocks/MockEnsoRouter.sol";
 import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
@@ -57,7 +56,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public mockedLP = makeAddr("Mocked LP");
 
     Encoder public encoder;
-    Liquidator liquidator;
 
     address public l0EndpointMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
     address public l0EndpointBase = 0x1a44076050125825900e736c501f859c50fE728c;
@@ -95,7 +93,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         marketNoSociabilizationImplem = address(new MarketNoSociabilization());
 
         encoder = new Encoder();
-        liquidator = new Liquidator();
         ensoUtils = new EnsoUtils();
         labeliser = new Labeliser();
 
@@ -145,7 +142,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(mockEnsoRouter), "Mock Odos Router");
         vm.label(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e, "Curve Router");
 
-        vm.label(address(liquidator), "Liquidator");
         vm.label(address(liquidatorProxy), "Liquidation Proxy");
         vm.label(address(zapper), "Zapper");
 

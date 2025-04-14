@@ -3,13 +3,18 @@
 pragma solidity ^0.8.22;
 import "./HandlerBase.sol";
 
+import {IIRCalculator, IRCheckpoint} from "../../../../src/interfaces/internals/tgUSD/IIRCalculator.sol";
+
 abstract contract HMarketBase is HandlerBase {
     function _beforBorrowOrRepayCheck(
         MarketCore _market
     ) internal view returns (uint256 totalDebtShares, uint256 newInterests, uint256 newDebtIndex, uint256 positionDebt, uint256 mintableInterests, uint256 oldTotalDebt) {
         mintableInterests = _market.tgUSD().mintableInterests();
         positionDebt = _market.positionDebt(sender);
-        uint256 timeDelta = block.timestamp - _market.blockLastIRTimestamp();
+
+        (uint256 ir, uint256 timestamp) = _market.irCalculator().irCheckpoint(address(_market));
+
+        uint256 timeDelta = block.timestamp - timestamp;
         totalDebtShares = _market.totalDebtShares();
         oldTotalDebt = (_market.debtIndex() * totalDebtShares) / RAY;
         uint256 increaseCoeff;
@@ -18,16 +23,18 @@ abstract contract HMarketBase is HandlerBase {
             newInterests = 0;
             newDebtIndex = _market.debtIndex();
         } else {
-            increaseCoeff = (_market.lastIR() * timeDelta) / 365 days;
+            increaseCoeff = (ir * timeDelta) / 365 days;
             newInterests = (increaseCoeff * oldTotalDebt) / RAY;
             newDebtIndex = _market.debtIndex() + increaseCoeff;
         }
     }
 
     function _afterCheckpointGlobal(MarketCore _market, uint256 interests, uint256 newDebtIndex, uint256 mintableInterests) internal view {
+        (uint256 ir, uint256 timestamp) = _market.irCalculator().irCheckpoint(address(_market));
+
         assertEq(_market.debtIndex(), newDebtIndex, "New total debt index incremented");
         assertEq(_market.tgUSD().mintableInterests(), mintableInterests + interests, "New interests increments mintableInterests");
-        assertEq(_market.blockLastIRTimestamp(), block.timestamp, "Last block IR changed has been updated");
+        assertEq(timestamp, block.timestamp, "Last block IR changed has been updated");
     }
 
     function _beforeBorrowCheck(MarketCore _market, address receiver, uint256 borrowedAmount) internal {

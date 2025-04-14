@@ -11,7 +11,8 @@ contract DebtIndexIncrease is ConvexCurveContext {
     }
 
     function test_debtIndex_increases(uint24 daysToSkip1, uint32 daysToSkip2) external {
-        uint256 lastIr = market.lastIR();
+        (uint256 ir, uint256 timestamp) = IIRCalculator(irCalculator).irCheckpoint(address(market));
+
         uint256 debtIndex = market.debtIndex();
 
         assertEq(debtIndex, 1 ether, "Debt index should be 1");
@@ -20,7 +21,7 @@ contract DebtIndexIncrease is ConvexCurveContext {
 
         skip(skipDuration);
 
-        uint256 indexIncrem1 = (lastIr * skipDuration) / 365 days;
+        uint256 indexIncrem1 = (ir * skipDuration) / 365 days;
 
         market.checkpointIR();
 
@@ -32,7 +33,7 @@ contract DebtIndexIncrease is ConvexCurveContext {
 
         skip(skipDuration2);
 
-        uint256 indexIncrem2 = (lastIr * skipDuration2) / 365 days;
+        uint256 indexIncrem2 = (ir * skipDuration2) / 365 days;
 
         market.checkpointIR();
 

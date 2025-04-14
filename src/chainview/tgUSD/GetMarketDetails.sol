@@ -52,15 +52,15 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
     }
 
     function getMarketDetails(address account, address market) public returns (MarketRow memory) {
+        address[] memory spenders = new address[](1);
+        spenders[0] = market;
+
         ICollateral marketCollateral = ICollateral(market);
         IPriceOracle priceOracle = marketCollateral.collatOracle();
         IDebtIR marketDebt = IDebtIR(market);
         uint256 collateralUSDPrice = priceOracle.latestAnswer();
         uint256 totalCollateral = marketCollateral.totalCollateral();
         IERC20Metadata collatToken = marketCollateral.collatToken();
-
-        address[] memory spenders = new address[](1);
-        spenders[0] = market;
 
         BalancesAllowances.InputBalancesAllowances[] memory ibas = new BalancesAllowances.InputBalancesAllowances[](1);
         ibas[0] = BalancesAllowances.InputBalancesAllowances({token: collatToken, spenders: spenders});
@@ -79,6 +79,10 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
             soc = Sociabilization({socFeePercentage: 0, socFeePending: 0});
         }
 
+        (uint256 ir, ) = irCalculator.irCheckpoint(_market);
+
+        ICollateral _marketCollateral = marketCollateral;
+
         return
             MarketRow({
                 marketAddress: _market,
@@ -87,24 +91,24 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                     totalCollateralUSDValue: (totalCollateral * collateralUSDPrice) / 10 ** 18,
                     totalCollateralAmount: totalCollateral,
                     collateralUSDPrice: collateralUSDPrice,
-                    positionCollateralAmount: marketCollateral.collateralBalances(_account),
-                    positionCollateralUSDValue: marketCollateral.positionValue(_account),
+                    positionCollateralAmount: _marketCollateral.collateralBalances(_account),
+                    positionCollateralUSDValue: _marketCollateral.positionValue(_account),
                     priceOracle: priceOracle
                 }),
                 debtInfos: DebtInfos({
                     totalDebt: marketDebt.totalDebt(),
                     positionDebt: marketDebt.positionDebt(_account),
-                    healthRatio: marketCollateral.healthRatio(_account),
-                    currentBorrowRate: marketDebt.lastIR(),
+                    healthRatio: _marketCollateral.healthRatio(_account),
+                    currentBorrowRate: ir,
                     futureBorrowRate: irCalculator.computeIRForMarket(_market),
                     currentRewardCut: IRewards(_market).rewardCutPercentage(),
                     futureRewardCut: irCalculator.computeRCForMarket(_market)
                 }),
                 constants: MarketConstants({
-                    maxLTV: marketCollateral.maxLTV(),
+                    maxLTV: _marketCollateral.maxLTV(),
                     maxMarketDebt: marketDebt.maxMarketDebt(),
                     minimumLoan: marketDebt.minimumLoan(),
-                    liquidationThreshold: marketCollateral.liquidationThreshold()
+                    liquidationThreshold: _marketCollateral.liquidationThreshold()
                 }),
                 sociabilization: soc,
                 obas: getBalancesAllowances(_account, ibas),
