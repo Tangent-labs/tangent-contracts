@@ -19,7 +19,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
     uint32 a2;
     uint32 k;
 
-    function test_from_fuzzing1() external {
+    function test_IR_from_fuzzing1() external {
         tgUSDPrice = 909795958679092860;
         rMin = 26;
         rMax = 29;
@@ -37,7 +37,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         );
     }
 
-    function test_from_fuzzing2() external {
+    function test_IR_from_fuzzing2() external {
         tgUSDPrice = 1120000000000002248;
         rMin = 0;
         rMax = 16111;
@@ -55,7 +55,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         );
     }
 
-    function test_from_fuzzing3() external {
+    function test_IR_from_fuzzing3() external {
         tgUSDPrice = 1495288770417798419;
         rMin = 20937;
         rMax = 1807457;
@@ -73,7 +73,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         );
     }
 
-    function test_from_fuzzing4() external {
+    function test_IR_from_fuzzing4() external {
         tgUSDPrice = 202806;
         rMin = 48396;
         rMax = 1955213;
@@ -91,7 +91,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         );
     }
 
-    function test_from_fuzzing5() external {
+    function test_IR_from_fuzzing5() external {
         tgUSDPrice = 4746;
         rMin = 3512;
         rMax = 10556;
@@ -109,7 +109,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         );
     }
 
-    function test_from_fuzzing6() external {
+    function test_IR_from_fuzzing6() external {
         tgUSDPrice = 1026721955184017480;
         rMin = 0;
         rMax = 1538949;
@@ -127,7 +127,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         );
     }
 
-    function test_from_fuzzing7() external {
+    function test_IR_from_fuzzing7() external {
         tgUSDPrice = 1185971000000000099;
         rMin = 13898;
         rMax = 876633;
@@ -145,7 +145,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         );
     }
 
-    function test_ir_without_pInf() external {
+    function test_IR_without_pInf() external {
         // 0.99$
         tgUSDPrice = 99 * 10 ** 16;
         rMin = 4_000;
@@ -162,7 +162,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         assertEq(calculated, 1030000000000000000, "103% IR with these conditions");
     }
 
-    function test_ir_stable_price_lower_than_pMin() external {
+    function test_IR_stable_price_lower_than_pMin() external {
         tgUSDPrice = 98 * 10 ** 16;
         rMin = 4_000;
         rMax = 400_000;
@@ -178,7 +178,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         assertEq(calculated, 4000000000000000000, "Equals to the maximum rate, 400%");
     }
 
-    function test_ir_stable_price_higher_than_pMax() external {
+    function test_IR_stable_price_higher_than_pMax() external {
         tgUSDPrice = 101 * 10 ** 16;
         rMin = 4_000;
         rMax = 400_000;
@@ -199,7 +199,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         uint256 ir;
     }
 
-    function test_from_excel() external {
+    function test_IR_from_excel() external {
         rMin = 4_000; // 4%
         rMax = 400_000; // 400%
         pMin = 980_000; // 0.98$
@@ -227,7 +227,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
         }
     }
 
-    function test_fuzzing_with_big_bounds(
+    function test_IR_fuzzing_with_big_bounds(
         uint256 tgUSDPrice_,
         bool isHEC,
         uint24 rMin_,
@@ -265,7 +265,7 @@ contract ExpIRFormulaComputation is ConvexCurveContext {
             assertApproxEqRel(expected, calculated, 10 * 1e13); //0.01% delta
         }
     }
-    function test_fuzzing_with_small_bounds(
+    function test_IR_fuzzing_with_small_bounds(
         uint256 tgUSDPrice_,
         bool isHEC,
         uint24 rMin_,

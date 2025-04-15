@@ -75,7 +75,7 @@ contract BadDebtLiquidation is ConvexCurveContext {
 
         skip(1 weeks);
 
-        market.checkpointIR();
+        irCalculator.checkpointIR(address(market));
 
         vm.startPrank(usr2);
         hDeposit.setMsgSender(usr2);

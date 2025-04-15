@@ -16,8 +16,6 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
     IIRCalculator public irCalculator;
     /// @notice tgUSD is the StableCoin to borrow against the collatToken.
     ITgUSD public tgUSD;
-    /// @notice Global debt index. Represents the accumulation of the interest rate among time.
-    uint256 public debtIndex;
 
     /// @notice Maximum debt of the market
     uint256 public maxMarketDebt;
@@ -76,51 +74,20 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @notice  Updates the Total debt and the User debt
      *  @dev     Called during all function modifying the debt of a user such as borrow and repay.
      *  @param account           Address of the account to update
-     *  @param newDebtIndex      New index of the debt
      *  @param newTotalDebtShares      New total debt of the market
      *
      */
-    function _updateDebts(address account, uint256 newDebtIndex, uint256 newUserDebtShare, uint256 newTotalDebtShares) internal {
+    function _updateDebts(address account, uint256 newUserDebtShare, uint256 newTotalDebtShares) internal {
         // Recompute the new debt index of the user based on his new debt recomputed with interests and the new debtIndex
         userDebtShares[account] = newUserDebtShare;
 
         // Update the totalDebt
         totalDebtShares = newTotalDebtShares;
-
-        debtIndex = newDebtIndex;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     DEBT & IR CHECKPOINTS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    function checkpointIR() external {
-        (uint256 newDebtIndex, ) = _checkpointIR();
-        debtIndex = newDebtIndex;
-    }
-
-    /**
-     *  @notice Computes and returns the new debt index regarding interests generated allowing to readjust the total debt of the market
-     *          If some interests are generated, it increments the value in tgUSD to be able to mint them later.
-     *  @dev    Example :
-     *                    - On a market with 2M debt with 10% interests on 6 month
-     *                    - IndexIncrease = 0.1 * 6 month / 1 year = 5%
-     *                    - Interest Generated = 2M * 5% = 100 000
-     */
-    function _checkpointIR() internal returns (uint256, uint256) {
-        uint256 _debtIndex = debtIndex;
-        uint256 _totalDebtShares = totalDebtShares;
-
-        uint256 newDebtIndex = irCalculator.checkpointIR(_debtIndex);
-
-        uint256 indexIncrease = newDebtIndex - _debtIndex;
-
-        if (indexIncrease != 0) {
-            tgUSD.increaseMintableInterests((_totalDebtShares * indexIncrease) / RAY);
-        }
-
-        return (newDebtIndex, _totalDebtShares);
-    }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         GLOBAL VIEWS
@@ -130,15 +97,14 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @dev     Takes the last registered debt and applies it the IR accumulated since last checkpoint.
      */
     function totalDebt() public view returns (uint256) {
-        return badDebt + (totalDebtShares * irCalculator.newDebtIndex(address(this), debtIndex)) / RAY;
+        return badDebt + (totalDebtShares * irCalculator.newDebtIndex(address(this))) / RAY;
     }
 
     /**
      *  @notice  Returns IR generated since the last checkpoint
      */
     function pendingInterests() external view returns (uint256) {
-        uint256 _debtIndex = debtIndex;
-        return _pendingInterests(totalDebtShares, irCalculator.newDebtIndex(address(this), _debtIndex) - _debtIndex);
+        return _pendingInterests(totalDebtShares, irCalculator.indexDelta(address(this)));
     }
 
     function _pendingInterests(uint256 _totalDebtShares, uint256 indexIncrease) internal pure returns (uint256) {
@@ -155,7 +121,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @param   account Address of the position to check the debt on
      */
     function positionDebt(address account) public view returns (uint256) {
-        return _positionDebt(userDebtShares[account], irCalculator.newDebtIndex(address(this), debtIndex));
+        return _positionDebt(userDebtShares[account], irCalculator.newDebtIndex(address(this)));
     }
 
     function _positionDebt(uint256 _userDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {

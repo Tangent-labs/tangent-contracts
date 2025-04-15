@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC4626, IERC20} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
+
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
@@ -21,8 +22,13 @@ contract RsTanService is LightOwnable {
     /// @notice Maximum value for a uint48.
     uint48 public constant MAX_UINT48 = type(uint48).max;
 
-    /// @notice The ERC20 token that users lock.
-    IERC20 public immutable tan;
+    /// @notice Tangent token. Token that the user locks.
+    IERC20 public tan;
+
+    /// @notice Tangent USD - tgUSD stablecoin.
+    IERC20 public tgUSD;
+
+    IERC4626 public sgUSD;
 
     IRsTanERC721 public rsTanERC721;
 
@@ -87,12 +93,18 @@ contract RsTanService is LightOwnable {
     event RewardNotified(IERC20 indexed _token, uint256 _reward);
     event RewardPaid(uint256 indexed tokenId, IERC20 indexed _rewardToken, uint256 _reward);
 
-    constructor(IRsTanERC721 _rsTanERC721, IControlTower _controlTower, address _owner, IERC20 _tan) {
+    constructor(address _owner, IControlTower _controlTower, IERC20 _tan, IRsTanERC721 _rsTanERC721, IERC20 _tgUSD, IERC4626 _sgUSD) {
+        _transferOwnership(_owner);
+
+        controlTower = _controlTower;
         tan = _tan;
         rsTanERC721 = _rsTanERC721;
-        controlTower = _controlTower;
+        tgUSD = _tgUSD;
+        sgUSD = _sgUSD;
+
+        _tgUSD.approve(address(_sgUSD), type(uint256).max);
+
         kick = KickParams({delay: uint128(ONE_WEEK), percentage: uint128(250)});
-        _transferOwnership(_owner);
     }
 
     modifier updateReward(uint256 tokenId) {
@@ -458,22 +470,28 @@ contract RsTanService is LightOwnable {
      * @dev Only the owner of the position can call the function
      * @param tokenId ID of the position to claim
      */
-    function claimSimple(uint256 tokenId) external updateReward(tokenId) {
+    function claimSimple(uint256 tokenId, bool isClaimAsSgUSD) external updateReward(tokenId) {
         require(rsTanERC721.ownerOf(tokenId) == msg.sender, NotTokenOwner());
 
         uint256 rewardTokensLength = rewardTokens.length;
 
         bool isClaimable;
+        IERC20 _tgUSD = tgUSD;
+        IERC4626 _sgUSD = sgUSD;
 
         for (uint256 rewardIndex; rewardIndex < rewardTokensLength; ) {
             IERC20 _rewardToken = rewardTokens[rewardIndex];
-            uint256 reward = rewards[tokenId][_rewardToken];
+            uint256 rewardAmount = rewards[tokenId][_rewardToken];
 
-            if (reward > 0) {
+            if (rewardAmount > 0) {
                 isClaimable = true;
                 rewards[tokenId][_rewardToken] = 0;
-                emit RewardPaid(tokenId, _rewardToken, reward);
-                _rewardToken.transfer(msg.sender, reward);
+                if (_rewardToken == _tgUSD && isClaimAsSgUSD) {
+                    _sgUSD.deposit(rewardAmount, msg.sender);
+                } else {
+                    _rewardToken.transfer(msg.sender, rewardAmount);
+                }
+                emit RewardPaid(tokenId, _rewardToken, rewardAmount);
             }
 
             unchecked {
@@ -488,7 +506,7 @@ contract RsTanService is LightOwnable {
      *  @notice Claim rewards on one staking contract only
      *  @param positionIds Array of position IDs to claim rewards from
      */
-    function claimMultiple(uint256[] calldata positionIds) external {
+    function claimMultiple(uint256[] calldata positionIds, bool isClaimAsSgUSD) external {
         // User input verification
         rsTanERC721.verifyTokenIdsOwned(msg.sender, positionIds);
         // We save this length on his own variable, to not miss with the assembly manipulations
@@ -503,6 +521,9 @@ contract RsTanService is LightOwnable {
                 ++i;
             }
         }
+
+        IERC20 _tgUSD = tgUSD;
+        IERC4626 _sgUSD = sgUSD;
 
         // Iterates through all of the vaults
         for (uint256 positionIndex; positionIndex < positionsLen; ) {
@@ -520,6 +541,7 @@ contract RsTanService is LightOwnable {
                 if (reward > 0) {
                     isClaimable = true;
                     rewards[positionId][_rewardToken] = 0;
+
                     emit RewardPaid(positionId, _rewardToken, reward);
                     tokenAmount[rewardIndex].amount += reward;
                 }
@@ -540,8 +562,10 @@ contract RsTanService is LightOwnable {
             IERC20 token = tokenAmount[rewardIndex].token;
             uint256 amount = tokenAmount[rewardIndex].amount;
 
-            if (amount != 0) {
-                token.safeTransfer(msg.sender, amount);
+            if (token == _tgUSD && isClaimAsSgUSD) {
+                _sgUSD.deposit(amount, msg.sender);
+            } else {
+                token.transfer(msg.sender, amount);
             }
 
             unchecked {

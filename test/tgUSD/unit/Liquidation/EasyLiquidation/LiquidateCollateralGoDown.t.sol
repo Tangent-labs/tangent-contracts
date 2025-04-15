@@ -81,7 +81,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         assertEq(market.positionDebt(usr1), 0);
         assertEq(market.totalDebt(), tgUSDBorrowed * 2, "Total debt wrong");
 
-        (uint256 ir, uint256 timestamp) = IIRCalculator(irCalculator).irCheckpoint(address(market));
+        (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
         assertEq(ir, 0);
 
@@ -169,7 +169,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         assertEq(market.positionDebt(usr1), 4_000 ether);
         assertEq(market.totalDebt(), tgUSDBorrowed * 2 + 4_000 ether);
 
-        (uint256 ir, uint256 timestamp) = IIRCalculator(irCalculator).irCheckpoint(address(market));
+        (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
         assertEq(ir, 0);
 

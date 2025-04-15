@@ -7,24 +7,26 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
+import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
+
 import {IBridgeChecker} from "../../interfaces/internals/tgUSD/IBridgeChecker.sol";
 import "forge-std/console.sol";
 /// @notice
 contract TgUSD is ERC20, Ownable, ITgUSD {
     IControlTower public controlTower;
 
-    uint256 public mintableInterests;
+    address public irCalculator;
 
-    error CallerNotMinterBurner();
-    error OnlyOwnerCanBridgeIfPermisionlessNotActive();
-    error BridgingNotAllowed();
+    error OnlyMarketCaller();
+    error OnlyIRCalculator();
 
-    constructor(string memory _name, string memory _symbol, address _owner, IControlTower _controlTower) ERC20(_name, _symbol) Ownable(_owner) {
+    constructor(string memory _name, string memory _symbol, address _owner, IControlTower _controlTower, address _irCalculator) ERC20(_name, _symbol) Ownable(_owner) {
         controlTower = _controlTower;
+        irCalculator = _irCalculator;
     }
 
     modifier onlyMarketCaller() {
-        require(controlTower.isMarket(msg.sender), CallerNotMinterBurner());
+        require(controlTower.isMarket(msg.sender), OnlyMarketCaller());
         _;
     }
 
@@ -36,16 +38,12 @@ contract TgUSD is ERC20, Ownable, ITgUSD {
         _burn(from, amount);
     }
 
-    function increaseMintableInterests(uint256 interests) external onlyMarketCaller {
-        mintableInterests += interests;
-    }
-
     function burn(uint256 amount) external {
         _burn(msg.sender, amount);
     }
 
-    function mintIR() external {
-        _mint(controlTower.feeTreasury(), mintableInterests);
-        delete mintableInterests;
+    function mintIR(uint256 amount) external {
+        require(msg.sender == irCalculator, OnlyIRCalculator());
+        _mint(controlTower.feeTreasury(), amount);
     }
 }

@@ -9,31 +9,34 @@ abstract contract HMarketBase is HandlerBase {
     function _beforBorrowOrRepayCheck(
         MarketCore _market
     ) internal view returns (uint256 totalDebtShares, uint256 newInterests, uint256 newDebtIndex, uint256 positionDebt, uint256 mintableInterests, uint256 oldTotalDebt) {
-        mintableInterests = _market.tgUSD().mintableInterests();
+        IIRCalculator irCalculator = _market.irCalculator();
+        mintableInterests = irCalculator.mintableInterests();
         positionDebt = _market.positionDebt(sender);
 
-        (uint256 ir, uint256 timestamp) = _market.irCalculator().irCheckpoint(address(_market));
+        (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(_market));
 
         uint256 timeDelta = block.timestamp - timestamp;
         totalDebtShares = _market.totalDebtShares();
-        oldTotalDebt = (_market.debtIndex() * totalDebtShares) / RAY;
+        oldTotalDebt = (irCalculator.debtIndexes(address(market)) * totalDebtShares) / RAY;
         uint256 increaseCoeff;
         if (timeDelta == 0) {
             increaseCoeff = 0;
             newInterests = 0;
-            newDebtIndex = _market.debtIndex();
+            newDebtIndex = irCalculator.debtIndexes(address(market));
         } else {
             increaseCoeff = (ir * timeDelta) / 365 days;
             newInterests = (increaseCoeff * oldTotalDebt) / RAY;
-            newDebtIndex = _market.debtIndex() + increaseCoeff;
+            newDebtIndex = irCalculator.debtIndexes(address(market)) + increaseCoeff;
         }
     }
 
     function _afterCheckpointGlobal(MarketCore _market, uint256 interests, uint256 newDebtIndex, uint256 mintableInterests) internal view {
-        (uint256 ir, uint256 timestamp) = _market.irCalculator().irCheckpoint(address(_market));
+        IIRCalculator irCalculator = _market.irCalculator();
 
-        assertEq(_market.debtIndex(), newDebtIndex, "New total debt index incremented");
-        assertEq(_market.tgUSD().mintableInterests(), mintableInterests + interests, "New interests increments mintableInterests");
+        (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(_market));
+
+        assertEq(irCalculator.debtIndexes(address(market)), newDebtIndex, "New total debt index incremented");
+        assertEq(irCalculator.mintableInterests(), mintableInterests + interests, "New interests increments mintableInterests");
         assertEq(timestamp, block.timestamp, "Last block IR changed has been updated");
     }
 
@@ -53,7 +56,7 @@ abstract contract HMarketBase is HandlerBase {
     ) internal view {
         assertApproxEqAbs(
             borrowedAmount + interests,
-            (_market.totalDebtShares() * _market.debtIndex()) / RAY - oldTotalDebt,
+            (_market.totalDebtShares() * _market.irCalculator().debtIndexes(address(_market))) / RAY - oldTotalDebt,
             1,
             "Total debt added is equal to borrowed amount + the interests sasa"
         );

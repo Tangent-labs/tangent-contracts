@@ -79,7 +79,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
             soc = Sociabilization({socFeePercentage: 0, socFeePending: 0});
         }
 
-        (uint256 ir, ) = irCalculator.irCheckpoint(_market);
+        (, uint216 ir) = irCalculator.irCheckpoints(_market);
 
         ICollateral _marketCollateral = marketCollateral;
 

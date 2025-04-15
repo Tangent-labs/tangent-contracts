@@ -13,6 +13,9 @@ import "forge-std/console.sol";
 abstract contract MarketCore is PauseSettings, Rewards {
     IControlTower public controlTower;
 
+    /// @notice Liquidation proxy
+    ILiquidatorProxy public liquidatorProxy;
+
     error AlreadyInitialized();
     error TotalDebtTooHigh();
     error PositionDebtTooHigh();
@@ -64,8 +67,6 @@ abstract contract MarketCore is PauseSettings, Rewards {
         maxMarketDebt = _marketInit.maxMarketDebt;
         minimumLoan = _marketInit.minimumLoan;
 
-        debtIndex = RAY;
-
         // Gives ownership to the DAO
         _transferOwnership(_globalParams._owner);
     }
@@ -80,21 +81,13 @@ abstract contract MarketCore is PauseSettings, Rewards {
      *  @param account             Address of the account to update
      *  @param newCollatBalance    New collateral balance of account
      *  @param newUserDebtShares   New user debt shares of the account
-     *  @param newDebtIndex        New index of the debt
      *  @param newTotalDebtShares  New total debt shares of the market
      */
-    function _updateCollatAndDebts(
-        address account,
-        uint256 newCollatBalance,
-        uint256 newTotalCollat,
-        uint256 newUserDebtShares,
-        uint256 newDebtIndex,
-        uint256 newTotalDebtShares
-    ) internal {
+    function _updateCollatAndDebts(address account, uint256 newCollatBalance, uint256 newTotalCollat, uint256 newUserDebtShares, uint256 newTotalDebtShares) internal {
         _updateCollateral(account, newCollatBalance, newTotalCollat);
 
         // Updates global and user debt
-        _updateDebts(account, newDebtIndex, newUserDebtShares, newTotalDebtShares);
+        _updateDebts(account, newUserDebtShares, newTotalDebtShares);
     }
 
     /**
@@ -106,8 +99,6 @@ abstract contract MarketCore is PauseSettings, Rewards {
      */
     function _updateCollatAndGlobalDebt(address account, uint256 newCollatBalance, uint256 newTotalCollat, uint256 newDebtIndex) internal {
         _updateCollateral(account, newCollatBalance, newTotalCollat);
-        // Updates global debt
-        debtIndex = newDebtIndex;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -118,7 +109,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
 
     function _deposit(address _for, uint256 amountDeposited) internal {
         // Verify that newDebt is over the minimum loan
-        (uint256 newDebtIndex, ) = _checkpointIR();
+        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
 
         // Increase collateral balance of the position and update total debt
         _updateCollatAndGlobalDebt(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited, newDebtIndex);
@@ -150,7 +141,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
     }
 
     function _withdraw(uint256 amountToWithdraw) internal {
-        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
+        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
 
         // Increase collateral deposited by the user
         _updateCollatAndGlobalDebt(
@@ -167,9 +158,9 @@ abstract contract MarketCore is PauseSettings, Rewards {
                             BORROW 
                                                     ------ */
 
-    function _borrow(address borrower, address receiver, uint256 tgUSDToBorrow, uint256 collatAmount, bool isLeverage) internal returns (uint256, uint256, uint256) {
+    function _borrow(address borrower, address receiver, uint256 tgUSDToBorrow, uint256 collatAmount, bool isLeverage) internal returns (uint256, uint256) {
         require(tgUSDToBorrow != 0, ZeroDebtAmount());
-        (uint256 newDebtIndex, uint256 _totalDebtShares) = _checkpointIR();
+        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
 
         uint256 _userDebtShares = userDebtShares[borrower];
 
@@ -192,28 +183,28 @@ abstract contract MarketCore is PauseSettings, Rewards {
             tgUSD.mint(receiver, tgUSDToBorrow);
         }
 
-        return (_userDebtShares + newUserDebtShares, newDebtIndex, _totalDebtShares + newUserDebtShares);
+        return (_userDebtShares + newUserDebtShares, totalDebtShares + newUserDebtShares);
     }
 
     function _depositAndBorrow(address borrower, uint256 amountDeposited, uint256 tgUSDToBorrow, bool isLeverage) internal {
         // Collat amount after the deposit
         uint256 newCollatAmount = collateralBalances[borrower] + amountDeposited;
 
-        (uint256 newUserShare, uint256 newDebtIndex, uint256 newTotalDebt) = _borrow(borrower, borrower, tgUSDToBorrow, newCollatAmount, isLeverage);
+        (uint256 newUserDebtShare, uint256 newTotalDebtShares) = _borrow(borrower, borrower, tgUSDToBorrow, newCollatAmount, isLeverage);
 
-        _updateCollatAndDebts(borrower, newCollatAmount, totalCollateral + amountDeposited, newUserShare, newDebtIndex, newTotalDebt);
+        _updateCollatAndDebts(borrower, newCollatAmount, totalCollateral + amountDeposited, newUserDebtShare, newTotalDebtShares);
     }
 
     /* --------
                             REPAY
                                                     ------ */
 
-    function _repay(address account, uint256 tgUSDToRepay, address burnAddress) internal returns (uint256, uint256, uint256) {
+    function _repay(address account, uint256 tgUSDToRepay, address burnAddress) internal returns (uint256, uint256) {
         // Cannot repay 0 debt
         require(tgUSDToRepay != 0, ZeroDebtAmount());
 
         // Update interests rate, computes new debt index and total debt.
-        (uint256 newDebtIndex, uint256 _totalDebtShares) = _checkpointIR();
+        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
 
         uint256 _userDebtShares = userDebtShares[account];
 
@@ -252,12 +243,12 @@ abstract contract MarketCore is PauseSettings, Rewards {
 
         // Burns tgUSD from the burnAddress as a repayment of the debt
         tgUSD.burnFrom(burnAddress, tgUSDToRepay);
-        return (newUserDebtShares, newDebtIndex, _totalDebtShares - sharesToRemove);
+        return (newUserDebtShares, totalDebtShares - sharesToRemove);
     }
 
     function _withdrawAndRepay(uint256 amountToWithdraw, uint256 tgUSDToRepay, address caller) internal {
         // Call _repay function in order to checkpoint the total debt, computes new User debt and burn corresponding amount of tgUSD.
-        (uint256 newUserDebtShares, uint256 newDebtIndex, uint256 newTotalDebtShares) = _repay(caller, tgUSDToRepay, caller);
+        (uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(caller, tgUSDToRepay, caller);
 
         //TODO Problem with the _getBalanceAfterWithdrawAndCheckMaxBorrowable
         _updateCollatAndDebts(
@@ -265,20 +256,29 @@ abstract contract MarketCore is PauseSettings, Rewards {
             _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, newUserDebtShares),
             totalCollateral - amountToWithdraw,
             newUserDebtShares,
-            newDebtIndex,
             newTotalDebtShares
         );
     }
 
     /* --------
-                        LIQUIDATION
+                            LIQUIDATION
                                                     ------ */
 
-    function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256) {
+    /**
+     *  @dev  Checkpoints IR and debt index and fetches collateral balance and user debt shares.
+     *  @param account             Address of the account to update
+     *  @return collatBalance      Collateral balance of the account
+     *  @return totalCollateral    Collateral balance of the account
+     *  @return userDebtShares     User debt shares
+     *  @return totalDebtShares    Total debt shares of the market
+     *  @return userDebt           User debt adjusted with the new index
+     */
+    function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256, uint256) {
         // Checkpoint IR
-        (uint256 newDebtIndex, uint256 newTotalDebt) = _checkpointIR();
+        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
+        uint256 _userDebtShares = userDebtShares[account];
 
-        return (newDebtIndex, newTotalDebt, _positionDebt(userDebtShares[account], newDebtIndex), collateralBalances[account]);
+        return (collateralBalances[account], totalCollateral, _userDebtShares, totalDebtShares, _positionDebt(_userDebtShares, newDebtIndex));
     }
 
     function _liquidate(LiquidateCall memory liquidateCall, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) internal {
@@ -286,35 +286,36 @@ abstract contract MarketCore is PauseSettings, Rewards {
 
         uint256 collatAmountToLiquidate;
         uint256 newCollatBalance;
-        uint256 remainingDebt;
+        uint256 debtSharesToRemove;
         uint256 tgUSDToRepay;
 
         // Liquidate all
         if (liquidateCall.tgUSDToRepay >= liquidateCall.userDebt) {
             tgUSDToRepay = liquidateCall.userDebt;
-            collatAmountToLiquidate = liquidateCall.collatBalance;
+            collatAmountToLiquidate = liquidateCall._collateralBalance;
+            debtSharesToRemove = liquidateCall._userDebtShares;
         }
         // Liquidate partial
         else {
             tgUSDToRepay = liquidateCall.tgUSDToRepay;
+            debtSharesToRemove = (tgUSDToRepay * RAY) / liquidateCall.newDebtIndex;
+
             // Computes the amount of collateral to liquidate by proportionnality
-            collatAmountToLiquidate = (liquidateCall.collatBalance * tgUSDToRepay) / liquidateCall.userDebt;
+            collatAmountToLiquidate = (liquidateCall._collateralBalance * tgUSDToRepay) / liquidateCall.userDebt;
             // Computes the new balance of collateral after the partial liquidation
-            newCollatBalance = liquidateCall.collatBalance - collatAmountToLiquidate;
-            // Computes the debt remaining for the position
-            remainingDebt = liquidateCall.userDebt - tgUSDToRepay;
-            // Ensure that the remaining debt is bigger than a minimum in order to leave a profitable liquidation
-            require(remainingDebt >= minimumLoan, PositionDebtTooLow());
+            newCollatBalance = liquidateCall._collateralBalance - collatAmountToLiquidate;
+
+            // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
+            require(liquidateCall.userDebt - tgUSDToRepay >= minimumLoan, PositionDebtTooLow());
         }
 
         // Modify the collateral balance, the user debt and the total debt
         _updateCollatAndDebts(
             liquidateCall.account,
             newCollatBalance,
-            totalCollateral - collatAmountToLiquidate,
-            remainingDebt,
-            liquidateCall.newDebtIndex,
-            liquidateCall.newTotalDebt - tgUSDToRepay
+            liquidateCall._totalCollateral - collatAmountToLiquidate,
+            liquidateCall._userDebtShares - debtSharesToRemove,
+            liquidateCall._totalDebtShares - debtSharesToRemove
         );
 
         ILiquidatorProxy _liquidatorProxy = liquidatorProxy;
@@ -336,13 +337,20 @@ abstract contract MarketCore is PauseSettings, Rewards {
         emit Liquidate(liquidateCall.account, tgUSDToRepay, collatAmountToLiquidate, liquidator);
     }
 
-    function _liquidateBadDebt(address account, uint256 userDebt, uint256 collatBalance, uint256 newTotalDebt, uint256 newDebtIndex) internal {
+    function _liquidateBadDebt(
+        address account,
+        uint256 _collateralBalance,
+        uint256 _totalCollateral,
+        uint256 _userDebtShares,
+        uint256 _totalDebtShares,
+        uint256 userDebt
+    ) internal {
         // Updates total and user values for collaterals & debts
         // Collat Balance and user debt are updated to 0 because the whole position is liquidated
-        _updateCollatAndDebts(account, 0, totalCollateral - collatBalance, 0, newDebtIndex, newTotalDebt - userDebt);
+        _updateCollatAndDebts(account, 0, _totalCollateral - _collateralBalance, 0, _totalDebtShares - _userDebtShares);
         // The collateral is sent to the DAO to decide what to do with it
         //TODO Check who is the receiver of the collateral
-        _transferCollateralWithdraw(controlTower.feeTreasury(), collatBalance);
+        _transferCollateralWithdraw(controlTower.feeTreasury(), _collateralBalance);
 
         // Bad debt is written in the market
         badDebt += userDebt;

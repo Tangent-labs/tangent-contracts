@@ -1,4 +1,4 @@
-import {formatEther, parseEther} from "ethers";
+import {formatEther, parseEther, formatUnits, parseUnits} from "ethers";
 const args = process.argv;
 
 let tgUSDPrice = args[2];
@@ -47,12 +47,6 @@ function computeIR(tgUSDPrice, isHEC, rMin, rMax, pMin, pInf, pMax, a1, a2, k) {
     const priceRatio = quotient ** alpha;
 
     const irIncrement = Number(formatUnits(rMax - rMin, 5)) * priceRatio;
-
-    // console.log("sigma", sigma);
-    // console.log("alpha", alpha);
-    // console.log("quotient", quotient);
-    // console.log("priceRatio", priceRatio);
-    // console.log("irIncrement", irIncrement);
 
     const ir = Number(formatUnits(rMin, 5)) + irIncrement;
 

@@ -1,10 +1,11 @@
-import "forge-std/console.sol";
-import "forge-std/Test.sol";
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+import "../../tgUSD/contexts/ConvexCurveContext.sol";
 
 import "../../../src/chainview/boosters/BoosterOutExpected.cv.sol";
 import "../../../src/chainview/boosters/BoosterDetail.cv.sol";
 import "../../../src/chainview/boosters/BoosterList.cv.sol";
-contract BoosterChainview is Test {
+contract BoosterChainview is ConvexCurveContext {
     // LIST
     function test_booster_list_not_connected() public {
         try new BoosterList(address(0)) {} catch (bytes memory reason) {

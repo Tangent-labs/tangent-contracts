@@ -105,8 +105,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         tan = new Tan();
         rsTanERC721 = new RsTanERC721(owner);
-        rsTanService = new RsTanService(rsTanERC721, controlTower, owner, tan);
-        rsTanERC721.setService(address(rsTanService));
 
         // Deploy tgUSD on Base
         // tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
@@ -115,11 +113,13 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         // assertEq(address(tgUsdBase), address(tgUSD), "Should be equals with CREATE3");
 
-        rsTanService.addNewReward(tgUSD);
-
         liquidatorProxy = new LiquidatorProxy(tgUSD);
 
         sgUSD = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(tgUSD), "Staked tgUSD", "sgUSD", owner, 7 days));
+
+        rsTanService = new RsTanService(owner, controlTower, tan, rsTanERC721, tgUSD, sgUSD);
+        rsTanERC721.setService(address(rsTanService));
+        rsTanService.addNewReward(tgUSD);
 
         mockEnsoRouter = new MockEnsoRouter();
 

@@ -9,6 +9,5 @@ interface IDebtIR {
     function maxMarketDebt() external view returns (uint256);
     function irCalculator() external view returns (IIRCalculator);
     function minimumLoan() external view returns (uint256);
-
-    function checkpointIR() external;
+    function totalDebtShares() external view returns (uint256);
 }

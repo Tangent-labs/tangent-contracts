@@ -19,8 +19,6 @@ abstract contract Collateral is DebtIR, ICollateral {
     IERC20Metadata public collatToken;
     /// @notice Contract allowing to retrieve the price in dollar of the collateral.
     IPriceOracle public collatOracle;
-    /// @notice Liquidation proxy
-    ILiquidatorProxy public liquidatorProxy;
 
     /// @notice Maxium Loan to Value of the market in %.
     uint256 public maxLTV;

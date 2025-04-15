@@ -44,11 +44,14 @@ struct RCParams {
 }
 
 struct IRCheckpoint {
-    uint256 ir;
-    uint256 timestamp;
+    uint216 ir;
+    uint40 timestamp;
 }
 interface IIRCalculator {
     function setUpMarket(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external;
+
+    function initializeMarket(address market, IRParams calldata _irParam) external;
+
     function simulateIR(uint256 tgUSDPrice, IRParams memory irParam) external view returns (uint256);
     function computeIRForMarket(address market) external returns (uint256);
     function simulateRC(
@@ -61,11 +64,15 @@ interface IIRCalculator {
     ) external pure returns (uint256);
     function computeRCForMarket(address market) external returns (uint256);
 
-    function checkpointIR(uint256 oldIndex) external returns (uint256);
+    function checkpointIR(address market) external returns (uint256);
 
-    function simulateNewDebtIndex(uint256 oldIndex, uint256 ir, uint256 timeDelta) external returns (uint256);
+    function newDebtIndex(address market) external view returns (uint256);
 
-    function newDebtIndex(address market, uint256 oldIndex) external view returns (uint256);
+    function irCheckpoints(address market) external view returns (uint216, uint40);
 
-    function irCheckpoint(address market) external view returns (uint256, uint256);
+    function debtIndexes(address market) external view returns (uint256);
+
+    function indexDelta(address market) external view returns (uint256);
+
+    function mintableInterests() external view returns (uint256);
 }

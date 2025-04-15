@@ -41,9 +41,9 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         skip(800);
 
         // Update IR on the market
-        market.checkpointIR();
+        irCalculator.checkpointIR(address(market));
 
-        (uint256 ir, uint256 timestamp) = IIRCalculator(irCalculator).irCheckpoint(address(market));
+        (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
         assertGt(ir, 40 ether, "IR skyrockets as peg of tgUSD is low");
 

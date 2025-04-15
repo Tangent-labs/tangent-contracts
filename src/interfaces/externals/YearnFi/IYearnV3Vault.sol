@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-interface IYearnV3Vault {
+
+import "@openzeppelin/contracts/interfaces/IERC4626.sol";
+
+interface IYearnV3Vault is IERC4626 {
     function initialize(address asset, string memory name, string memory symbol, address role_manager, uint256 profit_max_unlock_time) external;
     function setName(string memory name) external;
     function setSymbol(string memory symbol) external;

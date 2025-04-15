@@ -32,7 +32,7 @@ contract OraclesContext is TgUSDDeployContext {
         tgUSDOracle = IAggregatorStablePriceV3(deployCode("AggregatorStablePriceV3", abi.encode(tgUSD, uint256(1000000000000000), owner)));
         vm.label(address(tgUSDOracle), "Oracle tgUSD");
 
-        irCalculator = new IRCalculator(owner, controlTower, tgUSDOracle);
+        irCalculator = new IRCalculator(owner, controlTower, tgUSDOracle, tgUSD);
         marketCreator = new MarketCreator(
             owner,
             controlTower,
