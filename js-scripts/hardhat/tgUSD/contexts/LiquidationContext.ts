@@ -130,7 +130,7 @@ export class LiquidationContext {
     }
 
     async unbalanceContext() {
-        const amount = 6_900_000;
+        const amount = 5_900_000;
 
 
         if (!this.marketAddresses?.length || !this.baseContext) throw new Error("Contracts not depoyed");

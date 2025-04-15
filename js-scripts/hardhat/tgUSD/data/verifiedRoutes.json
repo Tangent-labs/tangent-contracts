@@ -7,36 +7,40 @@
         "out": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         "display": "USDC/fxUSD >> USDC/fxUSD >> USDC "
       },
-      "coins": [
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "0x085780639CC2cACd35E474e71f4d000e2405d8f6"
-      ],
-      "swapParams": [
-        1,
-        0,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "0x085780639CC2cACd35E474e71f4d000e2405d8f6"
+        ],
+        "swapParams": [
+          1,
+          0,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
         "in": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "pool": "0x9804C30875127246AC92D72D5CDF0630aA356861",
-        "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+        "pool": "0x08603801aa981b0F6b5cfbc645D1CBb5b4a090e6",
+        "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
         "display": "USDC >> tgUSD-USDC* >> tgUSD* "
       },
-      "coins": [
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "0x8729c0238b265BaCF6fE397E8309897BB5c40473"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -45,17 +49,19 @@
         "out": "0x15700b564ca08d9439c58ca5053166e8317aa138",
         "display": "USDC >> deUSD/USDC >> deUSD "
       },
-      "coins": [
-        "0x15700B564Ca08D9439C58cA5053166E8317aa138",
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x15700B564Ca08D9439C58cA5053166E8317aa138",
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -64,52 +70,58 @@
         "out": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
         "display": "deUSD >> deUSD/DOLA >> DOLA "
       },
-      "coins": [
-        "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "0x15700B564Ca08D9439C58cA5053166E8317aa138"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "0x15700B564Ca08D9439C58cA5053166E8317aa138"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
         "in": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "pool": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
-        "out": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
+        "pool": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
+        "out": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
         "display": "DOLA >> wDOLA* >> wDOLA* "
       },
-      "coins": [],
-      "swapParams": [
-        0,
-        0,
-        9,
-        1,
-        0
-      ]
+      "result": {
+        "coins": [],
+        "swapParams": [
+          0,
+          0,
+          9,
+          1,
+          0
+        ]
+      }
     },
     {
       "route": {
-        "in": "0x294c69bD8415219b41B68a2f065DeABB950dd489",
-        "pool": "0xb96f238D75663CEb962917cEBA631594a4C1d554",
-        "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+        "in": "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
+        "pool": "0x1eF8B6Ea6434e722C916314caF8Bf16C81cAF2f9",
+        "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
         "display": "wDOLA* >> tgUSD-wDOLA* >> tgUSD* "
       },
-      "coins": [
-        "0x294c69bD8415219b41B68a2f065DeABB950dd489",
-        "0x8729c0238b265BaCF6fE397E8309897BB5c40473"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xaE7b7A1c6C4d859e19301ccAc2C6eD28A4C51288",
+          "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -118,52 +130,58 @@
         "out": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
         "display": "USDC >> crvUSD/USDC >> crvUSD "
       },
-      "coins": [
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
         "in": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
-        "pool": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
-        "out": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
+        "pool": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
+        "out": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
         "display": "crvUSD >> wcrvUSD* >> wcrvUSD* "
       },
-      "coins": [],
-      "swapParams": [
-        0,
-        0,
-        9,
-        1,
-        0
-      ]
+      "result": {
+        "coins": [],
+        "swapParams": [
+          0,
+          0,
+          9,
+          1,
+          0
+        ]
+      }
     },
     {
       "route": {
-        "in": "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
-        "pool": "0x7B707fE05B490b5F334432e345f1c23c72d3f464",
-        "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+        "in": "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
+        "pool": "0x459525a49deF2cA421ab83E4f283Cc1cEc09248C",
+        "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
         "display": "wcrvUSD* >> tgUSD-wcrvUSD* >> tgUSD* "
       },
-      "coins": [
-        "0x91c8C745fd156d8624677aa924Cdc1Ef8173C69C",
-        "0x8729c0238b265BaCF6fE397E8309897BB5c40473"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x97915c43511f8cB4Fbe7Ea03B96EEe940eC4AF12",
+          "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -172,52 +190,58 @@
         "out": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
         "display": "USDC >> USR/USDC >> USR "
       },
-      "coins": [
-        "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110",
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110",
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
         "in": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
-        "pool": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
-        "out": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
+        "pool": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
+        "out": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
         "display": "USR >> wUSR* >> wUSR* "
       },
-      "coins": [],
-      "swapParams": [
-        0,
-        0,
-        9,
-        1,
-        0
-      ]
+      "result": {
+        "coins": [],
+        "swapParams": [
+          0,
+          0,
+          9,
+          1,
+          0
+        ]
+      }
     },
     {
       "route": {
-        "in": "0x7c77704007C9996Ee591C516f7319828BA49d91E",
-        "pool": "0x00836Fe54625BE242BcFA286207795405ca4fD10",
-        "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+        "in": "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
+        "pool": "0xcc7d5785AD5755B6164e21495E07aDb0Ff11C2A8",
+        "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
         "display": "wUSR* >> tgUSD-wUSR* >> tgUSD* "
       },
-      "coins": [
-        "0x7c77704007C9996Ee591C516f7319828BA49d91E",
-        "0x8729c0238b265BaCF6fE397E8309897BB5c40473"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xeA2e668d430e5AA15babA2f5c5edfd4F9Ef6EB73",
+          "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -226,52 +250,58 @@
         "out": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
         "display": "USDC >> USDC/USDe >> USDe "
       },
-      "coins": [
-        "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
         "in": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
-        "pool": "0x88777418972fB3F58489303d763d4DaF398A6527",
-        "out": "0x88777418972fB3F58489303d763d4DaF398A6527",
+        "pool": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
+        "out": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
         "display": "USDe >> wUSDe* >> wUSDe* "
       },
-      "coins": [],
-      "swapParams": [
-        0,
-        0,
-        9,
-        1,
-        0
-      ]
+      "result": {
+        "coins": [],
+        "swapParams": [
+          0,
+          0,
+          9,
+          1,
+          0
+        ]
+      }
     },
     {
       "route": {
-        "in": "0x88777418972fB3F58489303d763d4DaF398A6527",
-        "pool": "0x152ad1044935675Cb31e0d4B205FcBD4C4507d65",
-        "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+        "in": "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
+        "pool": "0x6d18E1a7faeB1F0467A77C0d293872ab685426dc",
+        "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
         "display": "wUSDe* >> tgUSD-wUSDe* >> tgUSD* "
       },
-      "coins": [
-        "0x88777418972fB3F58489303d763d4DaF398A6527",
-        "0x8729c0238b265BaCF6fE397E8309897BB5c40473"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x4633394E4Fd1175273845d7F0d6A5F613309d384",
+          "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -280,17 +310,19 @@
         "out": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
         "display": "USDC >> FRAX/USDC >> FRAX "
       },
-      "coins": [
-        "0x853d955aCEf822Db058eb8505911ED77F175b99e",
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -299,52 +331,58 @@
         "out": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
         "display": "FRAX >> FRAX/frxUSD >> frxUSD "
       },
-      "coins": [
-        "0x853d955aCEf822Db058eb8505911ED77F175b99e",
-        "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+          "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
         "in": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
-        "pool": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
-        "out": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
+        "pool": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
+        "out": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
         "display": "frxUSD >> wfrxUSD* >> wfrxUSD* "
       },
-      "coins": [],
-      "swapParams": [
-        0,
-        0,
-        9,
-        1,
-        0
-      ]
+      "result": {
+        "coins": [],
+        "swapParams": [
+          0,
+          0,
+          9,
+          1,
+          0
+        ]
+      }
     },
     {
       "route": {
-        "in": "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
-        "pool": "0xd0458217512cc5D02391bAEa5aFc01827DD8E779",
-        "out": "0x8729c0238b265BaCF6fE397E8309897BB5c40473",
+        "in": "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
+        "pool": "0x5b05497fE6C1bD226845c89e42b2bd9f50510996",
+        "out": "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A",
         "display": "wfrxUSD* >> tgUSD-wfrxUSD* >> tgUSD* "
       },
-      "coins": [
-        "0xA7240bcff60Eef40F31B8eD5d921BaD6DB13B199",
-        "0x8729c0238b265BaCF6fE397E8309897BB5c40473"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xDb731EaaFA0FFA7854A24C2379585a85D768Ed5C",
+          "0x71d75C9A9e1a4fFa5a16556b51D6e630A4FA902A"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -353,17 +391,19 @@
         "out": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         "display": "USDC/crvUSD >> USDC/crvUSD >> USDC "
       },
-      "coins": [
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
-      ],
-      "swapParams": [
-        1,
-        0,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+        ],
+        "swapParams": [
+          1,
+          0,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -372,17 +412,19 @@
         "out": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
         "display": "USDC/crvUSD >> USDC/crvUSD >> crvUSD "
       },
-      "coins": [
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
-      ],
-      "swapParams": [
-        0,
-        1,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+        ],
+        "swapParams": [
+          0,
+          1,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -391,17 +433,19 @@
         "out": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
         "display": "crvUSD >> crvUSD/DOLA >> DOLA "
       },
-      "coins": [
-        "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -410,17 +454,19 @@
         "out": "0xdac17f958d2ee523a2206206994597c13d831ec7",
         "display": "USDT/crvUSD >> USDT/crvUSD >> USDT "
       },
-      "coins": [
-        "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-        "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
-      ],
-      "swapParams": [
-        1,
-        0,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+        ],
+        "swapParams": [
+          1,
+          0,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -429,17 +475,19 @@
         "out": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         "display": "USDT >> USDT/USDC >> USDC "
       },
-      "coins": [
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -448,17 +496,19 @@
         "out": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
         "display": "USDT/crvUSD >> USDT/crvUSD >> crvUSD "
       },
-      "coins": [
-        "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-        "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
-      ],
-      "swapParams": [
-        0,
-        1,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+        ],
+        "swapParams": [
+          0,
+          1,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -467,17 +517,19 @@
         "out": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
         "display": "crvUSD >> crvUSD/FRAX >> FRAX "
       },
-      "coins": [
-        "0x853d955aCEf822Db058eb8505911ED77F175b99e",
-        "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+          "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -486,17 +538,19 @@
         "out": "0x9d39a5de30e57443bff2a8307a4256c8797a3497",
         "display": "sDAI/sUSDe >> sDAI/sUSDe >> sUSDe "
       },
-      "coins": [
-        "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
-        "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
-      ],
-      "swapParams": [
-        0,
-        1,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
+          "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
+        ],
+        "swapParams": [
+          0,
+          1,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -505,17 +559,19 @@
         "out": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
         "display": "sUSDe >> DOLA/sUSDe >> DOLA "
       },
-      "coins": [
-        "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -524,17 +580,19 @@
         "out": "0x0655977feb2f289a4ab78af67bab0d17aab84367",
         "display": "sUSDe >> scrvUSD/sUSDe >> scrvUSD "
       },
-      "coins": [
-        "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
-        "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
+          "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -543,14 +601,16 @@
         "out": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
         "display": "scrvUSD >> scrvUSD >> crvUSD "
       },
-      "coins": [],
-      "swapParams": [
-        1,
-        0,
-        9,
-        1,
-        0
-      ]
+      "result": {
+        "coins": [],
+        "swapParams": [
+          1,
+          0,
+          9,
+          1,
+          0
+        ]
+      }
     },
     {
       "route": {
@@ -559,17 +619,19 @@
         "out": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
         "display": "DOLA >> DOLA/USR >> USR "
       },
-      "coins": [
-        "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -578,17 +640,19 @@
         "out": "0x83f20f44975d03b1b09e64809b757c47f942beea",
         "display": "sDAI/sUSDe >> sDAI/sUSDe >> sDAI "
       },
-      "coins": [
-        "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
-        "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
-      ],
-      "swapParams": [
-        1,
-        0,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
+          "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
+        ],
+        "swapParams": [
+          1,
+          0,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -597,17 +661,19 @@
         "out": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
         "display": "sDAI >> sDAI/FRAX >> FRAX "
       },
-      "coins": [
-        "0x853d955aCEf822Db058eb8505911ED77F175b99e",
-        "0x83F20F44975D03b1b09e64809B757c47f942BEeA"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+          "0x83F20F44975D03b1b09e64809B757c47f942BEeA"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -616,17 +682,19 @@
         "out": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         "display": "USDC/USDT >> USDC/USDT >> USDC "
       },
-      "coins": [
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-      ],
-      "swapParams": [
-        1,
-        0,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+        ],
+        "swapParams": [
+          1,
+          0,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -635,17 +703,19 @@
         "out": "0xdac17f958d2ee523a2206206994597c13d831ec7",
         "display": "USDC/USDT >> USDC/USDT >> USDT "
       },
-      "coins": [
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-      ],
-      "swapParams": [
-        0,
-        1,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+        ],
+        "swapParams": [
+          0,
+          1,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -654,17 +724,19 @@
         "out": "0x15700b564ca08d9439c58ca5053166e8317aa138",
         "display": "USDT >> deUSD/USDT >> deUSD "
       },
-      "coins": [
-        "0x15700B564Ca08D9439C58cA5053166E8317aa138",
-        "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x15700B564Ca08D9439C58cA5053166E8317aa138",
+          "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -673,17 +745,19 @@
         "out": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
         "display": "USDT >> crvUSD/USDT >> crvUSD "
       },
-      "coins": [
-        "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-        "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -692,17 +766,19 @@
         "out": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
         "display": "USR/RLP >> USR/RLP >> USR "
       },
-      "coins": [
-        "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110",
-        "0x4956b52aE2fF65D74CA2d61207523288e4528f96"
-      ],
-      "swapParams": [
-        1,
-        0,
-        6,
-        2,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110",
+          "0x4956b52aE2fF65D74CA2d61207523288e4528f96"
+        ],
+        "swapParams": [
+          1,
+          0,
+          6,
+          2,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -711,17 +787,19 @@
         "out": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         "display": "USR >> USR/USDC >> USDC "
       },
-      "coins": [
-        "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110",
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110",
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -730,17 +808,19 @@
         "out": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
         "display": "USR >> DOLA/USR >> DOLA "
       },
-      "coins": [
-        "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -749,17 +829,19 @@
         "out": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
         "display": "frxUSD/USDe >> frxUSD/USDe >> USDe "
       },
-      "coins": [
-        "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
-        "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3"
-      ],
-      "swapParams": [
-        0,
-        1,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+          "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3"
+        ],
+        "swapParams": [
+          0,
+          1,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -768,17 +850,19 @@
         "out": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
         "display": "USDe >> USDC/USDe >> USDC "
       },
-      "coins": [
-        "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
-        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
+          "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -787,17 +871,19 @@
         "out": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
         "display": "frxUSD/USDe >> frxUSD/USDe >> frxUSD "
       },
-      "coins": [
-        "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
-        "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3"
-      ],
-      "swapParams": [
-        1,
-        0,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+          "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3"
+        ],
+        "swapParams": [
+          1,
+          0,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -806,17 +892,19 @@
         "out": "0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
         "display": "frxUSD >> sUSDS/frxUSD >> sUSDS "
       },
-      "coins": [
-        "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
-        "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+          "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -825,17 +913,19 @@
         "out": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
         "display": "sUSDS >> DOLA/sUSDS >> DOLA "
       },
-      "coins": [
-        "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -844,17 +934,19 @@
         "out": "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
         "display": "USDe >> crvUSD/USDe >> crvUSD "
       },
-      "coins": [
-        "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
-        "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x4c9EDD5852cd905f086C759E8383e09bff1E68B3",
+          "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -863,17 +955,19 @@
         "out": "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
         "display": "DOLA/USR >> DOLA/USR >> USR "
       },
-      "coins": [
-        "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110"
-      ],
-      "swapParams": [
-        0,
-        1,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110"
+        ],
+        "swapParams": [
+          0,
+          1,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -882,17 +976,19 @@
         "out": "0x865377367054516e17014CcdED1e7d814EDC9ce4",
         "display": "DOLA/USR >> DOLA/USR >> DOLA "
       },
-      "coins": [
-        "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110"
-      ],
-      "swapParams": [
-        1,
-        0,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110"
+        ],
+        "swapParams": [
+          1,
+          0,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -901,17 +997,19 @@
         "out": "0x0655977feb2f289a4ab78af67bab0d17aab84367",
         "display": "DOLA >> DOLA/scrvUSD >> scrvUSD "
       },
-      "coins": [
-        "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -920,17 +1018,19 @@
         "out": "0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
         "display": "DOLA >> DOLA/sUSDS >> sUSDS "
       },
-      "coins": [
-        "0x865377367054516e17014CcdED1e7d814EDC9ce4",
-        "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x865377367054516e17014CcdED1e7d814EDC9ce4",
+          "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -939,17 +1039,19 @@
         "out": "0xcacd6fd266af91b8aed52accc382b4e165586e29",
         "display": "sUSDS >> sUSDS/frxUSD >> frxUSD "
       },
-      "coins": [
-        "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
-        "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
-      ],
-      "swapParams": [
-        1,
-        0,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29",
+          "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
+        ],
+        "swapParams": [
+          1,
+          0,
+          1,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -958,17 +1060,19 @@
         "out": "0x9d39a5de30e57443bff2a8307a4256c8797a3497",
         "display": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe "
       },
-      "coins": [
-        "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
-        "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
-      ],
-      "swapParams": [
-        0,
-        1,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
+          "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
+        ],
+        "swapParams": [
+          0,
+          1,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -977,17 +1081,19 @@
         "out": "0x0655977feb2f289a4ab78af67bab0d17aab84367",
         "display": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD "
       },
-      "coins": [
-        "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
-        "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
-      ],
-      "swapParams": [
-        1,
-        0,
-        6,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
+          "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497"
+        ],
+        "swapParams": [
+          1,
+          0,
+          6,
+          1,
+          2
+        ]
+      }
     },
     {
       "route": {
@@ -996,17 +1102,19 @@
         "out": "0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
         "display": "scrvUSD >> scrvUSD/sUSDS >> sUSDS "
       },
-      "coins": [
-        "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
-        "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
-      ],
-      "swapParams": [
-        0,
-        1,
-        1,
-        1,
-        2
-      ]
+      "result": {
+        "coins": [
+          "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
+          "0xa3931d71877C0E7a3148CB7Eb4463524FEc27fbD"
+        ],
+        "swapParams": [
+          0,
+          1,
+          1,
+          1,
+          2
+        ]
+      }
     }
   ],
   "errors": []

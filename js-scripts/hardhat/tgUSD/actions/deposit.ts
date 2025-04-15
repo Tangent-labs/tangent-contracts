@@ -1,5 +1,5 @@
 import {ethers} from "hardhat";
-import * as contractAddresses from "../../../../addresses.json";
+import * as contractAddresses from "../../../../addresses-liquidation.json";
 import {MainSetup} from "../../Main.setup";
 import {executeUserMarketAction, prepareUserAmountByMarket} from "./common";
 

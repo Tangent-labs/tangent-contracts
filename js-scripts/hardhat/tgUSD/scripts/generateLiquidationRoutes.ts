@@ -1,5 +1,5 @@
 import readline from "readline";
-import { LiquidationRouteGeneration, Transfer } from "../contexts/LiquidationRouteGeneration";
+import {LiquidationRouteGeneration, Transfer} from "../contexts/LiquidationRouteGeneration";
 import path from "path";
 import liquidationAddresses from "../../../../addresses-liquidation.json";
 
@@ -24,38 +24,28 @@ function askToContinue(step: string): Promise<boolean> {
     });
 }
 
-
-
- main();
-//mainStepTargetTed(); 
-
-
-
+main();
+//mainStepTargetTed();
 
 async function mainStepTargetTed() {
-
     const transfers = [
         [
             {
-                "in": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                "pool": "0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2",
-                "out": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
-                "display": "USDC >> FRAX/USDC >> FRAX "
-              } as Transfer
-        ]
-    ]
+                in: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                pool: "0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2",
+                out: "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+                display: "USDC >> FRAX/USDC >> FRAX ",
+            } as Transfer,
+        ],
+    ];
 
     const verifiedRoutes = await svc.testRouteSteps(transfers);
     console.log(JSON.stringify(verifiedRoutes, null, 2));
 }
 
-
-
-
-
 async function main() {
     // Step 1: Validate CSV
-    const { valid, mising } = svc.validateCsv();
+    const {valid, mising} = svc.validateCsv();
     if (!valid) {
         console.error("-------------------------");
         console.error(' ❌ Some strings are not associated to an address \n See "js-scripts/hardhat/tgUSD/contexts/LiquidationRouteGeneration:liquidationAssets" \n');
@@ -105,16 +95,6 @@ async function main() {
         console.log(`✅ file ${stripDirname(svc.PATHS.verifiedRoutes)} generated`);
         console.log(`Next step : Test complete routes`);
     }
-
-    if (!(await askToContinue("route step verification"))) {
-        rl.close();
-        return;
-    }
-
-    // Step 5: Final test of routes
-    const finalRoutes = await svc.testRoute(verifiedRoutes, transfers);
-    svc.saveFile("finalRoutes", finalRoutes);
-    console.log(`✅ file ${svc.PATHS.verifiedRoutes} generated`);
 
     rl.close();
 }

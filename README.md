@@ -88,10 +88,11 @@ LP=0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E AMOUNT_IN=100 I=0 J=1 npm run swap
 ```
 
 
-## Install vyper with rye 
-1. Install rye  (Scoop is the recommended package manager for Windows developpers)
+## Install vyper with rye
 
-```bash 
+1. Install rye (Scoop is the recommended package manager for Windows developpers)
+
+```bash
 scoop install rye
 ```
 
@@ -109,16 +110,50 @@ dependencies = [
 ```
 
 3. Run rye sync to install vyper
+
 ```bash
 rye sync
 ```
 
 4.  activate the virtual environment
+
 ```bash
 source .venv/bin/activate
 ```
 
 5. Test the vyper compiler
+
 ```bash
 vyper --version
+```
+
+# Liquidation routes generation
+
+
+## Generate Liquidation Routes
+
+This script generates  liquidation path from the `js-scripts\hardhat\tgUSD\data\routes.csv`,
+and create the file  `js-scripts\hardhat\tgUSD\data\verifiedRoutes.json`
+
+```
+npm run generate-routes
+```
+
+## Test Exchange Routes
+
+This script tests the generated liquidation routes from `js-scripts\hardhat\tgUSD\data\verifiedRoutes.json` to 
+`js-scripts\hardhat\tgUSD\data\successRoutes.json`.
+
+```
+npm run test-exchange-routes
+```
+
+## Hydrate Route  (2 ways)
+
+This script takes a generated route  with string `js-scripts\hardhat\tgUSD\data\tplRoute.json` and "hydrates"  with addresses in `js-scripts\hardhat\tgUSD\data\hydratedRoute.json` that can be use by the liquidation bot.
+
+by changing the script you can also take `js-scripts\hardhat\tgUSD\data\successRoutes.json` and make it a template  `js-scripts\hardhat\tgUSD\data\tplRoute.json`
+
+```
+npm run hydrate-route
 ```

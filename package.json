@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "hh-node": "npx hardhat node --fork https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy  --hostname 0.0.0.0",
+    "hh-node": "npx hardhat node  ",
     "dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost",
     "flatten-contracts": "npx ts-node js-scripts/utils/flattenContracts.ts",
@@ -26,7 +26,8 @@
     "booster-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "router-test": "npx hardhat run  js-scripts/hardhat/tgUSD/scripts/curveRoutertest.ts --network localhost ",
     "generate-routes": "npx hardhat run  js-scripts/hardhat/tgUSD/scripts/generateLiquidationRoutes.ts  --network localhost ",
-    "test-exchange-routes": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/testExchangeRoutes.ts --network localhost"
+    "test-exchange-routes": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/testExchangeRoutes.ts --network localhost",
+    "hydrate-route": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/hydrateRoutes.ts --network localhost"
   },
   "author": "Trottoir",
   "license": "ISC",
