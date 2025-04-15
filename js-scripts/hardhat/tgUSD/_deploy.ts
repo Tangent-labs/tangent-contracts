@@ -81,7 +81,6 @@ async function createJSONAddress(
             irCalculator: await baseContext.irCalculator.getAddress(),
             pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
             liquidatorProxy: await baseContext.liquidatorProxy.getAddress(),
-            liquidator: await baseContext.liquidator.getAddress(),
         },
         lock: {
             rsTanService: await baseContext.rsTanService.getAddress(),

@@ -27,8 +27,13 @@ broadcast
 snapshots/
 flattened/
 addresses.json
+addresses-liquidation.json
 
 pyproject.toml
 requirements*
-js-scripts/hardhat/tgUSD/data/*.json
-/-i
+
+js-scripts/hardhat/tgUSD/data/verifiedRoutes.json
+js-scripts/hardhat/tgUSD/data/successRoutes.json
+js-scripts/hardhat/tgUSD/data/transfers.json
+js-scripts/hardhat/tgUSD/data/hydratedRoute.json
+
