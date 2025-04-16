@@ -3,24 +3,18 @@ pragma solidity ^0.8.22;
 
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
-import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
-import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 
-import {IBridgeChecker} from "../../interfaces/internals/tgUSD/IBridgeChecker.sol";
 import "forge-std/console.sol";
 /// @notice
-contract TgUSD is ERC20, Ownable, ITgUSD {
+contract TgUSD is ERC20, ITgUSD {
     IControlTower public controlTower;
-
-    address public irCalculator;
 
     error OnlyMarketCaller();
     error OnlyIRCalculator();
 
-    constructor(string memory _name, string memory _symbol, address _owner, IControlTower _controlTower, address _irCalculator) ERC20(_name, _symbol) Ownable(_owner) {
+    constructor(string memory _name, string memory _symbol, address _owner, IControlTower _controlTower) ERC20(_name, _symbol) {
         controlTower = _controlTower;
         irCalculator = _irCalculator;
     }
@@ -43,7 +37,7 @@ contract TgUSD is ERC20, Ownable, ITgUSD {
     }
 
     function mintIR(uint256 amount) external {
-        require(msg.sender == irCalculator, OnlyIRCalculator());
+        require(controlTower.isIRCalculator(msg.sender), OnlyIRCalculator());
         _mint(controlTower.feeTreasury(), amount);
     }
 }

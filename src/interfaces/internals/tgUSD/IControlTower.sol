@@ -14,6 +14,8 @@ interface IControlTower {
 
     function isContractsMarkets(address[] calldata _markets) external view;
 
+    function isIRCalculator(address irCalculator) external view returns (bool);
+
     function getFeeTreasuryAndVerifyContractsAreMarkets(address[] calldata _markets) external view returns (address);
 
     function feeTreasury() external view returns (address);

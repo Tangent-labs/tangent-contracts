@@ -13,6 +13,9 @@ import "forge-std/console.sol";
 abstract contract MarketCore is PauseSettings, Rewards {
     IControlTower public controlTower;
 
+    /// @notice tgUSD is the StableCoin to borrow against the collatToken.
+    ITgUSD public tgUSD;
+
     /// @notice Liquidation proxy
     ILiquidatorProxy public liquidatorProxy;
 
