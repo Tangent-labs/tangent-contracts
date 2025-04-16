@@ -25,6 +25,11 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     error DepositPaused();
     error BorrowPaused();
     error LeveragePaused();
+
+    modifier updateRewards(address _for) {
+        rewardAccumulator.updateRewards(_for);
+        _;
+    }
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         USER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -122,13 +127,13 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         emit Repay(account, repayer, tgUSDToRepay, isZapping);
     }
 
-    function liquidate(address account, uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external updateReward(account) {
+    function liquidate(address account, uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external updateRewards(account) {
         uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
         uint256 _userDebtShares = userDebtShares[account];
-        uint256 userDebt = _userDebt(_userDebtShares, newDebtIndex);
+        uint256 userDebt_ = _userDebt(_userDebtShares, newDebtIndex);
         uint256 collatBalance = collateralBalances[account];
         // Can liquidate only if the health ratio is below 1
-        require(_healthRatio(userDebt, collatBalance) < 1 ether, NotLiquidablePosition());
+        require(_healthRatio(userDebt_, collatBalance) < 1 ether, NotLiquidablePosition());
 
         _liquidate(
             LiquidateCall({
@@ -139,7 +144,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
                 _totalCollateral: totalCollateral,
                 _userDebtShares: _userDebtShares,
                 _totalDebtShares: totalDebtShares,
-                userDebt: userDebt
+                userDebt: userDebt_
             }),
             liquidator,
             minTgUSDOut,
@@ -147,7 +152,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         );
     }
 
-    function selfLiquidate(uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata routerCall) external updateReward(msg.sender) {
+    function selfLiquidate(uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata routerCall) external updateRewards(msg.sender) {
         uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
         uint256 _userDebtShares = userDebtShares[msg.sender];
 
@@ -170,14 +175,14 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         );
     }
 
-    function liquidateBadDebt(address account) external updateReward(account) {
+    function liquidateBadDebt(address account) external updateRewards(account) {
         // Checkpoint IR
-        (uint256 collateralBalance, uint256 _totalCollateral, uint256 _userDebtShares, uint256 _totalDebtShares, uint256 userDebt) = _preLiquidate(account);
+        (uint256 collateralBalance, uint256 _totalCollateral, uint256 _userDebtShares, uint256 _totalDebtShares, uint256 userDebt_) = _preLiquidate(account);
 
         // Can liquidate bad debt only if the value of the collateral is below the debt
-        require(_positionValue(collateralBalance) < userDebt, PositionWithoutBadDebt());
+        require(_positionValue(collateralBalance) < userDebt_, PositionWithoutBadDebt());
 
-        _liquidateBadDebt(account, collateralBalance, _totalCollateral, _userDebtShares, _totalDebtShares, userDebt);
+        _liquidateBadDebt(account, collateralBalance, _totalCollateral, _userDebtShares, _totalDebtShares, userDebt_);
     }
 
     function leverage(
@@ -187,7 +192,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         address zapper,
         bool isStaked,
         bytes calldata routerCall
-    ) external payable updateReward(msg.sender) {
+    ) external payable updateRewards(msg.sender) {
         require(!isDepositPaused, DepositPaused());
         require(!isBorrowPaused, BorrowPaused());
         require(!isLeveragePaused, LeveragePaused());

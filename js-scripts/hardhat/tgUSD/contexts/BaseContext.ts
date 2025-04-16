@@ -86,9 +86,6 @@ export class BaseContext extends MainSetup {
         this.zapper = await (await ethers.getContractFactory("Zapper")).deploy(this.owner, this.controlTower, this.tgUSD);
         await this.zapper.waitForDeployment();
 
-        this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower);
-        await this.rewardAccumulator.waitForDeployment();
-
         this.liquidatorProxy = await (await ethers.getContractFactory("LiquidatorProxy")).deploy(this.tgUSD);
         await this.liquidatorProxy.waitForDeployment();
 
@@ -124,6 +121,9 @@ export class BaseContext extends MainSetup {
     async deployContracts2(tgUSDOracle: AddressLike, lpDeployContext: LpDeployContext) {
         this.irCalculator = await (await ethers.getContractFactory("IRCalculator")).deploy(this.owner, this.controlTower, tgUSDOracle, this.tgUSD);
         await this.irCalculator.waitForDeployment();
+
+        this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, this.irCalculator);
+        await this.rewardAccumulator.waitForDeployment();
 
         this.marketCreator = await (
             await ethers.getContractFactory("MarketCreator")
@@ -185,8 +185,6 @@ export class BaseContext extends MainSetup {
         await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: tgUSDToGivePerUser}]);
 
         await setStorageAt(await this.tgUSD.getAddress(), 2, parseEther((tgUSDToGivePerUser * this.users.length).toString()));
-
-        console.log(await this.tgUSD.balanceOf(this.users[0]));
     }
 
     async approveCurveLP(lp: string) {

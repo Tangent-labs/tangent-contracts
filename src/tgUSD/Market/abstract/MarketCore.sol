@@ -2,19 +2,25 @@
 pragma solidity ^0.8.22;
 
 import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {IControlTower} from "../../../interfaces/internals/tgUSD/IControlTower.sol";
+import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
+import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
+
 import {PauseSettings} from "./PauseSettings.sol";
-import {Rewards} from "./Rewards.sol";
+import {Collateral} from "./Collateral.sol";
 import {GlobalMarketInitParams, MarketInit, LiquidateCall, ILiquidatorProxy} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 import "forge-std/console.sol";
 
 /// @notice
-abstract contract MarketCore is PauseSettings, Rewards {
+abstract contract MarketCore is PauseSettings, Collateral {
+    using SafeERC20 for IERC20;
     IControlTower public controlTower;
 
     /// @notice Liquidation proxy
     ILiquidatorProxy public liquidatorProxy;
+    IRewardAccumulator public rewardAccumulator;
 
     error AlreadyInitialized();
     error TotalDebtTooHigh();
@@ -36,21 +42,6 @@ abstract contract MarketCore is PauseSettings, Rewards {
     function _initializationCommon(GlobalMarketInitParams memory _globalParams, MarketInit memory _marketInit) internal {
         require(!isInitialized, AlreadyInitialized());
         isInitialized = true;
-        // Rewards
-        rewardCutPercentage = 50_000;
-        harvesterFeePercentage = 1_000;
-
-        // Rewards
-        for (uint256 i; i < _marketInit._rewardTokens.length; ) {
-            IERC20Metadata token = _marketInit._rewardTokens[i];
-            rewardTokens.push(token);
-            rewardData[token].lastUpdateTime = uint128(block.timestamp);
-            rewardData[token].periodFinish = uint128(block.timestamp);
-
-            unchecked {
-                ++i;
-            }
-        }
 
         // Core
         tgUSD = _globalParams._tgUSD;
@@ -370,5 +361,32 @@ abstract contract MarketCore is PauseSettings, Rewards {
         callerZapper = isZapping ? callerZapper : msg.sender;
 
         return (isZapping, callerZapper);
+    }
+
+    function _processRewards(address harvestFeeReceiver) internal {
+        IRewardAccumulator _rewardAccumulator = rewardAccumulator;
+
+        // Stream rewards to stakers and give rewards to harvester
+
+        IERC20[] memory rewardTokens = _rewardAccumulator.getRewardTokens(address(this));
+        uint256 rewardLen = rewardTokens.length;
+        TokenAmount[] memory rewardAmounts = new TokenAmount[](rewardLen);
+
+        uint256 counter;
+
+        for (uint256 i; i < rewardLen; ) {
+            IERC20 rewardToken = rewardTokens[i];
+            uint256 balance = rewardToken.balanceOf(address(this));
+            if (balance != 0) {
+                rewardAmounts[i] = TokenAmount({token: rewardToken, amount: balance});
+                rewardToken.safeTransfer(address(_rewardAccumulator), rewardAmounts[i].amount);
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        _rewardAccumulator.processRewards(harvestFeeReceiver, rewardAmounts);
     }
 }

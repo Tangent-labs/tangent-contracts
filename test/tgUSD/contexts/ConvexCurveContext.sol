@@ -33,11 +33,16 @@ contract ConvexCurveContext is MarketInitParams {
             )
         );
 
-        vm.stopPrank();
-
         assertEq(address(convexMarket.collatOracle()), address(oracles[collat]), "Collat oracle address setup");
 
         verifyParams_and_dealCollat(initP.marketInit.collat);
+
+        IERC20[] memory curveConvexRewards = new IERC20[](2);
+        curveConvexRewards[0] = AddrClassicERC20.TOKEN_CRV;
+        curveConvexRewards[1] = AddrClassicERC20.TOKEN_CVX;
+        rewardAccumulator.addNewRewards(address(convexMarket), curveConvexRewards);
+
+        vm.stopPrank();
 
         labeliser.labeliseNewConvexCrvMarket(address(collat), collat.symbol(), address(convexMarket), address(initP.cvxRewardToken));
 
@@ -70,8 +75,14 @@ contract ConvexCurveContext is MarketInitParams {
             )
         );
 
-        vm.stopPrank();
         verifyParams_and_dealCollat(initP.marketInit.collat);
+
+        IERC20[] memory curveConvexRewards = new IERC20[](3);
+        curveConvexRewards[0] = AddrClassicERC20.TOKEN_CRV;
+        curveConvexRewards[1] = AddrClassicERC20.TOKEN_CVX;
+        curveConvexRewards[2] = AddrClassicERC20.TOKEN_FXN;
+        rewardAccumulator.addNewRewards(address(convexMarket), curveConvexRewards);
+        vm.stopPrank();
 
         labeliser.labeliseNewConvexFxnMarket(address(collat), collat.symbol(), address(convexMarket), address(convexMarket.stakingProxyVault()));
 

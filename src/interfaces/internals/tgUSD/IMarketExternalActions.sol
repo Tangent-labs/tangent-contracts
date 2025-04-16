@@ -11,4 +11,6 @@ interface IMarketExternalActions {
     function repay(address account, uint256 tgUSDToRepay, address callerZapper) external;
 
     function liquidate(address account, uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external;
+
+    function processRewards(address harvestFeeReceiver) external;
 }

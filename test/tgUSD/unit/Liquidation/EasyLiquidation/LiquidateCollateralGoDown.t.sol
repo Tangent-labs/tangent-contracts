@@ -40,7 +40,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
 
         balanceChanges = new ERC20BalanceChanges();
 
-        rewardTokens = market.getRewardTokens();
+        rewardTokens = rewardAccumulator.getRewardTokens(address(market));
     }
 
     function test_liquidate_all_after_collateral_loses_value() external {
@@ -58,7 +58,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(usr1, MAX_UINT, address(0), 0, "");
 
-        (uint128 lastUpdateTime, uint256 periodFinish, uint256 rewardRate, uint256 rewardPerTokenStored) = market.rewardData(rewardTokens[0]);
+        (uint128 lastUpdateTime, uint256 periodFinish, uint256 rewardRate, uint256 rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
         assertEq(lastUpdateTime, periodFinish, "Times are the same as on deployment because no processRewards occured");
         assertEq(rewardRate, 0, "Reward rate should be 0 before processRewards");
         assertEq(rewardRate, rewardPerTokenStored, "RewardPerTokenStored should be 0 before processRewards");
@@ -73,7 +73,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         market.liquidate(usr1, MAX_UINT, address(0), 0, "");
 
         assertERC20Tracking();
-        (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = market.rewardData(rewardTokens[0]);
+        (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
         assertEq(lastUpdateTime, periodFinish, "Times are the same as on deployment because no processRewards occured");
         assertEq(rewardRate, 0, "Reward rate should be 0 before processRewards");
         assertEq(rewardRate, rewardPerTokenStored, "RewardPerTokenStored should be 0 before processRewards");
@@ -93,14 +93,14 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         deal(address(AddrClassicERC20.TOKEN_FXN), address(market), 1_000 ether);
         market.processRewards(usr1);
 
-        (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = market.rewardData(rewardTokens[0]);
+        (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
 
         assertEq(lastUpdateTime, timestampAtProcessRewards, "Initialized thanks to processRewards");
         assertEq(periodFinish, timestampAtProcessRewards + 1 weeks, "Initialized thanks to processRewards");
 
         skip(7 days);
 
-        (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = market.rewardData(rewardTokens[0]);
+        (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
 
         // balanceChanges.trackReceiveERC20(usr2, rewardTokens);
         // vm.prank(usr2);

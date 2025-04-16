@@ -17,7 +17,7 @@ contract ProcessRewardsCvxFxnMarket is ConvexCurveContext {
         collatToken = AddrCurveStableLP.USDC_FXUSD;
         market = deployConvexFxnLPMarket(collatToken);
 
-        hRewards = new HProcessRewards(usr1, market);
+        hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
         hDeposit = new HDepositConvexFxnLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
         minimumLoan = market.minimumLoan();
@@ -47,9 +47,9 @@ contract ProcessRewardsCvxFxnMarket is ConvexCurveContext {
         vm.startPrank(usr1);
         rewardAccumulator.claimSimple(address(market));
 
-        rewardAccumulator.claimCutFees(market.getRewardTokens());
+        rewardAccumulator.claimCutFees(rewardAccumulator.getRewardTokens(address(market)));
 
-        assertLt(market.rewardTokens(0).balanceOf(address(rewardAccumulator)), 10 ** 7);
+        assertLt(rewardAccumulator.rewardTokens(address(market), 0).balanceOf(address(rewardAccumulator)), 10 ** 7);
 
         vm.stopPrank();
     }

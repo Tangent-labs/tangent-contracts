@@ -16,5 +16,4 @@ interface IRewards {
     function harvesterFeePercentage() external view returns (uint256);
     function claimableRewards(address account) external view returns (TokenAmount[] memory);
     function rewardCutPercentage() external view returns (uint256);
-    function getAndUpdateRewards(address account) external returns (TokenAmount[] memory);
 }
