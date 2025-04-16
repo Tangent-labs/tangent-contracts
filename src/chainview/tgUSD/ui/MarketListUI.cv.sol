@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 import {ICollateral} from "../../../interfaces/internals/tgUSD/ICollateral.sol";
-import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
+import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.sol";
 

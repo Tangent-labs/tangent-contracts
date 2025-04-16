@@ -121,6 +121,7 @@ export class BaseContext extends MainSetup {
     async deployContracts2(tgUSDOracle: AddressLike, lpDeployContext: LpDeployContext) {
         this.irCalculator = await (await ethers.getContractFactory("IRCalculator")).deploy(this.owner, this.controlTower, tgUSDOracle, this.tgUSD);
         await this.irCalculator.waitForDeployment();
+        await this.controlTower.toggleIRCalculator(this.irCalculator);
 
         this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, this.irCalculator);
         await this.rewardAccumulator.waitForDeployment();

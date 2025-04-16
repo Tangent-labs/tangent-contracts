@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {IDebtIR} from "./IDebtIR.sol";
+import {IRewardAccumulator} from "./IRewardAccumulator.sol";
 import {IPriceOracle} from "./IPriceOracle.sol";
 
 interface ICollateral {
@@ -22,4 +23,6 @@ interface ICollateral {
     function maxLTV() external view returns (uint256);
 
     function liquidationThreshold() external view returns (uint256);
+
+    function rewardAccumulator() external view returns (IRewardAccumulator);
 }

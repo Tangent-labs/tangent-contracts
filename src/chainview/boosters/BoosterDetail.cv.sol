@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {BalancesAllowances} from "../BalancesAllowances.sol";
+import {BalancesAllowances, OutputBalanceAllowances, InputBalancesAllowances} from "../BalancesAllowances.sol";
 import {SdtPosition} from "../SdtPosition.sol";
 
 import {ISdtStaking} from "../../interfaces/internals/CVG/ISdtStaking.sol";

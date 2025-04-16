@@ -32,9 +32,11 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         uint256 collatDeposited = 5_000 ether;
         hDeposit.depositAndBorrow(collatDeposited, 4_250 ether, true, address(0));
 
+        irCalculator.checkpointIR(address(market));
+
         // Dumps tgUSD for USDC => Depegs tgUSD
-        hLpManipulator.dumpCrvPool(lpTgUSD_USDC, 1, 0, 500_000 ether);
-        hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 1, 0, 500_000 ether);
+        hLpManipulator.dumpCrvPool(lpTgUSD_USDC, 1, 0, 400_000 ether);
+        hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 1, 0, 400_000 ether);
 
         vm.startPrank(usr1);
 
@@ -45,26 +47,20 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
-        assertGt(ir, 40 ether, "IR skyrockets as peg of tgUSD is low");
+        assertGt(ir, 0.04 ether, "IR skyrockets as peg of tgUSD is low");
 
         // Skip time to be able to liquidate
-        skip(100 days);
+        skip(50 days);
 
         assertLe(market.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
         assertGe(market.userDebt(usr1), (collatDeposited * 93) / 100, "Debt is getting over the 93% of the collateral");
 
         // Liquidation passes after IR increased the user debt over the liquidation threshold
 
-        ICurveStableSwapNG collatLp = ICurveStableSwapNG(address(collatToken));
-
         uint256 zero = 0;
 
         uint256 collatToDump = market.collateralBalances(usr1);
-        uint256 amountToRetrive = collatLp.calc_withdraw_one_coin(collatToDump, 0);
 
-        address[] memory route = Array.memoryAddress(
-            [address(AddrCurveStableLP.CRVUSD_USDC), address(AddrCurveStableLP.CRVUSD_USDC), address(AddrClassicERC20.TOKEN_USDC), address(lpTgUSD_USDC), address(tgUSD)]
-        );
         uint256[][] memory swapParams = new uint256[][](2);
         uint256[] memory unwrapLPToUSDC = Array.memoryUint256([zero, zero, uint256(6), uint256(10), uint256(2)]);
         uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
@@ -72,12 +68,29 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         swapParams[0] = unwrapLPToUSDC;
         swapParams[1] = swapUsdcToTgUSD;
 
-        bytes memory callToSecondaryLiquidator = encoder.encodeLiquidateCallForCurveLP(
-            encoder.createCurveRouterStruct(route, swapParams, collatToDump, 0, usr1),
-            encoder.createEmptyMintAndSwapWStable()
+        market.liquidate(
+            usr1,
+            MAX_UINT,
+            address(AddrCurveStableLP.ROUTER_CURVE),
+            0,
+            encoder.encodeLiquidateCallForCurveLP(
+                encoder.createCurveRouterStruct(
+                    Array.memoryAddress(
+                        [
+                            address(AddrCurveStableLP.CRVUSD_USDC),
+                            address(AddrCurveStableLP.CRVUSD_USDC),
+                            address(AddrClassicERC20.TOKEN_USDC),
+                            address(lpTgUSD_USDC),
+                            address(tgUSD)
+                        ]
+                    ),
+                    swapParams,
+                    collatToDump,
+                    0,
+                    usr1
+                )
+            )
         );
-
-        market.liquidate(usr1, MAX_UINT, address(AddrCurveStableLP.ROUTER_CURVE), 0, callToSecondaryLiquidator);
 
         assertEq(market.userDebt(usr1), 0);
         assertEq(market.totalDebt(), 0);

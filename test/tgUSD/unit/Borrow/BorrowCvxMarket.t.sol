@@ -78,7 +78,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
         assertEq(market.userDebt(usr1), borrowedAmount);
         assertEq(market.userDebt(usr2), 0);
 
-        assertEq(irCalculator.debtIndexes(address(market)), 1e18, "Debt index didn't moove");
+        assertEq(irCalculator.debtIndexes(address(market)), RAY, "Debt index didn't moove");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
         uint256 timeToPass = 900 days;

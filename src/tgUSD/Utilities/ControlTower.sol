@@ -81,6 +81,6 @@ contract ControlTower is Ownable, IControlTower {
     }
 
     function toggleIRCalculator(address irCalculator) external onlyOwner {
-        isIRCalculator[irCalculator] = isIRCalculator[irCalculator];
+        isIRCalculator[irCalculator] = !isIRCalculator[irCalculator];
     }
 }

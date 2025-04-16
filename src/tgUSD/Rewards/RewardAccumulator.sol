@@ -5,7 +5,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import {IRewards, Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewards.sol";
+import {Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewards.sol";
 import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
 import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";

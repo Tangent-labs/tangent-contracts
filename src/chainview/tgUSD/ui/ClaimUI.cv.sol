@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {ICollateral} from "../../../interfaces/internals/tgUSD/ICollateral.sol";
+import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 
-import {ERC20Infos, IERC20, TokenAmount} from "../../ERC20Infos.sol";
+import {ERC20Infos, IERC20, TokenAmount, ERC20AmountInfos} from "../../ERC20Infos.sol";
 
 contract ClaimUI is ERC20Infos {
     struct ClaimUIOut {
         address marketAddress;
         uint256 collatStakedUsdValue;
-        ERC20Infos.ERC20AmountInfos collatStaked;
-        ERC20Infos.ERC20AmountInfos[] claimableTokens;
+        ERC20AmountInfos collatStaked;
+        ERC20AmountInfos[] claimableTokens;
     }
 
     error ClaimUIOutError(ClaimUIOut[] output);
@@ -22,12 +22,13 @@ contract ClaimUI is ERC20Infos {
 
         for (uint256 i; i < marketLength; ) {
             address market = markets[i];
+            IRewardAccumulator rewardAccumulator = IRewardAccumulator(ICollateral(market).rewardAccumulator());
 
-            TokenAmount[] memory claimable = IRewards(market).claimableRewards(account);
-            uint256 claimableLength = claimable.length;
-            ERC20Infos.ERC20AmountInfos[] memory claimableTokens = new ERC20Infos.ERC20AmountInfos[](claimableLength);
+            TokenAmount[] memory claimable = rewardAccumulator.claimableRewards(market, account);
 
-            for (uint256 j; j < claimableLength; ) {
+            ERC20AmountInfos[] memory claimableTokens = new ERC20AmountInfos[](claimable.length);
+
+            for (uint256 j; j < claimable.length; ) {
                 claimableTokens[j] = getERC20AmountInfos(claimable[j]);
                 unchecked {
                     ++j;

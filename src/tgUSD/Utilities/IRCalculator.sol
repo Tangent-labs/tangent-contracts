@@ -56,6 +56,7 @@ contract IRCalculator is IIRCalculator, Ownable {
     constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle, ITgUSD _tgUSD) Ownable(_owner) {
         controlTower = _controlTower;
         tgUSDOracle = _tgUSDOracle;
+        tgUSD = _tgUSD;
     }
 
     modifier onlyMarket(address market) {
@@ -268,7 +269,10 @@ contract IRCalculator is IIRCalculator, Ownable {
     }
 
     function mintIR() external {
+        console.log(address(tgUSD), "yo");
         tgUSD.mintIR(mintableInterests);
+        console.log("Lol");
+
         delete mintableInterests;
     }
 

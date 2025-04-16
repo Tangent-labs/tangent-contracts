@@ -20,7 +20,6 @@ abstract contract MarketCore is PauseSettings, Collateral {
 
     /// @notice Liquidation proxy
     ILiquidatorProxy public liquidatorProxy;
-    IRewardAccumulator public rewardAccumulator;
 
     error AlreadyInitialized();
     error TotalDebtTooHigh();

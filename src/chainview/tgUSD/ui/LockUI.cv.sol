@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {IRewards} from "../../../interfaces/internals/tgUSD/IRewards.sol";
 import {IRsTan} from "../../../interfaces/internals/tgUSD/IRsTan.sol";
 import {IRsTanERC721} from "../../../interfaces/internals/tgUSD/IRsTanERC721.sol";
 

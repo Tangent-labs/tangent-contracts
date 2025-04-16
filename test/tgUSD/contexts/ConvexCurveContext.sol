@@ -104,7 +104,7 @@ contract ConvexCurveContext is MarketInitParams {
     }
 
     function getBaseIRParams() public pure returns (IRParams memory) {
-        return IRParams({isHEC: false, rMin: 4_000, rMax: 400_000, pMin: 980_000, pMax: 1_000_000, pInf: 0, a1: 2, a2: 2, k: 0});
+        return IRParams({isHEC: true, rMin: 4_000, rMax: 400_000, pMin: 980_000, pMax: 995_000, pInf: 990_000, a1: 2_000, a2: 2_000, k: 250});
     }
 
     function getBaseRCParams() public pure returns (RCParams memory) {
