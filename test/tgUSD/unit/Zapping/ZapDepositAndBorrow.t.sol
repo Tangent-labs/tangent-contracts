@@ -41,7 +41,7 @@ contract ZapDepositAndBorrow is ConvexCurveContext {
     //     );
     //     vm.stopPrank();
 
-    //     assertEq(market.positionDebt(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
+    //     assertEq(market.userDebt(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
     //     assertEq(market.userDebtShares(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
 
     //     assertEq(market.debtIndex(), 1e18, "The debt index of the market is correct");
@@ -75,7 +75,7 @@ contract ZapDepositAndBorrow is ConvexCurveContext {
         );
         vm.stopPrank();
 
-        assertEq(market.positionDebt(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
+        assertEq(market.userDebt(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
         assertEq(market.userDebtShares(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
 
         assertEq(irCalculator.debtIndexes(address(market)), 1e18, "The debt index of the market is correct");

@@ -38,7 +38,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
 
         assertEq(market.collateralBalances(usr1), collatDeposited1, "Collateral deposited must be equal to collateralBalances");
         assertEq(market.totalCollateral(), collatDeposited1, "Total collateral is not right");
-        assertEq(market.positionDebt(usr1), borrowedAmount1, "Position debt should be equal to the borrowed amount");
+        assertEq(market.userDebt(usr1), borrowedAmount1, "Position debt should be equal to the borrowed amount");
         assertEq(market.userDebtShares(usr1), borrowedAmount1, "Position debt index should be 0");
         assertEq(market.totalDebt(), borrowedAmount1, "Total debt should be 0");
         assertEq(market.socFeePending(), 0);
@@ -60,10 +60,12 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         assertEq(market.totalCollateral(), collatDeposited1 + collatDeposited2, "Total collateral is not right");
 
         // TODO See if it's possible to get closer
-        assertApproxEqAbs(market.positionDebt(usr2), borrowedAmount2, 1, "Position debt displays the real debt for a user");
+        assertApproxEqAbs(market.userDebt(usr2), borrowedAmount2, 1, "Position debt displays the real debt for a user");
+
+        assertEq(market.totalDebtShares(), market.userDebtShares(usr1) + market.userDebtShares(usr2), "Total Debt shares equals sum of all user debt shares");
 
         // TODO See if it's possible to get closer
-        assertEq(market.totalDebt(), market.positionDebt(usr1) + market.positionDebt(usr2), "Total Debt equals sum of all debt");
+        assertApproxEqAbs(market.totalDebt(), market.userDebt(usr1) + market.userDebt(usr2), 1, "Total Debt equals sum of all debt");
 
         assertEq(market.socFeePending(), 0);
 

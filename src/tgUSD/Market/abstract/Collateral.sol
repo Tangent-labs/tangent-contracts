@@ -105,11 +105,11 @@ abstract contract Collateral is DebtIR, ICollateral {
     }
 
     function healthRatio(address account) public view returns (uint256) {
-        return _healthRatio(positionDebt(account), collateralBalances[account]);
+        return _healthRatio(userDebt(account), collateralBalances[account]);
     }
 
     function liquidationPrice(address account) public view returns (uint256) {
-        return ((positionDebt(account) * DENOMINATOR) * 1e18) / (collateralBalances[account] * liquidationThreshold);
+        return ((userDebt(account) * DENOMINATOR) * 1e18) / (collateralBalances[account] * liquidationThreshold);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

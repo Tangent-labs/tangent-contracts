@@ -20,12 +20,11 @@ This function takes into parameters :
 
 ```mermaid
 sequenceDiagram
-    Convex->>Market: 🔴 Withdraw from Convex
-    Market->>Liquidator : 🔴 Send to the Liquidator
-    Liquidator->>LP : 🔴 Dump the collateral for tgUSD
-    LP->>Sender: 🟢 Receives tgUSD
-    Sender->> 0x000 : 🟢 Burn tgUSD
-
+    UnderlyingProtocol->>Market:🔴 Withdraw from Underlying protocol
+    Market->>LiquidatorProxy :🔴 Send to the Liquidator proxy
+    LiquidatorProxy->>Liquidator : 🔴 Send for dumping
+    Liquidator->>Sender: 🟢 Receives tgUSD
+    Sender->> 0x000 : 🟢 Burn the debt equivalent in tgUSD
 
 ```
 
@@ -33,7 +32,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    Convex->>Market: 🔴 Withdraw from Convex
+    UnderlyingProtocol->>Market: 🔴 Withdraw from Underlying protocol
     Market->>Sender : 🔴 Send to the sender
-    Sender->> 0x000 : 🟢 Burn tgUSD
+    Sender->> 0x000 : 🟢 Burn the debt equivalent in tgUSD.
 ```

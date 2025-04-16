@@ -18,9 +18,9 @@ abstract contract MarketCore is PauseSettings, Rewards {
 
     error AlreadyInitialized();
     error TotalDebtTooHigh();
-    error PositionDebtTooHigh();
-    error PositionDebtTooLow();
-    error PositionDebtZero();
+    error UserDebtTooHigh();
+    error UserDebtTooLow();
+    error UserDebtZero();
     error ZeroCollatAmount();
     error ZeroDebtAmount();
     error NotLiquidablePosition();
@@ -136,7 +136,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
         uint256 newCollatAmount = collateralBalances[msg.sender] - amountToWithdraw;
 
         // Verify that the newDebt of the loan is not over the maximum borrrowable regarding the LTV of the position
-        require(_maxBorrowable(newCollatAmount) >= newUserDebt, PositionDebtTooHigh());
+        require(_maxBorrowable(newCollatAmount) >= newUserDebt, UserDebtTooHigh());
         return newCollatAmount;
     }
 
@@ -146,7 +146,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
         // Increase collateral deposited by the user
         _updateCollatAndGlobalDebt(
             msg.sender,
-            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _positionDebt(userDebtShares[msg.sender], newDebtIndex)),
+            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _userDebt(userDebtShares[msg.sender], newDebtIndex)),
             totalCollateral - amountToWithdraw,
             newDebtIndex
         );
@@ -164,7 +164,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
 
         uint256 _userDebtShares = userDebtShares[borrower];
 
-        uint256 newUserDebt = tgUSDToBorrow + _positionDebt(_userDebtShares, newDebtIndex);
+        uint256 newUserDebt = tgUSDToBorrow + _userDebt(_userDebtShares, newDebtIndex);
 
         //  Cache the new value in tgUSD of the debt
         uint256 newUserDebtShares = (tgUSDToBorrow * RAY) / newDebtIndex;
@@ -172,10 +172,10 @@ abstract contract MarketCore is PauseSettings, Rewards {
         //  Verify that the new total debt is not bigger the max debt
         // require(newTotalDebt + badDebt <= maxMarketDebt, TotalDebtTooHigh());
         //  Verify that newDebt is over the minimum loan
-        require(newUserDebt >= minimumLoan, PositionDebtTooLow());
+        require(newUserDebt >= minimumLoan, UserDebtTooLow());
 
         // Verify that the newDebt of the loan is not over the maximum borrrowable
-        require(_maxBorrowable(collatAmount) >= newUserDebt, PositionDebtTooHigh());
+        require(_maxBorrowable(collatAmount) >= newUserDebt, UserDebtTooHigh());
 
         // If it's a leverage transaction, tgUSD is already minted before
         if (!isLeverage) {
@@ -208,10 +208,10 @@ abstract contract MarketCore is PauseSettings, Rewards {
 
         uint256 _userDebtShares = userDebtShares[account];
 
-        uint256 oldPositionDebt = _positionDebt(_userDebtShares, newDebtIndex);
+        uint256 oldUserDebt = _userDebt(_userDebtShares, newDebtIndex);
 
         // Cannot repay an empty position
-        require(_userDebtShares != 0, PositionDebtZero());
+        require(_userDebtShares != 0, UserDebtZero());
 
         uint256 newUserDebtShares;
         uint256 sharesToRemove;
@@ -220,9 +220,9 @@ abstract contract MarketCore is PauseSettings, Rewards {
         // When IR != 0, debt of the user is increasing every block.
         // It is so complicated to provide the exact amount that a user has to repay to close his loan.
         // To cover this, any debt given in parameter that is equal or bigger than the debt will close the loan.
-        if (tgUSDToRepay >= oldPositionDebt) {
+        if (tgUSDToRepay >= oldUserDebt) {
             // User shouldn't repay more than his debt so we rearrange the amount of tgUSD to repay.
-            tgUSDToRepay = oldPositionDebt;
+            tgUSDToRepay = oldUserDebt;
             // As we are repaying all the debt, the new debt of the user is 0.
             newUserDebtShares = 0;
 
@@ -231,14 +231,14 @@ abstract contract MarketCore is PauseSettings, Rewards {
         // Partial repay case
         else {
             // Retrieve the real debt of the user
-            uint256 newUserDebt = oldPositionDebt - tgUSDToRepay;
+            uint256 newUserDebt = oldUserDebt - tgUSDToRepay;
 
             sharesToRemove = (tgUSDToRepay * RAY) / newDebtIndex;
 
             newUserDebtShares = _userDebtShares - sharesToRemove;
 
             // We need to verify that the partial repay is not decreasing the debt lower than the minimum loan.
-            require(newUserDebt >= minimumLoan, PositionDebtTooLow());
+            require(newUserDebt >= minimumLoan, UserDebtTooLow());
         }
 
         // Burns tgUSD from the burnAddress as a repayment of the debt
@@ -278,7 +278,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
         uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
         uint256 _userDebtShares = userDebtShares[account];
 
-        return (collateralBalances[account], totalCollateral, _userDebtShares, totalDebtShares, _positionDebt(_userDebtShares, newDebtIndex));
+        return (collateralBalances[account], totalCollateral, _userDebtShares, totalDebtShares, _userDebt(_userDebtShares, newDebtIndex));
     }
 
     function _liquidate(LiquidateCall memory liquidateCall, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) internal {
@@ -306,7 +306,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
             newCollatBalance = liquidateCall._collateralBalance - collatAmountToLiquidate;
 
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
-            require(liquidateCall.userDebt - tgUSDToRepay >= minimumLoan, PositionDebtTooLow());
+            require(liquidateCall.userDebt - tgUSDToRepay >= minimumLoan, UserDebtTooLow());
         }
 
         // Modify the collateral balance, the user debt and the total debt
@@ -343,7 +343,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
         uint256 _totalCollateral,
         uint256 _userDebtShares,
         uint256 _totalDebtShares,
-        uint256 userDebt
+        uint256 _accountDebt
     ) internal {
         // Updates total and user values for collaterals & debts
         // Collat Balance and user debt are updated to 0 because the whole position is liquidated
@@ -353,7 +353,7 @@ abstract contract MarketCore is PauseSettings, Rewards {
         _transferCollateralWithdraw(controlTower.feeTreasury(), _collateralBalance);
 
         // Bad debt is written in the market
-        badDebt += userDebt;
+        badDebt += _accountDebt;
     }
 
     /* --------

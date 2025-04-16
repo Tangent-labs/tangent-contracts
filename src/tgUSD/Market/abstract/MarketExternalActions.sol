@@ -125,7 +125,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function liquidate(address account, uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external updateReward(account) {
         uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
         uint256 _userDebtShares = userDebtShares[account];
-        uint256 userDebt = _positionDebt(_userDebtShares, newDebtIndex);
+        uint256 userDebt = _userDebt(_userDebtShares, newDebtIndex);
         uint256 collatBalance = collateralBalances[account];
         // Can liquidate only if the health ratio is below 1
         require(_healthRatio(userDebt, collatBalance) < 1 ether, NotLiquidablePosition());
@@ -162,7 +162,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
                 _totalCollateral: totalCollateral,
                 _userDebtShares: _userDebtShares,
                 _totalDebtShares: totalDebtShares,
-                userDebt: _positionDebt(_userDebtShares, newDebtIndex)
+                userDebt: _userDebt(_userDebtShares, newDebtIndex)
             }),
             liquidator,
             minTgUSDOut,

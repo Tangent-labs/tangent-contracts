@@ -63,18 +63,18 @@ contract LiquidateDebtGoHigh is ConvexCurveContext {
         // // The position from this point liquidable
         // skip(15 days);
 
-        // deal(address(tgUSD), usr1, market.positionDebt(usr1));
+        // deal(address(tgUSD), usr1, market.userDebt(usr1));
 
         // assertLe(market.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
-        // assertGe(market.positionDebt(usr1), 4650 ether, "Debt is getting over the 93% of the collateral");
+        // assertGe(market.userDebt(usr1), 4650 ether, "Debt is getting over the 93% of the collateral");
 
-        // verifyLostERC20(tgUSD, usr1, market.positionDebt(usr1), "tgUSD burnt from sender");
+        // verifyLostERC20(tgUSD, usr1, market.userDebt(usr1), "tgUSD burnt from sender");
         // verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "tgUSD burnt from sender");
         // // Liquidation passes after IR increased the user debt over the liquidation threshold
         // market.liquidate(usr1, MAX_UINT, address(0), 0, "");
         // assertERC20Tracking();
 
-        // assertEq(market.positionDebt(usr1), 0);
+        // assertEq(market.userDebt(usr1), 0);
         // assertEq(market.totalDebt(), 0);
 
         // vm.stopPrank();

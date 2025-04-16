@@ -24,7 +24,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
 
     struct DebtInfos {
         uint256 totalDebt;
-        uint256 positionDebt;
+        uint256 userDebt;
         uint256 healthRatio;
         uint256 currentBorrowRate;
         uint256 futureBorrowRate;
@@ -97,7 +97,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                 }),
                 debtInfos: DebtInfos({
                     totalDebt: marketDebt.totalDebt(),
-                    positionDebt: marketDebt.positionDebt(_account),
+                    userDebt: marketDebt.userDebt(_account),
                     healthRatio: _marketCollateral.healthRatio(_account),
                     currentBorrowRate: ir,
                     futureBorrowRate: irCalculator.computeIRForMarket(_market),

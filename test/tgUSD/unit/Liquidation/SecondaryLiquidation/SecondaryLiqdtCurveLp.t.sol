@@ -51,7 +51,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         skip(100 days);
 
         assertLe(market.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
-        assertGe(market.positionDebt(usr1), (collatDeposited * 93) / 100, "Debt is getting over the 93% of the collateral");
+        assertGe(market.userDebt(usr1), (collatDeposited * 93) / 100, "Debt is getting over the 93% of the collateral");
 
         // Liquidation passes after IR increased the user debt over the liquidation threshold
 
@@ -79,7 +79,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
 
         market.liquidate(usr1, MAX_UINT, address(AddrCurveStableLP.ROUTER_CURVE), 0, callToSecondaryLiquidator);
 
-        assertEq(market.positionDebt(usr1), 0);
+        assertEq(market.userDebt(usr1), 0);
         assertEq(market.totalDebt(), 0);
 
         vm.stopPrank();

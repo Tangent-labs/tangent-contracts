@@ -41,33 +41,33 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         hBorrow.borrow(usr1, borrowedAmount1);
 
-        assertEq(market.positionDebt(usr1), market.totalDebt());
-        assertEq(market.positionDebt(usr1), borrowedAmount1);
+        assertEq(market.userDebt(usr1), market.totalDebt());
+        assertEq(market.userDebt(usr1), borrowedAmount1);
 
         skip(365 days);
-        assertEq(market.positionDebt(usr1), market.totalDebt());
+        assertEq(market.userDebt(usr1), market.totalDebt());
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
         uint256 interestGenerated = (borrowedAmount1 * ir) / 1e18;
 
-        uint256 positionDebt1 = borrowedAmount1 + interestGenerated; // 60 000 + 60 000 * 0.04 =60 000 + 2 400 = 62 400
-        assertEq(market.positionDebt(usr1), borrowedAmount1 + interestGenerated, "Position debt increased with interest rate");
+        uint256 userDebt1 = borrowedAmount1 + interestGenerated; // 60 000 + 60 000 * 0.04 =60 000 + 2 400 = 62 400
+        assertEq(market.userDebt(usr1), borrowedAmount1 + interestGenerated, "Position debt increased with interest rate");
 
         hBorrow.borrow(usr1, borrowedAmount2);
 
-        assertEq(market.positionDebt(usr1), market.totalDebt());
+        assertEq(market.userDebt(usr1), market.totalDebt());
         assertEq(market.userDebtShares(usr1), market.totalDebtShares());
-        assertApproxEqAbs(market.positionDebt(usr1), positionDebt1 + borrowedAmount2, 1, "Position debt increased with interest rate"); // 62400 + 10000 = 72400
+        assertApproxEqAbs(market.userDebt(usr1), userDebt1 + borrowedAmount2, 1, "Position debt increased with interest rate"); // 62400 + 10000 = 72400
 
         (ir, timestamp) = irCalculator.irCheckpoints(address(market));
 
-        uint256 interestGeneratedExpected2 = ((positionDebt1 + borrowedAmount2) * ir) / 1e18;
+        uint256 interestGeneratedExpected2 = ((userDebt1 + borrowedAmount2) * ir) / 1e18;
         skip(365 days);
 
         // market.checkpointIR();
 
-        assertEq(market.positionDebt(usr1), market.totalDebt());
+        assertEq(market.userDebt(usr1), market.totalDebt());
 
         // Interests must be equals to the totalDebt minus what has been deposited
         assertEq(irCalculator.mintableInterests() + market.pendingInterests(), market.totalDebt() - borrowedAmount1 - borrowedAmount2);
@@ -90,8 +90,8 @@ contract BorrowCvxMarket is ConvexCurveContext {
         assertEq(market.userDebtShares(usr1), borrowedAmount);
         assertEq(market.userDebtShares(usr2), 0);
 
-        assertEq(market.positionDebt(usr1), borrowedAmount);
-        assertEq(market.positionDebt(usr2), 0);
+        assertEq(market.userDebt(usr1), borrowedAmount);
+        assertEq(market.userDebt(usr2), 0);
 
         assertEq(irCalculator.debtIndexes(address(market)), 1e18, "Debt index didn't moove");
 
@@ -102,7 +102,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         assertApproxEqAbs(market.pendingInterests(), expectedIRMintable, 1e18, "Interest mintable is correct");
 
-        assertEq(market.positionDebt(usr1), market.totalDebt(), "Position debt is the same as even after a some time passed");
+        assertEq(market.userDebt(usr1), market.totalDebt(), "Position debt is the same as even after a some time passed");
 
         irCalculator.mintIR();
 
@@ -111,9 +111,9 @@ contract BorrowCvxMarket is ConvexCurveContext {
             (market.totalDebtShares() * irCalculator.debtIndexes(address(market))) / 1e18 + market.pendingInterests(),
             "Total debt is equal to the last total debt + pending interests"
         );
-        assertEq(market.positionDebt(usr1), market.totalDebt());
+        assertEq(market.userDebt(usr1), market.totalDebt());
 
-        uint256 maxRepayPartialAmount = market.positionDebt(usr1) - minimumLoan;
+        uint256 maxRepayPartialAmount = market.userDebt(usr1) - minimumLoan;
 
         repayAmount = bound(repayAmount, 1, maxRepayPartialAmount);
 
@@ -124,20 +124,20 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         hRepay.repay(usr1, repayAmount, address(0));
 
-        assertEq(market.positionDebt(usr1), market.totalDebt(), "Position debt is equal to total debt after a partial repay");
+        assertEq(market.userDebt(usr1), market.totalDebt(), "Position debt is equal to total debt after a partial repay");
 
         skip(700 days);
 
-        assertEq(market.positionDebt(usr1), market.totalDebt());
+        assertEq(market.userDebt(usr1), market.totalDebt());
 
         // vm.startPrank(owner);
-        // tgUSD.mint(usr1, market.positionDebt(usr1));
+        // tgUSD.mint(usr1, market.userDebt(usr1));
         // vm.stopPrank();
 
         // hRepay.repay(usr1, MAX_UINT, address(0));
 
-        // assertEq(market.positionDebt(usr1), market.totalDebt());
+        // assertEq(market.userDebt(usr1), market.totalDebt());
 
-        // assertEq(0, market.positionDebt(usr1), "User debt is 0 after a repay all");
+        // assertEq(0, market.userDebt(usr1), "User debt is 0 after a repay all");
     }
 }

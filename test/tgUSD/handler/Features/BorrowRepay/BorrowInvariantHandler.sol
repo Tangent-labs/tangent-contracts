@@ -40,9 +40,9 @@ contract BorrowInvariantHandler is Test {
         MarketExternalActions _market = pickRandomMarket();
         vm.startPrank(msg.sender);
 
-        uint256 positionDebt = _market.positionDebt(msg.sender);
+        uint256 userDebt = _market.userDebt(msg.sender);
 
-        if (positionDebt == 0) {
+        if (userDebt == 0) {
             bool depositOrRepay = vm.randomBool();
             if (depositOrRepay) {
                 deposit(msg.sender, tgUSDToRepay, vm.randomBool());
@@ -54,7 +54,7 @@ contract BorrowInvariantHandler is Test {
         }
 
         bool isFullRepay = vm.randomBool();
-        tgUSDToRepay = isFullRepay ? positionDebt : bound(tgUSDToRepay, 1, positionDebt - _market.minimumLoan());
+        tgUSDToRepay = isFullRepay ? userDebt : bound(tgUSDToRepay, 1, userDebt - _market.minimumLoan());
         deal(address(tgUSD), msg.sender, tgUSDToRepay);
 
         _market.repay(msg.sender, tgUSDToRepay, address(0));
@@ -68,7 +68,7 @@ contract BorrowInvariantHandler is Test {
         vm.startPrank(msg.sender);
 
         uint256 maxBorrowAmount = _market.maxBorrowable(msg.sender);
-        uint256 actualDebt = _market.positionDebt(msg.sender);
+        uint256 actualDebt = _market.userDebt(msg.sender);
         if (maxBorrowAmount == 0) {
             bool depositOrRepay = vm.randomBool();
             if (depositOrRepay) {

@@ -120,11 +120,11 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @dev     Takes the last registered debt index of the position and applies it the IR accumulated since last checkpoint.
      *  @param   account Address of the position to check the debt on
      */
-    function positionDebt(address account) public view returns (uint256) {
-        return _positionDebt(userDebtShares[account], irCalculator.newDebtIndex(address(this)));
+    function userDebt(address account) public view returns (uint256) {
+        return _userDebt(userDebtShares[account], irCalculator.newDebtIndex(address(this)));
     }
 
-    function _positionDebt(uint256 _userDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
+    function _userDebt(uint256 _userDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
         return (_userDebtShares * newDebtIndex) / RAY;
     }
 }

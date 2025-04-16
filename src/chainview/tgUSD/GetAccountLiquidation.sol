@@ -12,7 +12,7 @@ contract GetAccountLiquidation {
 
     struct AccountLiquidationInfo {
         uint256 healthRatio;
-        uint256 positionDebt;
+        uint256 userDebt;
         uint256 positionValue;
     }
 
@@ -25,7 +25,7 @@ contract GetAccountLiquidation {
             ICollateral marketCollateral = ICollateral(market);
             output[index] = AccountLiquidationInfo({
                 healthRatio: marketCollateral.healthRatio(account),
-                positionDebt: IDebtIR(market).positionDebt(account),
+                userDebt: IDebtIR(market).userDebt(account),
                 positionValue: marketCollateral.positionValue(account)
             });
         }

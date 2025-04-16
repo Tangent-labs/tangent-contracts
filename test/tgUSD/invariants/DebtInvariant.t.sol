@@ -53,7 +53,7 @@ contract DebtInvariant is ConvexCurveContext {
             uint256 debtSum;
             MarketExternalActions market = markets[i];
             for (uint256 j; j < users.length; j++) {
-                debtSum += market.positionDebt(users[j]);
+                debtSum += market.userDebt(users[j]);
             }
             assertApproxEqRel(debtSum, market.totalDebt(), 1e5, "Sum of all debts is not equal to the total debt of the market");
         }

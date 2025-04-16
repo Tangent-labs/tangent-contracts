@@ -64,9 +64,9 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         assertEq(rewardRate, rewardPerTokenStored, "RewardPerTokenStored should be 0 before processRewards");
         skip(200);
 
-        deal(address(tgUSD), usr1, market.positionDebt(usr1));
+        deal(address(tgUSD), usr1, market.userDebt(usr1));
 
-        verifyLostERC20(tgUSD, usr1, market.positionDebt(usr1), "tgUSD burnt from sender");
+        verifyLostERC20(tgUSD, usr1, market.userDebt(usr1), "tgUSD burnt from sender");
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "tgUSD burnt from sender");
 
         // Liquidation passes after EMA of price_oralce passed
@@ -78,7 +78,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         assertEq(rewardRate, 0, "Reward rate should be 0 before processRewards");
         assertEq(rewardRate, rewardPerTokenStored, "RewardPerTokenStored should be 0 before processRewards");
 
-        assertEq(market.positionDebt(usr1), 0);
+        assertEq(market.userDebt(usr1), 0);
         assertEq(market.totalDebt(), tgUSDBorrowed * 2, "Total debt wrong");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
@@ -158,7 +158,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         skip(200);
 
         vm.startPrank(usr1);
-        deal(address(tgUSD), usr1, market.positionDebt(usr1));
+        deal(address(tgUSD), usr1, market.userDebt(usr1));
 
         verifyLostERC20(tgUSD, usr1, 4_000 ether, "tgUSD burnt from sender");
         verifyReceiveERC20(collatToken, usr1, 5_000 ether, "Collat sent to liquidator");
@@ -166,7 +166,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         market.liquidate(usr1, 4_000 ether, address(0), 0, "");
 
         assertERC20Tracking();
-        assertEq(market.positionDebt(usr1), 4_000 ether);
+        assertEq(market.userDebt(usr1), 4_000 ether);
         assertEq(market.totalDebt(), tgUSDBorrowed * 2 + 4_000 ether);
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
@@ -175,15 +175,15 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
 
         uint256 tgUSDToRepay = 100;
         verifyLostERC20(tgUSD, usr1, tgUSDToRepay, "tgUSD burnt from sender");
-        verifyReceiveERC20(collatToken, usr1, (tgUSDToRepay * market.collateralBalances(usr1)) / market.positionDebt(usr1), "Collat sent to liquidator");
+        verifyReceiveERC20(collatToken, usr1, (tgUSDToRepay * market.collateralBalances(usr1)) / market.userDebt(usr1), "Collat sent to liquidator");
         // Liquidation passes after EMA of price_oralce passed
         market.liquidate(usr1, tgUSDToRepay, address(0), 0, "");
         assertERC20Tracking();
 
-        verifyLostERC20(tgUSD, usr1, market.positionDebt(usr1), "tgUSD burnt from sender");
+        verifyLostERC20(tgUSD, usr1, market.userDebt(usr1), "tgUSD burnt from sender");
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "Collat sent to liquidator");
         // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, market.positionDebt(usr1), address(0), 0, "");
+        market.liquidate(usr1, market.userDebt(usr1), address(0), 0, "");
         assertERC20Tracking();
 
         vm.stopPrank();
