@@ -14,9 +14,8 @@ contract TgUSD is ERC20, ITgUSD {
     error OnlyMarketCaller();
     error OnlyIRCalculator();
 
-    constructor(string memory _name, string memory _symbol, address _owner, IControlTower _controlTower) ERC20(_name, _symbol) {
+    constructor(string memory _name, string memory _symbol, IControlTower _controlTower) ERC20(_name, _symbol) {
         controlTower = _controlTower;
-        irCalculator = _irCalculator;
     }
 
     modifier onlyMarketCaller() {

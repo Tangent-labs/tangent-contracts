@@ -54,17 +54,13 @@ export class BaseContext extends MainSetup {
     coins: {[name: string]: IERC20Metadata} = {};
 
     async deployContracts1() {
-        const l0EndpointAddress = "0x1a44076050125825900e736c501f859c50fE728c";
-        // TODO To change
-        const l0Delegate = "0x1a44076050125825900e736c501f859c50fE728c";
-
         this.owner = this.users[0];
         this.feeTreso = this.users[1];
 
         this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
         await this.controlTower.waitForDeployment();
 
-        this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy("Tangent USD", "tgUSD", l0EndpointAddress, l0Delegate, this.owner, this.controlTower);
+        this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy("Tangent USD", "tgUSD", this.controlTower);
         await this.tgUSD.waitForDeployment();
 
         await this.deploySgUSD();
@@ -81,7 +77,7 @@ export class BaseContext extends MainSetup {
         this.rsTanERC721 = await (await ethers.getContractFactory("RsTanERC721")).deploy(this.owner);
         await this.rsTanERC721.waitForDeployment();
 
-        this.rsTanService = await (await ethers.getContractFactory("RsTanService")).deploy(this.rsTanERC721, this.controlTower, this.owner, this.tan);
+        this.rsTanService = await (await ethers.getContractFactory("RsTanService")).deploy(this.owner, this.controlTower, this.tan, this.rsTanERC721, this.tgUSD, this.sgUSD);
         await this.rsTanService.waitForDeployment();
         await this.rsTanService.addNewReward(this.tgUSD);
 
@@ -126,7 +122,7 @@ export class BaseContext extends MainSetup {
     }
 
     async deployContracts2(tgUSDOracle: AddressLike, lpDeployContext: LpDeployContext) {
-        this.irCalculator = await (await ethers.getContractFactory("IRCalculator")).deploy(this.owner, this.controlTower, tgUSDOracle);
+        this.irCalculator = await (await ethers.getContractFactory("IRCalculator")).deploy(this.owner, this.controlTower, tgUSDOracle, this.tgUSD);
         await this.irCalculator.waitForDeployment();
 
         this.marketCreator = await (
@@ -186,9 +182,11 @@ export class BaseContext extends MainSetup {
 
         const tgUSDToGivePerUser = 3_000_000;
 
-        await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 5, amount: tgUSDToGivePerUser}]);
+        await this.giveTokens(this.users, [{address: await this.tgUSD.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: tgUSDToGivePerUser}]);
 
-        await setStorageAt(await this.tgUSD.getAddress(), 7, parseEther((tgUSDToGivePerUser * this.users.length).toString()));
+        await setStorageAt(await this.tgUSD.getAddress(), 2, parseEther((tgUSDToGivePerUser * this.users.length).toString()));
+
+        console.log(await this.tgUSD.balanceOf(this.users[0]));
     }
 
     async approveCurveLP(lp: string) {

@@ -14,6 +14,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
 
     /// @notice Computes the interest rate and the cut of rewards.
     IIRCalculator public irCalculator;
+    /// @notice tgUSD is the StableCoin to borrow against the collatToken.
+    ITgUSD public tgUSD;
 
     /// @notice Maximum debt of the market
     uint256 public maxMarketDebt;
