@@ -41,8 +41,8 @@ contract ZapDepositAndBorrow is ConvexCurveContext {
     //     );
     //     vm.stopPrank();
 
-    //     assertEq(market.positionDebt(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
-    //     assertEq(market.positionDebtIndex(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
+    //     assertEq(market.userDebt(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
+    //     assertEq(market.userDebtShares(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
 
     //     assertEq(market.debtIndex(), 1e18, "The debt index of the market is correct");
     //     assertEq(market.totalDebt(), tgUsdToBorrow * 2, "The market has the correct amount of debt");
@@ -75,10 +75,10 @@ contract ZapDepositAndBorrow is ConvexCurveContext {
         );
         vm.stopPrank();
 
-        assertEq(market.positionDebt(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
-        assertEq(market.positionDebtIndex(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
+        assertEq(market.userDebt(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
+        assertEq(market.userDebtShares(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
 
-        assertEq(market.debtIndex(), 1e18, "The debt index of the market is correct");
+        assertEq(irCalculator.debtIndexes(address(market)), 1e18, "The debt index of the market is correct");
         assertEq(market.totalDebt(), tgUsdToBorrow * 2, "The market has the correct amount of debt");
 
         assertApproxEqRel(market.collateralBalances(usr1), quote * 2, 1e17, "The user has deposited the correct amount of collateral");

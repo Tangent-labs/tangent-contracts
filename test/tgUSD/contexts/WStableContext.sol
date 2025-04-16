@@ -56,5 +56,7 @@ contract WStableContext is OraclesContext {
         params[3] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wDOLA, name: "tgUSD-wDOLA", symbol: "tgDOLA", initialAmount: 500_000});
         params[4] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wUSR, name: "tgUSD-wUSR", symbol: "tgUSR", initialAmount: 500_000});
         lpDeploymentContext.createTgUSDLps(owner, params);
+
+        setupTgUSDOracle();
     }
 }

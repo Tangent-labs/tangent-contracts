@@ -45,13 +45,13 @@ contract DepositAndBorrowReverts is ConvexCurveContext {
     }
 
     function test_depositBorrow_less_than_minimum_loan() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooLow.selector));
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooLow.selector));
         market.depositAndBorrow(2 ether, minimumLoan - 1, false, address(0));
     }
 
     function test_depositBorrow_more_than_LTV_with_not_enough_collat() external {
         vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
         market.depositAndBorrow(0.5 ether, minimumLoan, false, address(0));
         vm.stopPrank();
     }

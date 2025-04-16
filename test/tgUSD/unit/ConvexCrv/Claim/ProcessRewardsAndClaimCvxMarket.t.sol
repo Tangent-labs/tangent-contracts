@@ -46,7 +46,7 @@ contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
 
         skip(15 days);
 
-        tgUSD.mintIR();
+        irCalculator.mintIR();
         vm.stopPrank();
 
         hRewards.processRewards(usr2);
@@ -75,7 +75,7 @@ contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
 
         skip(15 days);
 
-        tgUSD.mintIR();
+        irCalculator.mintIR();
         vm.stopPrank();
 
         hRewards.processRewards(usr2);

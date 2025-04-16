@@ -48,7 +48,7 @@ contract ZapRepay is ConvexCurveContext {
         assertEq(tgUsdBalance, tgUSD.balanceOf(address(usr1)), "The repay is not complete, so there are no tgUSD left on the user");
         assertEq(tgUSD.balanceOf(address(zapper)), 0, "No tgUSD should stays on the zapper");
         assertEq(nativeCoinBalance - usr1.balance, amountIn, "Native coin is sent from sender");
-        assertEq(market.positionDebt(address(usr1)), initialDebt - quote, "The new debt is equal to the initial minus what has been repayed");
+        assertEq(market.userDebt(address(usr1)), initialDebt - quote, "The new debt is equal to the initial minus what has been repayed");
     }
 
     function test_zap_repay_full_with_erc20_for_sender() external {
@@ -77,6 +77,6 @@ contract ZapRepay is ConvexCurveContext {
         assertEq(tgUsdRemaining, quote - initialDebt, "The repay is complete, all tgUSD in excess from the zap returns to the sender");
         assertEq(tgUSD.balanceOf(address(zapper)), 0, "No tgUSD should stays on the zapper");
         assertEq(erc20Balance - tokenIn.balanceOf(usr1), amountIn, "Native coin is sent from sender");
-        assertEq(market.positionDebt(address(usr1)), 0, "Position should be fully repayed");
+        assertEq(market.userDebt(address(usr1)), 0, "Position should be fully repayed");
     }
 }

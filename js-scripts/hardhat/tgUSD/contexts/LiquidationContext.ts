@@ -24,7 +24,7 @@ export type LiquidationUserInInfo = {account: string; market: string};
 
 export type LiquidationAccountInfo = {
     healthRatio: bigint;
-    positionDebt: bigint;
+    userDebt: bigint;
     positionValue: bigint;
 };
 
@@ -151,7 +151,7 @@ export class LiquidationContext {
         const specifics = this.getSpecificDepositBorrowCase();
         const {borrow, deposit} = specifics[this.marketAddresses[0]][this.userAddresses[0]];
 
-        if (firstAccount?.positionDebt !== parseEther(borrow)) {
+        if (firstAccount?.userDebt !== parseEther(borrow)) {
             throw Error("Specific borrow not applied ");
         }
 

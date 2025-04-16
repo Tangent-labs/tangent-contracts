@@ -9,11 +9,3 @@ struct Reward {
     uint256 rewardRate;
     uint256 rewardPerTokenStored;
 }
-
-interface IRewards {
-    function rewardData(address token) external view returns (uint128, uint128, uint256, uint256);
-    function getRewardTokens() external view returns (IERC20[] memory);
-    function harvesterFeePercentage() external view returns (uint256);
-    function claimableRewards(address account) external view returns (TokenAmount[] memory);
-    function rewardCutPercentage() external view returns (uint256);
-}

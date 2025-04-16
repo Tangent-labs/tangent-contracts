@@ -12,8 +12,6 @@ struct Reward {
 interface IRewardAccumulator {
     function cutFeeForToken(IERC20 token) external view returns (uint256);
 
-    function getRewardTokens(address market) external view returns (IERC20[] memory);
-
     function harvesterFeePercentage(address market) external view returns (uint256);
 
     function rewardData(address market, IERC20 token) external view returns (uint128, uint128, uint256, uint256);
@@ -21,4 +19,10 @@ interface IRewardAccumulator {
     function updateRewards(address account) external;
 
     function processRewards(address harvestFeeReceiver, TokenAmount[] memory rewardAmounts) external;
+
+    function getRewardTokens(address markets) external view returns (IERC20[] memory);
+
+    function lastRewardCuts(address market) external view returns (uint256);
+
+    function claimableRewards(address market, address _account) external view returns (TokenAmount[] memory userRewards);
 }

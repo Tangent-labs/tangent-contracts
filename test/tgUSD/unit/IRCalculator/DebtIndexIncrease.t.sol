@@ -1,41 +1,47 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../contexts/ConvexCurveContext.sol";
+import "../../../utils/IRCalculationFFI.sol";
 
 contract DebtIndexIncrease is ConvexCurveContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
+    IRCalculationFFI irFFI = new IRCalculationFFI();
+
     function setUp() public {
         collatToken = AddrCurveStableLP.CRVUSD_USDC;
         market = deployConvexCurveLPMarket(collatToken);
     }
 
-    function test_debtIndex_increases(uint24 daysToSkip1, uint32 daysToSkip2) external {
-        uint256 lastIr = market.lastIR();
-        uint256 debtIndex = market.debtIndex();
+    function test_debtIndex_increases(uint40 secondsToSkip1, uint40 secondsToSkip2) external {
+        secondsToSkip1 = uint40(bound(uint256(secondsToSkip1), 0, 365 days * 100));
+        secondsToSkip2 = uint40(bound(uint256(secondsToSkip2), 0, 365 days * 100));
+        (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
-        assertEq(debtIndex, 1 ether, "Debt index should be 1");
+        uint256 debtIndex = irCalculator.debtIndexes(address(market));
 
-        uint256 skipDuration = uint256(daysToSkip1) * 1 days;
+        assertEq(debtIndex, RAY, "Debt index should be 1");
 
-        skip(skipDuration);
+        skip(uint256(secondsToSkip1));
 
-        uint256 indexIncrem1 = (lastIr * skipDuration) / 365 days;
+        uint256 newExpectedIndex = irFFI.getIndexFFI(debtIndex, ir, timestamp);
 
-        market.checkpointIR();
+        irCalculator.checkpointIR(address(market));
 
-        debtIndex = market.debtIndex();
+        debtIndex = irCalculator.debtIndexes(address(market));
 
-        assertEq(debtIndex, 1 ether + indexIncrem1, "Debt index should be equal to the incremented index");
+        assertApproxEqRel(newExpectedIndex, debtIndex, 1e3); //0.0000000000001% delta
 
-        uint256 skipDuration2 = uint256(daysToSkip2) * 1 days;
+        (ir, timestamp) = irCalculator.irCheckpoints(address(market));
 
-        skip(skipDuration2);
+        skip(uint256(secondsToSkip2));
 
-        uint256 indexIncrem2 = (lastIr * skipDuration2) / 365 days;
+        newExpectedIndex = irFFI.getIndexFFI(debtIndex, ir, timestamp);
 
-        market.checkpointIR();
+        irCalculator.checkpointIR(address(market));
 
-        assertEq(market.debtIndex(), debtIndex + indexIncrem2, "Debt index should be equal to the incremented index");
+        debtIndex = irCalculator.debtIndexes(address(market));
+
+        assertApproxEqRel(newExpectedIndex, debtIndex, 1e3, "Debt index should be equal to the incremented index");
     }
 }

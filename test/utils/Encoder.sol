@@ -4,13 +4,8 @@ pragma solidity ^0.8.0;
 import {MintAndSwapWStable, CurveRouterSwap} from "../../src/interfaces/internals/tgUSD/ICurveLPLiquidator.sol";
 
 contract Encoder {
-    function encodeLiquidateCallForCurveLP(CurveRouterSwap calldata curveRouterSwap, MintAndSwapWStable calldata mintAndSwapWStable) public pure returns (bytes memory) {
-        return
-            abi.encodeWithSelector(
-                bytes4(keccak256("liquidateLP((address[11],uint256[5][5],uint256,uint256,address[5],address),(address,address,address,address,int128,int128,uint256,uint256))")),
-                curveRouterSwap,
-                mintAndSwapWStable
-            );
+    function encodeLiquidateCallForCurveLP(CurveRouterSwap calldata curveRouterSwap) public pure returns (bytes memory) {
+        return abi.encodeWithSelector(bytes4(keccak256("exchange(address[11],uint256[5][5],uint256,uint256,address[5],address)")), curveRouterSwap);
     }
 
     function createCurveRouterStruct(
@@ -41,9 +36,5 @@ contract Encoder {
         }
         address[5] memory pools;
         return CurveRouterSwap({_route: _route, _swap_params: _swapParams, _amount: amount, _min_dy: minDy, _pools: pools, _receiver: receiver});
-    }
-
-    function createEmptyMintAndSwapWStable() public pure returns (MintAndSwapWStable memory) {
-        return MintAndSwapWStable({stable: address(0), wStable: address(0), stablePool: address(0), receiver: address(0), amountIn: 0, i: 0, j: 0, amountMinOut: 0});
     }
 }

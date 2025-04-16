@@ -32,7 +32,8 @@ contract OraclesContext is TgUSDDeployContext {
         tgUSDOracle = IAggregatorStablePriceV3(deployCode("AggregatorStablePriceV3", abi.encode(tgUSD, uint256(1000000000000000), owner)));
         vm.label(address(tgUSDOracle), "Oracle tgUSD");
 
-        irCalculator = new IRCalculator(owner, controlTower, tgUSDOracle);
+        irCalculator = new IRCalculator(owner, controlTower, tgUSDOracle, tgUSD);
+        controlTower.toggleIRCalculator(address(irCalculator));
 
         rewardAccumulator = new RewardAccumulator(owner, controlTower, irCalculator);
 
@@ -56,19 +57,19 @@ contract OraclesContext is TgUSDDeployContext {
     }
 
     function setupTgUSDOracle() public {
-        tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDT")));
+        vm.startPrank(owner);
+        tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")));
         tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD")));
 
         pegKeeperRegulator = IPegKeeperRegulator(deployCode("PegKeeperRegulator", abi.encode(tgUSD, tgUSDOracle, feeTreasury, owner, owner)));
-
         pegKeeperTgUSD_USDC = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 20000, pegKeeperRegulator, owner)));
         pegKeeperTgUSD_frxUSD = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD"), 20000, pegKeeperRegulator, owner)));
-
         address[] memory pairs = new address[](2);
         pairs[0] = address(pegKeeperTgUSD_USDC);
         pairs[1] = address(pegKeeperTgUSD_frxUSD);
 
         pegKeeperRegulator.add_peg_keepers(pairs);
+        vm.stopPrank();
     }
 
     function setupChainlinkOracles() internal {
@@ -96,10 +97,18 @@ contract OraclesContext is TgUSDDeployContext {
         // Oracle CRVUSD_USDC
         oracles[AddrCurveStableLP.CRVUSD_USDC] = new OracleDuoPoolStable(
             AddrCurveStableLP.CRVUSD_USDC,
-            IPriceOracle(address(AddrChainlinkOracle.CRVUSD)),
-            IPriceOracle(address(AddrChainlinkOracle.USDC))
+            IPriceOracle(address(AddrChainlinkOracle.USDC)),
+            IPriceOracle(address(AddrChainlinkOracle.CRVUSD))
         );
         vm.label(address(oracles[AddrCurveStableLP.CRVUSD_USDC]), "Oracle LP crvUSD/USDC");
+
+        // Oracle CRVUSD_USDT
+        oracles[AddrCurveStableLP.CRVUSD_USDT] = new OracleDuoPoolStable(
+            AddrCurveStableLP.CRVUSD_USDT,
+            IPriceOracle(address(AddrChainlinkOracle.USDT)),
+            IPriceOracle(address(AddrChainlinkOracle.CRVUSD))
+        );
+        vm.label(address(oracles[AddrCurveStableLP.CRVUSD_USDT]), "Oracle LP crvUSD/USDT");
 
         // Oracle USDC_FXUSD
         oracles[AddrCurveStableLP.USDC_FXUSD] = new OracleDuoPoolStable(

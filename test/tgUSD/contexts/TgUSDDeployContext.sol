@@ -21,7 +21,6 @@ import "../../../src/tgUSD/Rewards/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
 import "../../../src/tgUSD/Utilities/MarketCreator.sol";
-import "../../../src/tgUSD/Utilities/Liquidator.sol";
 import "../../../src/tgUSD/Utilities/LiquidatorProxy.sol";
 import "../../../test/tgUSD/mocks/MockEnsoRouter.sol";
 import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
@@ -57,7 +56,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public mockedLP = makeAddr("Mocked LP");
 
     Encoder public encoder;
-    Liquidator liquidator;
 
     address public l0EndpointMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
     address public l0EndpointBase = 0x1a44076050125825900e736c501f859c50fE728c;
@@ -95,7 +93,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         marketNoSociabilizationImplem = address(new MarketNoSociabilization());
 
         encoder = new Encoder();
-        liquidator = new Liquidator();
         ensoUtils = new EnsoUtils();
         labeliser = new Labeliser();
 
@@ -106,8 +103,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         tan = new Tan();
         rsTanERC721 = new RsTanERC721(owner);
-        rsTanService = new RsTanService(rsTanERC721, controlTower, owner, tan);
-        rsTanERC721.setService(address(rsTanService));
 
         // Deploy tgUSD on Base
         // tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
@@ -116,11 +111,13 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         // assertEq(address(tgUsdBase), address(tgUSD), "Should be equals with CREATE3");
 
-        rsTanService.addNewReward(tgUSD);
-
         liquidatorProxy = new LiquidatorProxy(tgUSD);
 
         sgUSD = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(tgUSD), "Staked tgUSD", "sgUSD", owner, 7 days));
+
+        rsTanService = new RsTanService(owner, controlTower, tan, rsTanERC721, tgUSD, sgUSD);
+        rsTanERC721.setService(address(rsTanService));
+        rsTanService.addNewReward(tgUSD);
 
         mockEnsoRouter = new MockEnsoRouter();
 
@@ -143,7 +140,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(mockEnsoRouter), "Mock Odos Router");
         vm.label(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e, "Curve Router");
 
-        vm.label(address(liquidator), "Liquidator");
         vm.label(address(liquidatorProxy), "Liquidation Proxy");
         vm.label(address(zapper), "Zapper");
 
@@ -162,7 +158,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         // console.logBytes(bytecode);
 
         // Encodez les arguments pour le constructeur
-        bytes memory constructorArgs = abi.encode("Tangent StableCoin", "tgUSD", owner, controlTower);
+        bytes memory constructorArgs = abi.encode("Tangent StableCoin", "tgUSD", controlTower);
 
         // Concaténez le bytecode et les arguments
         return abi.encodePacked(bytecode, constructorArgs);

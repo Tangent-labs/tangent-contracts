@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {BalancesAllowances} from "../BalancesAllowances.sol";
-import {ERC20Infos, IERC20Metadata} from "../ERC20Infos.sol";
+import {BalancesAllowances, OutputBalanceAllowances, InputBalancesAllowances} from "../BalancesAllowances.sol";
+import {ERC20Infos, IERC20Metadata, ERC20StaticInfos} from "../ERC20Infos.sol";
 
 import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
-import {IRewards} from "../../interfaces/internals/tgUSD/IRewards.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {ISociabilization} from "../../interfaces/internals/tgUSD/ISociabilization.sol";
+import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 
 contract GetMarketDetails is BalancesAllowances, ERC20Infos {
     struct CollateralInfos {
-        ERC20Infos.ERC20StaticInfos collateralToken;
+        ERC20StaticInfos collateralToken;
         uint256 totalCollateralUSDValue;
         uint256 totalCollateralAmount;
         uint256 collateralUSDPrice;
@@ -24,7 +24,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
 
     struct DebtInfos {
         uint256 totalDebt;
-        uint256 positionDebt;
+        uint256 userDebt;
         uint256 healthRatio;
         uint256 currentBorrowRate;
         uint256 futureBorrowRate;
@@ -47,68 +47,99 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         DebtInfos debtInfos;
         MarketConstants constants;
         Sociabilization sociabilization;
-        BalancesAllowances.OutputBalanceAllowances[] obas;
-        ERC20Infos.ERC20StaticInfos[] rewardTokens;
+        OutputBalanceAllowances[] obas;
+        ERC20StaticInfos[] rewardTokens;
     }
 
     function getMarketDetails(address account, address market) public returns (MarketRow memory) {
+        return
+            MarketRow({
+                marketAddress: market,
+                collateralInfos: _getCollateralInfos(account, market),
+                debtInfos: _getDebtInfos(account, market),
+                constants: _getMarketConstants(market),
+                sociabilization: _getSociabilization(market),
+                obas: _getBalancesAllowances(account, market),
+                rewardTokens: _getRewardTokens(market)
+            });
+    }
+
+    function _getCollateralInfos(address account, address market) internal view returns (CollateralInfos memory) {
         ICollateral marketCollateral = ICollateral(market);
-        IPriceOracle priceOracle = marketCollateral.collatOracle();
-        IDebtIR marketDebt = IDebtIR(market);
-        uint256 collateralUSDPrice = priceOracle.latestAnswer();
-        uint256 totalCollateral = marketCollateral.totalCollateral();
         IERC20Metadata collatToken = marketCollateral.collatToken();
+        uint256 totalCollateral = marketCollateral.totalCollateral();
+        IPriceOracle priceOracle = marketCollateral.collatOracle();
+        uint256 collateralUSDPrice = priceOracle.latestAnswer();
 
-        address[] memory spenders = new address[](1);
-        spenders[0] = market;
+        return
+            CollateralInfos({
+                collateralToken: getERC20StaticInfos(collatToken),
+                totalCollateralUSDValue: (totalCollateral * collateralUSDPrice) / 10 ** 18,
+                totalCollateralAmount: totalCollateral,
+                collateralUSDPrice: collateralUSDPrice,
+                positionCollateralAmount: marketCollateral.collateralBalances(account),
+                positionCollateralUSDValue: marketCollateral.positionValue(account),
+                priceOracle: priceOracle
+            });
+    }
 
-        BalancesAllowances.InputBalancesAllowances[] memory ibas = new BalancesAllowances.InputBalancesAllowances[](1);
-        ibas[0] = BalancesAllowances.InputBalancesAllowances({token: collatToken, spenders: spenders});
-
+    function _getDebtInfos(address account, address market) internal returns (DebtInfos memory) {
+        ICollateral marketCollateral = ICollateral(market);
+        IDebtIR marketDebt = IDebtIR(market);
         IIRCalculator irCalculator = IIRCalculator(marketDebt.irCalculator());
+        (, uint216 ir) = irCalculator.irCheckpoints(market);
+        IRewardAccumulator _rewardAccumulator = IRewardAccumulator(marketCollateral.rewardAccumulator());
 
-        address _account = account;
-        address _market = market;
+        return
+            DebtInfos({
+                totalDebt: marketDebt.totalDebt(),
+                userDebt: marketDebt.userDebt(account),
+                healthRatio: marketCollateral.healthRatio(account),
+                currentBorrowRate: ir,
+                futureBorrowRate: irCalculator.computeIRForMarket(market),
+                currentRewardCut: _rewardAccumulator.lastRewardCuts(market),
+                futureRewardCut: irCalculator.computeRCForMarket(market)
+            });
+    }
 
+    function _getMarketConstants(address market) internal view returns (MarketConstants memory) {
+        ICollateral marketCollateral = ICollateral(market);
+        IDebtIR marketDebt = IDebtIR(market);
+
+        return
+            MarketConstants({
+                maxLTV: marketCollateral.maxLTV(),
+                maxMarketDebt: marketDebt.maxMarketDebt(),
+                minimumLoan: marketDebt.minimumLoan(),
+                liquidationThreshold: marketCollateral.liquidationThreshold()
+            });
+    }
+
+    function _getSociabilization(address market) internal view returns (Sociabilization memory) {
         Sociabilization memory soc;
 
-        try ISociabilization(_market).socFeePercentage() {
-            ISociabilization sociabilization = ISociabilization(_market);
+        try ISociabilization(market).socFeePercentage() {
+            ISociabilization sociabilization = ISociabilization(market);
             soc = Sociabilization({socFeePercentage: sociabilization.socFeePercentage(), socFeePending: sociabilization.socFeePending()});
         } catch {
             soc = Sociabilization({socFeePercentage: 0, socFeePending: 0});
         }
 
-        return
-            MarketRow({
-                marketAddress: _market,
-                collateralInfos: CollateralInfos({
-                    collateralToken: getERC20StaticInfos(collatToken),
-                    totalCollateralUSDValue: (totalCollateral * collateralUSDPrice) / 10 ** 18,
-                    totalCollateralAmount: totalCollateral,
-                    collateralUSDPrice: collateralUSDPrice,
-                    positionCollateralAmount: marketCollateral.collateralBalances(_account),
-                    positionCollateralUSDValue: marketCollateral.positionValue(_account),
-                    priceOracle: priceOracle
-                }),
-                debtInfos: DebtInfos({
-                    totalDebt: marketDebt.totalDebt(),
-                    positionDebt: marketDebt.positionDebt(_account),
-                    healthRatio: marketCollateral.healthRatio(_account),
-                    currentBorrowRate: marketDebt.lastIR(),
-                    futureBorrowRate: irCalculator.computeIRForMarket(_market),
-                    currentRewardCut: IRewards(_market).rewardCutPercentage(),
-                    futureRewardCut: irCalculator.computeRCForMarket(_market)
-                }),
-                constants: MarketConstants({
-                    maxLTV: marketCollateral.maxLTV(),
-                    maxMarketDebt: marketDebt.maxMarketDebt(),
-                    minimumLoan: marketDebt.minimumLoan(),
-                    liquidationThreshold: marketCollateral.liquidationThreshold()
-                }),
-                sociabilization: soc,
-                obas: getBalancesAllowances(_account, ibas),
-                rewardTokens: getERC20StaticInfos(IRewards(_market).getRewardTokens())
-            });
+        return soc;
+    }
+    function _getBalancesAllowances(address account, address market) internal view returns (OutputBalanceAllowances[] memory) {
+        IERC20Metadata collatToken = ICollateral(market).collatToken();
+
+        address[] memory spenders = new address[](1);
+        spenders[0] = market;
+
+        InputBalancesAllowances[] memory ibas = new InputBalancesAllowances[](1);
+        ibas[0] = InputBalancesAllowances({token: collatToken, spenders: spenders});
+
+        return getBalancesAllowances(account, ibas);
+    }
+
+    function _getRewardTokens(address market) internal view returns (ERC20StaticInfos[] memory) {
+        return getERC20StaticInfos(ICollateral(market).rewardAccumulator().getRewardTokens(market));
     }
 }

@@ -5,6 +5,7 @@ import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extens
 import {IPriceOracle} from "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {ICollateral} from "../../../interfaces/internals/tgUSD/ICollateral.sol";
 import {ILiquidatorProxy} from "../../../interfaces/internals/tgUSD/ILiquidatorProxy.sol";
+import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 
 import {DebtIR} from "./DebtIR.sol";
 
@@ -19,8 +20,8 @@ abstract contract Collateral is DebtIR, ICollateral {
     IERC20Metadata public collatToken;
     /// @notice Contract allowing to retrieve the price in dollar of the collateral.
     IPriceOracle public collatOracle;
-    /// @notice Liquidation proxy
-    ILiquidatorProxy public liquidatorProxy;
+
+    IRewardAccumulator public rewardAccumulator;
 
     /// @notice Maxium Loan to Value of the market in %.
     uint256 public maxLTV;
@@ -107,11 +108,11 @@ abstract contract Collateral is DebtIR, ICollateral {
     }
 
     function healthRatio(address account) public view returns (uint256) {
-        return _healthRatio(positionDebt(account), collateralBalances[account]);
+        return _healthRatio(userDebt(account), collateralBalances[account]);
     }
 
     function liquidationPrice(address account) public view returns (uint256) {
-        return ((positionDebt(account) * DENOMINATOR) * 1e18) / (collateralBalances[account] * liquidationThreshold);
+        return ((userDebt(account) * DENOMINATOR) * 1e18) / (collateralBalances[account] * liquidationThreshold);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

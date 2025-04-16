@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 
-import {BalancesAllowances} from "../BalancesAllowances.sol";
+import {BalancesAllowances, OutputBalanceAllowances, InputBalancesAllowances} from "../BalancesAllowances.sol";
 import {LlamaSplitChainviewCommon} from "./LlamaSplitChainviewCommon.sol";
 
 import {ILlamaVault} from "../../interfaces/externals/LlamaLend/ILlamaVault.sol";

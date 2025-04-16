@@ -16,6 +16,8 @@ contract ControlTower is Ownable, IControlTower {
 
     mapping(address => bool) public isMarketCreator;
 
+    mapping(address => bool) public isIRCalculator;
+
     error NotIRProducer(address irProducer);
 
     error CallerNotOwnerOrMarketCreator(address caller);
@@ -76,5 +78,9 @@ contract ControlTower is Ownable, IControlTower {
 
     function toggleMarketCreator(address marketCreator) external onlyOwner {
         isMarketCreator[marketCreator] = !isMarketCreator[marketCreator];
+    }
+
+    function toggleIRCalculator(address irCalculator) external onlyOwner {
+        isIRCalculator[irCalculator] = !isIRCalculator[irCalculator];
     }
 }

@@ -6,7 +6,7 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 contract LiquidatorProxy is ILiquidatorProxy {
     using SafeERC20 for IERC20;
 
-    uint256 constant MAX_UINT = 2 ** 256 - 1;
+    uint256 constant MAX_UINT = type(uint256).max;
     IERC20 public tgUSD;
 
     constructor(IERC20 _tgUSD) {
@@ -17,8 +17,8 @@ contract LiquidatorProxy is ILiquidatorProxy {
     error MinAmountOutNotReached();
 
     function callLiquidate(address liquidator, address receiver, IERC20 assetToLiquidate, uint256 minTgUSDReceived, bytes calldata routerCall) external payable {
-        if (assetToLiquidate.allowance(address(this), liquidator) != (type(uint256).max)) {
-            assetToLiquidate.approve(liquidator, type(uint256).max);
+        if (assetToLiquidate.allowance(address(this), liquidator) != MAX_UINT) {
+            assetToLiquidate.approve(liquidator, MAX_UINT);
         }
         IERC20 _tgUSD = tgUSD;
         uint256 bal = _tgUSD.balanceOf(receiver);

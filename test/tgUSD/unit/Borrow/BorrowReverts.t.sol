@@ -31,12 +31,12 @@ contract BorrowReverts is ConvexCurveContext {
     }
 
     function test_borrow_less_than_minimum_loan() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooLow.selector));
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooLow.selector));
         market.borrow(usr1, minimumLoan - 1);
     }
 
     function test_borrow_with_0_collateral() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
         market.borrow(usr1, minimumLoan);
     }
 
@@ -45,7 +45,7 @@ contract BorrowReverts is ConvexCurveContext {
         uint256 maxBorrow = market.maxBorrowable(usr1);
 
         vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
         market.borrow(usr1, maxBorrow + 1);
         vm.stopPrank();
     }

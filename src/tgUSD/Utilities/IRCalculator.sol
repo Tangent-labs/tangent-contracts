@@ -3,10 +3,12 @@ pragma solidity ^0.8.22;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-import {IRParams, RCParams, IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {IRParams, RCParams, IIRCalculator, IRCheckpoint} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IAggregatorStablePriceV3} from "../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
+import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
+
 import {ABDKMath64x64} from "../../libs/ABDKMath64x64.sol";
 
 import "forge-std/console.sol";
@@ -17,6 +19,7 @@ import "forge-std/console.sol";
 contract IRCalculator is IIRCalculator, Ownable {
     uint256 public constant DENOMINATOR = 100_000;
 
+    uint256 constant RAY = 1e27;
     uint256 constant ONE_ETHER = 1e18;
 
     uint256 constant E12 = 1e12;
@@ -29,18 +32,36 @@ contract IRCalculator is IIRCalculator, Ownable {
     /// @notice Contract allowing to retrieve the price in dollar of tgUSD.
     IAggregatorStablePriceV3 public tgUSDOracle;
 
+    ITgUSD public tgUSD;
+
+    uint256 public mintableInterests;
+
     /// @notice Gives the parameter of the market
     mapping(address => IRParams) public irParams;
 
     /// @notice Gives the parameter of the market
     mapping(address => RCParams) public rcParams;
 
+    /// @notice Last interest rate since previous interaction with the market. In RAY.
+    mapping(address => IRCheckpoint) public irCheckpoints;
+
+    mapping(address => uint256) public debtIndexes;
+
     error IRStartPriceLtOne();
     error CallerNotOwnerOrMarketCreator(address caller);
+    error NotAMarket(address market);
 
-    constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle) Ownable(_owner) {
+    event MintableInterests(address market, uint256 amount);
+
+    constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle, ITgUSD _tgUSD) Ownable(_owner) {
         controlTower = _controlTower;
         tgUSDOracle = _tgUSDOracle;
+        tgUSD = _tgUSD;
+    }
+
+    modifier onlyMarket(address market) {
+        require(controlTower.isMarket(market), NotAMarket(market));
+        _;
     }
 
     //TODO Add check for params
@@ -59,31 +80,48 @@ contract IRCalculator is IIRCalculator, Ownable {
         _;
     }
 
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                        OWNER ACTIONS 
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
     function setTgUSDOracle(IAggregatorStablePriceV3 _tgUSDOracle) external onlyOwner {
         tgUSDOracle = _tgUSDOracle;
     }
 
+    function initializeMarket(address market, IRParams calldata _irParams) external verifyIRParams(_irParams) {
+        require(controlTower.isMarketCreator(msg.sender), CallerNotOwnerOrMarketCreator(msg.sender));
+        debtIndexes[market] = RAY;
+        irParams[market] = _irParams;
+
+        irCheckpoints[market] = IRCheckpoint({ir: _computeIR(tgUSDOracle.price_w(), _irParams), timestamp: uint40(block.timestamp)});
+    }
+
     function setUpMarket(address market, IRParams calldata _irParam, RCParams calldata _rcParam) external verifyIRParams(_irParam) verifyRCParams(_rcParam) {
+        _checkpointIR(market);
+
         require(msg.sender == owner() || controlTower.isMarketCreator(msg.sender), CallerNotOwnerOrMarketCreator(msg.sender));
         irParams[market] = _irParam;
         rcParams[market] = _rcParam;
-        IDebtIR(market).checkpointIR();
     }
 
     function updateIRParams(address market, IRParams calldata _irParam) external verifyIRParams(_irParam) onlyOwner {
+        _checkpointIR(market);
         irParams[market] = _irParam;
-        IDebtIR(market).checkpointIR();
     }
 
     function updateRCParams(address market, RCParams calldata _rcParam) external verifyRCParams(_rcParam) onlyOwner {
         rcParams[market] = _rcParam;
     }
 
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                    IR COMPUTATION
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters of the market
      * @param  market address of the market
      */
-    function computeIRForMarket(address market) external returns (uint256) {
+    function computeIRForMarket(address market) public returns (uint256) {
         return _computeIR(tgUSDOracle.price_w(), irParams[market]);
     }
 
@@ -96,23 +134,20 @@ contract IRCalculator is IIRCalculator, Ownable {
         return _computeIR(tgUSDPrice, irParam);
     }
 
-    function _pow(int128 a, int128 b) internal pure returns (int128) {
-        return ABDKMath64x64.exp_2(ABDKMath64x64.mul(ABDKMath64x64.log_2(a), b));
-    }
     /**
      * @notice Computes the intest rate regarding the tgUSD price and parameters sigma and r0 from the market
      * @param  tgUSDPrice Price of tgUSD in wei.
      * @param  irParam    IR parameters
      */
-    function _computeIR(uint256 tgUSDPrice, IRParams memory irParam) internal pure returns (uint256) {
+    function _computeIR(uint256 tgUSDPrice, IRParams memory irParam) internal pure returns (uint216) {
         if (tgUSDPrice <= uint256(irParam.pMin) * E12) {
-            return uint256(irParam.rMax) * E13;
+            return uint216(irParam.rMax * E13);
         }
         if (tgUSDPrice >= uint256(irParam.pMax) * E12) {
             if (irParam.isHEC) {
                 return 0;
             }
-            return uint256(irParam.rMin) * E13;
+            return uint216(irParam.rMin * E13);
         }
 
         // x to pass in the σ(x) function, with x = k . (actualPrice - pInflexion)
@@ -141,7 +176,125 @@ contract IRCalculator is IIRCalculator, Ownable {
 
         uint256 irIncrement = ABDKMath64x64.mulu(ABDKMath64x64.mul(ABDKMath64x64.fromUInt(irParam.rMax - irParam.rMin), _pow(quotientFixedPoint, alpha)), E13);
 
-        return uint256(irParam.rMin) * E13 + irIncrement;
+        return uint216(uint256(irParam.rMin) * E13 + irIncrement);
+    }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                    DEBT INDEX COMPUTATION
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    // newIndex = oldIndex * exp(ir * timeRatio)
+    function simulateNewDebtIndex(uint256 oldIndex, IRCheckpoint memory _checkpoint) external view returns (uint256) {
+        return _computeNewDebtIndex(oldIndex, _checkpoint);
+    }
+
+    function newDebtIndex(address market) external view returns (uint256) {
+        IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
+        return _computeNewDebtIndex(debtIndexes[market], _irCheckpoint);
+    }
+
+    function indexDelta(address market) external view returns (uint256) {
+        uint256 oldIndex = debtIndexes[market];
+        return _computeNewDebtIndex(oldIndex, irCheckpoints[market]) - oldIndex;
+    }
+
+    /**
+     *  @notice Computes and returns the new debt index regarding interests generated allowing to readjust the total debt of the market
+     *          If some interests are generated, it increments the value in tgUSD to be able to mint them later.
+     *  @dev    Example :
+     *                    - On a market with 2M debt with 10% interests on 6 month
+     *                    - IndexIncrease = 0.1 * 6 month / 1 year = 5%
+     *                    - Interest Generated = 2M * 5% = 100 000
+     */
+    function checkpointIR(address market) external returns (uint256) {
+        return _checkpointIR(market);
+    }
+
+    function _checkpointIR(address market) internal onlyMarket(market) returns (uint256) {
+        IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
+
+        irCheckpoints[market] = IRCheckpoint({ir: _computeIR(tgUSDOracle.price_w(), irParams[market]), timestamp: uint40(block.timestamp)});
+
+        uint256 oldIndex = debtIndexes[market];
+
+        uint256 newIndex = _computeNewDebtIndex(oldIndex, _irCheckpoint);
+
+        uint256 interests = (IDebtIR(market).totalDebtShares() * (newIndex - oldIndex)) / RAY;
+        if (interests != 0) {
+            mintableInterests += interests;
+            emit MintableInterests(market, interests);
+        }
+
+        debtIndexes[market] = newIndex;
+
+        return newIndex;
+    }
+
+    /**
+     *  @notice Computes and returns the new debt index regarding interests generated allowing to readjust the total debt of the market
+     *          If some interests are generated, it increments the value in tgUSD to be able to mint them later.
+     *  @dev    Example :
+     *                    - On a market with 2M debt with 10% interests on 6 month
+     *                    - IndexIncrease = 0.1 * 6 month / 1 year = 5%
+     *                    - Interest Generated = 2M * 5% = 100 000
+     */
+    function checkpointIRMulti(address[] calldata markets) external {
+        controlTower.isContractsMarkets(markets);
+
+        uint256 _mintableInterests;
+        for (uint256 i; i < markets.length; ) {
+            address market = markets[i];
+            IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
+
+            irCheckpoints[market] = IRCheckpoint({ir: _computeIR(tgUSDOracle.price_w(), irParams[market]), timestamp: uint40(block.timestamp)});
+
+            uint256 oldIndex = debtIndexes[market];
+            uint256 newIndex = _computeNewDebtIndex(oldIndex, _irCheckpoint);
+
+            uint256 interests = (IDebtIR(market).totalDebtShares() * (newIndex - oldIndex)) / RAY;
+
+            if (interests != 0) {
+                _mintableInterests += interests;
+                emit MintableInterests(market, interests);
+            }
+
+            debtIndexes[market] = newIndex;
+
+            unchecked {
+                ++i;
+            }
+        }
+
+        mintableInterests += _mintableInterests;
+    }
+
+    function mintIR() external {
+        console.log(address(tgUSD), "yo");
+        tgUSD.mintIR(mintableInterests);
+        console.log("Lol");
+
+        delete mintableInterests;
+    }
+
+    // newIndex = oldIndex * exp(ir * timeRatio)
+    function _computeNewDebtIndex(uint256 oldIndex, IRCheckpoint memory _checkpoint) internal view returns (uint256) {
+        uint256 timeDelta = block.timestamp - _checkpoint.timestamp;
+        if (timeDelta == 0) {
+            return oldIndex;
+        }
+
+        int128 expContent = ABDKMath64x64.mul(ABDKMath64x64.divu(_checkpoint.ir, ONE_ETHER), ABDKMath64x64.divu(timeDelta, 365 days));
+
+        // To prevent exp overflow
+        if (ABDKMath64x64.toInt(expContent) >= MAX_EXP) {
+            expContent = ABDKMath64x64.fromInt(MAX_EXP);
+        }
+
+        return (ABDKMath64x64.mulu(ABDKMath64x64.exp(expContent), RAY) * oldIndex) / RAY;
+    }
+
+    function _pow(int128 a, int128 b) internal pure returns (int128) {
+        return ABDKMath64x64.exp_2(ABDKMath64x64.mul(ABDKMath64x64.log_2(a), b));
     }
 
     /**

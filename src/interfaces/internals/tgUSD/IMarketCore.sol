@@ -12,10 +12,12 @@ import {IRewardAccumulator} from "./IRewardAccumulator.sol";
 struct LiquidateCall {
     address account;
     uint256 tgUSDToRepay;
-    uint256 userDebt;
-    uint256 newTotalDebt;
     uint256 newDebtIndex;
-    uint256 collatBalance;
+    uint256 _collateralBalance;
+    uint256 _totalCollateral;
+    uint256 _userDebtShares;
+    uint256 _totalDebtShares;
+    uint256 userDebt;
 }
 
 struct GlobalMarketInitParams {

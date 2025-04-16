@@ -25,11 +25,7 @@ contract GlobalInvariant is TestWrapper {
         for (uint256 i; i < allVaults.length; i++) {
             ILlamaVault actualVault = allVaults[i];
             // Set the splitter token post market creation
-            setSplitterTokens(
-                actualVault,
-                gUSDCvx(address(splitter.gUSDPerLlamaVault(actualVault))),
-                scvUSDCvx(address(splitter.scvUSDPerLlamaVault(actualVault)))
-            );
+            setSplitterTokens(actualVault, gUSDCvx(address(splitter.gUSDPerLlamaVault(actualVault))), scvUSDCvx(address(splitter.scvUSDPerLlamaVault(actualVault))));
             string memory collateralSymbol = IERC20Metadata(actualVault.collateral_token()).symbol();
 
             vm.label(address(actualVault), string.concat("LLAMA_VAULT_", collateralSymbol));

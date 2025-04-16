@@ -30,7 +30,7 @@ contract LeverageToTheLimit is ConvexCurveContext {
         bytes memory callRouter = ensoUtils.getZapCallMocked(address(tgUSD), tgUSDToFlashMint, address(collatToken), mockedLP, address(market), address(zapper), collatReceived);
 
         // Revert beaucause LTV is too low
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionDebtTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
         market.leverage(collatToDeposit, tgUSDToFlashMint, collatReceived, address(zapper), true, callRouter);
     }
 
@@ -57,7 +57,7 @@ contract LeverageToTheLimit is ConvexCurveContext {
         assertEq(IERC20(stakingProxy.gaugeAddress()).balanceOf(address(stakingProxy)), collatReceived + collatToDeposit, "Convex staking proxy received Fxn Gauge");
         assertEq(market.collateralBalances(usr1), collatToDeposit + collatReceived);
         assertEq(market.totalCollateral(), collatToDeposit + collatReceived);
-        assertEq(market.positionDebt(usr1), tgUSDToFlashMint);
+        assertEq(market.userDebt(usr1), tgUSDToFlashMint);
 
         skip(7 days);
 

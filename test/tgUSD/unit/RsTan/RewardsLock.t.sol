@@ -61,14 +61,14 @@ contract RewardsLock is ConvexCurveContext {
 
         // rsTanService.processRewards();
         vm.prank(usr1);
-        rsTanService.claimSimple(1);
+        rsTanService.claimSimple(1, false);
 
         vm.prank(usr2);
-        rsTanService.claimSimple(2);
+        rsTanService.claimSimple(2, false);
 
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(RsTanService.NothingToClaim.selector));
-        rsTanService.claimSimple(1);
+        rsTanService.claimSimple(1, false);
     }
 
     function test_lock_claimMultiple() external {
@@ -117,7 +117,7 @@ contract RewardsLock is ConvexCurveContext {
         verifyLostDeltaRelERC20(tgUSD, address(rsTanService), rewardAmount, 10 ** 3); // 0.000000000000100%
         verifyReceiveDeltaRelERC20(tgUSD, usr1, rewardAmount, 10 ** 3); // 0.000000000000100%
 
-        rsTanService.claimMultiple(Array.memoryUint256([uint256(1), uint256(2), uint256(3)]));
+        rsTanService.claimMultiple(Array.memoryUint256([uint256(1), uint256(2), uint256(3)]), false);
         assertERC20Tracking();
     }
 }

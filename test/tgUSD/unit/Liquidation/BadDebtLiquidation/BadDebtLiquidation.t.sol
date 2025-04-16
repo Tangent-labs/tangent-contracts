@@ -47,7 +47,7 @@ contract BadDebtLiquidation is ConvexCurveContext {
     function test_liquidateBadDebt_a_position_in_bad_debt() external {
         vm.startPrank(usr1);
 
-        assertGt(market.positionValue(usr1), market.positionDebt(usr1), "Position value is still bigger than the debt");
+        assertGt(market.positionValue(usr1), market.userDebt(usr1), "Position value is still bigger than the debt");
 
         // Dump a lot of FRXETH in the LP to depeg FRXETH
         hLpManipulator.dumpCrvPool(AddrCurveStableLP.FRXETH_WETH, 1, 0, 1_400 ether);
@@ -58,24 +58,24 @@ contract BadDebtLiquidation is ConvexCurveContext {
 
         skip(1400);
 
-        assertLt(market.positionValue(usr1), market.positionDebt(usr1), "Position value is now lower than the debt");
+        assertLt(market.positionValue(usr1), market.userDebt(usr1), "Position value is now lower than the debt");
 
         verifyReceiveERC20(collatToken, controlTower.feeTreasury(), collatDeposited, "Collateral is requisitioned by the DAO");
 
-        uint256 debtToRepay = market.positionDebt(usr1);
+        uint256 debtToRepay = market.userDebt(usr1);
         // Liquidation passes
         market.liquidateBadDebt(usr1);
         assertERC20Tracking();
 
         assertEq(market.totalCollateral(), 0, "No more collateral on the market");
         assertEq(market.positionValue(usr1), 0, "Position value is now 0");
-        assertEq(market.positionDebt(usr1), 0, "Position debt is now 0");
+        assertEq(market.userDebt(usr1), 0, "Position debt is now 0");
 
         assertEq(market.badDebt(), debtToRepay, "Amount of bad debt is now equal to the debt of the position liquidated");
 
         skip(1 weeks);
 
-        market.checkpointIR();
+        irCalculator.checkpointIR(address(market));
 
         vm.startPrank(usr2);
         hDeposit.setMsgSender(usr2);

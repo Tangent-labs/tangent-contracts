@@ -7,7 +7,5 @@ interface ITgUSD is IERC20 {
 
     function burnFrom(address from, uint256 amount) external;
 
-    function increaseMintableInterests(uint256 interests) external;
-
-    function mintableInterests() external view returns (uint256);
+    function mintIR(uint256 amount) external;
 }
