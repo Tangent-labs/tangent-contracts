@@ -4,11 +4,11 @@ pragma solidity ^0.8.22;
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-
 import {Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewards.sol";
 import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
-import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
-import {IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {IRewardAccumulator, RCParams} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
+import {IAggregatorStablePriceV3} from "../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
+import {IMarketExternalActions} from "../../interfaces/internals/tgUSD/IMarketExternalActions.sol";
 
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import "forge-std/console.sol";
@@ -23,13 +23,13 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
 
     IControlTower public controlTower;
 
-    IIRCalculator public irCalculator;
+    IAggregatorStablePriceV3 public tgUSDOracle;
 
-    /// @notice Percentage of reward given to harvester. 1_000 = 1%
-    mapping(address => uint256) public harvesterFeePercentage;
+    /// @notice Gives the parameter of the market
+    mapping(address => RCParams) public rcParams;
 
     /// @notice Percentage of reward of rewards to distribute to borrowers. 50_000 = 50%
-    mapping(address => uint256) public lastRewardCuts;
+    mapping(address => uint256) public lastRewardCuts; // Market => Reward Cut
 
     /// @notice List of reward tokens
     mapping(address => IERC20[]) public rewardTokens;
@@ -46,11 +46,8 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     /// @notice Amount of fee that DAO can withdraw for a given token
     mapping(IERC20 => uint256) public cutFeeForToken;
 
-    event RewardNotified(IERC20 _token, uint256 _reward);
+    event RewardNotified(address market, IERC20 _token, uint256 streamed, uint256 harvesterFee, uint256 rewardCut);
     event RewardPaid(address market, address _user, IERC20 _rewardToken, uint256 _reward);
-    event Recovered(address market, IERC20 _token, uint256 _amount);
-    event RewardAdded(address market, IERC20 _rewardToken);
-    event RewardDistributorApproved(address market, IERC20 _reward, address _distributor, bool _state);
 
     error NoRewardsToClaimFromContract(address contractAddr);
     error IncorrectRewardLength(uint256 rewardLengthInParam, uint256 realRewardLength);
@@ -62,14 +59,26 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     error NothingToProcess();
     error RewardAlreadyAdded(IERC20 erc20);
 
+    error CallerNotOwnerOrMarketCreator(address caller);
+
     modifier updateReward(address market, address account) {
         _updateReward(market, account);
         _;
     }
 
-    constructor(address _owner, IControlTower _controlTower, IIRCalculator _irCalculator) Ownable(_owner) {
+    //TODO Add check for params
+    modifier verifyRCParams(RCParams calldata _rcParam) {
+        require(_rcParam.startCutPrice <= 1e18);
+        if (_rcParam.stepAmount == 2) {
+            require(_rcParam.startCutPercentage < _rcParam.endCutPercentage);
+            require(_rcParam.startCutPrice > _rcParam.endCutPrice);
+        }
+        _;
+    }
+
+    constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle) Ownable(_owner) {
         controlTower = _controlTower;
-        irCalculator = _irCalculator;
+        tgUSDOracle = _tgUSDOracle;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -122,22 +131,24 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      * @param account Address of the user
      */
     function _updateReward(address market, address account) internal {
-        uint256 userBal = ICollateral(market).collateralBalances(account);
-        uint256 totalCollateral = ICollateral(market).totalCollateral();
         uint256 rewardLength = rewardTokens[market].length;
-        for (uint256 i; i < rewardLength; ) {
-            IERC20 token = rewardTokens[market][i];
+        if (rewardLength != 0) {
+            (uint256 userBal, uint256 totalCollateral) = ICollateral(market).getBalanceAndTotalCollateral(account);
 
-            rewardData[market][token].rewardPerTokenStored = _rewardPerToken(market, token, totalCollateral);
-            rewardData[market][token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[market][token].periodFinish);
+            for (uint256 i; i < rewardLength; ) {
+                IERC20 token = rewardTokens[market][i];
 
-            if (account != address(0)) {
-                rewards[market][account][token] = _earned(market, account, token, userBal, totalCollateral);
-                userRewardPerTokenPaid[market][account][token] = rewardData[market][token].rewardPerTokenStored;
-            }
+                rewardData[market][token].rewardPerTokenStored = _rewardPerToken(market, token, totalCollateral);
+                rewardData[market][token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[market][token].periodFinish);
 
-            unchecked {
-                ++i;
+                if (account != address(0)) {
+                    rewards[market][account][token] = _earned(market, account, token, userBal, totalCollateral);
+                    userRewardPerTokenPaid[market][account][token] = rewardData[market][token].rewardPerTokenStored;
+                }
+
+                unchecked {
+                    ++i;
+                }
             }
         }
     }
@@ -145,6 +156,91 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         CLAIM REWARDS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    /**
+     *  @notice Claim rewards on one staking contract only
+     *  @param market The erc20 to claim the rewards on
+     */
+    function claimSimple(address market) external {
+        require(controlTower.isMarket(market), NotAMarketRewards());
+
+        TokenAmount[] memory tokenAmounts = _claimRewards(market, msg.sender);
+
+        require(tokenAmounts.length != 0, NoRewardToSimpleClaim());
+
+        for (uint256 erc20Id; erc20Id < tokenAmounts.length; ) {
+            tokenAmounts[erc20Id].token.safeTransfer(msg.sender, tokenAmounts[erc20Id].amount);
+            unchecked {
+                ++erc20Id;
+            }
+        }
+    }
+
+    /**
+     *  @notice Claim rewards on one staking contract only
+     *  @param markets Array of contract to claim the rewards on
+     *  @param rewardLength Amount of different tokens to claim as a reward
+     */
+    function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
+        // Reverts if one of the market passed in parameter is not one.
+        // It protects us agains a malicious user input.
+        controlTower.isContractsMarkets(markets);
+        // We save this length on his own variable, to not miss with the assembly manipulations
+        uint256 marketsLen = markets.length;
+        TokenAmount[] memory totals = new TokenAmount[](rewardLength);
+        uint256 actualErc20Index;
+
+        // Iterates through all of the markets to claim rewards
+        for (uint256 marketIndex; marketIndex < marketsLen; ) {
+            address market = markets[marketIndex];
+
+            // Get and update the amount of rewards to claim
+            TokenAmount[] memory tokenAmountsToClaim = _claimRewards(market, msg.sender);
+            // If the rewards returned by the gUSD is an empty array,
+            require(tokenAmountsToClaim.length != 0, NoRewardsToClaimFromContract(address(market)));
+            // Iterates over all erc20 received from the claim on the gUSD
+            for (uint256 tokenIndex; tokenIndex < tokenAmountsToClaim.length; ) {
+                IERC20 rewardToken = tokenAmountsToClaim[tokenIndex].token;
+                // If token is seen the first time (tokensToClaim[token] == 0)
+                uint256 index = _tLoadUintForAddress(address(rewardToken));
+
+                if (index != 0) {
+                    totals[index - 1].amount += tokenAmountsToClaim[tokenIndex].amount;
+                } else {
+                    totals[actualErc20Index++] = TokenAmount({token: rewardToken, amount: tokenAmountsToClaim[tokenIndex].amount});
+                    _tStoreUintForAddress(address(rewardToken), actualErc20Index);
+                }
+
+                unchecked {
+                    ++tokenIndex;
+                }
+            }
+
+            unchecked {
+                ++marketIndex;
+            }
+        }
+
+        require(rewardLength == actualErc20Index, IncorrectRewardLength(rewardLength, actualErc20Index));
+
+        // Iterate through tokenList
+        bool isSomethingToClaim;
+        for (uint256 i; i < totals.length; ) {
+            IERC20 token = totals[i].token;
+            uint256 amount = totals[i].amount;
+            if (amount != 0) {
+                isSomethingToClaim = true;
+                token.safeTransfer(msg.sender, amount);
+            }
+            // Erase transient for the token
+            _tStoreUintForAddress(address(token), 0);
+
+            unchecked {
+                ++i;
+            }
+        }
+        require(isSomethingToClaim, NoRewardToMultiClaim());
+    }
 
     /**
      * @dev Updates all rewards for the user and returns the amount of rewards to claim
@@ -182,92 +278,26 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     }
 
     /**
-     *  @notice Claim rewards on one staking contract only
-     *  @param market The erc20 to claim the rewards on
+     * @notice Get the claimable amount of all reward tokens for the given address
+     * @param _account Address of the user
+     * @return userRewards Array of rewards
      */
-    function claimSimple(address market) external {
-        require(controlTower.isMarket(market), NotAMarketRewards());
+    function claimableRewards(address market, address _account) external view returns (TokenAmount[] memory userRewards) {
+        userRewards = new TokenAmount[](rewardTokens[market].length);
 
-        TokenAmount[] memory tokenAmounts = _claimRewards(market, msg.sender);
+        (uint256 collateralBalance, uint256 totalCollateral) = ICollateral(market).getBalanceAndTotalCollateral(_account);
 
-        require(tokenAmounts.length != 0, NoRewardToSimpleClaim());
+        for (uint256 erc20Id; erc20Id < userRewards.length; ) {
+            IERC20 token = rewardTokens[market][erc20Id];
+            userRewards[erc20Id].token = token;
+            userRewards[erc20Id].amount = _earned(market, _account, token, collateralBalance, totalCollateral);
 
-        for (uint256 erc20Id; erc20Id < tokenAmounts.length; ) {
-            tokenAmounts[erc20Id].token.safeTransfer(msg.sender, tokenAmounts[erc20Id].amount);
             unchecked {
                 ++erc20Id;
             }
         }
-    }
 
-    /**
-     *  @notice Claim rewards on one staking contract only
-     *  @param markets Array of contract to claim the rewards on
-     *  @param rewardLength Amount of different tokens to claim as a reward
-     */
-    function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
-        // We save this length on his own variable, to not miss with the assembly manipulations
-        uint256 marketsLen = markets.length;
-        IERC20[] memory tokenList = new IERC20[](rewardLength);
-        uint256 actualErc20Index;
-
-        // Reverts if one of the market passed in parameter is not one.
-        // It protects us agains a malicious user input.
-        controlTower.isContractsMarkets(markets);
-
-        // Iterates through all of the markets to claim rewards
-        for (uint256 marketIndex; marketIndex < marketsLen; ) {
-            address market = markets[marketIndex];
-
-            // Get and update the amount of rewards to claim
-            TokenAmount[] memory tokenAmountsToClaim = _claimRewards(market, msg.sender);
-            // If the rewards returned by the gUSD is an empty array,
-            require(tokenAmountsToClaim.length != 0, NoRewardsToClaimFromContract(address(market)));
-            // Iterates over all erc20 received from the claim on the gUSD
-            for (uint256 tokenIndex; tokenIndex < tokenAmountsToClaim.length; ) {
-                IERC20 erc20 = tokenAmountsToClaim[tokenIndex].token;
-                // If token is seen the first time (tokensToClaim[token] == 0)
-                uint256 rewardAmount = _tLoadUintForAddress(address(erc20));
-
-                if (rewardAmount == 0) {
-                    // Increment tokenList length & add new token on new index
-                    tokenList[actualErc20Index] = erc20;
-                    unchecked {
-                        ++actualErc20Index;
-                    }
-                }
-                // Increment storage value
-                _tStoreUintForAddress(address(erc20), rewardAmount + tokenAmountsToClaim[tokenIndex].amount);
-                unchecked {
-                    ++tokenIndex;
-                }
-            }
-
-            unchecked {
-                ++marketIndex;
-            }
-        }
-
-        require(rewardLength == actualErc20Index, IncorrectRewardLength(rewardLength, actualErc20Index));
-
-        // Iterate through tokenList
-        bool isSomethingToClaim;
-        for (uint256 tokenIndex; tokenIndex < tokenList.length; ) {
-            IERC20 token = tokenList[tokenIndex];
-            uint256 amountClaim = _tLoadUintForAddress(address(token));
-
-            if (amountClaim != 0) {
-                isSomethingToClaim = true;
-                token.safeTransfer(msg.sender, amountClaim);
-                // Erase transient for the token
-                _tStoreUintForAddress(address(token), 0);
-            }
-
-            unchecked {
-                ++tokenIndex;
-            }
-        }
-        require(isSomethingToClaim, NoRewardToMultiClaim());
+        return userRewards;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -322,6 +352,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
             IERC20 _newRewardToken = newRewardTokens[i];
             /// @dev If lastUpdateTime is equal to 0, it means the token is not already added as a reward
             require(rewardData[market][_newRewardToken].lastUpdateTime == 0, RewardAlreadyAdded(_newRewardToken));
+            //TODO Verify the token is not the collateral
 
             rewardTokens[market].push(_newRewardToken);
             rewardData[market][_newRewardToken].lastUpdateTime = uint128(block.timestamp);
@@ -334,11 +365,11 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
 
     /**
      * @notice Set the percentage of rewards on the rewards streamed to borrowers to send to the processor.
-     * @param _harvesterFeePercentage Percentage fee of the rewards streamed to borrowers.
+     * @param _harvestFeePercentage Percentage fee of the rewards streamed to borrowers.
      */
-    function setHarvesterFeePercentage(address market, uint256 _harvesterFeePercentage) external onlyOwner {
-        require(_harvesterFeePercentage <= 2_000, HarvesterFeeToHigh());
-        harvesterFeePercentage[market] = _harvesterFeePercentage;
+    function setHarvesterFeePercentage(address market, uint16 _harvestFeePercentage) external onlyOwner {
+        require(_harvestFeePercentage <= 2_000, HarvesterFeeToHigh());
+        rcParams[market].harvestFeePercentage = _harvestFeePercentage;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -361,53 +392,40 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         return rewardTokens[market];
     }
 
-    function processRewards(address harvestFeeReceiver, TokenAmount[] memory rewardAmounts) external {
-        require(controlTower.isMarket(msg.sender), NotAMarketRewards());
-        uint256 rewardTokensLength = rewardAmounts.length;
-        require(rewardTokensLength != 0, NothingToProcess());
+    function getRCParams(address market) external view returns (RCParams memory) {
+        return rcParams[market];
+    }
 
-        _updateReward(msg.sender, address(0));
-        uint256 rewardCut = lastRewardCuts[msg.sender];
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                    HARVEST REWARDS
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    function processRewards(address market, address harvestFeeReceiver) public {
+        require(controlTower.isMarket(market), NotAMarketRewards());
+        _updateReward(market, address(0));
+        TokenAmount[] memory rewardAmounts = IMarketExternalActions(market).claimUnderlyingRewards(rewardTokens[market]);
+        uint256 rewardTokensLength = rewardAmounts.length;
+        // require(rewardTokensLength != 0, NothingToProcess()); TODO Cannot modify some RC params if no rewards ?
+
+        uint256 rewardCutPercentage = lastRewardCuts[market];
+
+        RCParams memory _rcParams = rcParams[market];
 
         // Actualize reward cut
-        lastRewardCuts[msg.sender] = irCalculator.computeRCForMarket(msg.sender);
+        lastRewardCuts[market] = _calculateRC(tgUSDOracle.price_w(), _rcParams);
 
-        uint256 _harvesterFeePercetage = harvesterFeePercentage[msg.sender];
+        uint16 harvestFeePercentage = _rcParams.harvestFeePercentage;
 
         for (uint256 tokenIndex; tokenIndex < rewardTokensLength; ) {
             IERC20 rewardToken = rewardAmounts[tokenIndex].token;
-            uint256 rewardToProcess = rewardAmounts[tokenIndex].amount;
 
-            // Calculate and sends harvester fees
-            uint256 harvesterFees = (rewardToProcess * _harvesterFeePercetage) / DENOMINATOR;
-
-            if (harvesterFees != 0) {
-                rewardToken.safeTransfer(harvestFeeReceiver, harvesterFees);
+            (uint256 rewardCutAmount, uint256 harvesterAmount) = _processRewards(market, rewardToken, rewardAmounts[tokenIndex].amount, harvestFeePercentage, rewardCutPercentage);
+            if (rewardCutAmount != 0) {
+                cutFeeForToken[rewardToken] += rewardCutAmount;
             }
-
-            uint256 remainingRewards = rewardToProcess - harvesterFees;
-
-            uint256 rewardAmountStreamed;
-            if (rewardCut != 0) {
-                uint256 rewardAmountCut = (remainingRewards * rewardCut) / DENOMINATOR;
-                cutFeeForToken[rewardToken] += rewardAmountCut;
-                rewardAmountStreamed = remainingRewards - rewardAmountCut;
-            } else {
-                rewardAmountStreamed = remainingRewards;
+            if (harvesterAmount != 0) {
+                rewardToken.safeTransfer(harvestFeeReceiver, harvesterAmount);
             }
-
-            Reward storage rData = rewardData[msg.sender][rewardToken];
-
-            if (block.timestamp >= rData.periodFinish) {
-                rData.rewardRate = rewardAmountStreamed / REWARDS_DURATION;
-            } else {
-                rData.rewardRate = (rewardAmountStreamed + (rData.periodFinish - block.timestamp) * rData.rewardRate) / REWARDS_DURATION;
-            }
-
-            rData.lastUpdateTime = uint128(block.timestamp);
-            rData.periodFinish = uint128(block.timestamp + REWARDS_DURATION);
-
-            emit RewardNotified(rewardToken, rewardAmountStreamed);
 
             unchecked {
                 ++tokenIndex;
@@ -415,27 +433,189 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         }
     }
 
-    /**
-     * @notice Get the claimable amount of all reward tokens for the given address
-     * @param _account Address of the user
-     * @return userRewards Array of rewards
-     */
-    function claimableRewards(address market, address _account) external view returns (TokenAmount[] memory userRewards) {
-        userRewards = new TokenAmount[](rewardTokens[market].length);
+    struct ProcessableRewards {
+        IERC20 rewardToken;
+        uint256 amountForFees;
+        uint256 amountForHarvester;
+    }
 
-        uint256 collateralBalance = ICollateral(market).collateralBalances(_account);
-        uint256 totalCollateral = ICollateral(market).totalCollateral();
+    function processMultiRewards(address[] calldata markets, address harvestFeeReceiver, uint256 rewardLength) external {
+        // Reverts if one of the market passed in parameter is not one.
+        // It protects us agains a malicious user input.
+        controlTower.isContractsMarkets(markets);
 
-        for (uint256 erc20Id; erc20Id < userRewards.length; ) {
-            IERC20 token = rewardTokens[market][erc20Id];
-            userRewards[erc20Id].token = token;
-            userRewards[erc20Id].amount = _earned(market, _account, token, collateralBalance, totalCollateral);
+        uint256 tgUSDPrice = tgUSDOracle.price_w();
 
+        ProcessableRewards[] memory processables = new ProcessableRewards[](rewardLength);
+        uint256 actualErc20Index;
+
+        for (uint256 i = 0; i < markets.length; ) {
+            address market = markets[i];
+            _updateReward(market, address(0));
+            TokenAmount[] memory rewardAmounts = IMarketExternalActions(market).claimUnderlyingRewards(rewardTokens[market]);
+            uint256 rewardTokensLength = rewardAmounts.length;
+
+            uint256 rewardCutPercentage = lastRewardCuts[market];
+            RCParams memory _rcParams = rcParams[market];
+            uint16 harvestFeePercentage = _rcParams.harvestFeePercentage;
+
+            // Actualize reward cut
+            lastRewardCuts[market] = _calculateRC(tgUSDPrice, _rcParams);
+
+            for (uint256 j; j < rewardTokensLength; ) {
+                IERC20 rewardToken = rewardAmounts[j].token;
+                (uint256 rewardCutAmount, uint256 harvesterAmount) = _processRewards(market, rewardToken, rewardAmounts[j].amount, harvestFeePercentage, rewardCutPercentage);
+
+                // If token is seen the first time (tokensToClaim[token] == 0)
+                uint256 index = _tLoadUintForAddress(address(rewardToken));
+
+                if (index != 0) {
+                    processables[index - 1].amountForFees += rewardCutAmount;
+                    processables[index - 1].amountForHarvester += harvesterAmount;
+                } else {
+                    processables[actualErc20Index++] = ProcessableRewards({rewardToken: rewardToken, amountForFees: rewardCutAmount, amountForHarvester: harvesterAmount});
+                    _tStoreUintForAddress(address(rewardToken), actualErc20Index);
+                }
+
+                unchecked {
+                    ++j;
+                }
+            }
+
+            // require(rewardTokensLength != 0, NothingToProcess()); TODO Cannot modify some RC params if no rewards ?
             unchecked {
-                ++erc20Id;
+                ++i;
             }
         }
 
-        return userRewards;
+        require(rewardLength == actualErc20Index, IncorrectRewardLength(rewardLength, actualErc20Index));
+
+        for (uint256 i; i < processables.length; ) {
+            IERC20 rewardToken = processables[i].rewardToken;
+            uint256 amountForFees = processables[i].amountForFees;
+            uint256 amountForHarvester = processables[i].amountForHarvester;
+
+            if (amountForFees != 0) {
+                cutFeeForToken[rewardToken] += amountForFees;
+            }
+
+            if (amountForHarvester != 0) {
+                rewardToken.safeTransfer(harvestFeeReceiver, amountForHarvester);
+            }
+
+            _tStoreUintForAddress(address(rewardToken), 0);
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+
+    function _processRewards(
+        address market,
+        IERC20 rewardToken,
+        uint256 rewardToProcess,
+        uint16 _harvesterFeePercentage,
+        uint256 rewardCutPercentage
+    ) internal returns (uint256, uint256) {
+        // Calculate and sends harvester fees
+        uint256 harvesterFees = (rewardToProcess * _harvesterFeePercentage) / DENOMINATOR;
+        uint256 rewardCutAmount;
+
+        uint256 remainingRewards = rewardToProcess - harvesterFees;
+        uint256 rewardAmountStreamed;
+
+        if (rewardCutPercentage != 0) {
+            rewardCutAmount = (remainingRewards * rewardCutPercentage) / DENOMINATOR;
+            rewardAmountStreamed = remainingRewards - rewardCutAmount;
+        } else {
+            rewardAmountStreamed = remainingRewards;
+        }
+
+        Reward storage rData = rewardData[market][rewardToken];
+
+        if (block.timestamp >= rData.periodFinish) {
+            rData.rewardRate = rewardAmountStreamed / REWARDS_DURATION;
+        } else {
+            rData.rewardRate = (rewardAmountStreamed + (rData.periodFinish - block.timestamp) * rData.rewardRate) / REWARDS_DURATION;
+        }
+
+        rData.lastUpdateTime = uint128(block.timestamp);
+        rData.periodFinish = uint128(block.timestamp + REWARDS_DURATION);
+
+        emit RewardNotified(market, rewardToken, rewardAmountStreamed, harvesterFees, rewardCutAmount);
+
+        return (rewardCutAmount, harvesterFees);
+    }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                       REWARD CUT
+   =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    function initializeMarket(address market, RCParams calldata _rcParams) external verifyRCParams(_rcParams) {
+        require(controlTower.isMarketCreator(msg.sender), CallerNotOwnerOrMarketCreator(msg.sender));
+        lastRewardCuts[market] = _calculateRC(tgUSDOracle.price_w(), _rcParams);
+        rcParams[market] = _rcParams;
+    }
+
+    function updateRCParams(address market, RCParams calldata _rcParam) external verifyRCParams(_rcParam) onlyOwner {
+        require(controlTower.isMarket(market), NotAMarketRewards());
+        processRewards(market, controlTower.feeTreasury());
+        rcParams[market] = _rcParam;
+    }
+
+    /**
+     * @notice TODO
+     * @param  market Address of the market to compute the reward cut for.
+     */
+    function computeRCForMarket(address market) external view returns (uint256) {
+        return _calculateRC(tgUSDOracle.price(), rcParams[market]);
+    }
+
+    /**
+     * @notice TODO
+     * @param  tgUSDPrice Price of tgUSD in wei.
+     * @param  _rcParams  Reward cut parameters of the market.
+     */
+    function simulateRC(uint256 tgUSDPrice, RCParams memory _rcParams) external pure returns (uint256) {
+        return _calculateRC(tgUSDPrice, _rcParams);
+    }
+
+    /**
+     * @notice Computes the reward cut percentage based on the tgUSD price and market parameters
+     * @param  tgUSDPrice Price of tgUSD in wei.
+     * @param  _rcParams   Reward cut parameters of the market.
+     */
+    function _calculateRC(uint256 tgUSDPrice, RCParams memory _rcParams) internal pure returns (uint256) {
+        uint256 stepAmount = _rcParams.stepAmount;
+        // Cut percentage is always constant
+        if (stepAmount == 1) {
+            return _rcParams.startCutPercentage;
+        }
+        // Cut percentage either startCutPercentage or endCutPercetange
+        else if (stepAmount == 2) {
+            if (tgUSDPrice >= _rcParams.startCutPrice) {
+                return _rcParams.startCutPercentage;
+            } else {
+                return _rcParams.endCutPercentage;
+            }
+        }
+        // Cut percentage is computed regarding the step amount
+        else {
+            uint256 startCutPrice = _rcParams.startCutPrice;
+            uint256 endCutPrice = _rcParams.endCutPrice;
+            // When tgUSDPrice is above the startCutPrice
+            if (tgUSDPrice >= startCutPrice) {
+                return _rcParams.startCutPercentage;
+            }
+            if (tgUSDPrice < endCutPrice) {
+                return _rcParams.endCutPercentage;
+            }
+            uint256 stepsBetween = stepAmount - 2;
+
+            //TODO What happens here if tgUSD > startCutPrice ?
+            uint256 actualStep = 1 + (startCutPrice - tgUSDPrice) / ((startCutPrice - endCutPrice) / stepsBetween);
+            return _rcParams.startCutPercentage + (actualStep * (_rcParams.endCutPercentage - _rcParams.startCutPercentage)) / stepsBetween;
+        }
     }
 }

@@ -12,6 +12,21 @@ import {IRewardAccumulator} from "./IRewardAccumulator.sol";
 struct LiquidateCall {
     address account;
     uint256 tgUSDToRepay;
+    address liquidator;
+    uint256 minTgUSDOut;
+    uint256 newDebtIndex;
+    uint256 _collateralBalance;
+    uint256 _totalCollateral;
+    uint256 _userDebtShares;
+    uint256 _totalDebtShares;
+    uint256 userDebt;
+}
+
+struct SelfLiquidateCall {
+    uint256 collatAmountToLiquidate;
+    uint256 tgUSDToRepay;
+    address liquidator;
+    uint256 minTgUSDOut;
     uint256 newDebtIndex;
     uint256 _collateralBalance;
     uint256 _totalCollateral;

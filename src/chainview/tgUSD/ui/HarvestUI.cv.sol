@@ -39,10 +39,12 @@ contract HarvestUI is ERC20Infos {
                     ++j;
                 }
             }
+
+            uint256 harvestFeePercentage = rewardAccumulator.getRCParams(market).harvestFeePercentage;
             output[i] = HarvestUIOut({
                 marketAddress: market,
                 collateralName: ICollateral(market).collatToken().symbol(),
-                harvesterFeePercentage: rewardAccumulator.harvesterFeePercentage(market),
+                harvesterFeePercentage: harvestFeePercentage,
                 lastHarvestDate: lastPeriodFinish - 7 days,
                 tokenAmounts: tokenAmounts
             });

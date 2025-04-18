@@ -15,7 +15,10 @@ contract HProcessRewards is HandlerBase {
 
     function processRewards(address harvestFeeReceiver) external handler {
         IERC20[] memory rewardTokens = rewardAccumulator.getRewardTokens(address(marketRewards));
-        uint256 harvesterFeePercentage = rewardAccumulator.harvesterFeePercentage(address(marketRewards));
+
+        RCParams memory _rcParams = rewardAccumulator.getRCParams(address(marketRewards));
+
+        uint256 harvesterFeePercentage = _rcParams.harvestFeePercentage;
         uint256 rewardCut = rewardAccumulator.lastRewardCuts(address(marketRewards));
 
         uint256[] memory receivedByHarvestor = new uint256[](rewardTokens.length);
@@ -30,7 +33,7 @@ contract HProcessRewards is HandlerBase {
             rewardCuts[index] = rewardAccumulator.cutFeeForToken(rewardToken);
         }
 
-        marketRewards.processRewards(harvestFeeReceiver);
+        rewardAccumulator.processRewards(address(marketRewards), harvestFeeReceiver);
 
         for (uint256 index; index < rewardTokens.length; index++) {
             IERC20 rewardToken = rewardTokens[index];
@@ -39,12 +42,12 @@ contract HProcessRewards is HandlerBase {
             receivedByAccumulator[index] = rewardToken.balanceOf(address(rewardAccumulator)) - receivedByAccumulator[index];
 
             uint256 totalClaimed = receivedByHarvestor[index] + receivedByAccumulator[index];
-            assertEq((totalClaimed * harvesterFeePercentage) / 100_000, receivedByHarvestor[index]);
+            assertEq((totalClaimed * harvesterFeePercentage) / 100_000, receivedByHarvestor[index], "Verify amount claimed by harvestor");
 
             uint256 cutFee = (receivedByAccumulator[index] * rewardCut) / 100_000;
             // uint256 streamedRewards = receivedByAccumulator[index] - cutFee;
 
-            assertEq(rewardAccumulator.cutFeeForToken(rewardToken) - rewardCuts[index], cutFee);
+            assertEq(rewardAccumulator.cutFeeForToken(rewardToken) - rewardCuts[index], cutFee, "Verify cut fee computation");
         }
     }
 }

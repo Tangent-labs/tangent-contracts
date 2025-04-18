@@ -35,7 +35,9 @@ contract OraclesContext is TgUSDDeployContext {
         irCalculator = new IRCalculator(owner, controlTower, tgUSDOracle, tgUSD);
         controlTower.toggleIRCalculator(address(irCalculator));
 
-        rewardAccumulator = new RewardAccumulator(owner, controlTower, irCalculator);
+        rewardAccumulator = new RewardAccumulator(owner, controlTower, tgUSDOracle);
+
+        vm.label(address(rewardAccumulator), "RewardAccumulator");
 
         marketCreator = new MarketCreator(
             owner,
@@ -49,6 +51,7 @@ contract OraclesContext is TgUSDDeployContext {
             marketNoSociabilizationImplem
         );
         controlTower.toggleMarketCreator(address(marketCreator));
+        vm.label(address(marketCreator), "MarketCreator");
 
         vm.stopPrank();
         setupChainlinkOracles();

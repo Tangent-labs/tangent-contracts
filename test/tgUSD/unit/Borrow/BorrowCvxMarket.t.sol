@@ -93,7 +93,7 @@ contract BorrowCvxMarket is ConvexCurveContext {
 
         assertEq(
             market.totalDebt(),
-            (market.totalDebtShares() * irCalculator.debtIndexes(address(market))) / 1e18 + market.pendingInterests(),
+            (market.totalDebtShares() * irCalculator.debtIndexes(address(market))) / 1e27 + market.pendingInterests(),
             "Total debt is equal to the last total debt + pending interests"
         );
         assertEq(market.userDebt(usr1), market.totalDebt());

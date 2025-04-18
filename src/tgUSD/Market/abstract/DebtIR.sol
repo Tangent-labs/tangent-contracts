@@ -6,8 +6,6 @@ import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {LightOwnable} from "../../Utilities/LightOwnable.sol";
 
-import "forge-std/console.sol";
-
 /// @notice
 abstract contract DebtIR is LightOwnable, IDebtIR {
     uint256 public constant RAY = 1e27; // Facteur de précision ray (1 * 10^27)
@@ -86,10 +84,6 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                    DEBT & IR CHECKPOINTS 
-    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         GLOBAL VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
     /**
@@ -97,18 +91,18 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @dev     Takes the last registered debt and applies it the IR accumulated since last checkpoint.
      */
     function totalDebt() public view returns (uint256) {
-        return badDebt + (totalDebtShares * irCalculator.newDebtIndex(address(this))) / RAY;
+        return _totalDebt(badDebt, totalDebtShares, irCalculator.newDebtIndex(address(this)));
+    }
+
+    function _totalDebt(uint256 _badDebt, uint256 _totalDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
+        return _badDebt + (_totalDebtShares * newDebtIndex) / RAY;
     }
 
     /**
      *  @notice  Returns IR generated since the last checkpoint
      */
     function pendingInterests() external view returns (uint256) {
-        return _pendingInterests(totalDebtShares, irCalculator.indexDelta(address(this)));
-    }
-
-    function _pendingInterests(uint256 _totalDebtShares, uint256 indexIncrease) internal pure returns (uint256) {
-        return (_totalDebtShares * indexIncrease) / RAY;
+        return (totalDebtShares * irCalculator.indexDelta(address(this))) / RAY;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

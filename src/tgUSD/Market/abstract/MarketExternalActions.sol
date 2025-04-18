@@ -3,11 +3,11 @@ pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {MarketCore, LiquidateCall} from "./MarketCore.sol";
+import {MarketCore, LiquidateCall, SelfLiquidateCall} from "./MarketCore.sol";
 
 import {IMarketExternalActions} from "../../../interfaces/internals/tgUSD/IMarketExternalActions.sol";
 import {IZapper} from "../../../interfaces/internals/tgUSD/IZapper.sol";
-import "forge-std/console.sol";
+import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 
 /// @notice
 abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
@@ -25,6 +25,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     error DepositPaused();
     error BorrowPaused();
     error LeveragePaused();
+    error NotRewardAccumulator();
 
     modifier updateRewards(address _for) {
         rewardAccumulator.updateRewards(_for);
@@ -139,6 +140,8 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
             LiquidateCall({
                 account: account,
                 tgUSDToRepay: tgUSDToRepay,
+                liquidator: liquidator,
+                minTgUSDOut: minTgUSDOut,
                 newDebtIndex: newDebtIndex,
                 _collateralBalance: collatBalance,
                 _totalCollateral: totalCollateral,
@@ -146,22 +149,28 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
                 _totalDebtShares: totalDebtShares,
                 userDebt: userDebt_
             }),
-            liquidator,
-            minTgUSDOut,
             liquidationCall
         );
     }
 
-    function selfLiquidate(uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata routerCall) external updateRewards(msg.sender) {
+    function selfLiquidate(
+        uint256 collatAmountToLiquidate,
+        uint256 tgUSDToRepay,
+        address liquidator,
+        uint256 minTgUSDOut,
+        bytes calldata routerCall
+    ) external updateRewards(msg.sender) {
         uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
         uint256 _userDebtShares = userDebtShares[msg.sender];
 
         // Checkpoint IR
 
-        _liquidate(
-            LiquidateCall({
-                account: msg.sender,
+        _selfLiquidate(
+            SelfLiquidateCall({
+                collatAmountToLiquidate: collatAmountToLiquidate,
                 tgUSDToRepay: tgUSDToRepay,
+                liquidator: liquidator,
+                minTgUSDOut: minTgUSDOut,
                 newDebtIndex: newDebtIndex,
                 _collateralBalance: collateralBalances[msg.sender],
                 _totalCollateral: totalCollateral,
@@ -169,20 +178,23 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
                 _totalDebtShares: totalDebtShares,
                 userDebt: _userDebt(_userDebtShares, newDebtIndex)
             }),
-            liquidator,
-            minTgUSDOut,
             routerCall
         );
     }
 
     function liquidateBadDebt(address account) external updateRewards(account) {
         // Checkpoint IR
-        (uint256 collateralBalance, uint256 _totalCollateral, uint256 _userDebtShares, uint256 _totalDebtShares, uint256 userDebt_) = _preLiquidate(account);
+        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
+
+        uint256 collatBalances = collateralBalances[account];
+
+        uint256 _userDebtShares = userDebtShares[account];
+        uint256 userDebt_ = _userDebt(_userDebtShares, newDebtIndex);
 
         // Can liquidate bad debt only if the value of the collateral is below the debt
-        require(_positionValue(collateralBalance) < userDebt_, PositionWithoutBadDebt());
+        require(_positionValue(collatBalances) < userDebt_, PositionWithoutBadDebt());
 
-        _liquidateBadDebt(account, collateralBalance, _totalCollateral, _userDebtShares, _totalDebtShares, userDebt_);
+        _liquidateBadDebt(account, collatBalances, totalCollateral, _userDebtShares, totalDebtShares, userDebt_);
     }
 
     function leverage(
@@ -218,4 +230,6 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
 
         emit Leverage(msg.sender, collatToDeposit, collatReceived, tgUSDToFlashMint);
     }
+
+    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external virtual returns (TokenAmount[] memory);
 }

@@ -41,7 +41,7 @@ contract DepositAndBorrowReverts is ConvexCurveContext {
 
     function test_depositBorrow_more_than_max_total_debt() external {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.TotalDebtTooHigh.selector));
-        market.depositAndBorrow(2 ether, maxMarketDebt + 1, false, address(0));
+        market.depositAndBorrow(4_000 ether, maxMarketDebt + 1, false, address(0));
     }
 
     function test_depositBorrow_less_than_minimum_loan() external {

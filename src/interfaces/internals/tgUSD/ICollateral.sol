@@ -25,4 +25,6 @@ interface ICollateral {
     function liquidationThreshold() external view returns (uint256);
 
     function rewardAccumulator() external view returns (IRewardAccumulator);
+
+    function getBalanceAndTotalCollateral(address account) external view returns (uint256, uint256);
 }

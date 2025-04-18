@@ -9,7 +9,7 @@ import {GlobalMarketInitParams, MarketInit} from "../../../interfaces/internals/
 
 import {MarketExternalActions} from "../abstract/MarketExternalActions.sol";
 import {Sociabilization} from "../../Utilities/Sociabilization.sol";
-import "forge-std/console.sol";
+import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 
 /// @notice Lending Market of a Curve LP on Convex
 contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
@@ -72,14 +72,16 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
     }
 
     /**
+
      * @notice Claim and process the governance rewards
      * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
-     *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
-    function processRewards(address harvestFeeReceiver) external updateRewards(address(0)) {
+    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override updateRewards(address(0)) returns (TokenAmount[] memory) {
+        require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
         // Claim rewards on behalf
         cvxRewardToken.getReward();
-        _processRewards(harvestFeeReceiver);
+
+        return _claimUnderlyingRewards(_rewardTokens);
     }
 
     //TODO Seems strange to me, enters maybe in collision with sociabilization pending fees.

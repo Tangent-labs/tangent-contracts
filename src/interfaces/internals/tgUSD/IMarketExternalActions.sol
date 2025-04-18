@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-
+import {IERC20, TokenAmount} from "../ICommonStruct.sol";
 interface IMarketExternalActions {
     function deposit(address _for, uint256 lpDeposited, bool isStaked) external;
 
@@ -12,5 +12,5 @@ interface IMarketExternalActions {
 
     function liquidate(address account, uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external;
 
-    function processRewards(address harvestFeeReceiver) external;
+    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external returns (TokenAmount[] memory);
 }
