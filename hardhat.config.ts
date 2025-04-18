@@ -5,11 +5,11 @@ import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomiclabs/hardhat-vyper";
 import "hardhat-tracer";
-import {EndpointId} from "@layerzerolabs/lz-definitions";
+
 
 import * as dotenv from "dotenv";
 dotenv.config();
-const forkBlock = 22095422;
+const forkBlock = 22280397;
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",

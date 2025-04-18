@@ -8,7 +8,7 @@ import { ethers } from "hardhat";
 async function main() {
 
     const user = (await ethers.getSigners()).at(0);
-    const swapAmount = 3_900_000;
+    const swapAmount = 1_000_000;
     //const swapAmount = 500_000;
     const promises = addressesLiquidation.markets.map(market => {
 
