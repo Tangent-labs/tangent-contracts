@@ -91,7 +91,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         uint256 timestampAtProcessRewards = block.timestamp;
 
         deal(address(AddrClassicERC20.TOKEN_FXN), address(market), 1_000 ether);
-        market.processRewards(usr1);
+        rewardAccumulator.processRewards(address(market), usr1);
 
         (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
 

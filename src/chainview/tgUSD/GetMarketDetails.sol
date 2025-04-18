@@ -98,7 +98,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                 currentBorrowRate: ir,
                 futureBorrowRate: irCalculator.computeIRForMarket(market),
                 currentRewardCut: _rewardAccumulator.lastRewardCuts(market),
-                futureRewardCut: irCalculator.computeRCForMarket(market)
+                futureRewardCut: _rewardAccumulator.computeRCForMarket(market)
             });
     }
 

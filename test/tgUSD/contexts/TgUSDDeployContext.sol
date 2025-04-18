@@ -57,8 +57,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     Encoder public encoder;
 
-    address public l0EndpointMainnet = 0x1a44076050125825900e736c501f859c50fE728c;
-    address public l0EndpointBase = 0x1a44076050125825900e736c501f859c50fE728c;
     LiquidatorProxy public liquidatorProxy;
 
     ControlTower public controlTower;
@@ -84,7 +82,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     constructor() {
         // baseFork = vm.createSelectFork("base", 24379193);
-        mainnetFork = vm.createSelectFork("mainnet", 21779327);
+        mainnetFork = vm.createSelectFork("mainnet", 22288258);
 
         vm.startPrank(owner);
 
@@ -121,7 +119,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         mockEnsoRouter = new MockEnsoRouter();
 
-        vm.allowCheatcodes(address(AddrRouter.ENSO_ROUTER));
+        vm.allowCheatcodes(address(AddrRouter.ENSO_ROUTER_V1));
+        vm.allowCheatcodes(address(AddrRouter.ENSO_ROUTER_V2));
         zapper = new Zapper(owner, controlTower, tgUSD);
 
         controlTower.toggleZapper(address(zapper));
@@ -135,8 +134,9 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(rsTanService), "RsTanService");
         vm.label(address(rsTanERC721), "RsTanERC721");
 
-        vm.label(address(rewardAccumulator), "RewardAccumulator");
-        vm.label(address(AddrRouter.ENSO_ROUTER), "Enso Router");
+        vm.label(address(AddrRouter.ENSO_ROUTER_V1), "Enso Router V1");
+        vm.label(address(AddrRouter.ENSO_ROUTER_V2), "Enso Router V2");
+
         vm.label(address(mockEnsoRouter), "Mock Odos Router");
         vm.label(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e, "Curve Router");
 

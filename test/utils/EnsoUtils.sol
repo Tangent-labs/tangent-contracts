@@ -2,7 +2,7 @@
 import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import {IEnsoRouter} from "../../src/interfaces/externals/Aggregators/IEnsoRouter.sol";
+import {IEnsoRouterV2} from "../../src/interfaces/externals/Aggregators/IEnsoRouterV2.sol";
 import {LowLevel} from "./LowLevel.sol";
 
 contract EnsoUtils is Test, LowLevel {
@@ -49,6 +49,6 @@ contract EnsoUtils is Test, LowLevel {
 
         bytes[] memory state = new bytes[](0);
 
-        return abi.encodeWithSelector(IEnsoRouter.routeSingle.selector, tokenIn, amountIn, commands, state);
+        return abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector, tokenIn, amountIn, commands, state);
     }
 }

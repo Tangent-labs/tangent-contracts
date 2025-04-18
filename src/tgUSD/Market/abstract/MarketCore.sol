@@ -10,8 +10,7 @@ import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 
 import {PauseSettings} from "./PauseSettings.sol";
 import {Collateral} from "./Collateral.sol";
-import {GlobalMarketInitParams, MarketInit, LiquidateCall, ILiquidatorProxy} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
-import "forge-std/console.sol";
+import {GlobalMarketInitParams, MarketInit, LiquidateCall, SelfLiquidateCall, ILiquidatorProxy} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 
 /// @notice
 abstract contract MarketCore is PauseSettings, Collateral {
@@ -33,6 +32,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
     error NotZapper(address zapper);
 
     event Liquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
+    event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
 
     constructor() {
         isInitialized = true;
@@ -85,9 +85,8 @@ abstract contract MarketCore is PauseSettings, Collateral {
      *        Called during simple deposit and withdraw.
      *  @param account           Address of the account to update
      *  @param newCollatBalance  New collateral balance of account
-     *  @param newDebtIndex      New index of the debt
      */
-    function _updateCollatAndGlobalDebt(address account, uint256 newCollatBalance, uint256 newTotalCollat, uint256 newDebtIndex) internal {
+    function _updateCollatAndGlobalDebt(address account, uint256 newCollatBalance, uint256 newTotalCollat) internal {
         _updateCollateral(account, newCollatBalance, newTotalCollat);
     }
 
@@ -99,10 +98,10 @@ abstract contract MarketCore is PauseSettings, Collateral {
 
     function _deposit(address _for, uint256 amountDeposited) internal {
         // Verify that newDebt is over the minimum loan
-        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
+        irCalculator.checkpointIR(address(this));
 
         // Increase collateral balance of the position and update total debt
-        _updateCollatAndGlobalDebt(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited, newDebtIndex);
+        _updateCollatAndGlobalDebt(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited);
     }
 
     function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, bool isZapping) internal {
@@ -137,8 +136,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
         _updateCollatAndGlobalDebt(
             msg.sender,
             _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _userDebt(userDebtShares[msg.sender], newDebtIndex)),
-            totalCollateral - amountToWithdraw,
-            newDebtIndex
+            totalCollateral - amountToWithdraw
         );
     }
 
@@ -159,8 +157,10 @@ abstract contract MarketCore is PauseSettings, Collateral {
         //  Cache the new value in tgUSD of the debt
         uint256 newUserDebtShares = (tgUSDToBorrow * RAY) / newDebtIndex;
 
+        uint256 newTotalDebtShares = totalDebtShares + newUserDebtShares;
+
         //  Verify that the new total debt is not bigger the max debt
-        // require(newTotalDebt + badDebt <= maxMarketDebt, TotalDebtTooHigh());
+        require(_totalDebt(badDebt, newTotalDebtShares, newDebtIndex) <= maxMarketDebt, TotalDebtTooHigh());
         //  Verify that newDebt is over the minimum loan
         require(newUserDebt >= minimumLoan, UserDebtTooLow());
 
@@ -173,7 +173,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
             tgUSD.mint(receiver, tgUSDToBorrow);
         }
 
-        return (_userDebtShares + newUserDebtShares, totalDebtShares + newUserDebtShares);
+        return (_userDebtShares + newUserDebtShares, newTotalDebtShares);
     }
 
     function _depositAndBorrow(address borrower, uint256 amountDeposited, uint256 tgUSDToBorrow, bool isLeverage) internal {
@@ -253,25 +253,38 @@ abstract contract MarketCore is PauseSettings, Collateral {
     /* --------
                             LIQUIDATION
                                                     ------ */
+    //TODO Add some check on min Loan and LTV
+    function _selfLiquidate(SelfLiquidateCall memory selfLiquidateCall, bytes calldata liquidationCall) internal {
+        uint256 newCollatBalance = selfLiquidateCall._collateralBalance - selfLiquidateCall.collatAmountToLiquidate;
+        uint256 debtSharesToRemove;
+        // Repay all debt
+        if (selfLiquidateCall.tgUSDToRepay >= selfLiquidateCall.userDebt) {
+            selfLiquidateCall.tgUSDToRepay = selfLiquidateCall.userDebt;
+            debtSharesToRemove = selfLiquidateCall._userDebtShares;
+        }
+        // Liquidate partial
+        else {
+            debtSharesToRemove = (selfLiquidateCall.tgUSDToRepay * RAY) / selfLiquidateCall.newDebtIndex;
 
-    /**
-     *  @dev  Checkpoints IR and debt index and fetches collateral balance and user debt shares.
-     *  @param account             Address of the account to update
-     *  @return collatBalance      Collateral balance of the account
-     *  @return totalCollateral    Collateral balance of the account
-     *  @return userDebtShares     User debt shares
-     *  @return totalDebtShares    Total debt shares of the market
-     *  @return userDebt           User debt adjusted with the new index
-     */
-    function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256, uint256) {
-        // Checkpoint IR
-        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
-        uint256 _userDebtShares = userDebtShares[account];
+            // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
+            require(selfLiquidateCall.userDebt - selfLiquidateCall.tgUSDToRepay >= minimumLoan, UserDebtTooLow());
+        }
 
-        return (collateralBalances[account], totalCollateral, _userDebtShares, totalDebtShares, _userDebt(_userDebtShares, newDebtIndex));
+        // Modify the collateral balance, the user debt and the total debt
+        _updateCollatAndDebts(
+            msg.sender,
+            newCollatBalance,
+            selfLiquidateCall._totalCollateral - selfLiquidateCall.collatAmountToLiquidate,
+            selfLiquidateCall._userDebtShares - debtSharesToRemove,
+            selfLiquidateCall._totalDebtShares - debtSharesToRemove
+        );
+
+        _postLiquidate(selfLiquidateCall.liquidator, selfLiquidateCall.collatAmountToLiquidate, selfLiquidateCall.tgUSDToRepay, selfLiquidateCall.minTgUSDOut, liquidationCall);
+
+        emit SelfLiquidate(msg.sender, selfLiquidateCall.tgUSDToRepay, selfLiquidateCall.collatAmountToLiquidate, selfLiquidateCall.liquidator);
     }
 
-    function _liquidate(LiquidateCall memory liquidateCall, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) internal {
+    function _liquidate(LiquidateCall memory liquidateCall, bytes calldata liquidationCall) internal {
         require(liquidateCall.tgUSDToRepay != 0, ZeroDebtAmount());
 
         uint256 collatAmountToLiquidate;
@@ -307,7 +320,12 @@ abstract contract MarketCore is PauseSettings, Collateral {
             liquidateCall._userDebtShares - debtSharesToRemove,
             liquidateCall._totalDebtShares - debtSharesToRemove
         );
+        _postLiquidate(liquidateCall.liquidator, collatAmountToLiquidate, liquidateCall.tgUSDToRepay, liquidateCall.minTgUSDOut, liquidationCall);
 
+        emit Liquidate(liquidateCall.account, tgUSDToRepay, collatAmountToLiquidate, liquidateCall.liquidator);
+    }
+
+    function _postLiquidate(address liquidator, uint256 collatAmountToLiquidate, uint256 tgUSDToRepay, uint256 minTgUSDOut, bytes calldata liquidationCall) internal {
         ILiquidatorProxy _liquidatorProxy = liquidatorProxy;
         // Withdraw the collateral from the underlying protocol if needed and
         // Transfer it to the caller when there is no liquidator passed in parameter
@@ -323,8 +341,6 @@ abstract contract MarketCore is PauseSettings, Collateral {
         // The debt has to be on the caller of the transaction.
         // In case a liquidator is passed in parameter, it needs to send it back to the sender of the tx.
         tgUSD.burnFrom(msg.sender, tgUSDToRepay);
-
-        emit Liquidate(liquidateCall.account, tgUSDToRepay, collatAmountToLiquidate, liquidator);
     }
 
     function _liquidateBadDebt(
@@ -362,23 +378,19 @@ abstract contract MarketCore is PauseSettings, Collateral {
         return (isZapping, callerZapper);
     }
 
-    function _processRewards(address harvestFeeReceiver) internal {
-        IRewardAccumulator _rewardAccumulator = rewardAccumulator;
-
-        // Stream rewards to stakers and give rewards to harvester
-
-        IERC20[] memory rewardTokens = _rewardAccumulator.getRewardTokens(address(this));
-        uint256 rewardLen = rewardTokens.length;
+    function _claimUnderlyingRewards(IERC20[] memory _rewardTokens) internal returns (TokenAmount[] memory) {
+        uint256 rewardLen = _rewardTokens.length;
         TokenAmount[] memory rewardAmounts = new TokenAmount[](rewardLen);
+        address _rewardAccumulator = address(rewardAccumulator);
 
         uint256 counter;
-
+        //TODO Test here with some 0
         for (uint256 i; i < rewardLen; ) {
-            IERC20 rewardToken = rewardTokens[i];
+            IERC20 rewardToken = _rewardTokens[i];
             uint256 balance = rewardToken.balanceOf(address(this));
             if (balance != 0) {
-                rewardAmounts[i] = TokenAmount({token: rewardToken, amount: balance});
-                rewardToken.safeTransfer(address(_rewardAccumulator), rewardAmounts[i].amount);
+                rewardAmounts[counter++] = TokenAmount({token: rewardToken, amount: balance});
+                rewardToken.safeTransfer(address(_rewardAccumulator), balance);
             }
 
             unchecked {
@@ -386,6 +398,14 @@ abstract contract MarketCore is PauseSettings, Collateral {
             }
         }
 
-        _rewardAccumulator.processRewards(harvestFeeReceiver, rewardAmounts);
+        /// @dev Reduce length of tokenAmounts struct to not return useless 0
+        if (rewardAmounts.length != 0) {
+            // solhint-disable-next-line no-inline-assembly
+            assembly {
+                mstore(rewardAmounts, sub(mload(rewardAmounts), sub(rewardLen, counter)))
+            }
+        }
+
+        return rewardAmounts;
     }
 }

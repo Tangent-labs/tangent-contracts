@@ -4,7 +4,7 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 
 import {IAggregatorV3} from "../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 import {IOdosRouter} from "../../interfaces/externals/Aggregators/IOdosRouter.sol";
-import {IEnsoRouter} from "../../interfaces/externals/Aggregators/IEnsoRouter.sol";
+import {IEnsoRouterV2} from "../../interfaces/externals/Aggregators/IEnsoRouterV2.sol";
 
 import {ISFRAX} from "../../interfaces/externals/Frax/ISFRAX.sol";
 
@@ -73,6 +73,8 @@ library AddrChainlinkOracle {
 
 library AddrRouter {
     IOdosRouter constant ODOS_ROUTER = IOdosRouter(0xCf5540fFFCdC3d510B18bFcA6d2b9987b0772559);
-    IEnsoRouter constant ENSO_ROUTER = IEnsoRouter(0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E);
+    IEnsoRouterV2 constant ENSO_ROUTER_V1 = IEnsoRouterV2(0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E);
+    IEnsoRouterV2 constant ENSO_ROUTER_V2 = IEnsoRouterV2(0xF75584eF6673aD213a685a1B58Cc0330B8eA22Cf);
+
     address constant CURVE_ROUTER = 0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E;
 }

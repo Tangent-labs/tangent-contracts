@@ -9,8 +9,6 @@ import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAcc
 
 import {DebtIR} from "./DebtIR.sol";
 
-import "forge-std/console.sol";
-
 /// @notice
 abstract contract Collateral is DebtIR, ICollateral {
     uint256 constant MAX_UINT = uint256(int256(-1));
@@ -132,12 +130,12 @@ abstract contract Collateral is DebtIR, ICollateral {
     }
 
     /// @notice Computes an returns a health ratio giving a debt and a collateral amount.
-    /// @param userDebt           Debt of the position
+    /// @param userDebt_          Debt of the position
     /// @param collateralBalance  Amount of collateral
     /// @return The health ratio in base 1e18
-    function _healthRatio(uint256 userDebt, uint256 collateralBalance) internal view returns (uint256) {
-        if (userDebt != 0) {
-            return (collateralBalance * _collateralPrice() * liquidationThreshold) / (userDebt * DENOMINATOR);
+    function _healthRatio(uint256 userDebt_, uint256 collateralBalance) internal view returns (uint256) {
+        if (userDebt_ != 0) {
+            return (collateralBalance * _collateralPrice() * liquidationThreshold) / (userDebt_ * DENOMINATOR);
         }
         return MAX_UINT;
     }
@@ -154,5 +152,9 @@ abstract contract Collateral is DebtIR, ICollateral {
     /// @return The value in $ and base 1e18 of the collateral of a position
     function _positionValue(address account) internal view returns (uint256) {
         return (collateralBalances[account] * _collateralPrice()) / 1 ether;
+    }
+
+    function getBalanceAndTotalCollateral(address account) external view returns (uint256, uint256) {
+        return (collateralBalances[account], totalCollateral);
     }
 }

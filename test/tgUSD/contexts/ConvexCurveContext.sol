@@ -108,6 +108,14 @@ contract ConvexCurveContext is MarketInitParams {
     }
 
     function getBaseRCParams() public pure returns (RCParams memory) {
-        return RCParams({startCutPercentage: 50_000, endCutPercentage: 100_000, stepAmount: 4, startCutPrice: 995000000000000000, endCutPrice: 900000000000000000});
+        return
+            RCParams({
+                harvestFeePercentage: 1_000,
+                startCutPercentage: 50_000,
+                endCutPercentage: 100_000,
+                stepAmount: 4,
+                startCutPrice: 995000000000000000,
+                endCutPrice: 900000000000000000
+            });
     }
 }

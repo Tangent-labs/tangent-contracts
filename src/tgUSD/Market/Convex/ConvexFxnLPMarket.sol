@@ -5,10 +5,9 @@ import {ICvxFxnBooster} from "../../../interfaces/externals/Convex/ICvxFxnBooste
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {IStakingProxyERC20} from "../../../interfaces/externals/Convex/IStakingProxyERC20.sol";
 import {MarketInit, GlobalMarketInitParams} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
-
+import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 import {MarketExternalActions} from "../abstract/MarketExternalActions.sol";
 import {Sociabilization} from "../../Utilities/Sociabilization.sol";
-import "forge-std/console.sol";
 
 /// @notice Lending Market of a FXN LP on Convex
 contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
@@ -63,13 +62,15 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
      * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
      *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
-    function processRewards(address harvestFeeReceiver) external {
+    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override updateRewards(address(0)) returns (TokenAmount[] memory) {
+        require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
         // Claim rewards of Convex FXN market
         stakingProxyVault.getReward();
 
-        _processRewards(harvestFeeReceiver);
+        return _claimUnderlyingRewards(_rewardTokens);
     }
 
+    //TODO Seems strange to me, enters maybe in collision with sociabilization pending fees.
     function stakeAll(address receiver) external {
         // Claim rewards on behalf
         IERC20 _collatToken = collatToken;

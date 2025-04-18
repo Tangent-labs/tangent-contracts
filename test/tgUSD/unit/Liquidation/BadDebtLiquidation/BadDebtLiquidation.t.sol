@@ -20,7 +20,7 @@ contract BadDebtLiquidation is ConvexCurveContext {
 
     ERC20BalanceChanges public balanceChanges;
 
-    uint256 collatDeposited = 6 ether;
+    uint256 collatDeposited = 20 ether;
     uint256 tgUSDBorrowed = 13_000 ether;
     uint256 badDebtToRepay = 7_000 ether;
 
@@ -56,7 +56,7 @@ contract BadDebtLiquidation is ConvexCurveContext {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionWithoutBadDebt.selector));
         market.liquidateBadDebt(usr1);
 
-        skip(1400);
+        skip(30 days);
 
         assertLt(market.positionValue(usr1), market.userDebt(usr1), "Position value is now lower than the debt");
 

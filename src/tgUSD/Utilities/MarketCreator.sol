@@ -19,10 +19,10 @@ import {IConvexCrvLPMarket, ICvxRewardToken} from "../../interfaces/internals/tg
 import {IConvexFxnLPMarket} from "../../interfaces/internals/tgUSD/IConvexFxnLPMarket.sol";
 import {IMarketNoSociabilization} from "../../interfaces/internals/tgUSD/IMarketNoSociabilization.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
-import {IRParams, RCParams, IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {IRParams, IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {RCParams} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {ILiquidatorProxy} from "../../interfaces/internals/tgUSD/ILiquidatorProxy.sol";
 import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
-
 /// @title MarketCreator
 /// @notice Convergence's factory to deploy clone of contracts
 contract MarketCreator is Ownable {
@@ -106,6 +106,7 @@ contract MarketCreator is Ownable {
 
         controlTower.toggleMarket(proxy);
         irCalculator.initializeMarket(proxy, _irParams);
+        rewardAccumulator.initializeMarket(proxy, _rcParams);
 
         emit MarketConvexCrvCreated(proxy);
         return proxy;
@@ -123,6 +124,7 @@ contract MarketCreator is Ownable {
 
         controlTower.toggleMarket(proxy);
         irCalculator.initializeMarket(proxy, _irParams);
+        rewardAccumulator.initializeMarket(proxy, _rcParams);
 
         emit MarketConvexFxnCreated(proxy);
         return proxy;
@@ -134,6 +136,7 @@ contract MarketCreator is Ownable {
 
         controlTower.toggleMarket(proxy);
         irCalculator.initializeMarket(proxy, _irParams);
+        rewardAccumulator.initializeMarket(proxy, _rcParams);
 
         emit MarketNoSociabilizationCreated(proxy);
         return proxy;

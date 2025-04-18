@@ -3,10 +3,8 @@ pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {MarketInit, GlobalMarketInitParams} from "../../interfaces/internals/tgUSD/IMarketCore.sol";
-
+import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 import {MarketExternalActions} from "./abstract/MarketExternalActions.sol";
-
-import "forge-std/console.sol";
 
 /// @notice
 contract MarketNoSociabilization is MarketExternalActions {
@@ -25,12 +23,12 @@ contract MarketNoSociabilization is MarketExternalActions {
     }
 
     /**
-     * @notice Process the rewards for the market
-     * @dev Streams all accumulated rewards to the stakers.
-     *      Anyone can trigger this function and will be incentivized with an harvester fee.
+     * @notice Claim and process the governance rewards
+     * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
+     *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
-    function processRewards(address harvestFeeReceiver) external updateRewards(address(0)) {
-        // Stream rewards to stakers and give rewards to harvester
-        _processRewards(harvestFeeReceiver);
+    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override updateRewards(address(0)) returns (TokenAmount[] memory) {
+        require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
+        return _claimUnderlyingRewards(_rewardTokens);
     }
 }
