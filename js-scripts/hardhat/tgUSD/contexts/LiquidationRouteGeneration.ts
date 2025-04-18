@@ -1,15 +1,15 @@
-import { AddressLike, MaxUint256, ZeroAddress } from "ethers";
+import {AddressLike, MaxUint256, ZeroAddress} from "ethers";
 import fs from "fs";
-import { ethers } from "hardhat";
+import {ethers} from "hardhat";
 import path from "path";
-import { giveTokensoAddresss } from "../../thief";
-import { commonERC20, thiefConfig } from "defi-resources";
-import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
+import {giveTokensoAddresss} from "../../thief";
+import {commonERC20, thiefConfig} from "defi-resources";
+import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
 
 /*
-    From :  CurveRouter v1.1 Code
-        https://etherscan.io/address/0x16c6521dff6bab339122a0fe25a9116693265353#code
+    From :  CurveRouter v1.2 Code
+        https://etherscan.io/address/0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e#code
       
         pool_type: 
         1  stable, 
@@ -32,117 +32,117 @@ export const lpTokensINfo = [
         decimals: value.decimals,
     })),
     {
-        token: 'deUSD',
-        address: '0x15700b564ca08d9439c58ca5053166e8317aa138',
+        token: "deUSD",
+        address: "0x15700b564ca08d9439c58ca5053166e8317aa138",
         slot: 0,
         isVyper: false,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'sUSDS',
-        address: '0xa3931d71877c0e7a3148cb7eb4463524fec27fbd',
+        token: "sUSDS",
+        address: "0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
         slot: 2,
         isVyper: false,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'scrvUSD',
-        address: '0x0655977feb2f289a4ab78af67bab0d17aab84367',
+        token: "scrvUSD",
+        address: "0x0655977feb2f289a4ab78af67bab0d17aab84367",
         slot: 18,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'USDC/fxUSD',
-        address: '0x5018be882dcce5e3f2f3b0913ae2096b9b3fb61f',
+        token: "USDC/fxUSD",
+        address: "0x5018be882dcce5e3f2f3b0913ae2096b9b3fb61f",
         slot: 38,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'USDC/crvUSD',
-        address: '0x4dece678ceceb27446b35c672dc7d61f30bad69e',
+        token: "USDC/crvUSD",
+        address: "0x4dece678ceceb27446b35c672dc7d61f30bad69e",
         slot: 20,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'USDT/crvUSD',
-        address: '0x390f3595bca2df7d23783dfd126427cceb997bf4',
+        token: "USDT/crvUSD",
+        address: "0x390f3595bca2df7d23783dfd126427cceb997bf4",
         slot: 20,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'sDAI/sUSDe',
-        address: '0x167478921b907422f8e88b43c4af2b8bea278d3a',
+        token: "sDAI/sUSDe",
+        address: "0x167478921b907422f8e88b43c4af2b8bea278d3a",
         slot: 38,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'USDC/USDT',
-        address: '0x4f493b7de8aac7d55f71853688b1f7c8f0243c85',
+        token: "USDC/USDT",
+        address: "0x4f493b7de8aac7d55f71853688b1f7c8f0243c85",
         slot: 38,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'USR/RLP',
-        address: '0xc907ba505c2e1cbc4658c395d4a2c7e6d2c32656',
+        token: "USR/RLP",
+        address: "0xc907ba505c2e1cbc4658c395d4a2c7e6d2c32656",
         slot: 19,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'frxUSD/USDe',
-        address: '0xdbb1d219d84eacefb850ee04cacf2f1830934580',
+        token: "frxUSD/USDe",
+        address: "0xdbb1d219d84eacefb850ee04cacf2f1830934580",
         slot: 38,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'DOLA/USR',
-        address: '0x38de22a3175708d45e7c7c64cd78479c8b56f76e',
+        token: "DOLA/USR",
+        address: "0x38de22a3175708d45e7c7c64cd78479c8b56f76e",
         slot: 38,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'scrvUSD/sUSDe',
-        address: '0xd29f8980852c2c76fc3f6e96a7aa06e0bedcc1b1',
+        token: "scrvUSD/sUSDe",
+        address: "0xd29f8980852c2c76fc3f6e96a7aa06e0bedcc1b1",
         slot: 38,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'crvUSD/USDe',
-        address: '0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E',
+        token: "crvUSD/USDe",
+        address: "0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E",
         slot: 1,
         isVyper: true,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'USDe',
-        address: '0x9d39a5de30e57443bff2a8307a4256c8797a3497',
+        token: "USDe",
+        address: "0x9d39a5de30e57443bff2a8307a4256c8797a3497",
         slot: 4,
         isVyper: false,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'sUSDe',
-        address: '0x9D39A5DE30e57443BfF2A8307A4256c8797A3497',
+        token: "sUSDe",
+        address: "0x9D39A5DE30e57443BfF2A8307A4256c8797A3497",
         slot: 4,
         isVyper: false,
-        decimals: 18
+        decimals: 18,
     },
     {
-        token: 'sDAI',
-        address: '0x83F20F44975D03b1b09e64809B757c47f942BEeA',
+        token: "sDAI",
+        address: "0x83F20F44975D03b1b09e64809B757c47f942BEeA",
         slot: 1,
         isVyper: false,
-        decimals: 18
-    }
+        decimals: 18,
+    },
 ];
 
 export class LiquidationRouteGeneration {
@@ -223,7 +223,7 @@ export class LiquidationRouteGeneration {
             }
         });
         console.log(names.size, " symbols found &  processed in the CSV file");
-        return { valid: (this.missing?.symbols?.size || 0) === 0, mising: this.missing.symbols };
+        return {valid: (this.missing?.symbols?.size || 0) === 0, mising: this.missing.symbols};
     };
 
     loadRoutesFromCSV() {
@@ -250,7 +250,7 @@ export class LiquidationRouteGeneration {
                 const pool = row[j]?.trim();
                 const out = row[j + 1]?.trim();
                 if (pool && out) {
-                    routeSteps.push({ pool, out });
+                    routeSteps.push({pool, out});
                     if (!wTOkenPool) wTOkenPool = out === "USDC" ? undefined : `w${out}`;
                 }
             }
@@ -260,7 +260,7 @@ export class LiquidationRouteGeneration {
                 collateralOut,
                 wTOkenPool,
                 routes: routeSteps,
-                swapParams: routeSteps.map(() => ({ poolType: 0, swapType: 0 })),
+                swapParams: routeSteps.map(() => ({poolType: 0, swapType: 0})),
                 zapPools: [],
                 pools: [],
             } as RouteParams);
@@ -276,33 +276,30 @@ export class LiquidationRouteGeneration {
         verifiedRoutes.params.forEach((param: any) => {
             verifiedParamsMap.set(param.route.display.trim(), param.result.swapParams);
         });
-        
 
         const [, , , , , user] = await ethers.getSigners();
-        const router = await ethers.getContractAt("ICurveRouter", routerAddress, user)
+        const router = await ethers.getContractAt("ICurveRouter", routerAddress, user);
 
         const results: RouteResult[] = [];
         const errors: any[] = [];
 
         const amountIn = ethers.parseUnits("100", 18);
         const promises = transfers.map(async (routeGroup) => {
-            //console.log( "test route ==> ",routeGroup?.at(0)?.display , routeGroup?.at(-1)?.display)
-
             const routeAddresses = [];
             const swapParamsFull = [];
             routeAddresses.push(routeGroup[0].in);
-            routeGroup.forEach(step => {
+            routeGroup.forEach((step) => {
                 if (!verifiedParamsMap.has(step.display.trim())) {
-                    errors.push({ step, error: `Missing verified route parameters ${step.display.trim()}` });
+                    errors.push({step, error: `Missing verified route parameters ${step.display.trim()}`});
                     return;
                 }
                 routeAddresses.push(step.pool);
                 routeAddresses.push(step.out);
                 const stepParams = verifiedParamsMap.get(step.display.trim());
                 swapParamsFull.push(stepParams);
-            })
+            });
             if (errors?.length) {
-                return
+                return;
             }
             while (routeAddresses.length < 11) {
                 routeAddresses.push(ZeroAddress);
@@ -313,31 +310,30 @@ export class LiquidationRouteGeneration {
             try {
                 //@ts-ignore
                 const output = await router.get_dy(routeAddresses, swapParamsFull, amountIn, [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]);
-                if (output.toString() === '0') {
-                    errors.push({ route: routeGroup.map(r => r.display).join(" >> "), error: "No output", params: { routeAddresses, swapParams: swapParamsFull } });
+                if (output.toString() === "0") {
+                    errors.push({route: routeGroup.map((r) => r.display).join(" >> "), error: "No output", params: {routeAddresses, swapParams: swapParamsFull}});
                     return;
                 }
-                results.push({ start: routeGroup.at(0)!.in!, end: routeGroup.at(-1)!.out!, display: routeGroup.map(r => r.display).join(" >> "), params: { routeAddresses, swapParams: swapParamsFull } });
+                results.push({
+                    start: routeGroup.at(0)!.in!,
+                    end: routeGroup.at(-1)!.out!,
+                    display: routeGroup.map((r) => r.display).join(" >> "),
+                    params: {routeAddresses, swapParams: swapParamsFull},
+                });
             } catch (error: any) {
-                console.log('error', error.message)
-                errors.push({ route: routeGroup.map(r => r.display).join(" >> "), error: error.message, params: { routeAddresses, swapParamsFull } });
+                console.log("error", error.message);
+                errors.push({route: routeGroup.map((r) => r.display).join(" >> "), error: error.message, params: {routeAddresses, swapParamsFull}});
             }
-        })
+        });
 
-        await Promise.all(promises)
-        return { results, errors };
+        await Promise.all(promises);
+        return {results, errors};
     }
 
-  
-
     async testRouteSteps(transfers: Transfer[][]): Promise<VerifiedRoutes> {
-
-
-
-        //const amountIn = parseEther("10");
         const pools = new Map<string, Transfer>();
         const params: VerifiedRoute[] = [];
-        const errors: { route: Transfer; error: string }[] = [];
+        const errors: {route: Transfer; error: string}[] = [];
 
         // Extract pools and their respective input/output tokens
         transfers.forEach((routeGroup: any[]) =>
@@ -352,31 +348,27 @@ export class LiquidationRouteGeneration {
         let coins: string[] = [];
         for (const [_, route] of pools.entries()) {
             try {
-                coins = ['noONe']
+                coins = ["noONe"];
                 // No more RPC call; we use tokenIn & tokenOut from JSON
-                const { coins: _coins, symbol } = await this._getPoolInfo(route.pool);
+                const {coins: _coins, symbol} = await this._getPoolInfo(route.pool);
                 coins = _coins;
-                // console.log({poolSymbol : symbol})
                 const result = await this._determineSwapParams(route.pool, route);
-                params.push({ route, result: { coins: result.coins, swapParams: result.swapParams } });
+                params.push({route, result: {coins: result.coins, swapParams: result.swapParams}});
             } catch (error: any) {
-                errors.push({ error: error.message, route });
+                errors.push({error: error.message, route});
             }
         }
-        return { params, errors } as VerifiedRoutes;
+        return {params, errors} as VerifiedRoutes;
     }
 
-    async _getPoolInfo(poolAddress: AddressLike): Promise<{ coins: string[], lp: string, symbol: string }> {
-        const poolAbi = ["function coins(uint256) external view returns (address)", 'function symbol() external view returns (string memory)'];
+    async _getPoolInfo(poolAddress: AddressLike): Promise<{coins: string[]; lp: string; symbol: string}> {
+        const poolAbi = ["function coins(uint256) external view returns (address)", "function symbol() external view returns (string memory)"];
 
         const poolContract = await ethers.getContractAt(poolAbi, poolAddress as string);
         let symbol = "";
         try {
             symbol = await poolContract.symbol();
-        } catch (e) {
-            //   console.log("❌ Error  > ", poolAddress, '\x1b[38;5;214m No symbol \x1b[0m');
-            // throw new Error(`No symbol for  ${poolAddress}`);
-        }
+        } catch (e) {}
         const coinCount = 4;
         const coins: string[] = [];
 
@@ -384,18 +376,16 @@ export class LiquidationRouteGeneration {
             try {
                 const coinAddress = await poolContract.coins(i);
                 coins.push(coinAddress);
-            } catch { }
+            } catch {}
         }
-        let lp = ''
+        let lp = "";
 
-
-
-        return { coins, lp, symbol };
+        return {coins, lp, symbol};
     }
 
     async prepareUserForExchange(route: Transfer, user: SignerWithAddress, amount: number) {
         const giveData = lpTokensINfo.reverse().find((token) => token.address.toLowerCase() === route.in.toLowerCase());
-        const isTgtAsset = route.display.split(">>")[0].trim().endsWith('*')
+        const isTgtAsset = route.display.split(">>")[0].trim().endsWith("*");
         const inContract = await ethers.getContractAt("IERC20Metadata", route.in);
         let initialInBalance = await inContract.balanceOf(user.address);
         const amountIn = ethers.parseUnits(amount.toString(), giveData?.decimals || 18);
@@ -404,9 +394,7 @@ export class LiquidationRouteGeneration {
                 await giveTokensoAddresss(user, route.in, amountIn, giveData?.slot || 0, !!giveData ? giveData.isVyper : !isTgtAsset);
                 initialInBalance = await inContract.balanceOf(user.address);
             }
-
         } else {
-            // console.log("No initialCollateralBalance for  ", route.in, route.display);
             throw new Error(`No giveData for for  ${route.display} / ${route.in}`);
         }
         try {
@@ -417,51 +405,59 @@ export class LiquidationRouteGeneration {
             const txApprove = await inContract.connect(user).approve(routerAddress, MaxUint256);
             await txApprove.wait();
         } catch (e) {
-            console.log("❌ Error  > ", route.display, '\x1b[38;5;214m Approve \x1b[0m');
             throw new Error(`Approve error for  ${route.display} : ${(e as Error).message}`);
         }
 
         const allowance = await inContract.allowance(user.address, routerAddress);
         if (allowance < amountIn) {
-            console.log("❌ Error  > ", route.display, '\x1b[38;5;214m No allowance \x1b[0m');
             throw new Error(`No allowance for  ${route.display}`);
         }
-        return { initialInBalance, inContract, isTgtAsset, giveData, amountIn };
+        return {initialInBalance, inContract, isTgtAsset, giveData, amountIn};
     }
 
     async _determineSwapParams(poolAddress: AddressLike, route: Transfer) {
-        const { coins } = await this._getPoolInfo(poolAddress);
-        const zapPools = [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]
+        const {coins} = await this._getPoolInfo(poolAddress);
+        const zapPools = [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress] as AddressLike[];
         const [, , , , , , , , user] = await ethers.getSigners();
-        const router = await ethers.getContractAt("ICurveRouter", routerAddress)
-        const routeAddresses = [route.in, poolAddress, route.out, ...Array(8).fill(ZeroAddress)];
+        const router = await ethers.getContractAt("ICurveRouter", routerAddress);
+        const routeAddresses = [route.in, poolAddress, route.out, ...Array(8).fill(ZeroAddress)] as AddressLike[];
         const ZEROS = [0, 0, 0, 0, 0];
         const swapTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         const poolTypes = [1, 2, 3, 4, 10, 20, 30];
 
-        const { inContract, amountIn } = await this.prepareUserForExchange(route, user, 10);
-        const outContract = await ethers.getContractAt("IERC20", route.out, user)
+        const {inContract, amountIn} = await this.prepareUserForExchange(route, user, 10);
+        const outContract = await ethers.getContractAt("IERC20", route.out, user);
 
-        let indexPossibilities: [number, number][] = [[0, 1], [1, 0]];
+        let indexPossibilities: [number, number][] = [];
         if (coins.length === 0) {
             indexPossibilities = [[0, 1]];
         }
         if (route.in === route.pool && route.out === route.pool) {
             indexPossibilities = [[0, 0]];
+        } else if (route.in === route.pool) {
+            indexPossibilities = [
+                [1, 0],
+                [0, 1],
+                [0, 0],
+            ];
+        } else if (route.out === route.pool) {
+            indexPossibilities = [
+                [0, 0],
+                [1, 0],
+            ];
         }
-        else if (route.in === route.pool) {
-            indexPossibilities = [[1, 0], [0, 1], [0, 0]];
-        }
-        else if (route.out === route.pool) {
-            indexPossibilities = [[0, 0], [1, 0]];
-        }
-
 
         if (coins?.length > 2) {
-            console.error("Add case for more than 2 coins");
+            const maxIndex = coins.length - 1;
+            indexPossibilities = [];
+            for (let i = 0; i <= maxIndex; i++) {
+                for (let j = 0; j <= maxIndex; j++) {
+                    if (i !== j || route.in === route.pool) {
+                        indexPossibilities.push([i, j]);
+                    }
+                }
+            }
         }
-
-
 
         let testedParamsCount = 0;
         for (let i = 0; i < poolTypes.length; i++) {
@@ -476,27 +472,22 @@ export class LiquidationRouteGeneration {
                     try {
                         const initialCollateralBalance = await inContract.balanceOf(user.address);
                         const initialOutBalance = await outContract.balanceOf(user.address);
+                        //@ts-ignore
+                        dy = await router.connect(user).get_dy(routeAddresses, swapParamsFull!, amountIn, zapPools);
 
                         //@ts-ignore
-                        dy = await router.connect(user).get_dy(routeAddresses!, swapParamsFull!, amountIn!, zapPools!);
-
-                        //@ts-ignore
-                        await router.connect(user).exchange(routeAddresses!, swapParamsFull!, amountIn, dy - (dy * 10n / 100n), zapPools, await user.getAddress());
+                        await router.connect(user).exchange(routeAddresses!, swapParamsFull!, amountIn, dy - (dy * 10n) / 100n, zapPools, await user.getAddress());
 
                         const afterCollateralBalance = await inContract.balanceOf(user.address);
                         const afterOutBalance = await outContract.balanceOf(user.address);
                         if (afterCollateralBalance - initialCollateralBalance === 0n || afterOutBalance - initialOutBalance === 0n) {
-                            //console.error("No balance change");
-                            console.log("try", { swap: swapParamsFull.at(0), amountIn, error: "No balance change", output });
+                            console.log("try", {swap: swapParamsFull.at(0), amountIn, error: "No balance change", output});
                             continue;
                         } else {
-                            console.log('✅ Sucess > ', route.display)
-                            return { swapType: swapTypes[j], poolType: poolTypes[i], swapParams: currentSwapParams, ...route, coins };
+                            console.log("✅ Sucess > ", route.display);
+                            return {swapType: swapTypes[j], poolType: poolTypes[i], swapParams: currentSwapParams, ...route, coins};
                         }
-
-
                     } catch (e: any) {
-
                         // if(currentSwapParams.map(s => s.toString()).join(',') === '0,0,1,1,2'){
                         //     console.log(routeAddresses, swapParamsFull,dy)
                         //     console.error(e, "error");
@@ -505,11 +496,11 @@ export class LiquidationRouteGeneration {
                 }
             }
         }
-        console.log('❌ Error  > ', route.display, "\x1b[38;5;214m No combnaison found \x1b[0m")
+        console.log("❌ Error  > ", route.display, "\x1b[38;5;214m No combnaison found \x1b[0m");
         throw new Error(`No valid params found, tested ${testedParamsCount} params`);
     }
 
-    async loadDynamicAssets(addressesData: { lps: Record<string, string>; wStables: Record<string, string>; tokens: { tgUSD: string } }) {
+    async loadDynamicAssets(addressesData: {lps: Record<string, string>; wStables: Record<string, string>; tokens: {tgUSD: string}}) {
         try {
             // Add LP tokens
             if (addressesData.lps) {
@@ -533,41 +524,38 @@ export class LiquidationRouteGeneration {
         }
     }
 
-
-
-    _replateRouteResult = (route: RouteResult, map : Record<string,string> ) : RouteResult => {
-
-
-        const replace = (address: string) : string => {
-            if(map[address]){
+    _replaceRouteResult = (route: RouteResult, map: Record<string, string>): RouteResult => {
+        const replace = (address: string): string => {
+            if (map[address]) {
                 return map[address];
             }
             return address;
-        }
+        };
 
         const newRoute = {
-            ...route
-        }
+            ...route,
+        };
         newRoute.start = replace(route.start);
-        newRoute.end =replace(route.end);
-        newRoute.params.routeAddresses = route.params.routeAddresses.map(address => replace(address));
+        newRoute.end = replace(route.end);
+        newRoute.params.routeAddresses = route.params.routeAddresses.map((address) => replace(address));
         return newRoute;
+    };
 
-    }
-
-    createRouteTemplate = (route: RouteResult[]) : RouteResult[]=> {
-        const map = {} as Record<string,string>;
-        Object.entries(liquidationAssets).reduce((_map , [key, value]) => { _map[value]= key;return _map }, map) ;
+    createRouteTemplate = (route: RouteResult[]): RouteResult[] => {
+        const map = {} as Record<string, string>;
+        Object.entries(liquidationAssets).reduce((_map, [key, value]) => {
+            _map[value] = key;
+            return _map;
+        }, map);
         console.log(map);
-        const newRoutes = route.map(route => this._replateRouteResult(route, map));
+        const newRoutes = route.map((route) => this._replaceRouteResult(route, map));
         return newRoutes;
-    }
+    };
 
-    hydrateRouteTemplate = (route: RouteResult[]) :RouteResult[]=> {
-        const newRoutes = route.map(route => this._replateRouteResult(route, liquidationAssets));
+    hydrateRouteTemplate = (route: RouteResult[]): RouteResult[] => {
+        const newRoutes = route.map((route) => this._replaceRouteResult(route, liquidationAssets));
         return newRoutes;
-    }
-
+    };
 }
 
 export const liquidationAssets: Record<string, string> = {
@@ -629,8 +617,8 @@ export type RouteParams = {
     collateral: keyof typeof liquidationAssets;
     collateralOut: keyof typeof liquidationAssets;
     wTOkenPool?: string; // Leave empty for none wTOken route
-    routes?: { pool: keyof typeof liquidationAssets; out: keyof typeof liquidationAssets }[];
-    swapParams: { poolType: number; swapType: number }[];
+    routes?: {pool: keyof typeof liquidationAssets; out: keyof typeof liquidationAssets}[];
+    swapParams: {poolType: number; swapType: number}[];
     zapPools: AddressLike[];
     pools: (PoolCurveData | undefined)[];
 };
@@ -647,7 +635,7 @@ export type PoolCurveData = {
     outIndex: number;
 };
 
-type AbiRow = { name: string; type: string; outputs: any[] };
+type AbiRow = {name: string; type: string; outputs: any[]};
 type MissingData = {
     symbols: Set<String>;
 };
@@ -667,12 +655,11 @@ type VerifiedRouteParams = {
 type VerifiedRoute = {
     route: Transfer;
     result: VerifiedRouteParams;
-
 };
 
 export type VerifiedRoutes = {
     params: VerifiedRoute[];
-    errors: { route: Transfer; error: string }[];
+    errors: {route: Transfer; error: string}[];
 };
 
 type FinalRouteStep = {
@@ -697,13 +684,12 @@ export type FinalRoute = {
     stepResults: FinalRouteResult[];
 };
 
-
-export   type RouteResult = {
+export type RouteResult = {
     route: string;
-    start   : string;
-    end     : string;
-    params  : {
+    start: string;
+    end: string;
+    params: {
         routeAddresses: string[];
         swapParamsFull: number[][];
     };
-}
+};

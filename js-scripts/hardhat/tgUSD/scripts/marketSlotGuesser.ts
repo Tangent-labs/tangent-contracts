@@ -1,16 +1,12 @@
-import { AddressLike, getAddress } from "ethers";
-import { ethers } from "hardhat";
-import { setStorageAt } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { GlobalHelper } from "../../GlobalHelper";
-
-// Import the routes configuration
-import routesConfig from "../data/verifiedRoutes.json";
+import {ethers} from "hardhat";
+import {setStorageAt} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import {GlobalHelper} from "../../GlobalHelper";
 
 interface BalanceOfSlot {
     token: string;
     address: string;
     slot: number;
-    isVyper: boolean
+    isVyper: boolean;
 }
 
 const RANDOM_ADDRESS = "0xC82bf986c107B5456e1C9b32485640Dcb52b64dd";
@@ -21,21 +17,9 @@ async function getRouteTokenSlots(): Promise<BalanceOfSlot[]> {
     // Extract unique input tokens from routes
     const tokens = new Map<string, string>();
 
-
-    // inputs.forEach(i => {
-    //     tokens.set(i.address, i.token)
-    // })
-    // routesConfig.errors.forEach((step) => {
-    //     console.log(step.route.display.split(">>")[0].trim())
-    //     if(step.route.display.split(">>")[0].trim().endsWith('*')){
-    //         tokens.set(step.route.in, step.route.display.split(">>")[0].trim());
-
-    //     }
-    // });
-
-    tokens.set('0x15700b564ca08d9439c58ca5053166e8317aa138' , 'deUSD')
-    tokens.set('0xa3931d71877c0e7a3148cb7eb4463524fec27fbd' , 'sUSDS') 
-    // tokens.set('0x83F20F44975D03b1b09e64809B757c47f942BEeA' , 'sDAI')  
+    tokens.set("0x15700b564ca08d9439c58ca5053166e8317aa138", "deUSD");
+    tokens.set("0xa3931d71877c0e7a3148cb7eb4463524fec27fbd", "sUSDS");
+    // tokens.set('0x83F20F44975D03b1b09e64809B757c47f942BEeA' , 'sDAI')
     // tokens.set('0x15700b564ca08d9439c58ca5053166e8317aa138' , 'deUSD')
     // Convert to array of unique tokens
     const uniqueTokens = Array.from(tokens.entries()).map(([address, name]) => ({
@@ -47,7 +31,7 @@ async function getRouteTokenSlots(): Promise<BalanceOfSlot[]> {
 
     for (const token of uniqueTokens) {
         const erc20 = await ethers.getContractAt("ERC20", token.address);
-        const isVyper = token.name.includes("/") || token.name === 'scrvUSD' ;
+        const isVyper = token.name.includes("/") || token.name === "scrvUSD";
         // Try slots 0 to 500
         for (let k = 0; k < 10000; k++) {
             // Default to Vyper mapping calculation
@@ -64,20 +48,18 @@ async function getRouteTokenSlots(): Promise<BalanceOfSlot[]> {
 
             // Check if balance was updated
             try {
-
-
                 if ((await erc20.balanceOf(RANDOM_ADDRESS)) === ethers.parseEther((1.52 + rand).toString())) {
                     result.push({
                         token: token.name,
                         address: token.address,
                         slot: k,
-                        isVyper
+                        isVyper,
                     });
                     console.log(`Found slot for ${token.name}: ${k}`);
                     break;
                 }
             } catch (e) {
-                console.log('Error balance ', token.name)
+                console.log("Error balance ", token.name);
             }
         }
     }

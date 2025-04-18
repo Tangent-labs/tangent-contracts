@@ -57,8 +57,8 @@ export class LiquidationContext {
         this.wStableContext = wStableContext;
 
         // get data form context
-        this.markets = [...Object.values(this.marketContext.convexCrvMarkets), ...Object.values(this.marketContext.convexFxnMarkets)];
-        this.fxUSDindex = 2;
+        // this.markets = [...Object.values(this.marketContext.convexCrvMarkets), ...Object.values(this.marketContext.convexFxnMarkets)];
+        // this.fxUSDindex = 2;
         this.markets = [...Object.values(this.marketContext.convexFxnMarkets)];
         this.fxUSDindex = 0;
         const users = this.baseContext.users;

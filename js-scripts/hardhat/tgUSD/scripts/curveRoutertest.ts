@@ -4,7 +4,7 @@ import addresses from "../../../../addresses-liquidation.json";
 import {thiefConfig} from "defi-resources";
 import {AddressLike, parseEther, ZeroAddress} from "ethers";
 
-const curveRouterAddress = "0x16C6521Dff6baB339122a0FE25a9116693265353";
+const curveRouterAddress = "0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e";
 const USDC = thiefConfig.THIEF_TOKEN_CONFIG.USDC;
 
 async function main() {
@@ -25,7 +25,7 @@ async function main() {
         tgUsd: await ethers.getContractAt("IERC20Metadata", deployed.tgUSD),
         collat: await ethers.getContractAt("IERC20Metadata", marketData.collatAddress),
         usdcTgUSd: await ethers.getContractAt("IERC20Metadata", deployed.usdcTgUSd),
-        usdc:   await ethers.getContractAt("IERC20Metadata", USDC.address),
+        usdc: await ethers.getContractAt("IERC20Metadata", USDC.address),
     };
 
     // console.log('usdcTgUSd' , await contracts.usdcTgUSd.symbol());
@@ -58,7 +58,7 @@ async function main() {
     }
     const balanceAfterCollat = await contracts.collat.balanceOf(userAddress);
     const balanceAfter = await contracts.usdc.balanceOf(userAddress);
-    console.log(balanceBefore, balanceAfter, balanceLpBefore,balanceAfterCollat);
+    console.log(balanceBefore, balanceAfter, balanceLpBefore, balanceAfterCollat);
 
     //  pour liquider
     // exemple : test\tgUSD\unit\Liquidation\SecondaryLiquidation\SecondaryLiqdtCurveLp.t.sol ligne 71
