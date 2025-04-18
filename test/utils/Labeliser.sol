@@ -21,10 +21,14 @@ contract Labeliser is Test {
         vm.label(address(AddrClassicERC20.TOKEN_USR), "USR");
         vm.label(address(AddrClassicERC20.TOKEN_STUSR), "stUSR");
         vm.label(address(AddrClassicERC20.TOKEN_USDE), "USDE");
+        vm.label(address(AddrClassicERC20.TOKEN_GHO), "GHO");
 
         vm.label(address(AddrClassicERC20.TOKEN_WETH), "WETH");
         vm.label(address(AddrClassicERC20.TOKEN_FRXETH), "frxETH");
         vm.label(address(AddrClassicERC20.TOKEN_PXETH), "pxETH");
+
+        vm.label(address(AddrClassicERC20.TOKEN_WBTC), "WBTC");
+        vm.label(address(AddrClassicERC20.TOKEN_CBBTC), "cbBTC");
     }
 
     function labelizeERC4626() external {

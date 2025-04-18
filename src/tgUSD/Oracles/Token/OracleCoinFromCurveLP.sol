@@ -7,16 +7,23 @@ import "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 import "forge-std/console.sol";
 
-abstract contract StableUSDOracle is IPriceOracle {
+contract OracleCoinFromCurveLP is IPriceOracle {
     ICurveStableSwapNG lp;
 
     IPriceOracle otherStableOracle;
     uint256 otherStableDecimals;
+    bool public isParamsForPriceOracle;
 
     constructor(ICurveStableSwapNG _lp, IPriceOracle _otherStableOracle) {
         lp = _lp;
         otherStableOracle = _otherStableOracle;
         otherStableDecimals = _otherStableOracle.decimals();
+
+        try _lp.price_oracle() {
+            isParamsForPriceOracle = false;
+        } catch {
+            isParamsForPriceOracle = true;
+        }
     }
 
     function latestAnswer() external view returns (uint256) {
@@ -24,9 +31,15 @@ abstract contract StableUSDOracle is IPriceOracle {
         return (_priceOracle() * priceOtherStable) / 1 ether;
     }
 
-    function decimals() external pure returns (uint256) {
+    function decimals() external pure returns (uint8) {
         return 18;
     }
 
-    function _priceOracle() internal view virtual returns (uint256) {}
+    function _priceOracle() internal view returns (uint256) {
+        if (isParamsForPriceOracle) {
+            return lp.price_oracle(0);
+        } else {
+            return lp.price_oracle();
+        }
+    }
 }

@@ -48,7 +48,7 @@ contract OracleDuoPoolStable is IPriceOracle {
      * @notice Returns the number of decimals used by the oracle
      * @return The number of decimals (18)
      */
-    function decimals() external pure returns (uint256) {
+    function decimals() external pure returns (uint8) {
         return 18;
     }
 

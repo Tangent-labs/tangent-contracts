@@ -11,7 +11,6 @@ import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 import {AddrBooster} from "../../libs/Resources/ResourcesBooster.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "forge-std/console.sol";
 
 contract BoosterList is SdtPosition {
     struct OutputBoosterList {
@@ -54,7 +53,6 @@ contract BoosterList is SdtPosition {
     }
 
     function _getBoosterRowNotConnected(ISdtStaking sdtStaking) public view returns (BoosterRow memory) {
-        console.log("yoyo");
         uint256 nextCycle = sdtStaking.stakingCycle() + 1;
         return
             BoosterRow({
@@ -77,9 +75,7 @@ contract BoosterList is SdtPosition {
     }
 
     function _getBoosterRowConnected(address user, ISdtStaking staking) internal returns (BoosterRow memory) {
-        console.log("yoyo");
         ISdtStakingManager.TokenStaking[] memory allPositions = getAllOwnedPositions(user);
-        console.log("aurevoir");
         uint256 nextCycle = staking.stakingCycle() + 1;
 
         (PositionData[] memory positionsDetails, MergedPositionData memory mergedPos) = getMergedPosition(staking, allPositions);

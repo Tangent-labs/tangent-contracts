@@ -3,10 +3,11 @@ pragma solidity ^0.8.24;
 
 import "./TgUSDDeployContext.sol";
 
-import {StablePriceOracleParams} from "../../../src/tgUSD/Oracles/Token/StablePriceOracleParams.sol";
-import {StablePriceOracleNoParams} from "../../../src/tgUSD/Oracles/Token/StablePriceOracleNoParams.sol";
-import {OracleDuoPoolStable} from "../../../src/tgUSD/Oracles/Pools/OracleDuoPoolStable.sol";
-import {OracleTriPoolStable} from "../../../src/tgUSD/Oracles/Pools/OracleTriPoolStable.sol";
+import {OracleCoinFromCurveLP} from "../../../src/tgUSD/Oracles/Token/OracleCoinFromCurveLP.sol";
+import {OracleDuoPoolStable} from "../../../src/tgUSD/Oracles/CurveLP/OracleDuoPoolStable.sol";
+import {OracleTriPoolStable} from "../../../src/tgUSD/Oracles/CurveLP/OracleTriPoolStable.sol";
+import {OracleCryptoSwap} from "../../../src/tgUSD/Oracles/CurveLP/OracleCryptoSwap.sol";
+
 import {sDAIOracle} from "../../../src/tgUSD/Oracles/sDAIOracle.sol";
 
 import {IRCalculator} from "../../../src/tgUSD/Utilities/IRCalculator.sol";
@@ -57,6 +58,7 @@ contract OraclesContext is TgUSDDeployContext {
         setupChainlinkOracles();
         setupSimpleTokenOraclesWithCurveLP();
         setupCurveStableLPOracles();
+        setupCurveTriCryptoSwapLPOracles();
     }
 
     function setupTgUSDOracle() public {
@@ -76,24 +78,61 @@ contract OraclesContext is TgUSDDeployContext {
     }
 
     function setupChainlinkOracles() internal {
-        vm.label(address(AddrChainlinkOracle.CRVUSD), "Oracle CRVUSD");
+        oracles[AddrClassicERC20.TOKEN_USDC] = IPriceOracle(AddrChainlinkOracle.USDC);
         vm.label(address(AddrChainlinkOracle.USDC), "Oracle USDC");
+
+        oracles[AddrClassicERC20.TOKEN_USDT] = IPriceOracle(AddrChainlinkOracle.USDT);
         vm.label(address(AddrChainlinkOracle.USDT), "Oracle USDT");
+
+        oracles[AddrClassicERC20.TOKEN_CRVUSD] = IPriceOracle(AddrChainlinkOracle.CRVUSD);
+        vm.label(address(AddrChainlinkOracle.CRVUSD), "Oracle crvUSD");
+
+        oracles[AddrClassicERC20.TOKEN_GHO] = IPriceOracle(AddrChainlinkOracle.GHO);
+        vm.label(address(AddrChainlinkOracle.GHO), "Oracle GHO");
+
+        oracles[AddrClassicERC20.TOKEN_WETH] = IPriceOracle(AddrChainlinkOracle.ETH);
         vm.label(address(AddrChainlinkOracle.ETH), "Oracle ETH");
+
+        oracles[AddrClassicERC20.TOKEN_WBTC] = IPriceOracle(AddrChainlinkOracle.BTC);
+        vm.label(address(AddrChainlinkOracle.BTC), "Oracle BTC");
+
+        oracles[AddrClassicERC20.TOKEN_CBBTC] = IPriceOracle(AddrChainlinkOracle.CB_BTC);
+        vm.label(address(AddrChainlinkOracle.CB_BTC), "Oracle cbBTC");
+
+        oracles[AddrClassicERC20.TOKEN_CRV] = IPriceOracle(AddrChainlinkOracle.CRV);
+        vm.label(address(AddrChainlinkOracle.CRV), "Oracle CRV");
     }
 
     function setupSimpleTokenOraclesWithCurveLP() internal {
         // Oracle FXUSD
-        oracles[AddrClassicERC20.TOKEN_FXUSD] = new StablePriceOracleParams(AddrCurveStableLP.USDC_FXUSD, IPriceOracle(address(AddrChainlinkOracle.USDC)));
+        oracles[AddrClassicERC20.TOKEN_FXUSD] = new OracleCoinFromCurveLP(AddrCurveStableLP.USDC_FXUSD, IPriceOracle(address(AddrChainlinkOracle.USDC)));
         vm.label(address(oracles[AddrClassicERC20.TOKEN_FXUSD]), "Oracle fxUSD");
 
         // Oracle frxETH
-        oracles[AddrClassicERC20.TOKEN_FRXETH] = new StablePriceOracleNoParams(AddrCurveStableLP.FRXETH_WETH, IPriceOracle(address(AddrChainlinkOracle.ETH)));
+        oracles[AddrClassicERC20.TOKEN_FRXETH] = new OracleCoinFromCurveLP(AddrCurveStableLP.FRXETH_WETH, IPriceOracle(address(AddrChainlinkOracle.ETH)));
         vm.label(address(oracles[AddrClassicERC20.TOKEN_FRXETH]), "Oracle frxETH");
 
         // Oracle pxETH
-        oracles[AddrClassicERC20.TOKEN_PXETH] = new StablePriceOracleParams(AddrCurveStableLP.PXETH_WETH, IPriceOracle(address(AddrChainlinkOracle.ETH)));
+        oracles[AddrClassicERC20.TOKEN_PXETH] = new OracleCoinFromCurveLP(AddrCurveStableLP.PXETH_WETH, IPriceOracle(address(AddrChainlinkOracle.ETH)));
         vm.label(address(oracles[AddrClassicERC20.TOKEN_PXETH]), "Oracle pxETH");
+    }
+
+    function setupCurveTriCryptoSwapLPOracles() internal {
+        // Oracle USDT_WBTC_ETH
+        oracles[AddrCryptoSwapLP.USDT_WBTC_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.USDT_WBTC_ETH, AddrChainlinkOracle.USDT);
+        vm.label(address(oracles[AddrCryptoSwapLP.USDT_WBTC_ETH]), "Oracle LP USDT/WBTC/ETH");
+
+        // Oracle USDC_WBTC_ETH
+        oracles[AddrCryptoSwapLP.USDC_WBTC_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.USDC_WBTC_ETH, AddrChainlinkOracle.USDC);
+        vm.label(address(oracles[AddrCryptoSwapLP.USDC_WBTC_ETH]), "Oracle LP USDC/WBTC/ETH");
+
+        // Oracle CRVUSD_ETH_CRV
+        oracles[AddrCryptoSwapLP.CRVUSD_ETH_CRV] = new OracleCryptoSwap(AddrCryptoSwapLP.CRVUSD_ETH_CRV, AddrChainlinkOracle.CRVUSD);
+        vm.label(address(oracles[AddrCryptoSwapLP.CRVUSD_ETH_CRV]), "Oracle LP crvUSD/ETH/CRV");
+
+        // Oracle GHO_CBBTC_ETH
+        oracles[AddrCryptoSwapLP.GHO_CBBTC_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.GHO_CBBTC_ETH, AddrChainlinkOracle.GHO);
+        vm.label(address(oracles[AddrCryptoSwapLP.GHO_CBBTC_ETH]), "Oracle LP GHO/cbBTC/ETH");
     }
 
     function setupCurveStableLPOracles() internal {

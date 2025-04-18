@@ -32,7 +32,7 @@ contract OracleTriPoolStable is IPriceOracle {
         });
     }
 
-    function decimals() external pure returns (uint256) {
+    function decimals() external pure returns (uint8) {
         return 18;
     }
 

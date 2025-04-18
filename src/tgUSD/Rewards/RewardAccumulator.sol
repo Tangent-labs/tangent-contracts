@@ -593,7 +593,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         }
         // Cut percentage either startCutPercentage or endCutPercetange
         else if (stepAmount == 2) {
-            if (tgUSDPrice >= _rcParams.startCutPrice * 1e12) {
+            if (tgUSDPrice >= uint256(_rcParams.startCutPrice) * 1e12) {
                 return _rcParams.startCutPercentage;
             } else {
                 return _rcParams.endCutPercentage;
@@ -601,8 +601,8 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         }
         // Cut percentage is computed regarding the step amount
         else {
-            uint256 startCutPrice = _rcParams.startCutPrice * 1e12;
-            uint256 endCutPrice = _rcParams.endCutPrice * 1e12;
+            uint256 startCutPrice = uint256(_rcParams.startCutPrice) * 1e12;
+            uint256 endCutPrice = uint256(_rcParams.endCutPrice) * 1e12;
             // When tgUSDPrice is above the startCutPrice
             if (tgUSDPrice >= startCutPrice) {
                 return _rcParams.startCutPercentage;
