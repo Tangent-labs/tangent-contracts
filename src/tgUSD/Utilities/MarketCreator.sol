@@ -23,7 +23,6 @@ import {IRParams, IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalcu
 import {RCParams} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {ILiquidatorProxy} from "../../interfaces/internals/tgUSD/ILiquidatorProxy.sol";
 import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
-
 /// @title MarketCreator
 /// @notice Convergence's factory to deploy clone of contracts
 contract MarketCreator is Ownable {

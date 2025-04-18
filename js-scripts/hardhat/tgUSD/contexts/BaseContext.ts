@@ -123,7 +123,7 @@ export class BaseContext extends MainSetup {
         await this.irCalculator.waitForDeployment();
         await this.controlTower.toggleIRCalculator(this.irCalculator);
 
-        this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, this.irCalculator);
+        this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, tgUSDOracle);
         await this.rewardAccumulator.waitForDeployment();
 
         this.marketCreator = await (

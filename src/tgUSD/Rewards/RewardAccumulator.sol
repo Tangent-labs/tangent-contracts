@@ -11,7 +11,6 @@ import {IAggregatorStablePriceV3} from "../../interfaces/externals/LlamaLend/IAg
 import {IMarketExternalActions} from "../../interfaces/internals/tgUSD/IMarketExternalActions.sol";
 
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
-import "forge-std/console.sol";
 
 contract RewardAccumulator is IRewardAccumulator, Ownable {
     using SafeERC20 for IERC20;
@@ -594,7 +593,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         }
         // Cut percentage either startCutPercentage or endCutPercetange
         else if (stepAmount == 2) {
-            if (tgUSDPrice >= _rcParams.startCutPrice) {
+            if (tgUSDPrice >= _rcParams.startCutPrice * 1e12) {
                 return _rcParams.startCutPercentage;
             } else {
                 return _rcParams.endCutPercentage;
@@ -602,8 +601,8 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         }
         // Cut percentage is computed regarding the step amount
         else {
-            uint256 startCutPrice = _rcParams.startCutPrice;
-            uint256 endCutPrice = _rcParams.endCutPrice;
+            uint256 startCutPrice = _rcParams.startCutPrice * 1e12;
+            uint256 endCutPrice = _rcParams.endCutPrice * 1e12;
             // When tgUSDPrice is above the startCutPrice
             if (tgUSDPrice >= startCutPrice) {
                 return _rcParams.startCutPercentage;

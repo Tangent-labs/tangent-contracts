@@ -45,11 +45,12 @@ export class MarketContext {
                         k: 250,
                     },
                     {
+                        harvestFeePercentage: 1_000,
                         startCutPercentage: 50_000,
                         endCutPercentage: 100_000,
                         stepAmount: 4,
-                        startCutPrice: 1000000000000000000n,
-                        endCutPrice: 995000000000000000n,
+                        startCutPrice: 1_000_000n,
+                        endCutPrice: 995_000n,
                     }
                 )
             ).wait();
@@ -88,6 +89,7 @@ export class MarketContext {
                         k: 250,
                     },
                     {
+                        harvestFeePercentage: 1_000,
                         startCutPercentage: 0,
                         endCutPercentage: 0,
                         stepAmount: 1,
