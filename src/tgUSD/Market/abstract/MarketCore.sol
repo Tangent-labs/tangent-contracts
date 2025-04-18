@@ -32,6 +32,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
     error NotZapper(address zapper);
 
     event Liquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
+    event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
 
     constructor() {
         isInitialized = true;
@@ -252,7 +253,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
     /* --------
                             LIQUIDATION
                                                     ------ */
-
+    //TODO Add some check on min Loan and LTV
     function _selfLiquidate(SelfLiquidateCall memory selfLiquidateCall, bytes calldata liquidationCall) internal {
         uint256 newCollatBalance = selfLiquidateCall._collateralBalance - selfLiquidateCall.collatAmountToLiquidate;
         uint256 debtSharesToRemove;
@@ -279,24 +280,8 @@ abstract contract MarketCore is PauseSettings, Collateral {
         );
 
         _postLiquidate(selfLiquidateCall.liquidator, selfLiquidateCall.collatAmountToLiquidate, selfLiquidateCall.tgUSDToRepay, selfLiquidateCall.minTgUSDOut, liquidationCall);
-    }
 
-    function _postLiquidate(address liquidator, uint256 collatAmountToLiquidate, uint256 tgUSDToRepay, uint256 minTgUSDOut, bytes calldata liquidationCall) internal {
-        ILiquidatorProxy _liquidatorProxy = liquidatorProxy;
-        // Withdraw the collateral from the underlying protocol if needed and
-        // Transfer it to the caller when there is no liquidator passed in parameter
-        // If a liquidator is passed, we send the collateral to the liquidator
-        _transferCollateralWithdraw(liquidator != address(0) ? address(_liquidatorProxy) : msg.sender, collatAmountToLiquidate);
-
-        // When liquidator is not zero, it allows to the LiquidatorProxy to receive the collateral.
-        // Then, if needed, liquidator will allow the custom Liquidator to sell the collateral for tgUSD in the same transaction.
-        if (liquidator != address(0)) {
-            _liquidatorProxy.callLiquidate(liquidator, msg.sender, collatToken, minTgUSDOut, liquidationCall);
-        }
-        // Burns tgUSD from the sender.
-        // The debt has to be on the caller of the transaction.
-        // In case a liquidator is passed in parameter, it needs to send it back to the sender of the tx.
-        tgUSD.burnFrom(msg.sender, tgUSDToRepay);
+        emit SelfLiquidate(msg.sender, selfLiquidateCall.tgUSDToRepay, selfLiquidateCall.collatAmountToLiquidate, selfLiquidateCall.liquidator);
     }
 
     function _liquidate(LiquidateCall memory liquidateCall, bytes calldata liquidationCall) internal {
@@ -338,6 +323,24 @@ abstract contract MarketCore is PauseSettings, Collateral {
         _postLiquidate(liquidateCall.liquidator, collatAmountToLiquidate, liquidateCall.tgUSDToRepay, liquidateCall.minTgUSDOut, liquidationCall);
 
         emit Liquidate(liquidateCall.account, tgUSDToRepay, collatAmountToLiquidate, liquidateCall.liquidator);
+    }
+
+    function _postLiquidate(address liquidator, uint256 collatAmountToLiquidate, uint256 tgUSDToRepay, uint256 minTgUSDOut, bytes calldata liquidationCall) internal {
+        ILiquidatorProxy _liquidatorProxy = liquidatorProxy;
+        // Withdraw the collateral from the underlying protocol if needed and
+        // Transfer it to the caller when there is no liquidator passed in parameter
+        // If a liquidator is passed, we send the collateral to the liquidator
+        _transferCollateralWithdraw(liquidator != address(0) ? address(_liquidatorProxy) : msg.sender, collatAmountToLiquidate);
+
+        // When liquidator is not zero, it allows to the LiquidatorProxy to receive the collateral.
+        // Then, if needed, liquidator will allow the custom Liquidator to sell the collateral for tgUSD in the same transaction.
+        if (liquidator != address(0)) {
+            _liquidatorProxy.callLiquidate(liquidator, msg.sender, collatToken, minTgUSDOut, liquidationCall);
+        }
+        // Burns tgUSD from the sender.
+        // The debt has to be on the caller of the transaction.
+        // In case a liquidator is passed in parameter, it needs to send it back to the sender of the tx.
+        tgUSD.burnFrom(msg.sender, tgUSDToRepay);
     }
 
     function _liquidateBadDebt(
