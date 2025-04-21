@@ -1,34 +1,12 @@
 import {ethers} from "hardhat";
 import {curveLp, chainlinkPriceFeed} from "defi-resources";
-import {ERC20, IAggregatorStablePriceV3, IPriceOracle} from "../../../../typechain-types";
+import {IAggregatorStablePriceV3, IPriceOracle} from "../../../../typechain-types";
 import {BaseContext} from "./BaseContext";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {LpDeployContext} from "./LPDeployContext";
-
-// export type OracleKey =
-//     | "crvUSD"
-//     | "USDC"
-//     | "USDC"
-//     | "USDT"
-//     | "ETH"
-//     | "USR"
-//     | "GHO"
-//     | "fxUSD"
-//     | "frxETH"
-//     | "crvUSD_USDC"
-//     | "crvUSD_USDT"
-//     | "USDC_fxUSD"
-//     | "frxETH_WETH"
-//     | "USDT_WBTC_ETH"
-//     | "USDC_WBTC_ETH"
-//     | "crvUSD_ETH_CRV"
-//     | "GHO_CBBTC_ETH"
-//     | "CVX_ETH"
-//     | "USR_RLP";
 
 export class OracleContext {
     tgUSDOracle!: IAggregatorStablePriceV3;
-    oracles: {[key in string]: IPriceOracle} = {};
+    oracles: {[key: string]: IPriceOracle} = {};
 
     async deployAndSetupOracles(baseContext: BaseContext, lpDeployContext: LpDeployContext) {
         this.oracles["crvUSD"] = await ethers.getContractAt("IPriceOracle", chainlinkPriceFeed.CHAINLINK_crvUSD_USD);
