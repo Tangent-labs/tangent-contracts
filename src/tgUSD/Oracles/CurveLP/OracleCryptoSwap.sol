@@ -12,12 +12,12 @@ contract OracleCryptoSwap is IPriceOracle {
     struct OracleCryptoSwapStruct {
         ICurveTriCryptoSwap lp;
         IPriceOracle coin0Oracle;
-        uint40 coin0OracleDecimals;
+        uint192 coin0OracleDecimals;
     }
     OracleCryptoSwapStruct public params;
 
     constructor(ICurveTriCryptoSwap _lp, IPriceOracle coin0Oracle) {
-        params = OracleCryptoSwapStruct({lp: _lp, coin0Oracle: coin0Oracle, coin0OracleDecimals: uint40(coin0Oracle.decimals())});
+        params = OracleCryptoSwapStruct({lp: _lp, coin0Oracle: coin0Oracle, coin0OracleDecimals: uint192(coin0Oracle.decimals())});
     }
 
     function decimals() external pure returns (uint8) {

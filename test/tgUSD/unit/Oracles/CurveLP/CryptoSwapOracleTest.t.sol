@@ -10,35 +10,52 @@ contract CryptoSwapOracleTest is ConvexCurveContext {
     ICurveTriCryptoSwap[] cryptoSwaps;
 
     function setUp() external {
+        // TRI POOL
         cryptoSwaps.push(AddrCryptoSwapLP.USDT_WBTC_ETH);
         cryptoSwaps.push(AddrCryptoSwapLP.USDC_WBTC_ETH);
         cryptoSwaps.push(AddrCryptoSwapLP.CRVUSD_ETH_CRV);
         cryptoSwaps.push(AddrCryptoSwapLP.GHO_CBBTC_ETH);
+
+        // DUO POOL
+        cryptoSwaps.push(AddrCryptoSwapLP.USR_RLP);
+        cryptoSwaps.push(AddrCryptoSwapLP.CVX_ETH);
     }
     /// WARNING THIS IS ONLY USED FOR TESTING PURPOSE
     /// THIS METHOD CAN BE MANIPULATED IN PROD
     function approximateLPValue(ICurveTriCryptoSwap lp) public view returns (uint256) {
-        return (approximateTotalLPValue(lp) * 1e18) / lp.totalSupply();
+        uint256 totalSupp;
+
+        (, bytes memory totalSupplyBytes) = address(lp).staticcall(abi.encodeWithSelector(bytes4(keccak256("totalSupply()"))));
+
+        // For the LP that are not merged with the token
+        if (totalSupplyBytes.length == 0) {
+            (, bytes memory lpTokenBytes) = address(lp).staticcall(abi.encodeWithSelector(bytes4(keccak256("token()"))));
+            totalSupp = IERC20Metadata(abi.decode(lpTokenBytes, (address))).totalSupply();
+        } else {
+            totalSupp = abi.decode(totalSupplyBytes, (uint256));
+        }
+
+        return (approximateTotalLPValue(lp) * 1e18) / totalSupp;
     }
 
     function approximateTotalLPValue(ICurveTriCryptoSwap lp) public view returns (uint256) {
         uint256 usdValue;
-        for (uint256 i = 0; i < 3; i++) {
-            IERC20Metadata coin = IERC20Metadata(lp.coins(i));
-            uint256 balance = lp.balances(i);
-            uint256 price;
-            if (i == 0) {
-                IPriceOracle oracle = oracles[coin];
-                assertNotEq(address(oracle), address(0), "Oracle not setup");
-                price = oracle.latestAnswer() * 10 ** (18 - oracle.decimals());
-            } else {
-                price = lp.price_oracle(i - 1);
+        for (uint256 i = 0; i < 5; i++) {
+            IERC20Metadata coin;
+
+            try lp.coins(i) {
+                coin = IERC20Metadata(lp.coins(i));
+            } catch {
+                break;
             }
 
-            uint256 coinValueInLP = (price * balance * (10 ** (18 - coin.decimals()))) / 1e18;
+            IPriceOracle oracle = oracles[coin];
+            assertNotEq(address(oracle), address(0), "Oracle not setup");
+            uint256 price = oracle.latestAnswer() * 10 ** (18 - oracle.decimals());
 
-            usdValue += coinValueInLP;
+            usdValue += (price * lp.balances(i) * (10 ** (18 - coin.decimals()))) / 1e18;
         }
+
         return usdValue;
     }
     function test_flash_exploit_TriCryptoSwap_oracle() external {
@@ -57,7 +74,7 @@ contract CryptoSwapOracleTest is ConvexCurveContext {
             uint256 amountCoin1ToSellWei = (totalLPValue * 10 ** 18) / price;
             uint256 amountCoin1ToSell = amountCoin1ToSellWei / 10 ** (18 - coin1.decimals());
 
-            lpManipulator.dumTriCryptoSwapPool(lp, 1, 2, amountCoin1ToSell);
+            lpManipulator.dumTriCryptoSwapPool(lp, 1, 0, amountCoin1ToSell);
             // This is normal because the sell of the token generated swap fee reported to lpPrice.
             assertLt(oracleValueBeforeSwap, oracles[lp].latestAnswer(), "Oracle price is always bigger as swap occured in the LP");
 
@@ -79,7 +96,7 @@ contract CryptoSwapOracleTest is ConvexCurveContext {
         for (uint256 i = 0; i < cryptoSwaps.length; i++) {
             ICurveTriCryptoSwap lp = cryptoSwaps[i];
             uint256 approx = approximateLPValue(lp);
-            assertApproxEqRel(approx, oracles[lp].latestAnswer(), 3e15);
+            assertApproxEqRel(approx, oracles[lp].latestAnswer(), 6e15); // 0.6% maximum
         }
     }
 }

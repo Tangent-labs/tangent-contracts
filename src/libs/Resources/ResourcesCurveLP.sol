@@ -22,8 +22,13 @@ library AddrCurveStableLP {
 }
 
 library AddrCryptoSwapLP {
+    // TRI
     ICurveTriCryptoSwap constant USDT_WBTC_ETH = ICurveTriCryptoSwap(0xf5f5B97624542D72A9E06f04804Bf81baA15e2B4);
     ICurveTriCryptoSwap constant USDC_WBTC_ETH = ICurveTriCryptoSwap(0x7F86Bf177Dd4F3494b841a37e810A34dD56c829B);
     ICurveTriCryptoSwap constant CRVUSD_ETH_CRV = ICurveTriCryptoSwap(0x4eBdF703948ddCEA3B11f675B4D1Fba9d2414A14);
     ICurveTriCryptoSwap constant GHO_CBBTC_ETH = ICurveTriCryptoSwap(0x8a4f252812dFF2A8636E4F7EB249d8FC2E3bd77f);
+
+    // DUO
+    ICurveTriCryptoSwap constant USR_RLP = ICurveTriCryptoSwap(0xC907ba505C2E1cbc4658c395d4a2c7E6d2c32656);
+    ICurveTriCryptoSwap constant CVX_ETH = ICurveTriCryptoSwap(0xB576491F1E6e5E62f1d8F26062Ee822B40B0E0d4);
 }

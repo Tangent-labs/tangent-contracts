@@ -1,10 +1,10 @@
-import {commonERC20, convexCrv, convexFxn, curveLp} from "defi-resources";
+import {commonERC20, convexCrv, convexFxn} from "defi-resources";
 import {parseEther} from "ethers";
 
 export const STATIC_CONFIG_CONVEX_CURVE = {
     crvUSD_USDC: {
         collatName: "crvUSD_USDC",
-        collatToken: convexCrv.CRVUSD_USDC.lp,
+        collatToken: convexCrv.CRVUSD_USDC.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
@@ -15,7 +15,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
     },
     crvUSD_USDT: {
         collatName: "crvUSD_USDT",
-        collatToken: convexCrv.CRVUSD_USDT.lp,
+        collatToken: convexCrv.CRVUSD_USDT.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
@@ -26,7 +26,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
     },
     frxETH_WETH: {
         collatName: "frxETH_WETH",
-        collatToken: convexCrv.frxETH_WETH.lp,
+        collatToken: convexCrv.frxETH_WETH.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
@@ -37,7 +37,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
     },
     pxETH_WETH: {
         collatName: "pxETH_WETH",
-        collatToken: convexCrv.pxETH_WETH.lp,
+        collatToken: convexCrv.pxETH_WETH.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
@@ -46,11 +46,77 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         cvxRewardToken: convexCrv.pxETH_WETH.cvxRewardToken,
         pid: convexCrv.pxETH_WETH.pid,
     },
+    USDT_WBTC_WETH: {
+        collatName: "USDT_WBTC_WETH",
+        collatToken: convexCrv.USDT_WBTC_WETH.lpToken,
+        liquidationThreshold: 93_000,
+        maxLTV: 85_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [commonERC20.CRV, commonERC20.CVX],
+        cvxRewardToken: convexCrv.USDT_WBTC_WETH.cvxRewardToken,
+        pid: convexCrv.USDT_WBTC_WETH.pid,
+    },
+    USDC_WBTC_WETH: {
+        collatName: "USDC_WBTC_WETH",
+        collatToken: convexCrv.USDC_WBTC_WETH.lpToken,
+        liquidationThreshold: 93_000,
+        maxLTV: 85_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [commonERC20.CRV, commonERC20.CVX],
+        cvxRewardToken: convexCrv.USDC_WBTC_WETH.cvxRewardToken,
+        pid: convexCrv.USDC_WBTC_WETH.pid,
+    },
+    crvUSD_ETH_CRV: {
+        collatName: "crvUSD_ETH_CRV",
+        collatToken: convexCrv.crvUSD_ETH_CRV.lpToken,
+        liquidationThreshold: 93_000,
+        maxLTV: 85_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [commonERC20.CRV, commonERC20.CVX],
+        cvxRewardToken: convexCrv.crvUSD_ETH_CRV.cvxRewardToken,
+        pid: convexCrv.crvUSD_ETH_CRV.pid,
+    },
+    GHO_cbBTC_WETH: {
+        collatName: "GHO_cbBTC_WETH",
+        collatToken: convexCrv.GHO_cbBTC_WETH.lpToken,
+        liquidationThreshold: 93_000,
+        maxLTV: 85_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [commonERC20.CRV, commonERC20.CVX],
+        cvxRewardToken: convexCrv.GHO_cbBTC_WETH.cvxRewardToken,
+        pid: convexCrv.GHO_cbBTC_WETH.pid,
+    },
+    CVX_ETH: {
+        collatName: "CVX_ETH",
+        collatToken: convexCrv.CVX_ETH.lpToken,
+        liquidationThreshold: 93_000,
+        maxLTV: 85_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [commonERC20.CRV, commonERC20.CVX],
+        cvxRewardToken: convexCrv.CVX_ETH.cvxRewardToken,
+        pid: convexCrv.CVX_ETH.pid,
+    },
+    USR_RLP: {
+        collatName: "USR_RLP",
+        collatToken: convexCrv.USR_RLP.lpToken,
+        liquidationThreshold: 93_000,
+        maxLTV: 85_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [commonERC20.CRV, commonERC20.CVX],
+        cvxRewardToken: convexCrv.USR_RLP.cvxRewardToken,
+        pid: convexCrv.USR_RLP.pid,
+    },
 };
 export const STATIC_CONFIG_CONVEX_FXN = {
     USDC_fxUSD: {
         collatName: "USDC_fxUSD",
-        collatToken: convexFxn.USDC_fxUSD.lp,
+        collatToken: convexFxn.USDC_fxUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),

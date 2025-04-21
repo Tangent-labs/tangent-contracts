@@ -7,36 +7,44 @@ import "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 import "forge-std/console.sol";
 
-contract OracleCoinFromCurveLP is IPriceOracle {
+struct OracleCoinFromCurveLPStruct {
     ICurveStableSwapNG lp;
-
     IPriceOracle otherStableOracle;
-    uint256 otherStableDecimals;
-    bool public isParamsForPriceOracle;
+    uint128 otherStableDecimals;
+    uint128 isParamsForPriceOracle;
+}
 
-    constructor(ICurveStableSwapNG _lp, IPriceOracle _otherStableOracle) {
-        lp = _lp;
-        otherStableOracle = _otherStableOracle;
-        otherStableDecimals = _otherStableOracle.decimals();
-
-        try _lp.price_oracle() {
-            isParamsForPriceOracle = false;
+contract OracleCoinFromCurveLP is IPriceOracle {
+    OracleCoinFromCurveLPStruct public oracleParams;
+    constructor(address _lp, IPriceOracle _otherStableOracle) {
+        uint128 isParamsForPriceOracle;
+        try ICurveStableSwapNG(_lp).price_oracle() {
+            isParamsForPriceOracle = 0;
         } catch {
-            isParamsForPriceOracle = true;
+            isParamsForPriceOracle = 1;
         }
+
+        oracleParams = OracleCoinFromCurveLPStruct({
+            lp: ICurveStableSwapNG(_lp),
+            otherStableOracle: _otherStableOracle,
+            otherStableDecimals: _otherStableOracle.decimals(),
+            isParamsForPriceOracle: isParamsForPriceOracle
+        });
     }
 
     function latestAnswer() external view returns (uint256) {
-        uint256 priceOtherStable = otherStableOracle.latestAnswer() * 10 ** (18 - otherStableDecimals);
-        return (_priceOracle() * priceOtherStable) / 1 ether;
+        OracleCoinFromCurveLPStruct memory params = oracleParams;
+
+        uint256 priceOtherStable = params.otherStableOracle.latestAnswer() * 10 ** (18 - params.otherStableDecimals);
+        return (_priceOracle(params.lp, params.isParamsForPriceOracle) * priceOtherStable) / 1 ether;
     }
 
     function decimals() external pure returns (uint8) {
         return 18;
     }
 
-    function _priceOracle() internal view returns (uint256) {
-        if (isParamsForPriceOracle) {
+    function _priceOracle(ICurveStableSwapNG lp, uint128 isParamsForPriceOracle) internal view returns (uint256) {
+        if (isParamsForPriceOracle != 0) {
             return lp.price_oracle(0);
         } else {
             return lp.price_oracle();

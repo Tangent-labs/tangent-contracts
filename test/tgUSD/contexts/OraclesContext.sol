@@ -101,20 +101,32 @@ contract OraclesContext is TgUSDDeployContext {
 
         oracles[AddrClassicERC20.TOKEN_CRV] = IPriceOracle(AddrChainlinkOracle.CRV);
         vm.label(address(AddrChainlinkOracle.CRV), "Oracle CRV");
+
+        // TODO Warning, is flagged as HIGH MARKET RISK
+        oracles[AddrClassicERC20.TOKEN_USR] = IPriceOracle(AddrChainlinkOracle.USR);
+        vm.label(address(AddrChainlinkOracle.USR), "Oracle USR");
     }
 
     function setupSimpleTokenOraclesWithCurveLP() internal {
         // Oracle FXUSD
-        oracles[AddrClassicERC20.TOKEN_FXUSD] = new OracleCoinFromCurveLP(AddrCurveStableLP.USDC_FXUSD, IPriceOracle(address(AddrChainlinkOracle.USDC)));
+        oracles[AddrClassicERC20.TOKEN_FXUSD] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.USDC_FXUSD), IPriceOracle(address(AddrChainlinkOracle.USDC)));
         vm.label(address(oracles[AddrClassicERC20.TOKEN_FXUSD]), "Oracle fxUSD");
 
         // Oracle frxETH
-        oracles[AddrClassicERC20.TOKEN_FRXETH] = new OracleCoinFromCurveLP(AddrCurveStableLP.FRXETH_WETH, IPriceOracle(address(AddrChainlinkOracle.ETH)));
+        oracles[AddrClassicERC20.TOKEN_FRXETH] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.FRXETH_WETH), IPriceOracle(address(AddrChainlinkOracle.ETH)));
         vm.label(address(oracles[AddrClassicERC20.TOKEN_FRXETH]), "Oracle frxETH");
 
         // Oracle pxETH
-        oracles[AddrClassicERC20.TOKEN_PXETH] = new OracleCoinFromCurveLP(AddrCurveStableLP.PXETH_WETH, IPriceOracle(address(AddrChainlinkOracle.ETH)));
+        oracles[AddrClassicERC20.TOKEN_PXETH] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.PXETH_WETH), IPriceOracle(address(AddrChainlinkOracle.ETH)));
         vm.label(address(oracles[AddrClassicERC20.TOKEN_PXETH]), "Oracle pxETH");
+
+        // Oracle RLP
+        oracles[AddrClassicERC20.TOKEN_RLP] = new OracleCoinFromCurveLP(address(AddrCryptoSwapLP.USR_RLP), IPriceOracle(address(AddrChainlinkOracle.USR)));
+        vm.label(address(oracles[AddrClassicERC20.TOKEN_RLP]), "Oracle RLP");
+
+        // TODO Warning, is flagged as HIGH MARKET RISK
+        oracles[AddrClassicERC20.TOKEN_CVX] = new OracleCoinFromCurveLP(address(AddrCryptoSwapLP.CVX_ETH), IPriceOracle(address(AddrChainlinkOracle.ETH)));
+        vm.label(address(oracles[AddrClassicERC20.TOKEN_CVX]), "Oracle CVX");
     }
 
     function setupCurveTriCryptoSwapLPOracles() internal {
@@ -133,6 +145,14 @@ contract OraclesContext is TgUSDDeployContext {
         // Oracle GHO_CBBTC_ETH
         oracles[AddrCryptoSwapLP.GHO_CBBTC_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.GHO_CBBTC_ETH, AddrChainlinkOracle.GHO);
         vm.label(address(oracles[AddrCryptoSwapLP.GHO_CBBTC_ETH]), "Oracle LP GHO/cbBTC/ETH");
+
+        // Oracle USR_RLP
+        oracles[AddrCryptoSwapLP.USR_RLP] = new OracleCryptoSwap(AddrCryptoSwapLP.USR_RLP, AddrChainlinkOracle.USR);
+        vm.label(address(oracles[AddrCryptoSwapLP.USR_RLP]), "Oracle LP USR/RLP");
+
+        // Oracle CVX_ETH
+        oracles[AddrCryptoSwapLP.CVX_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.CVX_ETH, AddrChainlinkOracle.ETH);
+        vm.label(address(oracles[AddrCryptoSwapLP.CVX_ETH]), "Oracle LP CVX/ETH");
     }
 
     function setupCurveStableLPOracles() internal {

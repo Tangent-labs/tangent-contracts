@@ -31,6 +31,7 @@ interface ICurveTriCryptoSwap is IERC20Metadata {
     function get_dx(uint256 i, uint256 j, uint256 dy) external view returns (uint256);
     function lp_price() external view returns (uint256);
     function get_virtual_price() external view returns (uint256);
+    function price_oracle() external view returns (uint256);
     function price_oracle(uint256 k) external view returns (uint256);
     function last_prices(uint256 k) external view returns (uint256);
     function price_scale(uint256 k) external view returns (uint256);
