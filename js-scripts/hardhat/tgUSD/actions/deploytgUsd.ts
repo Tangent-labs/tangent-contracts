@@ -28,16 +28,29 @@ export async function deploytgUsd(userCount: number = 5) {
 
     // Define markets to deploy
     const convexCrvMarkets: ConvexCrvMarketKeys[] = [
+        // Stable USD
         "crvUSD_USDC",
         "crvUSD_USDT",
+        "USDC_USDT",
+        "frxUSD_USDe",
+
+        // Stable ETH
         "frxETH_WETH",
         "pxETH_WETH",
+        "pxETH_stETH",
+
+        // Stable BTC
+        "cbBTC_WBTC",
+
+        // TriCrypto
         "crvUSD_ETH_CRV",
-        "CVX_ETH",
         "GHO_cbBTC_WETH",
         "USDC_WBTC_WETH",
         "USDT_WBTC_WETH",
+
+        // DuoCrypto
         "USR_RLP",
+        "CVX_ETH",
     ];
     const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD"];
     // Deploy Convex CRV markets
