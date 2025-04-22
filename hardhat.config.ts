@@ -4,7 +4,6 @@ import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomiclabs/hardhat-vyper";
-import "hardhat-tracer";
 
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -58,8 +57,8 @@ const config: HardhatUserConfig = {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "http://127.0.0.1:8545",
             mining: {
-                auto: true,
-                interval: 5000,
+                auto: false,
+                interval: 12_000,
             },
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
@@ -70,7 +69,7 @@ const config: HardhatUserConfig = {
         hardhat: {
             mining: {
                 auto: true,
-                interval: 5000,
+                interval: 12_000,
             },
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,

@@ -1,10 +1,9 @@
 import {ethers} from "hardhat";
-import {} from "hardhat-tracer";
-import addresses from "../../../../addresses-liquidation.json";
-import {thiefConfig} from "defi-resources";
+import addresses from "../../../../addresses.json";
+import {routers, thiefConfig} from "defi-resources";
 import {AddressLike, parseEther, ZeroAddress} from "ethers";
 
-const curveRouterAddress = "0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e";
+const curveRouterAddress = routers.CURVE_V1_2_ROUTER;
 const USDC = thiefConfig.THIEF_TOKEN_CONFIG.USDC;
 
 async function main() {
@@ -27,10 +26,6 @@ async function main() {
         usdcTgUSd: await ethers.getContractAt("IERC20Metadata", deployed.usdcTgUSd),
         usdc: await ethers.getContractAt("IERC20Metadata", USDC.address),
     };
-
-    // console.log('usdcTgUSd' , await contracts.usdcTgUSd.symbol());
-    // console.log('tgUsd', await contracts.tgUsd.symbol());
-    // console.log('collat', await contracts.collat.symbol());
 
     // get the route and swap params
     const {routes, swapParams, zapPools} = routeParams(marketData, deployed.usdcTgUSd, deployed.tgUSD);

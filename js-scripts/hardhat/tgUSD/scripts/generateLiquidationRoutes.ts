@@ -1,8 +1,7 @@
 import readline from "readline";
 import {LiquidationRouteGeneration, Transfer} from "../contexts/LiquidationRouteGeneration";
 import path from "path";
-import liquidationAddresses from "../../../../addresses-liquidation.json";
-
+import liquidationAddresses from "../../../../../addresses.json";
 const svc = new LiquidationRouteGeneration();
 svc.loadDynamicAssets(liquidationAddresses);
 
@@ -31,14 +30,15 @@ async function mainStepTargetTed() {
     const transfers = [
         [
             {
-                in: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                pool: "0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2",
-                out: "0x853d955aCEf822Db058eb8505911ED77F175b99e",
-                display: "USDC >> FRAX/USDC >> FRAX ",
+                in: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+                pool: "0x7C4e143B23D72E6938E06291f705B5ae3D5c7c7C",
+                out: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                display: "USDT >> USDT/USDC >> USDC ",
             } as Transfer,
         ],
     ];
 
+    // [ 1,          0,          1,          1,          2        ],
     const verifiedRoutes = await svc.testRouteSteps(transfers);
     console.log(JSON.stringify(verifiedRoutes, null, 2));
 }

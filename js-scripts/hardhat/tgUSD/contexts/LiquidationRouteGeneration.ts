@@ -3,8 +3,36 @@ import fs from "fs";
 import {ethers} from "hardhat";
 import path from "path";
 import {giveTokensoAddresss} from "../../thief";
-import {commonERC20, thiefConfig} from "defi-resources";
+import {commonERC20, routers, thiefConfig} from "defi-resources";
 import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
+import {
+    FRAX_USDC_LP,
+    CRV_LP_FRAX_USDe,
+    CRV_DUO_FRAXBP_POOL,
+    CRV_DUO_DOLA_USR,
+    CRV_DUO_DOLA_FRAXBP,
+    CRV_DUO_crvUSD_fxUSD,
+    CRV_DUO_deUSD_USDC,
+    CRV_DUO_deUSD_DOLA,
+    CRV_DUO_USDe_USDC,
+    CRV_DUO_FRAX_frxUSD,
+    CRV_DUO_DOLA_sUSDe,
+    CRV_DUO_deUSD_USDT,
+    CRV_DUO_sUSDS_frxUSD,
+    CRV_DUO_DOLA_sUSDS,
+    CRV_DUO_DOLA_scrvUSD,
+    CRV_DUO_scrvUSD_sUSDS,
+    CRV_DUO_USDC_crvUSD,
+    CRV_DUO_USDT_crvUSD,
+    CRV_DUO_USR_RLP,
+    CRV_DUO_frxUSD_USDe,
+    CRV_DUO_scrvUSD_sUSDe,
+    CRV_DUO_crvUSD_USDe,
+    CRV_TRI_DAI_USDC_USDT,
+    CRV_DUO_USR_USDC,
+    CRV_DUO_USDC_USDT,
+} from "defi-resources/build/ressources/lps/curve";
+
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
 
 /*
@@ -21,7 +49,7 @@ import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
         30 - tricrypto-ng
 
 */
-const routerAddress = "0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e";
+const routerAddress = routers.CURVE_V1_2_ROUTER;
 
 export const lpTokensINfo = [
     ...Object.entries(thiefConfig.THIEF_TOKEN_CONFIG).map(([key, value]) => ({
@@ -54,7 +82,7 @@ export const lpTokensINfo = [
     },
     {
         token: "USDC/fxUSD",
-        address: "0x5018be882dcce5e3f2f3b0913ae2096b9b3fb61f",
+        address: "0x8ffc7b89412efd0d17edea2018f6634ea4c2fcb2",
         slot: 38,
         isVyper: true,
         decimals: 18,
@@ -317,8 +345,9 @@ export class LiquidationRouteGeneration {
                 results.push({
                     start: routeGroup.at(0)!.in!,
                     end: routeGroup.at(-1)!.out!,
-                    display: routeGroup.map((r) => r.display).join(" >> "),
-                    params: {routeAddresses, swapParams: swapParamsFull},
+
+                    params: {routeAddresses, swapParamsFull: swapParamsFull},
+                    route: routeGroup.map((r) => r.display).join(" >> "),
                 });
             } catch (error: any) {
                 console.log("error", error.message);
@@ -429,33 +458,12 @@ export class LiquidationRouteGeneration {
         const outContract = await ethers.getContractAt("IERC20", route.out, user);
 
         let indexPossibilities: [number, number][] = [];
-        if (coins.length === 0) {
-            indexPossibilities = [[0, 1]];
-        }
-        if (route.in === route.pool && route.out === route.pool) {
-            indexPossibilities = [[0, 0]];
-        } else if (route.in === route.pool) {
-            indexPossibilities = [
-                [1, 0],
-                [0, 1],
-                [0, 0],
-            ];
-        } else if (route.out === route.pool) {
-            indexPossibilities = [
-                [0, 0],
-                [1, 0],
-            ];
-        }
 
-        if (coins?.length > 2) {
-            const maxIndex = coins.length - 1;
-            indexPossibilities = [];
-            for (let i = 0; i <= maxIndex; i++) {
-                for (let j = 0; j <= maxIndex; j++) {
-                    if (i !== j || route.in === route.pool) {
-                        indexPossibilities.push([i, j]);
-                    }
-                }
+        const maxIndex = !coins.length ? 2 : coins.length - 1;
+        indexPossibilities = [];
+        for (let i = 0; i <= maxIndex; i++) {
+            for (let j = 0; j <= maxIndex; j++) {
+                indexPossibilities.push([i, j]);
             }
         }
 
@@ -487,12 +495,7 @@ export class LiquidationRouteGeneration {
                             console.log("✅ Sucess > ", route.display);
                             return {swapType: swapTypes[j], poolType: poolTypes[i], swapParams: currentSwapParams, ...route, coins};
                         }
-                    } catch (e: any) {
-                        // if(currentSwapParams.map(s => s.toString()).join(',') === '0,0,1,1,2'){
-                        //     console.log(routeAddresses, swapParamsFull,dy)
-                        //     console.error(e, "error");
-                        // }
-                    }
+                    } catch (e: any) {}
                 }
             }
         }
@@ -570,47 +573,48 @@ export const liquidationAssets: Record<string, string> = {
     DOLA: commonERC20.DOLA,
     USR: commonERC20.USR,
     USDC: commonERC20.USDC,
+
     crvUSD: commonERC20.crvUSD,
     frxUSD: commonERC20.frxUSD,
     USDe: commonERC20.USDe,
     sUSDe: commonERC20.sUSDe,
-    FRAXBP: "0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC",
+    FRAXBP: FRAX_USDC_LP,
     /* Pools */
-    FRAXUSDe: "0x5dc1bf6f1e983c0b21efb003c105133736fa0743",
-    fraxusdc: "0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2",
-    "DOLA/USR": "0x38de22a3175708d45e7c7c64cd78479c8b56f76e",
-    "DOLA/FRAXBP": "0xe57180685e3348589e9521aa53af0bcd497e884d",
-    "crvUSD/fxUSD": "0x8ffc7b89412efd0d17edea2018f6634ea4c2fcb2",
-    "deUSD/USDC": "0x5f6c431ac417f0f430b84a666a563fabe681da94",
-    "deUSD/DOLA": "0x6691dbb44154a9f23f8357c56fc9ff5548a8bdc4",
-    "USDe-USDC": "0x02950460e2b9529d0e00284a5fa2d7bdf3fa4d72",
-    "frxUSD/USDe": "0xdbb1d219d84eacefb850ee04cacf2f1830934580",
-    "FRAX/frxUSD": "0xbbaf8b2837cbbc7146f5bc978d6f84db0be1cacc",
+    FRAXUSDe: CRV_LP_FRAX_USDe,
+    fraxusdc: CRV_DUO_FRAXBP_POOL,
+    "DOLA/USR": CRV_DUO_DOLA_USR,
+    "DOLA/FRAXBP": CRV_DUO_DOLA_FRAXBP,
+    "crvUSD/fxUSD": CRV_DUO_crvUSD_fxUSD,
+    "deUSD/USDC": CRV_DUO_deUSD_USDC,
+    "deUSD/DOLA": CRV_DUO_deUSD_DOLA,
+    "USDe-USDC": CRV_DUO_USDe_USDC,
+    "frxUSD/USDe": CRV_DUO_frxUSD_USDe,
+    "FRAX/frxUSD": CRV_DUO_FRAX_frxUSD,
     "USDC/fxUSD": "0x5018be882dcce5e3f2f3b0913ae2096b9b3fb61f",
-    "USDC/crvUSD": "0x4dece678ceceb27446b35c672dc7d61f30bad69e",
-    "crvUSD/USDC": "0x4dece678ceceb27446b35c672dc7d61f30bad69e",
-    "USDT/crvUSD": "0x390f3595bca2df7d23783dfd126427cceb997bf4",
+    "USDC/crvUSD": CRV_DUO_USDC_crvUSD,
+    "crvUSD/USDC": CRV_DUO_USDC_crvUSD,
+    "USDT/crvUSD": CRV_DUO_USDT_crvUSD,
     "sDAI/sUSDe": "0x167478921b907422f8e88b43c4af2b8bea278d3a",
-    "USDC/USDT": "0x4f493b7de8aac7d55f71853688b1f7c8f0243c85",
-    "USDT/USDC": "0x4f493b7de8aac7d55f71853688b1f7c8f0243c85",
-    "USR/RLP": "0xc907ba505c2e1cbc4658c395d4a2c7e6d2c32656",
-    "scrvUSD/sUSDe": "0xd29f8980852c2c76fc3f6e96a7aa06e0bedcc1b1",
-    "USR/USDC": "0x3ee841f47947fefbe510366e4bbb49e145484195",
-    "DAI/USDC/USDT": "0xbebc44782c7db0a1a60cb6fe97d0b483032ff1c7",
-    "scrvUSD savings": "0x0655977FEb2f289A4aB78af67BAB0d17aAb84367",
-    "USDC/USDe": "0x02950460e2b9529d0e00284a5fa2d7bdf3fa4d72",
-    "FRAX/USDC": "0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2",
-    "crvUSD/DOLA": "0x8272E1A3dBef607C04AA6e5BD3a1A134c8ac063B",
+    "USDC/USDT": CRV_DUO_USDC_USDT, //0x4f493b7de8aac7d55f71853688b1f7c8f0243c85
+    "USDT/USDC": CRV_DUO_USDC_USDT, //0x4f493b7de8aac7d55f71853688b1f7c8f0243c85
+    "USR/RLP": CRV_DUO_USR_RLP,
+    "scrvUSD/sUSDe": CRV_DUO_scrvUSD_sUSDe,
+    "USR/USDC": CRV_DUO_USR_USDC,
+    "DAI/USDC/USDT": CRV_TRI_DAI_USDC_USDT,
+    "scrvUSD savings": commonERC20.scrvUSD,
+    "USDC/USDe": CRV_DUO_USDe_USDC,
+    "FRAX/USDC": CRV_DUO_FRAXBP_POOL,
+    "crvUSD/DOLA": "0x8272E1A3dBef607C04AA6e5BD3a1A134c8ac063B", // 0x8272E1A3dBef607C04AA6e5BD3a1A134c8ac063B
     "crvUSD/FRAX": "0x0CD6f267b2086bea681E922E19D40512511BE538",
-    "DOLA/sUSDe": "0x744793B5110f6ca9cC7CDfe1CE16677c3Eb192ef",
+    "DOLA/sUSDe": CRV_DUO_DOLA_sUSDe,
     "sDAI/FRAX": "0xcE6431D21E3fb1036CE9973a3312368ED96F5CE7",
-    "deUSD/USDT": "0x7C4e143B23D72E6938E06291f705B5ae3D5c7c7C",
-    "crvUSD/USDT": "0x390f3595bca2df7d23783dfd126427cceb997bf4",
-    "sUSDS/frxUSD": "0x81A2612F6dEA269a6Dd1F6DeAb45C5424EE2c4b7",
-    "DOLA/sUSDS": "0x8b83c4aA949254895507D09365229BC3a8c7f710",
-    "crvUSD/USDe": "0xF55B0f6F2Da5ffDDb104b58a60F2862745960442",
-    "DOLA/scrvUSD": "0xff17dAb22F1E61078aBa2623c89cE6110E878B3c",
-    "scrvUSD/sUSDS": "0xfD1627E3f3469C8392C8c3A261D8F0677586e5e1",
+    "deUSD/USDT": CRV_DUO_deUSD_USDT,
+    "crvUSD/USDT": CRV_DUO_USDT_crvUSD,
+    "sUSDS/frxUSD": CRV_DUO_sUSDS_frxUSD,
+    "DOLA/sUSDS": CRV_DUO_DOLA_sUSDS,
+    "crvUSD/USDe": "0xF55B0f6F2Da5ffDDb104b58a60F2862745960442", // 0xF55B0f6F2Da5ffDDb104b58a60F2862745960442
+    "DOLA/scrvUSD": CRV_DUO_DOLA_scrvUSD,
+    "scrvUSD/sUSDS": CRV_DUO_scrvUSD_sUSDS,
 };
 
 export type RouteParams = {

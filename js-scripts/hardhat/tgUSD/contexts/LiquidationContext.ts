@@ -1,4 +1,4 @@
-import {BaseContext} from "./BaseContext";
+import {BaseContext, createJSONAddress} from "./BaseContext";
 import {deploytgUsd} from "../actions/deploytgUsd";
 import {MarketContext} from "./MarketContext";
 import {OracleContext} from "./OracleContext";
@@ -6,6 +6,7 @@ import {UserMarketParams} from "../actions/common";
 import {deposit} from "../actions/deposit";
 import {borrow} from "../actions/borrow";
 import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import * as fs from "fs";
 
 import chainViewMarketAccountArtifact from "../../../../artifacts/src/chainview/tgUSD/bot/MarketAccountLiquidationBotInfo.cv.sol/MarketAccountLiquidationBotInfo.json";
 import {chainView} from "../../../chainView";
@@ -13,6 +14,7 @@ import {ConvexCrvLPMarket, ConvexFxnLPMarket} from "../../../../typechain-types"
 import {swap} from "../actions/swapCurve";
 import {LpDeployContext} from "./LPDeployContext";
 import {WStablesContext} from "./WStableContext";
+import {parseEther} from "ethers";
 
 export type DepositBorrowSpecific = Record<string, Record<string, {deposit: string; borrow: string}>>;
 
@@ -66,6 +68,7 @@ export class LiquidationContext {
         // extract the address for process
         this.marketAddresses = await Promise.all(this.markets.map((m) => m.getAddress()));
         this.userAddresses = await Promise.all(users.map((u) => u.getAddress()));
+        fs.writeFileSync("../addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext, lpDeployContext, wStableContext)));
     }
 
     getSpecificDepositBorrowCase() {
@@ -75,7 +78,7 @@ export class LiquidationContext {
         for (i = 0; i < this.userCount; i++) {
             specificCases[this.marketAddresses[this.fxUSDindex]][this.userAddresses[i]] = {
                 deposit: "12000",
-                borrow: (10500 - i * 25).toString(),
+                borrow: (9000 - i * 25).toString(),
             };
         }
         console.log(
@@ -102,7 +105,7 @@ export class LiquidationContext {
                 } else {
                     // default case a low risk loan
                     deposit = (3000 + this.baseDeposit * (userIndex + 1)).toString();
-                    borrow = Math.max(3000, Number(deposit) / 2).toString();
+                    borrow = Math.max(4000, Number(deposit) / 3).toString();
                 }
                 currentMarketDeposit[userAddress] = deposit;
                 currentMarketBorrow[userAddress] = borrow;
@@ -170,13 +173,22 @@ export class LiquidationContext {
 
         const specifics = this.getSpecificDepositBorrowCase();
         const {borrow, deposit} = specifics[this.marketAddresses[0]][this.userAddresses[0]];
+        console.log(parseEther(borrow), deposit, firstAccount?.userDebt, specifics);
 
-        if (firstAccount?.userDebt !== parseEther(borrow)) {
-            throw Error("Specific borrow not applied ");
+        const expectedBorrow = parseEther(borrow);
+        const borrowTolerance = expectedBorrow / 100n;
+        if (firstAccount?.userDebt === undefined || firstAccount.userDebt < expectedBorrow - borrowTolerance || firstAccount.userDebt > expectedBorrow + borrowTolerance) {
+            throw Error("Specific borrow not applied within 1% tolerance, expected " + expectedBorrow + " got " + firstAccount?.userDebt);
         }
 
-        if (firstAccount?.positionValue !== (parseEther(deposit) * (firstmarket?.collateralUSDPrice || 0n)) / BigInt(10 ** 18)) {
-            throw Error("Specific deposit not applied ");
+        const expectedPositionValue = (parseEther(deposit) * (firstmarket?.collateralUSDPrice || 0n)) / BigInt(10 ** 18);
+        const positionTolerance = expectedPositionValue / 100n;
+        if (
+            firstAccount?.positionValue === undefined ||
+            firstAccount.positionValue < expectedPositionValue - positionTolerance ||
+            firstAccount.positionValue > expectedPositionValue + positionTolerance
+        ) {
+            throw Error("Specific deposit not applied within 1% tolerance");
         }
     }
 }

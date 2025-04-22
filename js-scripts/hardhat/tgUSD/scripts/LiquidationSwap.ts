@@ -1,5 +1,5 @@
 import {  time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import addressesLiquidation from '../../../../addresses-liquidation.json'
+import addressesLiquidation from '../../../../addresses.json'
 import { swap } from "../actions/swapCurve";
 import { ethers } from "hardhat";
 

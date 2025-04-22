@@ -1,16 +1,27 @@
-
-import { STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN } from "../config/market";
-import { BaseContext } from "../contexts/BaseContext";
+import {createJSONAddress} from "../contexts/BaseContext";
 import {LiquidationContext} from "../contexts/LiquidationContext";
 import * as fs from "fs";
-import { MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys } from "../contexts/MarketContext";
-import { OracleContext } from "../contexts/OracleContext";
-import { LpDeployContext } from "../contexts/LPDeployContext";
-import { WStablesContext } from "../contexts/WStableContext";
 
 async function main() {
     const liquidationContext = new LiquidationContext();
     await liquidationContext.doDeploy();
+    console.log("liquidationContext.baseContext");
+    fs.writeFileSync(
+        "./addresses.json",
+        JSON.stringify(
+            await createJSONAddress(
+                liquidationContext.baseContext!,
+                liquidationContext.marketContext!,
+                liquidationContext.oracleContext!,
+                liquidationContext.lpDeployContext!,
+                liquidationContext.wStableContext!
+            ),
+            null,
+            2
+        )
+    );
+    console.log("liquidationContext. ../addresses.json");
+
     await liquidationContext.doDepositAndBorrow();
     console.info("\x1b[32m%s\x1b[0m", "Liquidation context is setup !");
 
@@ -19,104 +30,5 @@ async function main() {
 
     await liquidationContext.unbalanceContext();
     console.info("\x1b[32m%s\x1b[0m", "unbalanceContext OK");
-
-    fs.writeFileSync("./addresses-liquidation.json", JSON.stringify(
-        await createJSONAddress(liquidationContext.baseContext!, liquidationContext.marketContext!, liquidationContext.oracleContext!, liquidationContext.lpDeployContext!, liquidationContext.wStableContext!), null, 2)
-    );
 }
 main();
-
-
-
-type Market = {
-    marketAddress: string;
-    collatName: string;
-    collatAddress: string;
-    marketType: string;
-};
-
-
-async function createJSONAddress(
-    baseContext: BaseContext,
-    marketContext: MarketContext,
-    oracleContext: OracleContext,
-    lpDeployContext: LpDeployContext,
-    wStableContext: WStablesContext
-) {
-    const markets: Market[] = [];
-    for (const key in marketContext.convexCrvMarkets) {
-        const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys];
-        const market = await marketContext.convexCrvMarkets[key].getAddress();
-
-        markets.push({
-            marketAddress: market,
-            collatName: staticConfig.collatName,
-            collatAddress: staticConfig.collatToken,
-            marketType: "Convex_CRV",
-        });
-    }
-    for (const key in marketContext.convexFxnMarkets) {
-        const market = await marketContext.convexFxnMarkets[key].getAddress();
-        const staticConfig = STATIC_CONFIG_CONVEX_FXN[key as ConvexFxnMarketKeys];
-
-        markets.push({
-            marketAddress: market,
-            collatName: staticConfig.collatName,
-            collatAddress: staticConfig.collatToken,
-            marketType: "Convex_FXN",
-        });
-    }
-
-    let oracles: {[key: string]: string} = {};
-    for (const prop in oracleContext.oracles) {
-        const oracle = await oracleContext.oracles[prop].getAddress();
-        oracles[prop] = oracle;
-    }
-
-    const lps: {[key: string]: string} = {};
-    for (const prop in lpDeployContext.stableLp) {
-        const lp = await lpDeployContext.stableLp[prop].getAddress();
-        lps[prop] = lp;
-    }
-
-    const wStables: {[key: string]: string} = {};
-    for (const prop in wStableContext.wStable) {
-        const wStable = await wStableContext.wStable[prop].getAddress();
-        wStables[prop] = wStable;
-    }
-
-    oracles["tgUSD"] = await oracleContext.tgUSDOracle.getAddress();
-    return {
-        utilities: {
-            controlTower: await baseContext.controlTower.getAddress(),
-            rewardAccumulator: await baseContext.rewardAccumulator.getAddress(),
-            zapper: await baseContext.zapper.getAddress(),
-            marketCreator: await baseContext.marketCreator.getAddress(),
-            irCalculator: await baseContext.irCalculator.getAddress(),
-            pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
-            liquidatorProxy: await baseContext.liquidatorProxy.getAddress(),
-        },
-        lock: {
-            rsTanService: await baseContext.rsTanService.getAddress(),
-            rsTanERC721: await baseContext.rsTanERC721.getAddress(),
-        },
-        tokens: {
-            tgUSD: await baseContext.tgUSD.getAddress(),
-            sgUSD: await baseContext.sgUSD.getAddress(),
-            tan: await baseContext.tan.getAddress(),
-        },
-        implementations: {
-            convexCrvMarket: await baseContext.marketCvxCrvImplem.getAddress(),
-            convexFxnMarket: await baseContext.marketCvxFxnImplem.getAddress(),
-            noSociabilizationMarket: await baseContext.marketNoSociabilizationImplem.getAddress(),
-        },
-        markets,
-        oracles,
-        lps,
-        wStables,
-        pegKeepers: {
-            "tgUSD-USDC": await baseContext.pegKeeperTgUSD_USDC.getAddress(),
-            "tgUSD-wfrxUSD": await baseContext.pegKeeperTgUSD_wfrxUSD.getAddress(),
-        },
-    };
-}

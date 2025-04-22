@@ -1,7 +1,7 @@
 import {ethers} from "hardhat";
-import * as contractAddresses from "../../../../addresses-liquidation.json";
 import {MainSetup} from "../../Main.setup";
 import {executeUserMarketAction, prepareUserAmountByMarket} from "./common";
+import {Market} from "../contexts/BaseContext";
 
 export async function deposit(mainSetup: MainSetup, userAmountByMarket: Record<string, Record<string, string>>) {
     const collatTokenCache: Record<string, any> = {};
@@ -22,7 +22,7 @@ export async function deposit(mainSetup: MainSetup, userAmountByMarket: Record<s
 
 export async function depositAndBorrow(mainSetup: MainSetup, userAmountByMarket: Record<string, Record<string, string>>) {
     const collatTokenCache: Record<string, any> = {};
-    
+
     // Loop through each market and perform deposit actions
     await executeUserMarketAction(mainSetup, userAmountByMarket, async (market, marketAddress, user, parsedAmount) => {
         let collatToken;
@@ -39,10 +39,10 @@ export async function depositAndBorrow(mainSetup: MainSetup, userAmountByMarket:
 }
 
 // Function to deposit to all markets
-export async function depositAll() {
+export async function depositAll(allMarkets: Market[]) {
     const mainSetup = new MainSetup(5);
     await mainSetup.setupTestUsers();
-    const allMarkets = contractAddresses.markets;
+
     const userAmountByMarket = prepareUserAmountByMarket(mainSetup, allMarkets, "10000");
     await deposit(mainSetup, userAmountByMarket);
 }

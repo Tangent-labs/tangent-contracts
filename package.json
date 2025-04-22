@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "hh-node": "npx hardhat node  ",
+    "hh-node": "npx hardhat node --hostname 0.0.0.0 ",
     "dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost",
     "flatten-contracts": "npx ts-node js-scripts/utils/flattenContracts.ts",
