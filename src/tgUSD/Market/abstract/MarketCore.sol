@@ -12,6 +12,8 @@ import {PauseSettings} from "./PauseSettings.sol";
 import {Collateral} from "./Collateral.sol";
 import {GlobalMarketInitParams, MarketInit, LiquidateCall, SelfLiquidateCall, ILiquidatorProxy} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 
+import "forge-std/console.sol";
+
 /// @notice
 abstract contract MarketCore is PauseSettings, Collateral {
     using SafeERC20 for IERC20;
@@ -290,17 +292,16 @@ abstract contract MarketCore is PauseSettings, Collateral {
         uint256 collatAmountToLiquidate;
         uint256 newCollatBalance;
         uint256 debtSharesToRemove;
-        uint256 tgUSDToRepay;
+        uint256 tgUSDToRepay = liquidateCall.tgUSDToRepay;
 
         // Liquidate all
-        if (liquidateCall.tgUSDToRepay >= liquidateCall.userDebt) {
+        if (tgUSDToRepay >= liquidateCall.userDebt) {
             tgUSDToRepay = liquidateCall.userDebt;
             collatAmountToLiquidate = liquidateCall._collateralBalance;
             debtSharesToRemove = liquidateCall._userDebtShares;
         }
         // Liquidate partial
         else {
-            tgUSDToRepay = liquidateCall.tgUSDToRepay;
             debtSharesToRemove = (tgUSDToRepay * RAY) / liquidateCall.newDebtIndex;
 
             // Computes the amount of collateral to liquidate by proportionnality
@@ -320,7 +321,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
             liquidateCall._userDebtShares - debtSharesToRemove,
             liquidateCall._totalDebtShares - debtSharesToRemove
         );
-        _postLiquidate(liquidateCall.liquidator, collatAmountToLiquidate, liquidateCall.tgUSDToRepay, liquidateCall.minTgUSDOut, liquidationCall);
+        _postLiquidate(liquidateCall.liquidator, collatAmountToLiquidate, tgUSDToRepay, liquidateCall.minTgUSDOut, liquidationCall);
 
         emit Liquidate(liquidateCall.account, tgUSDToRepay, collatAmountToLiquidate, liquidateCall.liquidator);
     }
@@ -337,6 +338,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
         if (liquidator != address(0)) {
             _liquidatorProxy.callLiquidate(liquidator, msg.sender, collatToken, minTgUSDOut, liquidationCall);
         }
+
         // Burns tgUSD from the sender.
         // The debt has to be on the caller of the transaction.
         // In case a liquidator is passed in parameter, it needs to send it back to the sender of the tx.
