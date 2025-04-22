@@ -163,14 +163,11 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         uint256 minTgUSDOut,
         bytes calldata routerCall
     ) external updateRewards(msg.sender) {
+        // Checkpoint IR
         uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
         uint256 _userDebtShares = userDebtShares[msg.sender];
         uint256 userDebt_ = _userDebt(_userDebtShares, newDebtIndex);
         uint256 collatBalance = collateralBalances[msg.sender];
-        // Can liquidate only if the health ratio is below 1
-        require(_healthRatio(userDebt_, collatBalance - collatAmountToLiquidate) < 1 ether, NotLiquidablePosition());
-
-        // Checkpoint IR
 
         _selfLiquidate(
             SelfLiquidateCall({

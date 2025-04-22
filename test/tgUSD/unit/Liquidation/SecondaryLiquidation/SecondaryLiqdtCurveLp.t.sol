@@ -75,8 +75,6 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         swapParams[0] = unwrapLPToUSDC;
         swapParams[1] = swapUsdcToTgUSD;
 
-        irCalculator.mintIR();
-
         market.liquidate(
             usr1,
             MAX_UINT,
@@ -100,6 +98,8 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
                 )
             )
         );
+
+        irCalculator.mintIR();
 
         assertEq(market.userDebt(usr1), 0);
         assertEq(market.totalDebt(), 0);

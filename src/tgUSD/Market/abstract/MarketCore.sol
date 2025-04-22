@@ -257,19 +257,24 @@ abstract contract MarketCore is PauseSettings, Collateral {
                                                     ------ */
     //TODO Add some check on min Loan and LTV
     function _selfLiquidate(SelfLiquidateCall memory selfLiquidateCall, bytes calldata liquidationCall) internal {
+        require(selfLiquidateCall.collatAmountToLiquidate != 0, ZeroCollatAmount());
         uint256 newCollatBalance = selfLiquidateCall._collateralBalance - selfLiquidateCall.collatAmountToLiquidate;
         uint256 debtSharesToRemove;
+        uint256 tgUSDToRepay = selfLiquidateCall.tgUSDToRepay;
+
         // Repay all debt
-        if (selfLiquidateCall.tgUSDToRepay >= selfLiquidateCall.userDebt) {
-            selfLiquidateCall.tgUSDToRepay = selfLiquidateCall.userDebt;
+        if (tgUSDToRepay >= selfLiquidateCall.userDebt) {
+            tgUSDToRepay = selfLiquidateCall.userDebt;
             debtSharesToRemove = selfLiquidateCall._userDebtShares;
         }
         // Liquidate partial
         else {
-            debtSharesToRemove = (selfLiquidateCall.tgUSDToRepay * RAY) / selfLiquidateCall.newDebtIndex;
+            debtSharesToRemove = (tgUSDToRepay * RAY) / selfLiquidateCall.newDebtIndex;
 
+            uint256 newUserDebt = selfLiquidateCall.userDebt - tgUSDToRepay;
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
-            require(selfLiquidateCall.userDebt - selfLiquidateCall.tgUSDToRepay >= minimumLoan, UserDebtTooLow());
+            require(newUserDebt >= minimumLoan, UserDebtTooLow());
+            require(newUserDebt <= _maxBorrowable(newCollatBalance), UserDebtTooHigh());
         }
 
         // Modify the collateral balance, the user debt and the total debt
@@ -281,9 +286,9 @@ abstract contract MarketCore is PauseSettings, Collateral {
             selfLiquidateCall._totalDebtShares - debtSharesToRemove
         );
 
-        _postLiquidate(selfLiquidateCall.liquidator, selfLiquidateCall.collatAmountToLiquidate, selfLiquidateCall.tgUSDToRepay, selfLiquidateCall.minTgUSDOut, liquidationCall);
+        _postLiquidate(selfLiquidateCall.liquidator, selfLiquidateCall.collatAmountToLiquidate, tgUSDToRepay, selfLiquidateCall.minTgUSDOut, liquidationCall);
 
-        emit SelfLiquidate(msg.sender, selfLiquidateCall.tgUSDToRepay, selfLiquidateCall.collatAmountToLiquidate, selfLiquidateCall.liquidator);
+        emit SelfLiquidate(msg.sender, tgUSDToRepay, selfLiquidateCall.collatAmountToLiquidate, selfLiquidateCall.liquidator);
     }
 
     function _liquidate(LiquidateCall memory liquidateCall, bytes calldata liquidationCall) internal {
