@@ -52,6 +52,7 @@ export class LiquidationContext {
 
     async doDeploy() {
         const {baseContext, marketContext, oracleContext, lpDeployContext, wStableContext} = await deploytgUsd(this.userCount);
+        console.log("baseContext", baseContext);
         this.baseContext = baseContext;
         this.marketContext = marketContext;
         this.oracleContext = oracleContext;
@@ -133,7 +134,7 @@ export class LiquidationContext {
     }
 
     async unbalanceContext() {
-        const amount = 4_300_000;
+        const amount = 4_400_000;
 
         if (!this.marketAddresses?.length || !this.baseContext) throw new Error("Contracts not depoyed");
 

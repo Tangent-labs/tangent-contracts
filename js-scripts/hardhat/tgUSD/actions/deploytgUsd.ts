@@ -13,13 +13,12 @@ export async function deploytgUsd(userCount: number = 5) {
     const wStableContext = new WStablesContext();
 
     await baseContext.setupTestUsers();
-    
+
     // Deploy all base contracts
     await baseContext.deployContracts1();
-   
+
     // Give ERC20 to users
     await baseContext.setUpERC20();
-    
 
     await wStableContext.deployWStables(baseContext);
     // Create tgUSD LP
