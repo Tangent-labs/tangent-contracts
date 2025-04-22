@@ -7,7 +7,7 @@ import {IOdosRouter} from "../../interfaces/externals/Aggregators/IOdosRouter.so
 import {IEnsoRouterV2} from "../../interfaces/externals/Aggregators/IEnsoRouterV2.sol";
 
 import {ISFRAX} from "../../interfaces/externals/Frax/ISFRAX.sol";
-
+import {ICurveRouter} from "../../interfaces/externals/Curve/ICurveRouter.sol";
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {IRewardsHandler} from "../../interfaces/internals/tgUSD/IRewardsHandler.sol";
 
@@ -90,5 +90,5 @@ library AddrRouter {
     IEnsoRouterV2 constant ENSO_ROUTER_V1 = IEnsoRouterV2(0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E);
     IEnsoRouterV2 constant ENSO_ROUTER_V2 = IEnsoRouterV2(0xF75584eF6673aD213a685a1B58Cc0330B8eA22Cf);
 
-    address constant CURVE_ROUTER = 0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E;
+    ICurveRouter constant ROUTER_CURVE = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
 }

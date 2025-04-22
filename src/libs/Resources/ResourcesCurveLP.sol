@@ -3,12 +3,10 @@ pragma solidity ^0.8.24;
 
 import "../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../interfaces/externals/Curve/ICurveStableSwapFactoryNG.sol";
-import "../../interfaces/externals/Curve/ICurveRouter.sol";
+
 import "../../interfaces/externals/Curve/ICurveTriCryptoSwap.sol";
 library AddrCurveStableLP {
     ICurveStableSwapFactoryNG constant STABLE_SWAP_FACTORY = ICurveStableSwapFactoryNG(0x6A8cbed756804B16E05E741eDaBd5cB544AE21bf);
-
-    ICurveRouter constant ROUTER_CURVE = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
 
     ICurveStableSwapNG constant CRVUSD_USDC = ICurveStableSwapNG(0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E);
     ICurveStableSwapNG constant CRVUSD_USDT = ICurveStableSwapNG(0x390f3595bCa2Df7d23783dFd126427CCeb997BF4);
