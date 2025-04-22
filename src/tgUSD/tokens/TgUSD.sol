@@ -36,7 +36,6 @@ contract TgUSD is ERC20, ITgUSD {
     }
 
     function mintIR(uint256 amount) external {
-        console.log("sender", msg.sender);
         require(controlTower.isIRCalculator(msg.sender), OnlyIRCalculator());
         _mint(controlTower.feeTreasury(), amount);
     }

@@ -6,7 +6,7 @@ import "../../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../../handler/Curve/HLpManipulator.sol";
 import "../../../handler/Features/HProcessRewards.sol";
 import "../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
-contract SecondaryLiqdtCurveLp is ConvexCurveContext {
+contract SelfLiquidateCurveLP is ConvexCurveContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
 
@@ -16,6 +16,8 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
     HLpManipulator public hLpManipulator;
     ICurveStableSwapNG public lpTgUSD_USDC;
     ICurveStableSwapNG public lpTgUSD_wfrxUSD;
+
+    uint256[][] public swapParams;
     function setUp() public {
         collatToken = AddrCurveStableLP.CRVUSD_USDC;
         lpTgUSD_USDC = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
@@ -26,62 +28,29 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
         hLpManipulator = new HLpManipulator(usr1);
+
+        uint256 zero = 0;
+
+        uint256[] memory unwrapLPToUSDC = Array.memoryUint256([zero, zero, uint256(6), uint256(10), uint256(2)]);
+        uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
+        swapParams.push(unwrapLPToUSDC);
+        swapParams.push(swapUsdcToTgUSD);
     }
 
-    function test_secondaryLiquidator_liquidate_with_secondary_liquidator_crvUSD_USDC() external {
+    function test_selfLiquidate_all_position_curveLP() external {
         uint256 collatDeposited = 5_000 ether;
         hDeposit.depositAndBorrow(collatDeposited, 4_250 ether, true, address(0));
 
         irCalculator.checkpointIR(address(market));
 
-        // Dumps tgUSD for USDC => Depegs tgUSD
-        hLpManipulator.dumpCrvPool(lpTgUSD_USDC, 1, 0, 400_000 ether);
-        hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 1, 0, 400_000 ether);
-
-        skip(800);
-
-        // Update IR on the market
-        irCalculator.checkpointIR(address(market));
-
-        (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
-
-        assertGt(ir, 0.04 ether, "IR skyrockets as peg of tgUSD is low");
-
-        // Skip time to be able to liquidate
-        skip(50 days);
-
-        assertLe(market.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
-        assertGe(market.userDebt(usr1), (collatDeposited * 93) / 100, "Debt is getting over the 93% of the collateral");
-
-        hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 0, 1, 20_000 ether);
-
-        console.log("TOTAL BEFORE ", tgUSD.totalSupply());
-        // Prevent the next call to fail
-        vm.store(address(tgUSD), bytes32(uint256(2)), bytes32(uint256(100_000 ether)));
-        console.log("TOTAL AFTER ", tgUSD.totalSupply());
-
-        vm.startPrank(usr2);
-
-        // Liquidation passes after IR increased the user debt over the liquidation threshold
-
-        uint256 zero = 0;
-
+        vm.startPrank(usr1);
         uint256 collatToDump = market.collateralBalances(usr1);
 
-        uint256[][] memory swapParams = new uint256[][](2);
-        uint256[] memory unwrapLPToUSDC = Array.memoryUint256([zero, zero, uint256(6), uint256(10), uint256(2)]);
-        uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
-
-        swapParams[0] = unwrapLPToUSDC;
-        swapParams[1] = swapUsdcToTgUSD;
-
-        irCalculator.mintIR();
-
-        market.liquidate(
-            usr1,
+        market.selfLiquidate(
+            collatDeposited,
             MAX_UINT,
             address(AddrRouter.ROUTER_CURVE),
-            0,
+            4_250 ether,
             encoder.encodeLiquidateCallForCurveLP(
                 encoder.createCurveRouterStruct(
                     Array.memoryAddress(
@@ -95,11 +64,13 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
                     ),
                     swapParams,
                     collatToDump,
-                    0,
-                    usr2
+                    4_250 ether,
+                    usr1
                 )
             )
         );
+
+        // Liquidation passes after IR increased the user debt over the liquidation threshold
 
         assertEq(market.userDebt(usr1), 0);
         assertEq(market.totalDebt(), 0);

@@ -19,7 +19,7 @@ contract sDAIOracle is IPriceOracle {
         return oracle.latestAnswer() * 10 ** (18 - oracleDecimals);
     }
 
-    function decimals() external pure returns (uint256) {
+    function decimals() external pure returns (uint8) {
         return 18;
     }
 }

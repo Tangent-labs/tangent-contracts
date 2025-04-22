@@ -30,6 +30,7 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
                 storageSlot = GlobalHelper.calculateStorageSlotEthersSolidity(RANDOM_ADDRESS, k);
             }
             await setStorageAt(token.address, storageSlot, ethers.parseEther("1"));
+
             if ((await erc20.balanceOf(RANDOM_ADDRESS)) === ethers.parseEther("1")) {
                 result.push({
                     token: await erc20.name(),
@@ -43,7 +44,7 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
     return result;
 }
 
-getSlot([{address: "0x865377367054516e17014ccded1e7d814edc9ce4", isVyper: false}]).catch((error) => {
+getSlot([{address: "0xc907ba505c2e1cbc4658c395d4a2c7e6d2c32656", isVyper: true}]).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

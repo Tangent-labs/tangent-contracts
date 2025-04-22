@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
+
+import {IPriceOracle} from "../../internals/tgUSD/IPriceOracle.sol";
 pragma solidity ^0.8.0;
 
-interface IAggregatorV3 {
-    function decimals() external view returns (uint8);
-
+interface IAggregatorV3 is IPriceOracle {
     function description() external view returns (string memory);
 
     function version() external view returns (uint256);

@@ -7,39 +7,46 @@ import {IOdosRouter} from "../../interfaces/externals/Aggregators/IOdosRouter.so
 import {IEnsoRouterV2} from "../../interfaces/externals/Aggregators/IEnsoRouterV2.sol";
 
 import {ISFRAX} from "../../interfaces/externals/Frax/ISFRAX.sol";
-
+import {ICurveRouter} from "../../interfaces/externals/Curve/ICurveRouter.sol";
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {IRewardsHandler} from "../../interfaces/internals/tgUSD/IRewardsHandler.sol";
 
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
 library AddrClassicERC20 {
-    // Tokens
+    // Stablecoins
     IERC20Metadata constant TOKEN_DAI = IERC20Metadata(0x6B175474E89094C44Da98b954EedeAC495271d0F);
     IERC20Metadata constant TOKEN_FRAX = IERC20Metadata(0x853d955aCEf822Db058eb8505911ED77F175b99e);
     IERC20Metadata constant TOKEN_USDT = IERC20Metadata(0xdAC17F958D2ee523a2206206994597C13D831ec7);
     IERC20Metadata constant TOKEN_CRVUSD = IERC20Metadata(0xf939E0A03FB07F59A73314E73794Be0E57ac1b4E);
-    IERC20Metadata constant TOKEN_SDT = IERC20Metadata(0x73968b9a57c6E53d41345FD57a6E6ae27d6CDB2F);
-    IERC20Metadata constant TOKEN_CRV = IERC20Metadata(0xD533a949740bb3306d119CC777fa900bA034cd52);
-    IERC20Metadata constant TOKEN_CVX = IERC20Metadata(0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B);
     IERC20Metadata constant TOKEN_USDC = IERC20Metadata(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
-    IERC20Metadata constant TOKEN_AAVE = IERC20Metadata(0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9);
-    IERC20Metadata constant TOKEN_BAL = IERC20Metadata(0xba100000625a3754423978a60c9317c58a424e3D);
-    IERC20Metadata constant TOKEN_80_BAL_20_ETH = IERC20Metadata(0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56);
-    IERC20Metadata constant TOKEN_PENDLE = IERC20Metadata(0x808507121B80c02388fAd14726482e061B8da827);
-    IERC20Metadata constant TOKEN_FXN = IERC20Metadata(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09);
     IERC20Metadata constant TOKEN_DOLA = IERC20Metadata(0x865377367054516e17014CcdED1e7d814EDC9ce4);
     IERC20Metadata constant TOKEN_FXUSD = IERC20Metadata(0x085780639CC2cACd35E474e71f4d000e2405d8f6);
-
+    IERC20Metadata constant TOKEN_GHO = IERC20Metadata(0x40D16FC0246aD3160Ccc09B8D0D3A2cD28aE6C2f);
     IERC20Metadata constant TOKEN_FRXUSD = IERC20Metadata(0xCAcd6fd266aF91b8AeD52aCCc382b4e165586E29);
     IERC20Metadata constant TOKEN_USR = IERC20Metadata(0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110);
     IERC20Metadata constant TOKEN_STUSR = IERC20Metadata(0x6c8984bc7DBBeDAf4F6b2FD766f16eBB7d10AAb4);
-
     IERC20Metadata constant TOKEN_USDE = IERC20Metadata(0x4c9EDD5852cd905f086C759E8383e09bff1E68B3);
 
+    // Volatiles
+    IERC20Metadata constant TOKEN_AAVE = IERC20Metadata(0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9);
+    IERC20Metadata constant TOKEN_BAL = IERC20Metadata(0xba100000625a3754423978a60c9317c58a424e3D);
+    IERC20Metadata constant TOKEN_80_BAL_20_ETH = IERC20Metadata(0x5c6Ee304399DBdB9C8Ef030aB642B10820DB8F56);
+    IERC20Metadata constant TOKEN_CRV = IERC20Metadata(0xD533a949740bb3306d119CC777fa900bA034cd52);
+    IERC20Metadata constant TOKEN_PENDLE = IERC20Metadata(0x808507121B80c02388fAd14726482e061B8da827);
+    IERC20Metadata constant TOKEN_FXN = IERC20Metadata(0x365AccFCa291e7D3914637ABf1F7635dB165Bb09);
+    IERC20Metadata constant TOKEN_SDT = IERC20Metadata(0x73968b9a57c6E53d41345FD57a6E6ae27d6CDB2F);
+    IERC20Metadata constant TOKEN_CVX = IERC20Metadata(0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B);
+    IERC20Metadata constant TOKEN_RLP = IERC20Metadata(0x4956b52aE2fF65D74CA2d61207523288e4528f96);
+
+    // ETH
     IERC20Metadata constant TOKEN_WETH = IERC20Metadata(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     IERC20Metadata constant TOKEN_FRXETH = IERC20Metadata(0x5E8422345238F34275888049021821E8E08CAa1f);
     IERC20Metadata constant TOKEN_PXETH = IERC20Metadata(0x04C154b66CB340F3Ae24111CC767e0184Ed00Cc6);
+
+    // BTC
+    IERC20Metadata constant TOKEN_WBTC = IERC20Metadata(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
+    IERC20Metadata constant TOKEN_CBBTC = IERC20Metadata(0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf);
 }
 
 library AddrERC4626 {
@@ -54,10 +61,9 @@ library AddrERC4626 {
 }
 
 library AddrChainlinkOracle {
-    // Tokens
+    // Stablecoins
     IAggregatorV3 constant DAI = IAggregatorV3(0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9);
     IAggregatorV3 constant CRVUSD = IAggregatorV3(0xEEf0C605546958c1f899b6fB336C20671f9cD49F);
-    IAggregatorV3 constant ETH = IAggregatorV3(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
     IAggregatorV3 constant USDC = IAggregatorV3(0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6);
     IAggregatorV3 constant USDT = IAggregatorV3(0x3E7d1eAB13ad0104d2750B8863b489D65364e32D);
     IPriceOracle constant SDAI = IPriceOracle(0x29081f7aB5a644716EfcDC10D5c926c5fEe9F72B);
@@ -67,7 +73,15 @@ library AddrChainlinkOracle {
     IAggregatorV3 constant USDS = IAggregatorV3(0xfF30586cD0F29eD462364C7e81375FC0C71219b1);
     IAggregatorV3 constant USDP = IAggregatorV3(0x09023c0DA49Aaf8fc3fA3ADF34C6A7016D38D5e3);
     IAggregatorV3 constant USDE = IAggregatorV3(0xa569d910839Ae8865Da8F8e70FfFb0cBA869F961);
+    IAggregatorV3 constant USR = IAggregatorV3(0x34ad75691e25A8E9b681AAA85dbeB7ef6561B42c); //TODO High Market risk
+
+    // ETH
+    IAggregatorV3 constant ETH = IAggregatorV3(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
     IAggregatorV3 constant EZ_ETH = IAggregatorV3(0x636A000262F6aA9e1F094ABF0aD8f645C44f641C);
+    IAggregatorV3 constant CRV = IAggregatorV3(0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f);
+
+    // BTC
+    IAggregatorV3 constant BTC = IAggregatorV3(0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c);
     IAggregatorV3 constant CB_BTC = IAggregatorV3(0x2665701293fCbEB223D11A08D826563EDcCE423A);
 }
 
@@ -76,5 +90,5 @@ library AddrRouter {
     IEnsoRouterV2 constant ENSO_ROUTER_V1 = IEnsoRouterV2(0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E);
     IEnsoRouterV2 constant ENSO_ROUTER_V2 = IEnsoRouterV2(0xF75584eF6673aD213a685a1B58Cc0330B8eA22Cf);
 
-    address constant CURVE_ROUTER = 0x80EbA3855878739F4710233A8a19d89Bdd2ffB8E;
+    ICurveRouter constant ROUTER_CURVE = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
 }

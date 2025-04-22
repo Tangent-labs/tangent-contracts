@@ -65,17 +65,12 @@ const config: HardhatUserConfig = {
             },
             timeout: 100_000_000,
         },
-        // hardhat: {
-        //     // mining: {
-        //     //     auto: true,
-        //     //     interval: 5000,
-        //     // },
-        //     forking: {
-        //         url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
-        //         blockNumber: forkBlock,
-        //     },
-        //     timeout: 100_000_000,
-        // },
+        hardhat: {
+            forking: {
+                url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
+                blockNumber: forkBlock,
+            },
+        },
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "https://io.convergence-finance.network:8545",

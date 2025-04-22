@@ -27,7 +27,31 @@ export async function deploytgUsd(userCount: number = 5) {
     await baseContext.deployContracts2(oracleContext.tgUSDOracle, lpDeployContext);
 
     // Define markets to deploy
-    const convexCrvMarkets: ConvexCrvMarketKeys[] = ["crvUSD_USDC", "crvUSD_USDT", "frxETH_WETH"];
+    const convexCrvMarkets: ConvexCrvMarketKeys[] = [
+        // Stable USD
+        "crvUSD_USDC",
+        "crvUSD_USDT",
+        "USDC_USDT",
+        "frxUSD_USDe",
+
+        // Stable ETH
+        "frxETH_WETH",
+        "pxETH_WETH",
+        "pxETH_stETH",
+
+        // Stable BTC
+        "cbBTC_WBTC",
+
+        // TriCrypto
+        "crvUSD_ETH_CRV",
+        "GHO_cbBTC_WETH",
+        "USDC_WBTC_WETH",
+        "USDT_WBTC_WETH",
+
+        // DuoCrypto
+        "USR_RLP",
+        "CVX_ETH",
+    ];
     const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD"];
     // Deploy Convex CRV markets
     await marketContext.deployConvexCrvMarkets(convexCrvMarkets, baseContext, oracleContext);
