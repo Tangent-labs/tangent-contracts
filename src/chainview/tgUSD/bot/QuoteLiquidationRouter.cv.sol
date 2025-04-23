@@ -12,7 +12,7 @@ struct CurveQuote {
 }
 
 contract QuoteLiquidationRouter {
-    ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x16C6521Dff6baB339122a0FE25a9116693265353);
+    ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
 
     error QuoteLiquidationRouterError(uint256[] quotes);
 
@@ -23,7 +23,11 @@ contract QuoteLiquidationRouter {
         for (uint256 i; i < routesLen; ) {
             CurveQuote memory curveQuote = routes[i];
 
-            quotes[i] = CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, curveQuote._amount, curveQuote._pools);
+            try CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, curveQuote._amount, curveQuote._pools) returns (uint256 quote) {
+                quotes[i] = quote;
+            } catch {
+                quotes[i] = 0;
+            }
             unchecked {
                 ++i;
             }

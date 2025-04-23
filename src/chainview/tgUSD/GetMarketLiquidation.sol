@@ -6,6 +6,8 @@ import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
 
 contract GetMarketLiquidation {
     struct MarketLiquidationInfo {
+        address market;
+        address collatToken;
         uint256 maxLTV;
         uint256 liquidationThreshold;
         uint256 collateralUSDPrice;
@@ -25,6 +27,8 @@ contract GetMarketLiquidation {
         IPriceOracle priceOracle = marketCollateral.collatOracle();
         return
             MarketLiquidationInfo({
+                market:market,
+                collatToken: address(marketCollateral.collatToken()),
                 maxLTV: marketCollateral.maxLTV(),
                 liquidationThreshold: marketCollateral.liquidationThreshold(),
                 collateralUSDPrice: priceOracle.latestAnswer(),

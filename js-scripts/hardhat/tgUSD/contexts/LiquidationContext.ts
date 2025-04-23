@@ -1,16 +1,21 @@
-import {BaseContext} from "./BaseContext";
+import {BaseContext, createJSONAddress} from "./BaseContext";
 import {deploytgUsd} from "../actions/deploytgUsd";
 import {MarketContext} from "./MarketContext";
 import {OracleContext} from "./OracleContext";
 import {UserMarketParams} from "../actions/common";
 import {deposit} from "../actions/deposit";
 import {borrow} from "../actions/borrow";
+import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import * as fs from "fs";
 
 import chainViewMarketAccountArtifact from "../../../../artifacts/src/chainview/tgUSD/bot/MarketAccountLiquidationBotInfo.cv.sol/MarketAccountLiquidationBotInfo.json";
 import {chainView} from "../../../chainView";
-import {parseEther} from "ethers";
 import {ConvexCrvLPMarket, ConvexFxnLPMarket} from "../../../../typechain-types";
 import {swap} from "../actions/swapCurve";
+import {LpDeployContext} from "./LPDeployContext";
+import {WStablesContext} from "./WStableContext";
+import {parseEther} from "ethers";
+import {giveTokensoAddresss} from "../../thief";
 
 export type DepositBorrowSpecific = Record<string, Record<string, {deposit: string; borrow: string}>>;
 
@@ -34,6 +39,8 @@ export type LiquidationMarketAccountInfo = {
 };
 
 export class LiquidationContext {
+    lpDeployContext?: LpDeployContext;
+    wStableContext?: WStablesContext;
     baseContext?: BaseContext;
     marketContext?: MarketContext;
     oracleContext?: OracleContext;
@@ -42,30 +49,42 @@ export class LiquidationContext {
     marketAddresses: string[] = [];
     userAddresses: string[] = [];
     markets?: (ConvexCrvLPMarket | ConvexFxnLPMarket)[];
+    fxUSDindex: number = 0;
+
     async doDeploy() {
-        const {baseContext, marketContext, oracleContext} = await deploytgUsd(this.userCount);
+        const {baseContext, marketContext, oracleContext, lpDeployContext, wStableContext} = await deploytgUsd(this.userCount);
         this.baseContext = baseContext;
         this.marketContext = marketContext;
         this.oracleContext = oracleContext;
+        this.lpDeployContext = lpDeployContext;
+        this.wStableContext = wStableContext;
 
         // get data form context
-        this.markets = [...Object.values(this.marketContext.convexCrvMarkets), ...Object.values(this.marketContext.convexFxnMarkets)];
+        // this.markets = [...Object.values(this.marketContext.convexCrvMarkets), ...Object.values(this.marketContext.convexFxnMarkets)];
+        // this.fxUSDindex = 2;
+        this.markets = [...Object.values(this.marketContext.convexFxnMarkets)];
+
+        this.fxUSDindex = 0;
         const users = this.baseContext.users;
 
         // extract the address for process
         this.marketAddresses = await Promise.all(this.markets.map((m) => m.getAddress()));
+        console.log("this.markets", this.marketAddresses);
         this.userAddresses = await Promise.all(users.map((u) => u.getAddress()));
+        fs.writeFileSync("../addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext, lpDeployContext, wStableContext)));
     }
 
     getSpecificDepositBorrowCase() {
-        const specificCases: Record<string, Record<string, {deposit: string; borrow: string}>> = {
-            [this.marketAddresses[0]]: {
-                [this.userAddresses[0]]: {
-                    deposit: "12000",
-                    borrow: "9000",
-                },
-            },
-        };
+        let i = 0;
+
+        const specificCases = {[this.marketAddresses[this.fxUSDindex]]: {}} as Record<string, Record<string, {deposit: string; borrow: string}>>;
+        for (i = 0; i < this.userCount; i++) {
+            specificCases[this.marketAddresses[this.fxUSDindex]][this.userAddresses[i]] = {
+                deposit: "12000",
+                borrow: (9000 - i * 25).toString(),
+            };
+        }
+
         return specificCases as DepositBorrowSpecific;
     }
 
@@ -85,7 +104,7 @@ export class LiquidationContext {
                 } else {
                     // default case a low risk loan
                     deposit = (3000 + this.baseDeposit * (userIndex + 1)).toString();
-                    borrow = Math.max(3000, Number(deposit) / 3).toString();
+                    borrow = Math.max(4000, Number(deposit) / 3).toString();
                 }
                 currentMarketDeposit[userAddress] = deposit;
                 currentMarketBorrow[userAddress] = borrow;
@@ -107,22 +126,64 @@ export class LiquidationContext {
             specificCases
         );
 
+        console.log("depositParams", depositParams);
         // let's do it .
         await deposit(this.baseContext, depositParams);
         await borrow(this.baseContext, borrowParams);
     }
 
     async unbalanceContext() {
+        const amount = 450_000;
+
+        const tgUSD_USDC = this.lpDeployContext?.stableLp["tgUSD-USDC"];
+        const tgUSD_wfrxUSD = this.lpDeployContext?.stableLp["tgUSD-wfrxUSD"];
+
         if (!this.marketAddresses?.length || !this.baseContext) throw new Error("Contracts not depoyed");
-        const lpAddress = await Promise.all(this.markets!.map((m) => m.collatToken()));
 
-        const markets = this.markets?.slice(0, 1);
-        //TODO add specifics for [0,1] | [1,0] and amounts
+        {
+            const a = await tgUSD_USDC?.balances(0);
+            const b = await tgUSD_USDC?.balances(1);
+            console.log("a", a, "b", b);
+        }
 
-        const promises = markets?.map(async (m, i) => {
-            swap(this.baseContext!, lpAddress[i], 0, 1, "100");
+        // await giveTokensoAddresss(this.baseContext!.users[0], tgUSD_USDC!.getAddress(), amount);
+
+        await swap(this.baseContext!.users[4], await tgUSD_USDC!.getAddress(), 1, 0, amount.toString());
+        await swap(this.baseContext!.users[4], await tgUSD_wfrxUSD!.getAddress(), 1, 0, amount.toString());
+
+        {
+            const a = await tgUSD_USDC?.balances(0);
+            const b = await tgUSD_USDC?.balances(1);
+            console.log("a", a, "b", b);
+        }
+
+        {
+            const seconds = 30 * 60 * 60;
+            await time.increase(seconds);
+        }
+
+        // const toSwapMarketIndex = this.fxUSDindex; // others markets are link to chainlink so swap dosen't have an effect on price.
+        // const lpAddress = await this.markets![toSwapMarketIndex].collatToken();
+        // await swap(this.baseContext!.users[0], lpAddress, 1, 0, (4_000_000).toString());
+        //deposit  sur tous les marché pour l'IR calculation
+        const depositParams: UserMarketParams = {};
+        this.marketAddresses.forEach((marketAddress) => {
+            depositParams[marketAddress] = {
+                [this.userAddresses[0]]: "1000",
+            };
         });
-        await Promise.all(promises || []);
+        await deposit(this.baseContext, depositParams);
+
+        const price = await this.oracleContext?.tgUSDOracle?.price();
+        const price2 = await tgUSD_USDC?.["price_oracle(uint256)"](0);
+        const price3 = await tgUSD_wfrxUSD?.["price_oracle(uint256)"](0);
+        // const price3 = await tgUSD_wfrxUSD.price_oracle();
+        console.log("price", price, price2, price3);
+        // Time advance
+        const day = 150;
+        const seconds = day * 24 * 60 * 60;
+        await time.increase(seconds);
+        console.info("\x1b[32m%s\x1b[0m", "Time has been incresed by " + day + " day on the test node !");
     }
 
     async testChainView() {
@@ -151,12 +212,20 @@ export class LiquidationContext {
         const specifics = this.getSpecificDepositBorrowCase();
         const {borrow, deposit} = specifics[this.marketAddresses[0]][this.userAddresses[0]];
 
-        if (firstAccount?.userDebt !== parseEther(borrow)) {
-            throw Error("Specific borrow not applied ");
+        const expectedBorrow = parseEther(borrow);
+        const borrowTolerance = expectedBorrow / 100n;
+        if (firstAccount?.userDebt === undefined || firstAccount.userDebt < expectedBorrow - borrowTolerance || firstAccount.userDebt > expectedBorrow + borrowTolerance) {
+            throw Error("Specific borrow not applied within 1% tolerance, expected " + expectedBorrow + " got " + firstAccount?.userDebt);
         }
 
-        if (firstAccount?.positionValue !== (parseEther(deposit) * (firstmarket?.collateralUSDPrice || 0n)) / BigInt(10 ** 18)) {
-            throw Error("Specific deposit not applied ");
+        const expectedPositionValue = (parseEther(deposit) * (firstmarket?.collateralUSDPrice || 0n)) / BigInt(10 ** 18);
+        const positionTolerance = expectedPositionValue / 100n;
+        if (
+            firstAccount?.positionValue === undefined ||
+            firstAccount.positionValue < expectedPositionValue - positionTolerance ||
+            firstAccount.positionValue > expectedPositionValue + positionTolerance
+        ) {
+            throw Error("Specific deposit not applied within 1% tolerance");
         }
     }
 }

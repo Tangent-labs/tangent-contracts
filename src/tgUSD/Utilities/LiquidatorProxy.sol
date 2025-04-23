@@ -3,6 +3,7 @@ pragma solidity ^0.8.22;
 
 import {ILiquidatorProxy} from "../../interfaces/internals/tgUSD/ILiquidatorProxy.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {console} from "hardhat/console.sol";
 contract LiquidatorProxy is ILiquidatorProxy {
     using SafeERC20 for IERC20;
 
@@ -24,8 +25,10 @@ contract LiquidatorProxy is ILiquidatorProxy {
         uint256 bal = _tgUSD.balanceOf(receiver);
         // Call router router and perform the swaps with raw data following recommendations.
         (bool isRouterCallSuccess, ) = liquidator.call{value: msg.value}(routerCall);
-        // Verify the call to router was successfull
+        // Verify the call to router was successfull console.log("bcallLiquidate");
+        console.log("before callLiquidate");
         require(isRouterCallSuccess, LiquidatorCallError());
+        console.log("after callLiquidate");
 
         bal = _tgUSD.balanceOf(receiver) - bal;
 

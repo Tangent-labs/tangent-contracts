@@ -26,6 +26,10 @@ import {
 } from "../../../../typechain-types";
 import {LpDeployContext} from "./LPDeployContext";
 import {setStorageAt} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import {ConvexCrvMarketKeys, ConvexFxnMarketKeys, MarketContext} from "./MarketContext";
+import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "../config/market";
+import {OracleContext} from "./OracleContext";
+import {WStablesContext} from "./WStableContext";
 
 export class BaseContext extends MainSetup {
     owner!: HardhatEthersSigner;
@@ -103,8 +107,8 @@ export class BaseContext extends MainSetup {
 
     async deploySgUSD() {
         const yearnVaultFactory = await ethers.getContractAt("IYearnVaultFactory", "0x770D0d1Fb036483Ed4AbB6d53c1C88fb277D812F");
-        await yearnVaultFactory.deploy_new_vault(this.tgUSD, "Staked tgUSD", "sgUSD", this.owner, 7 * 86400);
-
+        const tx = await yearnVaultFactory.deploy_new_vault(this.tgUSD, "Staked tgUSD", "sgUSD", this.owner, 7 * 86400);
+        await tx.wait();
         const actualBlock = (await ethers.provider.getBlock("latest"))!.number;
         const createEvents = await yearnVaultFactory.queryFilter(yearnVaultFactory.filters.NewVault(), actualBlock - 1, actualBlock);
 
@@ -200,3 +204,95 @@ export class BaseContext extends MainSetup {
         }
     }
 }
+
+export async function createJSONAddress(
+    baseContext: BaseContext,
+    marketContext: MarketContext,
+    oracleContext: OracleContext,
+    lpDeployContext: LpDeployContext,
+    wStableContext: WStablesContext
+) {
+    const markets: Market[] = [];
+    for (const key in marketContext.convexCrvMarkets) {
+        const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys];
+        const market = await marketContext.convexCrvMarkets[key].getAddress();
+
+        markets.push({
+            marketAddress: market,
+            collatName: staticConfig.collatName,
+            collatAddress: staticConfig.collatToken,
+            marketType: "Convex_CRV",
+        });
+    }
+    for (const key in marketContext.convexFxnMarkets) {
+        const market = await marketContext.convexFxnMarkets[key].getAddress();
+        const staticConfig = STATIC_CONFIG_CONVEX_FXN[key as ConvexFxnMarketKeys];
+
+        markets.push({
+            marketAddress: market,
+            collatName: staticConfig.collatName,
+            collatAddress: staticConfig.collatToken,
+            marketType: "Convex_FXN",
+        });
+    }
+
+    let oracles: {[key: string]: string} = {};
+    for (const prop in oracleContext.oracles) {
+        const oracle = await oracleContext.oracles[prop].getAddress();
+        oracles[prop] = oracle;
+    }
+
+    const lps: {[key: string]: string} = {};
+    for (const prop in lpDeployContext.stableLp) {
+        const lp = await lpDeployContext.stableLp[prop].getAddress();
+        lps[prop] = lp;
+    }
+
+    const wStables: {[key: string]: string} = {};
+    for (const prop in wStableContext.wStable) {
+        const wStable = await wStableContext.wStable[prop].getAddress();
+        wStables[prop] = wStable;
+    }
+
+    oracles["tgUSD"] = await oracleContext.tgUSDOracle.getAddress();
+    return {
+        utilities: {
+            controlTower: await baseContext.controlTower.getAddress(),
+            rewardAccumulator: await baseContext.rewardAccumulator.getAddress(),
+            zapper: await baseContext.zapper.getAddress(),
+            marketCreator: await baseContext.marketCreator.getAddress(),
+            irCalculator: await baseContext.irCalculator.getAddress(),
+            pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
+            liquidatorProxy: await baseContext.liquidatorProxy.getAddress(),
+        },
+        lock: {
+            rsTanService: await baseContext.rsTanService.getAddress(),
+            rsTanERC721: await baseContext.rsTanERC721.getAddress(),
+        },
+        tokens: {
+            tgUSD: await baseContext.tgUSD.getAddress(),
+            sgUSD: await baseContext.sgUSD.getAddress(),
+            tan: await baseContext.tan.getAddress(),
+        },
+        implementations: {
+            convexCrvMarket: await baseContext.marketCvxCrvImplem.getAddress(),
+            convexFxnMarket: await baseContext.marketCvxFxnImplem.getAddress(),
+            noSociabilizationMarket: await baseContext.marketNoSociabilizationImplem.getAddress(),
+        },
+        markets,
+        oracles,
+        lps,
+        wStables,
+        pegKeepers: {
+            "tgUSD-USDC": await baseContext.pegKeeperTgUSD_USDC.getAddress(),
+            "tgUSD-wfrxUSD": await baseContext.pegKeeperTgUSD_wfrxUSD.getAddress(),
+        },
+    };
+}
+
+export type Market = {
+    marketAddress: string;
+    collatName: string;
+    collatAddress: string;
+    marketType: string;
+};

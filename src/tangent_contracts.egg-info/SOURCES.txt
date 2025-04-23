@@ -1,0 +1,6 @@
+README.md
+pyproject.toml
+src/tangent_contracts.egg-info/PKG-INFO
+src/tangent_contracts.egg-info/SOURCES.txt
+src/tangent_contracts.egg-info/dependency_links.txt
+src/tangent_contracts.egg-info/top_level.txt

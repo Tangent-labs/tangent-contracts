@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
 
+
 contract GetAccountLiquidation {
     struct LendingPositionsIn {
         address account;
@@ -11,6 +12,7 @@ contract GetAccountLiquidation {
     }
 
     struct AccountLiquidationInfo {
+        address market;
         uint256 healthRatio;
         uint256 userDebt;
         uint256 positionValue;
@@ -24,6 +26,7 @@ contract GetAccountLiquidation {
 
             ICollateral marketCollateral = ICollateral(market);
             output[index] = AccountLiquidationInfo({
+                market: market,
                 healthRatio: marketCollateral.healthRatio(account),
                 userDebt: IDebtIR(market).userDebt(account),
                 positionValue: marketCollateral.positionValue(account)
