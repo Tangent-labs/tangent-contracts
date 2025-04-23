@@ -562,10 +562,12 @@ contract RsTanService is LightOwnable {
             IERC20 token = tokenAmount[rewardIndex].token;
             uint256 amount = tokenAmount[rewardIndex].amount;
 
-            if (token == _tgUSD && isClaimAsSgUSD) {
-                _sgUSD.deposit(amount, msg.sender);
-            } else {
-                token.transfer(msg.sender, amount);
+            if (amount != 0) {
+                if (token == _tgUSD && isClaimAsSgUSD) {
+                    _sgUSD.deposit(amount, msg.sender);
+                } else {
+                    token.transfer(msg.sender, amount);
+                }
             }
 
             unchecked {
