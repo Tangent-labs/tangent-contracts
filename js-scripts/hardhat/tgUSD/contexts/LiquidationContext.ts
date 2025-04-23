@@ -180,7 +180,7 @@ export class LiquidationContext {
         // const price3 = await tgUSD_wfrxUSD.price_oracle();
         console.log("price", price, price2, price3);
         // Time advance
-        const day = 150;
+        const day = 100;
         const seconds = day * 24 * 60 * 60;
         await time.increase(seconds);
         console.info("\x1b[32m%s\x1b[0m", "Time has been incresed by " + day + " day on the test node !");

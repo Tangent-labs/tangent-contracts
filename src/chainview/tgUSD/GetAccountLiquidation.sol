@@ -4,7 +4,6 @@ pragma solidity ^0.8.24;
 import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
 
-
 contract GetAccountLiquidation {
     struct LendingPositionsIn {
         address account;
@@ -16,6 +15,7 @@ contract GetAccountLiquidation {
         uint256 healthRatio;
         uint256 userDebt;
         uint256 positionValue;
+        uint256 collateralBalance;
     }
 
     function getAccountLiquidationInfo(LendingPositionsIn[] memory usersMarkets) public view returns (AccountLiquidationInfo[] memory) {
@@ -29,7 +29,8 @@ contract GetAccountLiquidation {
                 market: market,
                 healthRatio: marketCollateral.healthRatio(account),
                 userDebt: IDebtIR(market).userDebt(account),
-                positionValue: marketCollateral.positionValue(account)
+                positionValue: marketCollateral.positionValue(account),
+                collateralBalance: marketCollateral.collateralBalances(account)
             });
         }
         return output;
