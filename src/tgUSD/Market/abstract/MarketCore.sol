@@ -12,8 +12,6 @@ import {PauseSettings} from "./PauseSettings.sol";
 import {Collateral} from "./Collateral.sol";
 import {GlobalMarketInitParams, MarketInit, LiquidateCall, SelfLiquidateCall, ILiquidatorProxy} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 
-import "forge-std/console.sol";
-
 /// @notice
 abstract contract MarketCore is PauseSettings, Collateral {
     using SafeERC20 for IERC20;
@@ -307,7 +305,6 @@ abstract contract MarketCore is PauseSettings, Collateral {
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
             require(liquidateCall.userDebt - tgUSDToRepay >= minimumLoan, UserDebtTooLow());
         }
-        console.log("before updateCollatAndDebts");
         // Modify the collateral balance, the user debt and the total debt
         _updateCollatAndDebts(
             liquidateCall.account,
@@ -316,21 +313,18 @@ abstract contract MarketCore is PauseSettings, Collateral {
             liquidateCall._userDebtShares - debtSharesToRemove,
             liquidateCall._totalDebtShares - debtSharesToRemove
         );
-        console.log("after updateCollatAndDebts");
+
         _postLiquidate(liquidateCall.liquidator, collatAmountToLiquidate, tgUSDToRepay, liquidateCall.minTgUSDOut, liquidationCall);
-        console.log("after postLiquidate");
+
         emit Liquidate(liquidateCall.account, tgUSDToRepay, collatAmountToLiquidate, liquidateCall.liquidator);
     }
 
     function _postLiquidate(address liquidator, uint256 collatAmountToLiquidate, uint256 tgUSDToRepay, uint256 minTgUSDOut, bytes calldata liquidationCall) internal {
-        console.log("before postLiquidate");
         ILiquidatorProxy _liquidatorProxy = liquidatorProxy;
         // Withdraw the collateral from the underlying protocol if needed and
         // Transfer it to the caller when there is no liquidator passed in parameter
         // If a liquidator is passed, we send the collateral to the liquidator
-        console.log("before transferCollateralWithdraw");
         _transferCollateralWithdraw(liquidator != address(0) ? address(_liquidatorProxy) : msg.sender, collatAmountToLiquidate);
-        console.log("after transferCollateralWithdraw");
         // When liquidator is not zero, it allows to the LiquidatorProxy to receive the collateral.
         // Then, if needed, liquidator will allow the custom Liquidator to sell the collateral for tgUSD in the same transaction.
         if (liquidator != address(0)) {

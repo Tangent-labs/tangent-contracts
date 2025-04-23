@@ -1,12 +1,11 @@
-import { formatUnits, MaxUint256, Signer } from "ethers";
-import { ethers } from "hardhat";
-import { MainSetup } from "../../Main.setup";
+import {formatUnits, MaxUint256, Signer} from "ethers";
+import {ethers} from "hardhat";
+import {MainSetup} from "../../Main.setup";
 
 // Updated swap function to accept parameters
 export async function swap(user: Signer, lpAddress: string, i: number, j: number, amountIn: string) {
-
     const lp = await ethers.getContractAt("ICurveStableSwapNG", lpAddress);
-    const userAddress = await user.getAddress()
+    const userAddress = await user.getAddress();
 
     const tokenIn = await ethers.getContractAt("ERC20", await lp.coins(i));
     const tokenOut = await ethers.getContractAt("ERC20", await lp.coins(j));
@@ -16,7 +15,7 @@ export async function swap(user: Signer, lpAddress: string, i: number, j: number
     const tokenInName = await tokenIn.name();
     const tokenOutName = await tokenOut.name();
 
-    const amountRawIn = BigInt(amountIn) * 10n ** tokenInDecimals
+    const amountRawIn = BigInt(amountIn) * 10n ** tokenInDecimals;
 
     // const balancePoolIn= await tokenIn.balanceOf(lpAddress)
     // const balancePoolOut = await tokenOut.balanceOf(lpAddress)
@@ -24,17 +23,16 @@ export async function swap(user: Signer, lpAddress: string, i: number, j: number
 
     let balanceIn = await tokenIn.balanceOf(userAddress);
     if (balanceIn < amountRawIn) {
-        console.info("\x1b[38;5;208m%s\x1b[0m", `Not enough balance  ${formatUnits(balanceIn, tokenInDecimals)} / ${amountIn} ${tokenInName} ` );
-        return ;
+        console.info("\x1b[38;5;208m%s\x1b[0m", `Not enough balance  ${formatUnits(balanceIn, tokenInDecimals)} / ${amountIn} ${tokenInName} `);
+        return;
     }
 
     let balance = await tokenOut.balanceOf(userAddress);
     try {
         await tokenIn.approve(lp, MaxUint256);
-        await lp["exchange(int128,int128,uint256,uint256)"](i, j, amountRawIn, 0);
+        await lp.connect(user)["exchange(int128,int128,uint256,uint256)"](i, j, amountRawIn, 0);
         balance = (await tokenOut.balanceOf(await userAddress)) - balance;
         console.info("\x1b[32m%s\x1b[0m", "Swapped " + amountIn + " " + tokenInName + " and received " + formatUnits(balance, tokenOutDecimals) + " " + tokenOutName + "!");
-      
     } catch (e) {
         console.info("\x1b[38;5;208m%s\x1b[0m", "Error Swap : " + tokenInName + "/ " + tokenOutName, (e as Error).message);
         //console.log(e);

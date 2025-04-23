@@ -8,9 +8,6 @@ import {MarketInit, GlobalMarketInitParams} from "../../../interfaces/internals/
 import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 import {MarketExternalActions} from "../abstract/MarketExternalActions.sol";
 import {Sociabilization} from "../../Utilities/Sociabilization.sol";
-import {console} from "hardhat/console.sol";
-
-import "forge-std/console.sol";
 
 /// @notice Lending Market of a FXN LP on Convex
 contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
@@ -49,20 +46,16 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
     }
 
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {
-        console.log("before transferCollateralWithdraw");
         uint256 lpAvailable = collatToken.balanceOf(address(this)) - socFeePending;
-        console.log("after lpAvailable");
+
         // Verify that all there are enough LlamaLend LP on the contract
         if (lpAvailable < lpToWithdraw) {
-            console.log("before withdraw", lpToWithdraw , lpAvailable,socFeePending);
             // If not enough are on the contract, we need to withdraw the difference from Convex
             stakingProxyVault.withdraw(lpToWithdraw - lpAvailable);
-            console.log("after withdraw");
         }
-        console.log("before transfer");
+
         // Transfer the collateral back to the user
         collatToken.transfer(to, lpToWithdraw);
-        console.log("after transfer");
     }
 
     /**
