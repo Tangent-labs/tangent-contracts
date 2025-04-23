@@ -15,6 +15,7 @@ ignored_error_codes = [
     3860, # Disable the specific warning code 3860 in tests
     2394, # Transient storage warning
     5667, # Unuesed parameter
+    2072, # Unuesed local variable
 ]
 
 # optimizer = true
