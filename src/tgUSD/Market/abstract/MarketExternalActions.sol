@@ -2,6 +2,7 @@
 pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {console} from "hardhat/console.sol";
 
 import {MarketCore, LiquidateCall, SelfLiquidateCall} from "./MarketCore.sol";
 
@@ -130,13 +131,14 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
 
     //TODO Verify require on HR
     function liquidate(address account, uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external updateRewards(account) {
+        console.log("liquidate", account, tgUSDToRepay);
         uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
         uint256 _userDebtShares = userDebtShares[account];
         uint256 userDebt_ = _userDebt(_userDebtShares, newDebtIndex);
         uint256 collatBalance = collateralBalances[account];
         // Can liquidate only if the health ratio is below 1
         require(_healthRatio(userDebt_, collatBalance) < 1 ether, NotLiquidablePosition());
-
+        console.log("befor liquidate");
         _liquidate(
             LiquidateCall({
                 account: account,

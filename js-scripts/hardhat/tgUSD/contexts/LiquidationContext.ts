@@ -43,7 +43,7 @@ export class LiquidationContext {
     baseContext?: BaseContext;
     marketContext?: MarketContext;
     oracleContext?: OracleContext;
-    userCount: number = 10;
+    userCount: number = 5;
     baseDeposit = 2000;
     marketAddresses: string[] = [];
     userAddresses: string[] = [];
@@ -52,7 +52,6 @@ export class LiquidationContext {
 
     async doDeploy() {
         const {baseContext, marketContext, oracleContext, lpDeployContext, wStableContext} = await deploytgUsd(this.userCount);
-        console.log("baseContext", baseContext);
         this.baseContext = baseContext;
         this.marketContext = marketContext;
         this.oracleContext = oracleContext;
@@ -63,11 +62,13 @@ export class LiquidationContext {
         // this.markets = [...Object.values(this.marketContext.convexCrvMarkets), ...Object.values(this.marketContext.convexFxnMarkets)];
         // this.fxUSDindex = 2;
         this.markets = [...Object.values(this.marketContext.convexFxnMarkets)];
+
         this.fxUSDindex = 0;
         const users = this.baseContext.users;
 
         // extract the address for process
         this.marketAddresses = await Promise.all(this.markets.map((m) => m.getAddress()));
+        console.log("this.markets", this.marketAddresses);
         this.userAddresses = await Promise.all(users.map((u) => u.getAddress()));
         fs.writeFileSync("../addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext, lpDeployContext, wStableContext)));
     }
@@ -82,11 +83,7 @@ export class LiquidationContext {
                 borrow: (9000 - i * 25).toString(),
             };
         }
-        console.log(
-            Object.values(specificCases)
-                .map((o) => o.borrow)
-                .join(" / ")
-        );
+
         return specificCases as DepositBorrowSpecific;
     }
 
@@ -128,25 +125,41 @@ export class LiquidationContext {
             specificCases
         );
 
+        console.log("depositParams", depositParams);
         // let's do it .
         await deposit(this.baseContext, depositParams);
         await borrow(this.baseContext, borrowParams);
     }
 
     async unbalanceContext() {
-        const amount = 4_400_000;
+        const amount = 500_000;
+
+        const tgUSD_USDC = this.lpDeployContext?.stableLp["tgUSD-USDC"];
+        const tgUSD_wfrxUSD = this.lpDeployContext?.stableLp["tgUSD-wfrxUSD"];
 
         if (!this.marketAddresses?.length || !this.baseContext) throw new Error("Contracts not depoyed");
 
+        await swap(this.baseContext!.users[0], await tgUSD_USDC!.getAddress(), 1, 0, amount.toString());
+        await swap(this.baseContext!.users[0], await tgUSD_wfrxUSD!.getAddress(), 1, 0, amount.toString());
+
         const toSwapMarketIndex = this.fxUSDindex; // others markets are link to chainlink so swap dosen't have an effect on price.
         const lpAddress = await this.markets![toSwapMarketIndex].collatToken();
-        await swap(this.baseContext!.users[0], lpAddress, 1, 0, amount.toString());
+        await swap(this.baseContext!.users[0], lpAddress, 1, 0, (4_000_000).toString());
 
         // Time advance
-        const day = 1;
+        const day = 150;
         const seconds = day * 24 * 60 * 60;
         await time.increase(seconds);
         console.info("\x1b[32m%s\x1b[0m", "Time has been incresed by " + day + " day on the test node !");
+
+        //deposit  sur tous les marché pour l'IR calculation
+        const depositParams: UserMarketParams = {};
+        this.marketAddresses.forEach((marketAddress) => {
+            depositParams[marketAddress] = {
+                [this.userAddresses[0]]: "1000",
+            };
+        });
+        await deposit(this.baseContext, depositParams);
     }
 
     async testChainView() {
@@ -174,7 +187,6 @@ export class LiquidationContext {
 
         const specifics = this.getSpecificDepositBorrowCase();
         const {borrow, deposit} = specifics[this.marketAddresses[0]][this.userAddresses[0]];
-        console.log(parseEther(borrow), deposit, firstAccount?.userDebt, specifics);
 
         const expectedBorrow = parseEther(borrow);
         const borrowTolerance = expectedBorrow / 100n;

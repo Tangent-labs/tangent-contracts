@@ -15,6 +15,7 @@ export async function deposit(mainSetup: MainSetup, userAmountByMarket: Record<s
             collatTokenCache[marketAddress] = collatToken;
         }
         await collatToken.connect(user).approve(market, ethers.MaxUint256);
+
         await market.connect(user).deposit(user.address, parsedAmount, true);
     });
     console.info("\x1b[32m%s\x1b[0m", "All deposit actions completed across specified markets!");
