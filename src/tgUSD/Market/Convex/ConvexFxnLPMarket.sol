@@ -9,6 +9,8 @@ import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 import {MarketExternalActions} from "../abstract/MarketExternalActions.sol";
 import {Sociabilization} from "../../Utilities/Sociabilization.sol";
 
+import "forge-std/console.sol";
+
 /// @notice Lending Market of a FXN LP on Convex
 contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
     ICvxFxnBooster constant CVX_BOOSTER = ICvxFxnBooster(0xAffe966B27ba3E4Ebb8A0eC124C7b7019CC762f8);

@@ -8,7 +8,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IRsTanERC721} from "../../interfaces/internals/tgUSD/IRsTanERC721.sol";
 
-import {Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewards.sol";
+import {Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 
 import {LightOwnable} from "../Utilities/LightOwnable.sol";
 

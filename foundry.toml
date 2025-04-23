@@ -13,7 +13,12 @@ ignored_error_codes = [
     1878, # SPX
     5574, # Disable the specific warning code for contract size in tests
     3860, # Disable the specific warning code 3860 in tests
+    2394, # Transient storage warning
+    5667, # Unuesed parameter
 ]
+
+# optimizer = true
+# optimizer-runs = 10_000
 
 fs_permissions = [{ access = "read-write", path = "./" }]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

@@ -4,13 +4,13 @@ pragma solidity ^0.8.22;
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewards.sol";
 import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
-import {IRewardAccumulator, RCParams} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
+import {IRewardAccumulator, RCParams, Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {IAggregatorStablePriceV3} from "../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 import {IMarketExternalActions} from "../../interfaces/internals/tgUSD/IMarketExternalActions.sol";
 
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
+import "forge-std/console.sol";
 
 contract RewardAccumulator is IRewardAccumulator, Ownable {
     using SafeERC20 for IERC20;
@@ -83,6 +83,10 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                        INTERNALS
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    function getRewardData(address market, IERC20 token) external view returns (Reward memory) {
+        return rewardData[market][token];
+    }
 
     /**
      * @notice Fetch the reward amount of a token based on the period
@@ -253,6 +257,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         for (uint256 tokenIndex; tokenIndex < rewardTokensLength; ) {
             IERC20 _rewardToken = rewardTokens[market][tokenIndex];
             uint256 rewardAmount = rewards[market][account][_rewardToken];
+            console.log("LOG", tokenIndex, rewardAmount);
 
             if (rewardAmount != 0) {
                 rewards[market][account][_rewardToken] = 0;
