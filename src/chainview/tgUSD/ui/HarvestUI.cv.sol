@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
+import {IRewardAccumulator, Reward} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {ICollateral} from "../../../interfaces/internals/tgUSD/ICollateral.sol";
 
 import {ERC20Infos, IERC20, TokenAmount, ERC20Infos, ERC20AmountInfos} from "../../ERC20Infos.sol";
@@ -31,8 +31,8 @@ contract HarvestUI is ERC20Infos {
 
             for (uint256 j; j < erc20s.length; ) {
                 IERC20 rewardToken = erc20s[j];
-                (, uint128 lastFinish, , ) = rewardAccumulator.rewardData(market, rewardToken);
-                lastPeriodFinish = lastPeriodFinish < lastFinish ? lastFinish : lastPeriodFinish;
+                Reward memory rewardData = rewardAccumulator.getRewardData(market, rewardToken);
+                lastPeriodFinish = lastPeriodFinish < rewardData.periodFinish ? rewardData.periodFinish : lastPeriodFinish;
                 tokenAmounts[j] = getERC20AmountInfos(TokenAmount({token: rewardToken, amount: rewardToken.balanceOf(market)}));
 
                 unchecked {

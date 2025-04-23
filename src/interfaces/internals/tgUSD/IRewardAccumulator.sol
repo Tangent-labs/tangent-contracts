@@ -25,7 +25,7 @@ struct RCParams {
 interface IRewardAccumulator {
     function cutFeeForToken(IERC20 token) external view returns (uint256);
 
-    function rewardData(address market, IERC20 token) external view returns (uint128, uint128, uint256, uint256);
+    function getRewardData(address market, IERC20 token) external view returns (Reward memory);
 
     function updateRewards(address account) external;
 

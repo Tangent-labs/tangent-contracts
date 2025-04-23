@@ -82,16 +82,6 @@ abstract contract MarketCore is PauseSettings, Collateral {
         _updateDebts(account, newUserDebtShares, newTotalDebtShares);
     }
 
-    /**
-     *  @dev  Updates in the storage the Total debt and Collateral owned by an account
-     *        Called during simple deposit and withdraw.
-     *  @param account           Address of the account to update
-     *  @param newCollatBalance  New collateral balance of account
-     */
-    function _updateCollatAndGlobalDebt(address account, uint256 newCollatBalance, uint256 newTotalCollat) internal {
-        _updateCollateral(account, newCollatBalance, newTotalCollat);
-    }
-
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         DEPOSITS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -103,7 +93,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
         irCalculator.checkpointIR(address(this));
 
         // Increase collateral balance of the position and update total debt
-        _updateCollatAndGlobalDebt(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited);
+        _updateCollateral(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited);
     }
 
     function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, bool isZapping) internal {
@@ -135,7 +125,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
         uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
 
         // Increase collateral deposited by the user
-        _updateCollatAndGlobalDebt(
+        _updateCollateral(
             msg.sender,
             _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _userDebt(userDebtShares[msg.sender], newDebtIndex)),
             totalCollateral - amountToWithdraw
@@ -361,12 +351,13 @@ abstract contract MarketCore is PauseSettings, Collateral {
         // Updates total and user values for collaterals & debts
         // Collat Balance and user debt are updated to 0 because the whole position is liquidated
         _updateCollatAndDebts(account, 0, _totalCollateral - _collateralBalance, 0, _totalDebtShares - _userDebtShares);
-        // The collateral is sent to the DAO to decide what to do with it
-        //TODO Check who is the receiver of the collateral
-        _transferCollateralWithdraw(controlTower.feeTreasury(), _collateralBalance);
 
         // Bad debt is written in the market
         badDebt += _accountDebt;
+
+        // The collateral is sent to the DAO to decide what to do with it
+        //TODO Check who is the receiver of the collateral
+        _transferCollateralWithdraw(controlTower.feeTreasury(), _collateralBalance);
     }
 
     /* --------

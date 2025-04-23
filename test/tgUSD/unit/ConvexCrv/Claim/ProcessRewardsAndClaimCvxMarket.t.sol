@@ -35,7 +35,7 @@ contract ProcessRewardsAndClaimCvxMarket is ConvexCurveContext {
         return 2 + (userDebt * 1 ether * 100_000) / (market.collatOracle().latestAnswer() * 85_000);
     }
 
-    function test_processRewards_claim(uint256 collatDeposited, uint256 borrowedAmount) external {
+    function test_processRewards_claim_simple(uint256 collatDeposited, uint256 borrowedAmount) external {
         borrowedAmount = bound(borrowedAmount, minimumLoan, market.maxMarketDebt());
         collatDeposited = bound(collatDeposited, minimumCollatForDebt(borrowedAmount), 2_000_000 ether);
 
