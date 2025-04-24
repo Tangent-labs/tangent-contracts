@@ -83,7 +83,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
 
         market_crvUSD_USDC.liquidate(
             usr1,
-            MAX_UINT,
+            collatDeposited,
             address(AddrRouter.ROUTER_CURVE),
             5_000 ether,
             encoder.encodeLiquidateCallForCurveLP(
@@ -107,7 +107,8 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
 
         assertEq(market_crvUSD_USDC.userDebt(usr1), 0);
         assertEq(market_crvUSD_USDC.totalDebt(), 0);
-
+        assertEq(market_crvUSD_USDC.totalCollateral(), 0);
+        assertEq(market_crvUSD_USDC.collateralBalances(usr1), 0);
         vm.stopPrank();
     }
 
@@ -162,7 +163,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
 
         market_fxUSD_USDC.liquidate(
             usr1,
-            MAX_UINT,
+            collatDeposited,
             address(AddrRouter.ROUTER_CURVE),
             5_000 ether,
             encoder.encodeLiquidateCallForCurveLP(
@@ -180,6 +181,8 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
 
         assertEq(market_fxUSD_USDC.userDebt(usr1), 0);
         assertEq(market_fxUSD_USDC.totalDebt(), 0);
+        assertEq(market_fxUSD_USDC.totalCollateral(), 0);
+        assertEq(market_fxUSD_USDC.collateralBalances(usr1), 0);
 
         vm.stopPrank();
     }

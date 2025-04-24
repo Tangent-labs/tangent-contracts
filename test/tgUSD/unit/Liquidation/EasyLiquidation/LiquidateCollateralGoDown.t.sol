@@ -47,7 +47,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, MAX_UINT, address(0), 0, "");
+        market.liquidate(usr1, collatDeposited, address(0), 0, "");
         vm.stopPrank();
 
         // Unbalance USDC_FXUSD LP for destroying the peg and so the price_oracle
@@ -56,7 +56,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, MAX_UINT, address(0), 0, "");
+        market.liquidate(usr1, collatDeposited, address(0), 0, "");
 
         (uint128 lastUpdateTime, uint256 periodFinish, uint256 rewardRate, uint256 rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
         assertEq(lastUpdateTime, periodFinish, "Times are the same as on deployment because no processRewards occured");
@@ -70,7 +70,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "tgUSD burnt from sender");
 
         // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, MAX_UINT, address(0), 0, "");
+        market.liquidate(usr1, collatDeposited, address(0), 0, "");
 
         assertERC20Tracking();
         (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
@@ -102,48 +102,48 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
 
         (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
 
-        // balanceChanges.trackReceiveERC20(usr2, rewardTokens);
-        // vm.prank(usr2);
-        // rewardAccumulator.claimSimple(address(market));
+        balanceChanges.trackReceiveERC20(usr2, rewardTokens);
+        vm.prank(usr2);
+        rewardAccumulator.claimSimple(address(market));
 
-        // balanceChanges.trackReceiveERC20(usr3, rewardTokens);
-        // vm.prank(usr3);
-        // rewardAccumulator.claimSimple(address(market));
+        balanceChanges.trackReceiveERC20(usr3, rewardTokens);
+        vm.prank(usr3);
+        rewardAccumulator.claimSimple(address(market));
 
-        // vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NoRewardToSimpleClaim.selector));
-        // vm.prank(usr1);
-        // rewardAccumulator.claimSimple(address(market));
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NoRewardToSimpleClaim.selector));
+        vm.prank(usr1);
+        rewardAccumulator.claimSimple(address(market));
 
-        // ICommonStruct.TokenAmount[] memory receiveUser2 = balanceChanges.getReceivedERC20(usr2);
-        // ICommonStruct.TokenAmount[] memory receivedUser3 = balanceChanges.getReceivedERC20(usr3);
+        TokenAmount[] memory receiveUser2 = balanceChanges.getReceivedERC20(usr2);
+        TokenAmount[] memory receivedUser3 = balanceChanges.getReceivedERC20(usr3);
 
-        // assertTrue(balanceChanges.areTokenAmountsArrayEquals(receiveUser2, receivedUser3));
+        assertTrue(balanceChanges.areTokenAmountsArrayEquals(receiveUser2, receivedUser3));
 
-        // ICommonStruct.TokenAmount[] memory rewardAccBalances = balanceChanges.getErc20Balances(address(rewardAccumulator), rewardTokens);
+        TokenAmount[] memory rewardAccBalances = balanceChanges.getErc20Balances(address(rewardAccumulator), rewardTokens);
 
-        // for (uint256 index = 0; index < rewardTokens.length; index++) {
-        //     IERC20 token = rewardTokens[index];
-        //     uint256 fee = rewardAccumulator.cutFeeForToken(token);
-        //     uint256 balLeft = rewardAccBalances[index].amount;
+        for (uint256 index = 0; index < rewardTokens.length; index++) {
+            IERC20 token = rewardTokens[index];
+            uint256 fee = rewardAccumulator.cutFeeForToken(token);
+            uint256 balLeft = rewardAccBalances[index].amount;
 
-        //     assertApproxEqRel(fee, balLeft, 1e12, "Should be almost equal, there is a lost in precision on reward streaming");
+            assertApproxEqRel(fee, balLeft, 1e12, "Should be almost equal, there is a lost in precision on reward streaming");
 
-        //     verifyLostERC20(token, address(rewardAccumulator), fee, "Send fee treasury");
-        //     verifyReceiveERC20(token, feeTreasury, fee, "Receive fee treasury");
-        // }
+            verifyLostERC20(token, address(rewardAccumulator), fee, "Send fee treasury");
+            verifyReceiveERC20(token, feeTreasury, fee, "Receive fee treasury");
+        }
 
-        // rewardAccumulator.claimCutFees(rewardTokens);
+        rewardAccumulator.claimCutFees(rewardTokens);
 
-        // assertERC20Tracking();
+        assertERC20Tracking();
 
-        // vm.stopPrank();
+        vm.stopPrank();
     }
 
     function test_liquidate_partial_after_collateral_loses_value() external {
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, 4_000 ether, address(0), 0, "");
+        market.liquidate(usr1, collatDeposited, address(0), 0, "");
         vm.stopPrank();
 
         // Unbalance USDC_FXUSD LP for destroying the peg and so the price_oracle
@@ -152,7 +152,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, 4_000 ether, address(0), 0, "");
+        market.liquidate(usr1, collatDeposited, address(0), 0, "");
         vm.stopPrank();
 
         skip(200);
@@ -163,7 +163,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         verifyLostERC20(tgUSD, usr1, 4_000 ether, "tgUSD burnt from sender");
         verifyReceiveERC20(collatToken, usr1, 5_000 ether, "Collat sent to liquidator");
         // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, 4_000 ether, address(0), 0, "");
+        market.liquidate(usr1, 5_000 ether, address(0), 0, "");
 
         assertERC20Tracking();
         assertEq(market.userDebt(usr1), 4_000 ether);
@@ -173,17 +173,17 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
 
         assertEq(ir, 0);
 
-        uint256 tgUSDToRepay = 100;
-        verifyLostERC20(tgUSD, usr1, tgUSDToRepay, "tgUSD burnt from sender");
-        verifyReceiveERC20(collatToken, usr1, (tgUSDToRepay * market.collateralBalances(usr1)) / market.userDebt(usr1), "Collat sent to liquidator");
-        // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, tgUSDToRepay, address(0), 0, "");
+        uint256 collatToLiquidate = 100;
+        verifyLostERC20(tgUSD, usr1, 80, "tgUSD burnt from sender");
+        verifyReceiveERC20(collatToken, usr1, collatToLiquidate, "Collat sent to liquidator");
+
+        market.liquidate(usr1, collatToLiquidate, address(0), 0, "");
         assertERC20Tracking();
 
         verifyLostERC20(tgUSD, usr1, market.userDebt(usr1), "tgUSD burnt from sender");
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "Collat sent to liquidator");
         // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, market.userDebt(usr1), address(0), 0, "");
+        market.liquidate(usr1, market.collateralBalances(usr1), address(0), 0, "");
         assertERC20Tracking();
 
         vm.stopPrank();

@@ -15,7 +15,6 @@ import {swap} from "../actions/swapCurve";
 import {LpDeployContext} from "./LPDeployContext";
 import {WStablesContext} from "./WStableContext";
 import {parseEther} from "ethers";
-import {giveTokensoAddresss} from "../../thief";
 
 export type DepositBorrowSpecific = Record<string, Record<string, {deposit: string; borrow: string}>>;
 
@@ -69,7 +68,6 @@ export class LiquidationContext {
 
         // extract the address for process
         this.marketAddresses = await Promise.all(this.markets.map((m) => m.getAddress()));
-        console.log("this.markets", this.marketAddresses);
         this.userAddresses = await Promise.all(users.map((u) => u.getAddress()));
         fs.writeFileSync("../addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext, lpDeployContext, wStableContext)));
     }
@@ -126,7 +124,6 @@ export class LiquidationContext {
             specificCases
         );
 
-        console.log("depositParams", depositParams);
         // let's do it .
         await deposit(this.baseContext, depositParams);
         await borrow(this.baseContext, borrowParams);
@@ -140,27 +137,12 @@ export class LiquidationContext {
 
         if (!this.marketAddresses?.length || !this.baseContext) throw new Error("Contracts not depoyed");
 
-        {
-            const a = await tgUSD_USDC?.balances(0);
-            const b = await tgUSD_USDC?.balances(1);
-            console.log("a", a, "b", b);
-        }
-
         // await giveTokensoAddresss(this.baseContext!.users[0], tgUSD_USDC!.getAddress(), amount);
 
         await swap(this.baseContext!.users[4], await tgUSD_USDC!.getAddress(), 1, 0, amount.toString());
         await swap(this.baseContext!.users[4], await tgUSD_wfrxUSD!.getAddress(), 1, 0, amount.toString());
 
-        {
-            const a = await tgUSD_USDC?.balances(0);
-            const b = await tgUSD_USDC?.balances(1);
-            console.log("a", a, "b", b);
-        }
-
-        {
-            const seconds = 30 * 60 * 60;
-            await time.increase(seconds);
-        }
+        await time.increase(30 * 60 * 60);
 
         // const toSwapMarketIndex = this.fxUSDindex; // others markets are link to chainlink so swap dosen't have an effect on price.
         // const lpAddress = await this.markets![toSwapMarketIndex].collatToken();
@@ -174,11 +156,6 @@ export class LiquidationContext {
         });
         await deposit(this.baseContext, depositParams);
 
-        const price = await this.oracleContext?.tgUSDOracle?.price();
-        const price2 = await tgUSD_USDC?.["price_oracle(uint256)"](0);
-        const price3 = await tgUSD_wfrxUSD?.["price_oracle(uint256)"](0);
-        // const price3 = await tgUSD_wfrxUSD.price_oracle();
-        console.log("price", price, price2, price3);
         // Time advance
         const day = 100;
         const seconds = day * 24 * 60 * 60;

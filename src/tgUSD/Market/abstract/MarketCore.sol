@@ -243,14 +243,14 @@ abstract contract MarketCore is PauseSettings, Collateral {
     /* --------
                             LIQUIDATION
                                                     ------ */
-    //TODO Add some check on min Loan and LTV
+
     function _selfLiquidate(SelfLiquidateCall memory selfLiquidateCall, bytes calldata liquidationCall) internal {
         require(selfLiquidateCall.collatAmountToLiquidate != 0, ZeroCollatAmount());
         uint256 newCollatBalance = selfLiquidateCall._collateralBalance - selfLiquidateCall.collatAmountToLiquidate;
         uint256 debtSharesToRemove;
         uint256 tgUSDToRepay = selfLiquidateCall.tgUSDToRepay;
 
-        // Repay all debt
+        // Liquidate All
         if (tgUSDToRepay >= selfLiquidateCall.userDebt) {
             tgUSDToRepay = selfLiquidateCall.userDebt;
             debtSharesToRemove = selfLiquidateCall._userDebtShares;
@@ -280,25 +280,22 @@ abstract contract MarketCore is PauseSettings, Collateral {
     }
 
     function _liquidate(LiquidateCall memory liquidateCall, bytes calldata liquidationCall) internal {
-        require(liquidateCall.tgUSDToRepay != 0, ZeroDebtAmount());
+        uint256 collatAmountToLiquidate = liquidateCall.collatToLiquidate;
+        require(liquidateCall.collatToLiquidate != 0, ZeroCollatAmount());
 
-        uint256 collatAmountToLiquidate;
         uint256 newCollatBalance;
         uint256 debtSharesToRemove;
-        uint256 tgUSDToRepay = liquidateCall.tgUSDToRepay;
+        uint256 tgUSDToRepay;
 
         // Liquidate all
-        if (tgUSDToRepay >= liquidateCall.userDebt) {
+        if (collatAmountToLiquidate == liquidateCall._collateralBalance) {
             tgUSDToRepay = liquidateCall.userDebt;
-            collatAmountToLiquidate = liquidateCall._collateralBalance;
             debtSharesToRemove = liquidateCall._userDebtShares;
         }
         // Liquidate partial
         else {
+            tgUSDToRepay = (collatAmountToLiquidate * liquidateCall.userDebt) / liquidateCall._collateralBalance;
             debtSharesToRemove = (tgUSDToRepay * RAY) / liquidateCall.newDebtIndex;
-
-            // Computes the amount of collateral to liquidate by proportionnality
-            collatAmountToLiquidate = (liquidateCall._collateralBalance * tgUSDToRepay) / liquidateCall.userDebt;
             // Computes the new balance of collateral after the partial liquidation
             newCollatBalance = liquidateCall._collateralBalance - collatAmountToLiquidate;
 
