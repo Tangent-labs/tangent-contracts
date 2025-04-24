@@ -128,19 +128,26 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         emit Repay(account, repayer, tgUSDToRepay, isZapping);
     }
 
-    //TODO Verify require on HR
-    function liquidate(address account, uint256 tgUSDToRepay, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external updateRewards(account) {
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                       LIQUIDATE 
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256) {
         uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
-        uint256 _userDebtShares = userDebtShares[account];
-        uint256 userDebt_ = _userDebt(_userDebtShares, newDebtIndex);
-        uint256 collatBalance = collateralBalances[account];
+        uint256 userDebtShares_ = userDebtShares[account];
+        return (newDebtIndex, collateralBalances[account], userDebtShares_, _userDebt(userDebtShares_, newDebtIndex));
+    }
+
+    //TODO Verify require on HR
+    function liquidate(address account, uint256 collatToLiquidate, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external updateRewards(account) {
+        (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
         // Can liquidate only if the health ratio is below 1
         require(_healthRatio(userDebt_, collatBalance) < 1 ether, NotLiquidablePosition());
 
         _liquidate(
             LiquidateCall({
                 account: account,
-                tgUSDToRepay: tgUSDToRepay,
+                collatToLiquidate: collatToLiquidate,
                 liquidator: liquidator,
                 minTgUSDOut: minTgUSDOut,
                 newDebtIndex: newDebtIndex,
@@ -163,11 +170,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         uint256 minTgUSDOut,
         bytes calldata routerCall
     ) external updateRewards(msg.sender) {
-        // Checkpoint IR
-        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
-        uint256 _userDebtShares = userDebtShares[msg.sender];
-        uint256 userDebt_ = _userDebt(_userDebtShares, newDebtIndex);
-        uint256 collatBalance = collateralBalances[msg.sender];
+        (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(msg.sender);
 
         _selfLiquidate(
             SelfLiquidateCall({
@@ -188,15 +191,12 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
 
     function liquidateBadDebt(address account) external updateRewards(account) {
         // Checkpoint IR
-        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
-        uint256 collatBalances = collateralBalances[account];
-        uint256 _userDebtShares = userDebtShares[account];
-        uint256 userDebt_ = _userDebt(_userDebtShares, newDebtIndex);
+        (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
 
         // Can liquidate bad debt only if the value of the collateral is below the debt
-        require(_positionValue(collatBalances) < userDebt_, PositionWithoutBadDebt());
+        require(_positionValue(collatBalance) < userDebt_, PositionWithoutBadDebt());
 
-        _liquidateBadDebt(account, collatBalances, totalCollateral, _userDebtShares, totalDebtShares, userDebt_);
+        _liquidateBadDebt(account, collatBalance, totalCollateral, _userDebtShares, totalDebtShares, userDebt_);
     }
 
     function leverage(

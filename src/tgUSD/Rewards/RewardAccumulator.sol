@@ -257,7 +257,6 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         for (uint256 tokenIndex; tokenIndex < rewardTokensLength; ) {
             IERC20 _rewardToken = rewardTokens[market][tokenIndex];
             uint256 rewardAmount = rewards[market][account][_rewardToken];
-            console.log("LOG", tokenIndex, rewardAmount);
 
             if (rewardAmount != 0) {
                 rewards[market][account][_rewardToken] = 0;

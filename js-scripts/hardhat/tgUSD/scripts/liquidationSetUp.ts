@@ -5,7 +5,6 @@ import * as fs from "fs";
 async function main() {
     const liquidationContext = new LiquidationContext();
     await liquidationContext.doDeploy();
-    console.log("liquidationContext.baseContext");
     fs.writeFileSync(
         "./addresses.json",
         JSON.stringify(
@@ -20,7 +19,6 @@ async function main() {
             2
         )
     );
-    console.log("liquidationContext. ../addresses.json");
 
     await liquidationContext.doDepositAndBorrow();
     console.info("\x1b[32m%s\x1b[0m", "Liquidation context is setup !");

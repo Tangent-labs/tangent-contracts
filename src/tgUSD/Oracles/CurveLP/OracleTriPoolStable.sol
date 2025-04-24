@@ -11,12 +11,12 @@ import "forge-std/console.sol";
 contract OracleTriPoolStable is IPriceOracle {
     struct OracleTriPoolStruct {
         IPriceOracle coin0Oracle;
+        uint96 coin0OracleDecimals;
         IPriceOracle coin1Oracle;
+        uint96 coin1OracleDecimals;
         IPriceOracle coin2Oracle;
+        uint96 coin2OracleDecimals;
         ICurveStableSwapNG lp;
-        uint40 coin0OracleDecimals;
-        uint40 coin1OracleDecimals;
-        uint48 coin2OracleDecimals;
     }
     OracleTriPoolStruct public params;
 
@@ -26,9 +26,9 @@ contract OracleTriPoolStable is IPriceOracle {
             coin1Oracle: _coin1Oracle,
             coin2Oracle: _coin2Oracle,
             lp: _lp,
-            coin0OracleDecimals: uint40(_coin0Oracle.decimals()),
-            coin1OracleDecimals: uint40(_coin1Oracle.decimals()),
-            coin2OracleDecimals: uint48(_coin2Oracle.decimals())
+            coin0OracleDecimals: uint96(_coin0Oracle.decimals()),
+            coin1OracleDecimals: uint96(_coin1Oracle.decimals()),
+            coin2OracleDecimals: uint96(_coin2Oracle.decimals())
         });
     }
 
