@@ -8,6 +8,7 @@ import {StdUtils} from "forge-std/StdUtils.sol";
 
 import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
+import "../../../src/libs/Resources/ResourcesPendle.sol";
 import "../../../src/libs/Resources/ResourcesYearn.sol";
 
 import "../../../src/tgUSD/Lock/RsTanService.sol";

@@ -10,6 +10,8 @@ import {OracleCryptoSwap} from "../../../src/tgUSD/Oracles/CurveLP/OracleCryptoS
 
 import {sDAIOracle} from "../../../src/tgUSD/Oracles/sDAIOracle.sol";
 
+import {OraclePTToken} from "../../../src/tgUSD/Oracles/Pendle/OraclePTToken.sol";
+
 import {IRCalculator} from "../../../src/tgUSD/Utilities/IRCalculator.sol";
 import {IAggregatorStablePriceV3} from "../../../src/interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 import {IPegKeeperRegulator} from "../../../src/interfaces/externals/LlamaLend/IPegKeeperRegulator.sol";
@@ -59,6 +61,7 @@ contract OraclesContext is TgUSDDeployContext {
         setupSimpleTokenOraclesWithCurveLP();
         setupCurveStableLPOracles();
         setupCurveTriCryptoSwapLPOracles();
+        setupPendleTokens();
     }
 
     function setupTgUSDOracle() public {
@@ -210,5 +213,11 @@ contract OraclesContext is TgUSDDeployContext {
         // Oracle sDAI
         oracles[AddrERC4626.S_DAI] = new sDAIOracle(AddrChainlinkOracle.SDAI);
         vm.label(address(oracles[AddrERC4626.S_DAI]), "Oracle sDAI");
+    }
+
+    function setupPendleTokens() internal {
+        // Oracle PT USDE
+        oracles[AddrPTPendle.SUSDE_31_07_2025] = new OraclePTToken(AddrMarketPendle.SUSDE_31_07_2025);
+        vm.label(address(oracles[AddrPTPendle.SUSDE_31_07_2025]), "Oracle PT SUSDe 31/07/25");
     }
 }
