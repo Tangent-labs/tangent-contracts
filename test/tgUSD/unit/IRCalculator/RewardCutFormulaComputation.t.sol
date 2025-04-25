@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 
-contract RewardCutFormulaComputation is ConvexCurveContext {
+contract RewardCutFormulaComputation is MarketDeploymentContext {
     uint256 constant _2_DOLLARS = 2 ether;
     uint256 constant _1_DOLLARS = 1 ether;
 

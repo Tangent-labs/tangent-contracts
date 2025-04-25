@@ -12,11 +12,12 @@ struct OracleCoinFromCurveLPStruct {
     IPriceOracle otherStableOracle;
     uint128 otherStableDecimals;
     uint128 isParamsForPriceOracle;
+    bool isReversed;
 }
 
 contract OracleCoinFromCurveLP is IPriceOracle {
     OracleCoinFromCurveLPStruct public oracleParams;
-    constructor(address _lp, IPriceOracle _otherStableOracle) {
+    constructor(address _lp, IPriceOracle _otherStableOracle, bool isReversed) {
         uint128 isParamsForPriceOracle;
         try ICurveStableSwapNG(_lp).price_oracle() {
             isParamsForPriceOracle = 0;
@@ -28,7 +29,8 @@ contract OracleCoinFromCurveLP is IPriceOracle {
             lp: ICurveStableSwapNG(_lp),
             otherStableOracle: _otherStableOracle,
             otherStableDecimals: _otherStableOracle.decimals(),
-            isParamsForPriceOracle: isParamsForPriceOracle
+            isParamsForPriceOracle: isParamsForPriceOracle,
+            isReversed: isReversed
         });
     }
 
@@ -36,7 +38,10 @@ contract OracleCoinFromCurveLP is IPriceOracle {
         OracleCoinFromCurveLPStruct memory params = oracleParams;
 
         uint256 priceOtherStable = params.otherStableOracle.latestAnswer() * 10 ** (18 - params.otherStableDecimals);
-        return (_priceOracle(params.lp, params.isParamsForPriceOracle) * priceOtherStable) / 1 ether;
+
+        uint256 priceOracle = params.isReversed ? 1e36 / _priceOracle(params.lp, params.isParamsForPriceOracle) : _priceOracle(params.lp, params.isParamsForPriceOracle);
+
+        return (priceOracle * priceOtherStable) / 1e18;
     }
 
     function decimals() external pure returns (uint8) {

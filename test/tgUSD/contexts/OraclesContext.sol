@@ -4,11 +4,13 @@ pragma solidity ^0.8.24;
 import "./TgUSDDeployContext.sol";
 
 import {OracleCoinFromCurveLP} from "../../../src/tgUSD/Oracles/Token/OracleCoinFromCurveLP.sol";
+import {OracleERC4626} from "../../../src/tgUSD/Oracles/Token/OracleERC4626.sol";
+
 import {OracleDuoPoolStable} from "../../../src/tgUSD/Oracles/CurveLP/OracleDuoPoolStable.sol";
 import {OracleTriPoolStable} from "../../../src/tgUSD/Oracles/CurveLP/OracleTriPoolStable.sol";
 import {OracleCryptoSwap} from "../../../src/tgUSD/Oracles/CurveLP/OracleCryptoSwap.sol";
 
-import {sDAIOracle} from "../../../src/tgUSD/Oracles/sDAIOracle.sol";
+import {OraclePendlePT} from "../../../src/tgUSD/Oracles/Pendle/OraclePendlePT.sol";
 
 import {IRCalculator} from "../../../src/tgUSD/Utilities/IRCalculator.sol";
 import {IAggregatorStablePriceV3} from "../../../src/interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
@@ -57,8 +59,10 @@ contract OraclesContext is TgUSDDeployContext {
         vm.stopPrank();
         setupChainlinkOracles();
         setupSimpleTokenOraclesWithCurveLP();
+        setupSavingAccountOracles();
         setupCurveStableLPOracles();
         setupCurveTriCryptoSwapLPOracles();
+        setupPendlePTTokens();
     }
 
     function setupTgUSDOracle() public {
@@ -78,55 +82,72 @@ contract OraclesContext is TgUSDDeployContext {
     }
 
     function setupChainlinkOracles() internal {
-        oracles[AddrClassicERC20.TOKEN_USDC] = IPriceOracle(AddrChainlinkOracle.USDC);
+        oracles[AddrClassicERC20.DAI] = IPriceOracle(AddrChainlinkOracle.DAI);
+        vm.label(address(AddrChainlinkOracle.DAI), "Oracle DAI");
+
+        oracles[AddrClassicERC20.USDS] = IPriceOracle(AddrChainlinkOracle.USDS);
+        vm.label(address(AddrChainlinkOracle.USDS), "Oracle USDS");
+
+        oracles[AddrClassicERC20.USDe] = IPriceOracle(AddrChainlinkOracle.USDe);
+        vm.label(address(AddrChainlinkOracle.USDe), "Oracle USDe");
+
+        oracles[AddrClassicERC20.USDC] = IPriceOracle(AddrChainlinkOracle.USDC);
         vm.label(address(AddrChainlinkOracle.USDC), "Oracle USDC");
 
-        oracles[AddrClassicERC20.TOKEN_USDT] = IPriceOracle(AddrChainlinkOracle.USDT);
+        oracles[AddrClassicERC20.USDT] = IPriceOracle(AddrChainlinkOracle.USDT);
         vm.label(address(AddrChainlinkOracle.USDT), "Oracle USDT");
 
-        oracles[AddrClassicERC20.TOKEN_CRVUSD] = IPriceOracle(AddrChainlinkOracle.CRVUSD);
-        vm.label(address(AddrChainlinkOracle.CRVUSD), "Oracle crvUSD");
+        oracles[AddrClassicERC20.crvUSD] = IPriceOracle(AddrChainlinkOracle.crvUSD);
+        vm.label(address(AddrChainlinkOracle.crvUSD), "Oracle crvUSD");
 
-        oracles[AddrClassicERC20.TOKEN_GHO] = IPriceOracle(AddrChainlinkOracle.GHO);
+        oracles[AddrClassicERC20.GHO] = IPriceOracle(AddrChainlinkOracle.GHO);
         vm.label(address(AddrChainlinkOracle.GHO), "Oracle GHO");
 
-        oracles[AddrClassicERC20.TOKEN_WETH] = IPriceOracle(AddrChainlinkOracle.ETH);
+        oracles[AddrClassicERC20.WETH] = IPriceOracle(AddrChainlinkOracle.ETH);
         vm.label(address(AddrChainlinkOracle.ETH), "Oracle ETH");
 
-        oracles[AddrClassicERC20.TOKEN_WBTC] = IPriceOracle(AddrChainlinkOracle.BTC);
+        oracles[AddrClassicERC20.WBTC] = IPriceOracle(AddrChainlinkOracle.BTC);
         vm.label(address(AddrChainlinkOracle.BTC), "Oracle BTC");
 
-        oracles[AddrClassicERC20.TOKEN_CBBTC] = IPriceOracle(AddrChainlinkOracle.CB_BTC);
-        vm.label(address(AddrChainlinkOracle.CB_BTC), "Oracle cbBTC");
+        oracles[AddrClassicERC20.cbBTC] = IPriceOracle(AddrChainlinkOracle.cbBTC);
+        vm.label(address(AddrChainlinkOracle.cbBTC), "Oracle cbBTC");
 
-        oracles[AddrClassicERC20.TOKEN_CRV] = IPriceOracle(AddrChainlinkOracle.CRV);
+        oracles[AddrClassicERC20.CRV] = IPriceOracle(AddrChainlinkOracle.CRV);
         vm.label(address(AddrChainlinkOracle.CRV), "Oracle CRV");
 
         // TODO Warning, is flagged as HIGH MARKET RISK
-        oracles[AddrClassicERC20.TOKEN_USR] = IPriceOracle(AddrChainlinkOracle.USR);
+        oracles[AddrClassicERC20.USR] = IPriceOracle(AddrChainlinkOracle.USR);
         vm.label(address(AddrChainlinkOracle.USR), "Oracle USR");
     }
 
     function setupSimpleTokenOraclesWithCurveLP() internal {
-        // Oracle FXUSD
-        oracles[AddrClassicERC20.TOKEN_FXUSD] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.USDC_FXUSD), IPriceOracle(address(AddrChainlinkOracle.USDC)));
-        vm.label(address(oracles[AddrClassicERC20.TOKEN_FXUSD]), "Oracle fxUSD");
+        // Oracle fxUSD
+        oracles[AddrClassicERC20.fxUSD] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.USDC_fxUSD), IPriceOracle(address(AddrChainlinkOracle.USDC)), false);
+        vm.label(address(oracles[AddrClassicERC20.fxUSD]), "Oracle fxUSD");
+
+        // Oracle DOLA
+        oracles[AddrClassicERC20.DOLA] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.DOLA_sUSDS), oracles[AddrClassicERC20.USDS], true);
+        vm.label(address(oracles[AddrClassicERC20.DOLA]), "Oracle DOLA");
+
+        // Oracle frxUSD
+        oracles[AddrClassicERC20.frxUSD] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.frxUSD_sUSDS), oracles[AddrClassicERC20.USDS], true);
+        vm.label(address(oracles[AddrClassicERC20.frxUSD]), "Oracle frxUSD");
 
         // Oracle frxETH
-        oracles[AddrClassicERC20.TOKEN_FRXETH] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.FRXETH_WETH), IPriceOracle(address(AddrChainlinkOracle.ETH)));
-        vm.label(address(oracles[AddrClassicERC20.TOKEN_FRXETH]), "Oracle frxETH");
+        oracles[AddrClassicERC20.frxETH] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.WETH_frxETH), IPriceOracle(address(AddrChainlinkOracle.ETH)), false);
+        vm.label(address(oracles[AddrClassicERC20.frxETH]), "Oracle frxETH");
 
         // Oracle pxETH
-        oracles[AddrClassicERC20.TOKEN_PXETH] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.PXETH_WETH), IPriceOracle(address(AddrChainlinkOracle.ETH)));
-        vm.label(address(oracles[AddrClassicERC20.TOKEN_PXETH]), "Oracle pxETH");
+        oracles[AddrClassicERC20.pxETH] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.WETH_pxETH), IPriceOracle(address(AddrChainlinkOracle.ETH)), false);
+        vm.label(address(oracles[AddrClassicERC20.pxETH]), "Oracle pxETH");
 
         // Oracle RLP
-        oracles[AddrClassicERC20.TOKEN_RLP] = new OracleCoinFromCurveLP(address(AddrCryptoSwapLP.USR_RLP), IPriceOracle(address(AddrChainlinkOracle.USR)));
-        vm.label(address(oracles[AddrClassicERC20.TOKEN_RLP]), "Oracle RLP");
+        oracles[AddrClassicERC20.RLP] = new OracleCoinFromCurveLP(address(AddrCryptoSwapLP.USR_RLP), IPriceOracle(address(AddrChainlinkOracle.USR)), false);
+        vm.label(address(oracles[AddrClassicERC20.RLP]), "Oracle RLP");
 
-        // TODO Warning, is flagged as HIGH MARKET RISK
-        oracles[AddrClassicERC20.TOKEN_CVX] = new OracleCoinFromCurveLP(address(AddrCryptoSwapLP.CVX_ETH), IPriceOracle(address(AddrChainlinkOracle.ETH)));
-        vm.label(address(oracles[AddrClassicERC20.TOKEN_CVX]), "Oracle CVX");
+        // Oracle CVX
+        oracles[AddrClassicERC20.CVX] = new OracleCoinFromCurveLP(address(AddrCryptoSwapLP.CVX_ETH), IPriceOracle(address(AddrChainlinkOracle.ETH)), false);
+        vm.label(address(oracles[AddrClassicERC20.CVX]), "Oracle CVX");
     }
 
     function setupCurveTriCryptoSwapLPOracles() internal {
@@ -139,12 +160,12 @@ contract OraclesContext is TgUSDDeployContext {
         vm.label(address(oracles[AddrCryptoSwapLP.USDC_WBTC_ETH]), "Oracle LP USDC/WBTC/ETH");
 
         // Oracle CRVUSD_ETH_CRV
-        oracles[AddrCryptoSwapLP.CRVUSD_ETH_CRV] = new OracleCryptoSwap(AddrCryptoSwapLP.CRVUSD_ETH_CRV, AddrChainlinkOracle.CRVUSD);
-        vm.label(address(oracles[AddrCryptoSwapLP.CRVUSD_ETH_CRV]), "Oracle LP crvUSD/ETH/CRV");
+        oracles[AddrCryptoSwapLP.crvUSD_ETH_CRV] = new OracleCryptoSwap(AddrCryptoSwapLP.crvUSD_ETH_CRV, AddrChainlinkOracle.crvUSD);
+        vm.label(address(oracles[AddrCryptoSwapLP.crvUSD_ETH_CRV]), "Oracle LP crvUSD/ETH/CRV");
 
         // Oracle GHO_CBBTC_ETH
-        oracles[AddrCryptoSwapLP.GHO_CBBTC_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.GHO_CBBTC_ETH, AddrChainlinkOracle.GHO);
-        vm.label(address(oracles[AddrCryptoSwapLP.GHO_CBBTC_ETH]), "Oracle LP GHO/cbBTC/ETH");
+        oracles[AddrCryptoSwapLP.GHO_cbBTC_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.GHO_cbBTC_ETH, AddrChainlinkOracle.GHO);
+        vm.label(address(oracles[AddrCryptoSwapLP.GHO_cbBTC_ETH]), "Oracle LP GHO/cbBTC/ETH");
 
         // Oracle USR_RLP
         oracles[AddrCryptoSwapLP.USR_RLP] = new OracleCryptoSwap(AddrCryptoSwapLP.USR_RLP, AddrChainlinkOracle.USR);
@@ -157,28 +178,28 @@ contract OraclesContext is TgUSDDeployContext {
 
     function setupCurveStableLPOracles() internal {
         // Oracle CRVUSD_USDC
-        oracles[AddrCurveStableLP.CRVUSD_USDC] = new OracleDuoPoolStable(
-            AddrCurveStableLP.CRVUSD_USDC,
+        oracles[AddrCurveStableLP.USDC_crvUSD] = new OracleDuoPoolStable(
+            AddrCurveStableLP.USDC_crvUSD,
             IPriceOracle(address(AddrChainlinkOracle.USDC)),
-            IPriceOracle(address(AddrChainlinkOracle.CRVUSD))
+            IPriceOracle(address(AddrChainlinkOracle.crvUSD))
         );
-        vm.label(address(oracles[AddrCurveStableLP.CRVUSD_USDC]), "Oracle LP crvUSD/USDC");
+        vm.label(address(oracles[AddrCurveStableLP.USDC_crvUSD]), "Oracle LP crvUSD/USDC");
 
         // Oracle CRVUSD_USDT
-        oracles[AddrCurveStableLP.CRVUSD_USDT] = new OracleDuoPoolStable(
-            AddrCurveStableLP.CRVUSD_USDT,
+        oracles[AddrCurveStableLP.USDT_crvUSD] = new OracleDuoPoolStable(
+            AddrCurveStableLP.USDT_crvUSD,
             IPriceOracle(address(AddrChainlinkOracle.USDT)),
-            IPriceOracle(address(AddrChainlinkOracle.CRVUSD))
+            IPriceOracle(address(AddrChainlinkOracle.crvUSD))
         );
-        vm.label(address(oracles[AddrCurveStableLP.CRVUSD_USDT]), "Oracle LP crvUSD/USDT");
+        vm.label(address(oracles[AddrCurveStableLP.USDT_crvUSD]), "Oracle LP crvUSD/USDT");
 
         // Oracle USDC_FXUSD
-        oracles[AddrCurveStableLP.USDC_FXUSD] = new OracleDuoPoolStable(
-            AddrCurveStableLP.USDC_FXUSD,
+        oracles[AddrCurveStableLP.USDC_fxUSD] = new OracleDuoPoolStable(
+            AddrCurveStableLP.USDC_fxUSD,
             IPriceOracle(address(AddrChainlinkOracle.USDC)),
-            oracles[AddrClassicERC20.TOKEN_FXUSD]
+            oracles[AddrClassicERC20.fxUSD]
         );
-        vm.label(address(oracles[AddrCurveStableLP.USDC_FXUSD]), "Oracle LP USDC/fxUSD");
+        vm.label(address(oracles[AddrCurveStableLP.USDC_fxUSD]), "Oracle LP USDC/fxUSD");
 
         // Oracle TriStable DAI/USDC/USDT
         oracles[AddrCurveStableLP.TRI_USD_TOKEN] = new OracleTriPoolStable(
@@ -190,25 +211,53 @@ contract OraclesContext is TgUSDDeployContext {
         vm.label(address(oracles[AddrCurveStableLP.TRI_USD_TOKEN]), "Oracle LP TriUSD");
 
         // Oracle frxETH/WETH
-        oracles[AddrCurveStableLP.FRXETH_WETH] = new OracleDuoPoolStable(
-            AddrCurveStableLP.FRXETH_WETH,
+        oracles[AddrCurveStableLP.WETH_frxETH] = new OracleDuoPoolStable(
+            AddrCurveStableLP.WETH_frxETH,
             IPriceOracle(address(AddrChainlinkOracle.ETH)),
-            oracles[AddrClassicERC20.TOKEN_FRXETH]
+            oracles[AddrClassicERC20.frxETH]
         );
-        vm.label(address(oracles[AddrCurveStableLP.FRXETH_WETH]), "Oracle LP frxETH/ETH");
+        vm.label(address(oracles[AddrCurveStableLP.WETH_frxETH]), "Oracle LP frxETH/ETH");
 
         // Oracle pxETH/WETH
-        oracles[AddrCurveStableLP.PXETH_WETH] = new OracleDuoPoolStable(
-            AddrCurveStableLP.PXETH_WETH,
+        oracles[AddrCurveStableLP.WETH_pxETH] = new OracleDuoPoolStable(
+            AddrCurveStableLP.WETH_pxETH,
             IPriceOracle(address(AddrChainlinkOracle.ETH)),
-            oracles[AddrClassicERC20.TOKEN_PXETH]
+            oracles[AddrClassicERC20.pxETH]
         );
-        vm.label(address(oracles[AddrCurveStableLP.PXETH_WETH]), "Oracle LP pxETH/ETH");
+        vm.label(address(oracles[AddrCurveStableLP.WETH_pxETH]), "Oracle LP pxETH/ETH");
     }
 
     function setupSavingAccountOracles() internal {
         // Oracle sDAI
-        oracles[AddrERC4626.S_DAI] = new sDAIOracle(AddrChainlinkOracle.SDAI);
-        vm.label(address(oracles[AddrERC4626.S_DAI]), "Oracle sDAI");
+        oracles[AddrERC4626.sDAI] = new OracleERC4626(AddrERC4626.sDAI, oracles[AddrClassicERC20.DAI]);
+        vm.label(address(oracles[AddrERC4626.sDAI]), "Oracle sDAI");
+        // Oracle sUSDS
+        oracles[AddrERC4626.sUSDS] = new OracleERC4626(AddrERC4626.sUSDS, oracles[AddrClassicERC20.USDS]);
+        vm.label(address(oracles[AddrERC4626.sUSDS]), "Oracle sUSDS");
+        // Oracle sUSDe
+        oracles[AddrERC4626.sUSDe] = new OracleERC4626(AddrERC4626.sUSDe, oracles[AddrClassicERC20.USDe]);
+        vm.label(address(oracles[AddrERC4626.sUSDe]), "Oracle sUSDe");
+        // Oracle sDOLA
+        oracles[AddrERC4626.sDOLA] = new OracleERC4626(AddrERC4626.sDOLA, oracles[AddrClassicERC20.DOLA]);
+        vm.label(address(oracles[AddrERC4626.sDOLA]), "Oracle sDOLA");
+        // Oracle scrvUSD
+        oracles[AddrERC4626.scrvUSD] = new OracleERC4626(AddrERC4626.scrvUSD, oracles[AddrClassicERC20.crvUSD]);
+        vm.label(address(oracles[AddrERC4626.scrvUSD]), "Oracle scrvUSD");
+        // Oracle wstUSR
+        oracles[AddrERC4626.wstUSR] = new OracleERC4626(AddrERC4626.wstUSR, oracles[AddrClassicERC20.USR]);
+        vm.label(address(oracles[AddrERC4626.wstUSR]), "Oracle wstUSR");
+        // Oracle sfrxUSD
+        oracles[AddrERC4626.sfrxUSD] = new OracleERC4626(AddrERC4626.sfrxUSD, oracles[AddrClassicERC20.frxUSD]);
+        vm.label(address(oracles[AddrERC4626.sfrxUSD]), "Oracle sfrxUSD");
+    }
+
+    function setupPendlePTTokens() internal {
+        // Oracle PT sUSDE 31_07_25
+        oracles[AddrPTPendle.sUSDe_31_07_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrClassicERC20.USDe]);
+        vm.label(address(oracles[AddrPTPendle.sUSDe_31_07_25]), "Oracle PT sUSDe 31/07/25");
+
+        // Oracle PT sUSDE 31_07_25
+        oracles[AddrPTPendle.eUSDe_29_05_25] = new OraclePendlePT(AddrMarketPendle.eUSDe_29_05_25, oracles[AddrClassicERC20.USDe]);
+        vm.label(address(oracles[AddrPTPendle.eUSDe_29_05_25]), "Oracle PT eUSDe 29/05/25");
     }
 }

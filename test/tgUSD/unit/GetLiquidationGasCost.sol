@@ -11,8 +11,8 @@
 // contract GetLiquidationGasCost is TgUSDDeployContext {
 //     IERC20Metadata coin0;
 //     IERC20Metadata coin1;
-//     ICurveStableSwapNG lp = AddrCurveStableLP.CRVUSD_USDC;
-//     ICvxRewardToken rewardToken = AddrCvxRewardTokens.CRVUSD_USDC_LP;
+//     ICurveStableSwapNG lp = AddrCurveStableLP.USDC_crvUSD;
+//     ICvxRewardToken rewardToken = AddrCvxRewardTokens.USDC_crvUSD_LP;
 
 //     uint256 poolId = 182;
 

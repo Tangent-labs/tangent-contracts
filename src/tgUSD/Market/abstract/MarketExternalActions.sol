@@ -191,7 +191,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
 
     function liquidateBadDebt(address account) external updateRewards(account) {
         // Checkpoint IR
-        (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
+        (, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
 
         // Can liquidate bad debt only if the value of the collateral is below the debt
         require(_positionValue(collatBalance) < userDebt_, PositionWithoutBadDebt());

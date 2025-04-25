@@ -288,7 +288,8 @@ abstract contract MarketCore is PauseSettings, Collateral {
         uint256 tgUSDToRepay;
 
         // Liquidate all
-        if (collatAmountToLiquidate == liquidateCall._collateralBalance) {
+        if (collatAmountToLiquidate >= liquidateCall._collateralBalance) {
+            collatAmountToLiquidate = liquidateCall._collateralBalance;
             tgUSDToRepay = liquidateCall.userDebt;
             debtSharesToRemove = liquidateCall._userDebtShares;
         }

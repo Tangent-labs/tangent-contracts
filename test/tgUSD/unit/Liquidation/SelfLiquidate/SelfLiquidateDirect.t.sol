@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../../contexts/ConvexCurveContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../../handler/Curve/HLpManipulator.sol";
 import "../../../handler/Features/HProcessRewards.sol";
 import "../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
-contract SelfLiquidateDirect is ConvexCurveContext {
+contract SelfLiquidateDirect is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
 
@@ -18,7 +18,7 @@ contract SelfLiquidateDirect is ConvexCurveContext {
     uint256 public collatDeposited = 5_000 ether;
     uint256 public initialDebt = 4_250 ether;
     function setUp() public {
-        collatToken = AddrCurveStableLP.CRVUSD_USDC;
+        collatToken = AddrCurveStableLP.USDC_crvUSD;
 
         market = deployConvexCurveLPMarket(collatToken);
 

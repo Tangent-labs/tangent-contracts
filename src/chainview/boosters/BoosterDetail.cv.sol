@@ -63,22 +63,22 @@ contract BoosterDetail is SdtPosition, BalancesAllowances {
         // CRV
         if (staking == AddrBooster.SD_CRV_STAKING) {
             spenderStaking[0] = address(AddrBooster.SD_CRV_STAKING);
-            ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.TOKEN_CRV, spenders: spenderSdtUtilities});
+            ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.CRV, spenders: spenderSdtUtilities});
             ibas[1] = InputBalancesAllowances({token: AddrBooster.SD_CRV, spenders: spenderSdtUtilities});
             ibas[2] = InputBalancesAllowances({token: AddrBooster.SD_CRV_GAUGE, spenders: spenderStaking});
         } else if (staking == AddrBooster.SD_BAL_STAKING) {
             spenderStaking[0] = address(AddrBooster.SD_BAL_STAKING);
-            ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.TOKEN_80_BAL_20_ETH, spenders: spenderSdtUtilities});
+            ibas[0] = InputBalancesAllowances({token: AddrClassicERC20._80_BAL_20_ETH, spenders: spenderSdtUtilities});
             ibas[1] = InputBalancesAllowances({token: AddrBooster.SD_BAL, spenders: spenderSdtUtilities});
             ibas[2] = InputBalancesAllowances({token: AddrBooster.SD_BAL_GAUGE, spenders: spenderStaking});
         } else if (staking == AddrBooster.SD_PENDLE_STAKING) {
             spenderStaking[0] = address(AddrBooster.SD_PENDLE_STAKING);
-            ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.TOKEN_PENDLE, spenders: spenderSdtUtilities});
+            ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.PENDLE, spenders: spenderSdtUtilities});
             ibas[1] = InputBalancesAllowances({token: AddrBooster.SD_PENDLE, spenders: spenderSdtUtilities});
             ibas[2] = InputBalancesAllowances({token: AddrBooster.SD_PENDLE_GAUGE, spenders: spenderStaking});
         } else {
             spenderStaking[0] = address(AddrBooster.SD_FXN_STAKING);
-            ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.TOKEN_FXN, spenders: spenderSdtUtilities});
+            ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.FXN, spenders: spenderSdtUtilities});
             ibas[1] = InputBalancesAllowances({token: AddrBooster.SD_FXN, spenders: spenderSdtUtilities});
             ibas[2] = InputBalancesAllowances({token: AddrBooster.SD_FXN_GAUGE, spenders: spenderStaking});
         }

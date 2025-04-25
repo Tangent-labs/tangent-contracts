@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../../contexts/ConvexCurveContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 import "../../../../../src/interfaces/externals/Curve/ICrvPoolPlain.sol";
 import "../../../../../src/interfaces/externals/Chainlink/IAggregatorV3.sol";
 import "../../../handler/Curve/HLpManipulator.sol";
 import "forge-std/console.sol";
 
-contract CryptoSwapOracleTest is ConvexCurveContext {
+contract CryptoSwapOracleTest is MarketDeploymentContext {
     ICurveTriCryptoSwap[] cryptoSwaps;
 
     function setUp() external {
         // TRI POOL
         cryptoSwaps.push(AddrCryptoSwapLP.USDT_WBTC_ETH);
         cryptoSwaps.push(AddrCryptoSwapLP.USDC_WBTC_ETH);
-        cryptoSwaps.push(AddrCryptoSwapLP.CRVUSD_ETH_CRV);
-        cryptoSwaps.push(AddrCryptoSwapLP.GHO_CBBTC_ETH);
+        cryptoSwaps.push(AddrCryptoSwapLP.crvUSD_ETH_CRV);
+        cryptoSwaps.push(AddrCryptoSwapLP.GHO_cbBTC_ETH);
 
         // DUO POOL
         cryptoSwaps.push(AddrCryptoSwapLP.USR_RLP);

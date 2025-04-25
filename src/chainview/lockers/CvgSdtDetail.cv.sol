@@ -63,7 +63,7 @@ contract CvgSdtDetail is SdtPosition, BalancesAllowances {
         address[] memory spenderStaking = new address[](1);
         spenderStaking[0] = address(AddrBooster.CVG_SDT_STAKING);
 
-        ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.TOKEN_SDT, spenders: spenderSdt});
+        ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.SDT, spenders: spenderSdt});
         ibas[1] = InputBalancesAllowances({token: AddrBooster.CVG_SDT, spenders: spenderStaking});
 
         return getBalancesAllowances(user, ibas);

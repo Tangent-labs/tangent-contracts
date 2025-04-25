@@ -8,44 +8,44 @@ import {Test} from "forge-std/Test.sol";
 contract Labeliser is Test {
     function labelizeERC20() external {
         // Stablecoins
-        vm.label(address(AddrClassicERC20.TOKEN_DAI), "DAI");
-        vm.label(address(AddrClassicERC20.TOKEN_FRAX), "FRAX");
-        vm.label(address(AddrClassicERC20.TOKEN_USDT), "USDT");
-        vm.label(address(AddrClassicERC20.TOKEN_CRVUSD), "CRVUSD");
-        vm.label(address(AddrClassicERC20.TOKEN_USDC), "USDC");
-        vm.label(address(AddrClassicERC20.TOKEN_DOLA), "DOLA");
-        vm.label(address(AddrClassicERC20.TOKEN_FXUSD), "FXUSD");
-        vm.label(address(AddrClassicERC20.TOKEN_FRXUSD), "frxUSD");
-        vm.label(address(AddrClassicERC20.TOKEN_USR), "USR");
-        vm.label(address(AddrClassicERC20.TOKEN_STUSR), "stUSR");
-        vm.label(address(AddrClassicERC20.TOKEN_USDE), "USDE");
-        vm.label(address(AddrClassicERC20.TOKEN_GHO), "GHO");
+        vm.label(address(AddrClassicERC20.DAI), "DAI");
+        vm.label(address(AddrClassicERC20.FRAX), "FRAX");
+        vm.label(address(AddrClassicERC20.USDT), "USDT");
+        vm.label(address(AddrClassicERC20.crvUSD), "CRVUSD");
+        vm.label(address(AddrClassicERC20.USDC), "USDC");
+        vm.label(address(AddrClassicERC20.DOLA), "DOLA");
+        vm.label(address(AddrClassicERC20.fxUSD), "fxUSD");
+        vm.label(address(AddrClassicERC20.frxUSD), "frxUSD");
+        vm.label(address(AddrClassicERC20.USR), "USR");
+        vm.label(address(AddrClassicERC20.stUSR), "stUSR");
+        vm.label(address(AddrClassicERC20.USDe), "USDE");
+        vm.label(address(AddrClassicERC20.GHO), "GHO");
 
         // Volatiles
-        vm.label(address(AddrClassicERC20.TOKEN_CRV), "CRV");
-        vm.label(address(AddrClassicERC20.TOKEN_CVX), "CVX");
-        vm.label(address(AddrClassicERC20.TOKEN_FXN), "FXN");
-        vm.label(address(AddrClassicERC20.TOKEN_RLP), "RLP");
+        vm.label(address(AddrClassicERC20.CRV), "CRV");
+        vm.label(address(AddrClassicERC20.CVX), "CVX");
+        vm.label(address(AddrClassicERC20.FXN), "FXN");
+        vm.label(address(AddrClassicERC20.RLP), "RLP");
 
         // ETH
-        vm.label(address(AddrClassicERC20.TOKEN_WETH), "WETH");
-        vm.label(address(AddrClassicERC20.TOKEN_FRXETH), "frxETH");
-        vm.label(address(AddrClassicERC20.TOKEN_PXETH), "pxETH");
+        vm.label(address(AddrClassicERC20.WETH), "WETH");
+        vm.label(address(AddrClassicERC20.frxETH), "frxETH");
+        vm.label(address(AddrClassicERC20.pxETH), "pxETH");
 
         // BTC
-        vm.label(address(AddrClassicERC20.TOKEN_WBTC), "WBTC");
-        vm.label(address(AddrClassicERC20.TOKEN_CBBTC), "cbBTC");
+        vm.label(address(AddrClassicERC20.WBTC), "WBTC");
+        vm.label(address(AddrClassicERC20.cbBTC), "cbBTC");
     }
 
     function labelizeERC4626() external {
-        vm.label(address(AddrERC4626.S_DAI), "sDAI");
-        vm.label(address(AddrERC4626.S_CRVUSD), "scrvUSD");
+        vm.label(address(AddrERC4626.sDAI), "sDAI");
+        vm.label(address(AddrERC4626.scrvUSD), "scrvUSD");
         vm.label(address(AddrERC4626.REWARD_HANDLER_SCRVUSD), "scrvUSD Reward Handler");
-        vm.label(address(AddrERC4626.S_FRAX), "sFRAX");
-        vm.label(address(AddrERC4626.S_DOLA), "sDOLA");
-        vm.label(address(AddrERC4626.S_FRXUSD), "sfrxUSD");
-        vm.label(address(AddrERC4626.S_USDE), "sUSDe");
-        vm.label(address(AddrERC4626.WST_USR), "wstUSR");
+        vm.label(address(AddrERC4626.sFRAX), "sFRAX");
+        vm.label(address(AddrERC4626.sDOLA), "sDOLA");
+        vm.label(address(AddrERC4626.sfrxUSD), "sfrxUSD");
+        vm.label(address(AddrERC4626.sUSDe), "sUSDe");
+        vm.label(address(AddrERC4626.wstUSR), "wstUSR");
     }
 
     function labeliseNewConvexCrvMarket(address collat, string calldata collatSymbol, address convexMarket, address cvxRewardToken) external {

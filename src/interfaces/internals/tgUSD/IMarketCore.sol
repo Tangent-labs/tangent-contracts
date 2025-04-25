@@ -51,5 +51,4 @@ struct MarketInit {
     uint256 liquidationThreshold;
     uint256 maxMarketDebt;
     uint256 minimumLoan;
-    IERC20Metadata[] _rewardTokens;
 }

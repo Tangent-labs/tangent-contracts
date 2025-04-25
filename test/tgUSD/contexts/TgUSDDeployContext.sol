@@ -8,6 +8,7 @@ import {StdUtils} from "forge-std/StdUtils.sol";
 
 import "../../../src/libs/Resources/ResourcesConvex.sol";
 import "../../../src/libs/Resources/ResourcesCurveLP.sol";
+import "../../../src/libs/Resources/ResourcesPendle.sol";
 import "../../../src/libs/Resources/ResourcesYearn.sol";
 
 import "../../../src/tgUSD/Lock/RsTanService.sol";
@@ -82,7 +83,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     constructor() {
         // baseFork = vm.createSelectFork("base", 24379193);
-        mainnetFork = vm.createSelectFork("mainnet", 22325490);
+        mainnetFork = vm.createSelectFork("mainnet", 22340060);
 
         vm.startPrank(owner);
 

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
 import "../../handler/Features/HProcessRewards.sol";
 import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
-contract ClaimMultiple is ConvexCurveContext {
+contract ClaimMultiple is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
     ConvexFxnLPMarket public market2;
     IERC20Metadata public collatToken;
@@ -21,9 +21,9 @@ contract ClaimMultiple is ConvexCurveContext {
     uint256 minimumLoan;
 
     function setUp() public {
-        collatToken = AddrCurveStableLP.CRVUSD_USDC;
+        collatToken = AddrCurveStableLP.USDC_crvUSD;
         market = deployConvexCurveLPMarket(collatToken);
-        market2 = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_FXUSD);
+        market2 = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
         hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
         hRewards2 = new HProcessRewards(usr1, market2, rewardAccumulator);
         hDeposit = new HDepositConvexCrvLP(usr1, market);

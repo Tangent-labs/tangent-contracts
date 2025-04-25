@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../tgUSD/contexts/ConvexCurveContext.sol";
+import "../../tgUSD/contexts/MarketDeploymentContext.sol";
 
 import "../../../src/chainview/boosters/BoosterOutExpected.cv.sol";
 import "../../../src/chainview/boosters/BoosterDetail.cv.sol";
 import "../../../src/chainview/boosters/BoosterList.cv.sol";
-contract BoosterChainview is ConvexCurveContext {
+contract BoosterChainview is MarketDeploymentContext {
     // LIST
     function test_booster_list_not_connected() public {
         try new BoosterList(address(0)) {} catch (bytes memory reason) {

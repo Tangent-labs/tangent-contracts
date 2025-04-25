@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
-import "../../../../src/interfaces/externals/Curve/ICrvPoolPlain.sol";
-import "../../../../src/interfaces/externals/Chainlink/IAggregatorV3.sol";
-contract GetLPPriceCurveStableSwap is ConvexCurveContext {
+import "../../../contexts/MarketDeploymentContext.sol";
+import "../../../../../src/interfaces/externals/Curve/ICrvPoolPlain.sol";
+import "../../../../../src/interfaces/externals/Chainlink/IAggregatorV3.sol";
+contract GetLPPriceCurveStableSwap is MarketDeploymentContext {
     IERC20Metadata coin0;
     IERC20Metadata coin1;
     ICrvPoolPlain lp = ICrvPoolPlain(0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E);
@@ -28,11 +28,11 @@ contract GetLPPriceCurveStableSwap is ConvexCurveContext {
         // Dump a lot of crvUSD
         vm.startPrank(usr1);
 
-        AddrClassicERC20.TOKEN_CRVUSD.approve(address(lp), MAX_UINT);
-        AddrClassicERC20.TOKEN_USDC.approve(address(lp), MAX_UINT);
+        AddrClassicERC20.crvUSD.approve(address(lp), MAX_UINT);
+        AddrClassicERC20.USDC.approve(address(lp), MAX_UINT);
 
         uint256 loanAmount = lp.add_liquidity([amount0Lp, amount1Lp], 0);
-        deal(address(AddrClassicERC20.TOKEN_CRVUSD), usr1, 1_000_000_000_000 ether);
+        deal(address(AddrClassicERC20.crvUSD), usr1, 1_000_000_000_000 ether);
 
         uint256 received0 = lp.exchange(1, 0, amountInSwap, 0, usr1);
 
@@ -46,11 +46,7 @@ contract GetLPPriceCurveStableSwap is ConvexCurveContext {
         uint256 sumLost = collateralValue + (amountInSwap - received1);
 
         assertLt(loanMax, sumLost);
-        console.log(loanMax, sumLost);
 
-        console.log("USDC received", received0);
-        console.log("CRVUSD received", received1);
-        console.log("lastLPPrice ", lastLPPrice);
         vm.stopPrank();
     }
 }

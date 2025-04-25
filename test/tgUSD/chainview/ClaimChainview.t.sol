@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../contexts/ConvexCurveContext.sol";
+import "../contexts/MarketDeploymentContext.sol";
 
 import "../handler/Features/BorrowRepay/HBorrow.sol";
 
@@ -8,11 +8,11 @@ import "../handler/Features/BorrowRepay/HBorrow.sol";
 
 import "../../../src/chainview/tgUSD/ui/ClaimUI.cv.sol";
 
-contract ClaimChainview is ConvexCurveContext {
+contract ClaimChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(AddrCurveStableLP.CRVUSD_USDC);
+        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
     }
 
     // LIST

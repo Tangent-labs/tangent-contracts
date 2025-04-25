@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../contexts/ConvexCurveContext.sol";
+import "../contexts/MarketDeploymentContext.sol";
 
 import "../handler/Features/BorrowRepay/HBorrow.sol";
 
@@ -8,7 +8,7 @@ import "../handler/Features/BorrowRepay/HBorrow.sol";
 
 import "../../../src/chainview/tgUSD/ui/GetBalancesAllowances.cv.sol";
 
-contract GetBalancesAllowancesChainview is ConvexCurveContext {
+contract GetBalancesAllowancesChainview is MarketDeploymentContext {
     InputBalancesAllowances[] public ibas;
 
     // LIST

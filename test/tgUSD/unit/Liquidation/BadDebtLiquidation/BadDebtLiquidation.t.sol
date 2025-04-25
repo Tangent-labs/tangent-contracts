@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../../contexts/ConvexCurveContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 import "../../../../../src/tgUSD/Market/abstract/DebtIR.sol";
 import "../../../../utils/ERC20BalanceChanges.sol";
 
@@ -9,7 +9,7 @@ import "../../../handler/Curve/HLpManipulator.sol";
 import "../../../handler/Features/HProcessRewards.sol";
 import "../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
-contract BadDebtLiquidation is ConvexCurveContext {
+contract BadDebtLiquidation is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
 
@@ -25,7 +25,7 @@ contract BadDebtLiquidation is ConvexCurveContext {
     uint256 badDebtToRepay = 7_000 ether;
 
     function setUp() public {
-        collatToken = AddrCurveStableLP.FRXETH_WETH;
+        collatToken = AddrCurveStableLP.WETH_frxETH;
         market = deployConvexCurveLPMarket(collatToken);
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
@@ -50,7 +50,7 @@ contract BadDebtLiquidation is ConvexCurveContext {
         assertGt(market.positionValue(usr1), market.userDebt(usr1), "Position value is still bigger than the debt");
 
         // Dump a lot of FRXETH in the LP to depeg FRXETH
-        hLpManipulator.dumpCrvPool(AddrCurveStableLP.FRXETH_WETH, 1, 0, 1_400 ether);
+        hLpManipulator.dumpCrvPool(AddrCurveStableLP.WETH_frxETH, 1, 0, 1_400 ether);
 
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionWithoutBadDebt.selector));
@@ -80,7 +80,7 @@ contract BadDebtLiquidation is ConvexCurveContext {
         vm.startPrank(usr2);
         hDeposit.setMsgSender(usr2);
 
-        hLpManipulator.dumpCrvPool(AddrCurveStableLP.FRXETH_WETH, 0, 1, 1_400 ether);
+        hLpManipulator.dumpCrvPool(AddrCurveStableLP.WETH_frxETH, 0, 1, 1_400 ether);
 
         skip(1 days);
 

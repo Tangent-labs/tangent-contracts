@@ -18,10 +18,11 @@ library AddrCvxRewardTokens {
     ICvxRewardToken constant CRVUSD_WETH = ICvxRewardToken(0xADde9073d897743E7004115Fa2452cC959FBF28a);
     ICvxRewardToken constant CRVUSD_WSTETH = ICvxRewardToken(0xbe3C3Fd181af6B99CC1bb9b0Ee065318aDFc4c96);
     ICvxRewardToken constant CRVUSD_LEVERAGE_WBTC = ICvxRewardToken(0xfe382f1Bf78e6D6012cB38C284Fe123ec9821966);
-    ICvxRewardToken constant CRVUSD_USDC_LP = ICvxRewardToken(0x44D8FaB7CD8b7877D5F79974c2F501aF6E65AbBA);
-    ICvxRewardToken constant CRVUSD_USDT_LP = ICvxRewardToken(0xD1DdB0a0815fD28932fBb194C84003683AF8a824);
-    ICvxRewardToken constant FRXETH_WETH_LP = ICvxRewardToken(0xFafDE12dC476C4913e29F47B4747860C148c5E4f);
-    ICvxRewardToken constant PXETH_WETH_LP = ICvxRewardToken(0x3B793E505A3C7dbCb718Fe871De8eBEf7854e74b);
+
+    ICvxRewardToken constant USDC_crvUSD_LP = ICvxRewardToken(0x44D8FaB7CD8b7877D5F79974c2F501aF6E65AbBA);
+    ICvxRewardToken constant USDT_crvUSD_LP = ICvxRewardToken(0xD1DdB0a0815fD28932fBb194C84003683AF8a824);
+    ICvxRewardToken constant WETH_frxETH_LP = ICvxRewardToken(0xFafDE12dC476C4913e29F47B4747860C148c5E4f);
+    ICvxRewardToken constant WETH_pxETH_LP = ICvxRewardToken(0x3B793E505A3C7dbCb718Fe871De8eBEf7854e74b);
 }
 
 library AddrCvxVaultTokens {
@@ -37,13 +38,14 @@ library PidCvxCrvBooster {
     uint256 constant CRVUSD_SUSDE = 361;
     uint256 constant CRVUSD_WSTETH = 364;
     uint256 constant CRVUSD_LEVERAGE_WBTC = 344;
-    uint256 constant CRVUSD_USDT_LP = 179;
-    uint256 constant CRVUSD_USDC_LP = 182;
-    uint256 constant FRXETH_WETH_LP = 219;
-    uint256 constant PXETH_WETH_LP = 271;
+
+    uint256 constant USDT_crvUSD_LP = 179;
+    uint256 constant USDC_crvUSD_LP = 182;
+    uint256 constant WETH_frxETH_LP = 219;
+    uint256 constant WETH_pxETH_LP = 271;
 }
 
 library PidCvxFxnBooster {
-    uint256 constant USDC_FXUSD_LP = 32;
+    uint256 constant USDC_fxUSD_LP = 32;
     uint256 constant FX_V2_STABILITY_POOL = 36;
 }

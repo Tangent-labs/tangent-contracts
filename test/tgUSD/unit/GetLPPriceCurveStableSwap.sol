@@ -32,11 +32,11 @@ contract GetLPPriceCurveStableSwap is TgUSDDeployContext {
     //     // Dump a lot of crvUSD
     //     vm.startPrank(usr1);
 
-    //     AddrClassicERC20.TOKEN_CRVUSD.approve(address(lp), 1_000_000_000_000 ether);
-    //     AddrClassicERC20.TOKEN_USDC.approve(address(lp), 1_000_000_000_000 ether);
+    //     AddrClassicERC20.crvUSD.approve(address(lp), 1_000_000_000_000 ether);
+    //     AddrClassicERC20.USDC.approve(address(lp), 1_000_000_000_000 ether);
 
     //     uint256 loanAmount = lp.add_liquidity([amount0Lp, amount1Lp], 0);
-    //     deal(address(AddrClassicERC20.TOKEN_CRVUSD), usr1, 1_000_000_000_000 ether);
+    //     deal(address(AddrClassicERC20.crvUSD), usr1, 1_000_000_000_000 ether);
 
     //     uint256 received0 = lp.exchange(1, 0, amountInSwap, 0, usr1);
 

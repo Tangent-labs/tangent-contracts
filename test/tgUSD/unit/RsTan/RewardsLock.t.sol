@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Curve/HLpManipulator.sol";
 
-contract RewardsLock is ConvexCurveContext {
+contract RewardsLock is MarketDeploymentContext {
     function test_lock_claimSimple() external {
         // Lock perma with user 1 and amount1
         uint208 amount1 = 10_000 ether;

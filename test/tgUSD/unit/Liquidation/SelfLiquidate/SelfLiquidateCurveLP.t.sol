@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../../contexts/ConvexCurveContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../../handler/Curve/HLpManipulator.sol";
 import "../../../handler/Features/HProcessRewards.sol";
 import "../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
-contract SelfLiquidateCurveLP is ConvexCurveContext {
+contract SelfLiquidateCurveLP is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
 
@@ -23,7 +23,7 @@ contract SelfLiquidateCurveLP is ConvexCurveContext {
     uint256 public collatDeposited = 5_000 ether;
     uint256 public initialDebt = 4_250 ether;
     function setUp() public {
-        collatToken = AddrCurveStableLP.CRVUSD_USDC;
+        collatToken = AddrCurveStableLP.USDC_crvUSD;
         lpTgUSD_USDC = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
         lpTgUSD_wfrxUSD = lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD");
 
@@ -42,9 +42,9 @@ contract SelfLiquidateCurveLP is ConvexCurveContext {
 
         hDeposit.depositAndBorrow(collatDeposited, initialDebt, true, address(0));
 
-        route.push(address(AddrCurveStableLP.CRVUSD_USDC));
-        route.push(address(AddrCurveStableLP.CRVUSD_USDC));
-        route.push(address(AddrClassicERC20.TOKEN_USDC));
+        route.push(address(AddrCurveStableLP.USDC_crvUSD));
+        route.push(address(AddrCurveStableLP.USDC_crvUSD));
+        route.push(address(AddrClassicERC20.USDC));
         route.push(address(lpTgUSD_USDC));
         route.push(address(tgUSD));
     }

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../../contexts/ConvexCurveContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../../handler/Curve/HLpManipulator.sol";
 import "../../../handler/Features/HProcessRewards.sol";
 import "../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 import "../../../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
-contract SecondaryLiqdtCurveLp is ConvexCurveContext {
+contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
     ConvexCrvLPMarket public market_crvUSD_USDC;
     ConvexFxnLPMarket public market_fxUSD_USDC;
 
@@ -21,12 +21,12 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
     ICurveStableSwapNG public lpTgUSD_USDC;
     ICurveStableSwapNG public lpTgUSD_wfrxUSD;
     function setUp() public {
-        collatToken = AddrCurveStableLP.CRVUSD_USDC;
+        collatToken = AddrCurveStableLP.USDC_crvUSD;
         lpTgUSD_USDC = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
         lpTgUSD_wfrxUSD = lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD");
 
         market_crvUSD_USDC = deployConvexCurveLPMarket(collatToken);
-        market_fxUSD_USDC = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_FXUSD);
+        market_fxUSD_USDC = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
 
         hDeposit_crvUSD_USDC = new HDepositConvexCrvLP(usr1, market_crvUSD_USDC);
         hDeposit_fxUSD_USDC = new HDepositConvexFxnLP(usr1, market_fxUSD_USDC);
@@ -89,13 +89,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
             encoder.encodeLiquidateCallForCurveLP(
                 encoder.createCurveRouterStruct(
                     Array.memoryAddress(
-                        [
-                            address(AddrCurveStableLP.CRVUSD_USDC),
-                            address(AddrCurveStableLP.CRVUSD_USDC),
-                            address(AddrClassicERC20.TOKEN_USDC),
-                            address(lpTgUSD_USDC),
-                            address(tgUSD)
-                        ]
+                        [address(AddrCurveStableLP.USDC_crvUSD), address(AddrCurveStableLP.USDC_crvUSD), address(AddrClassicERC20.USDC), address(lpTgUSD_USDC), address(tgUSD)]
                     ),
                     swapParams,
                     collatToDump,
@@ -169,7 +163,7 @@ contract SecondaryLiqdtCurveLp is ConvexCurveContext {
             encoder.encodeLiquidateCallForCurveLP(
                 encoder.createCurveRouterStruct(
                     Array.memoryAddress(
-                        [address(AddrCurveStableLP.USDC_FXUSD), address(AddrCurveStableLP.USDC_FXUSD), address(AddrClassicERC20.TOKEN_USDC), address(lpTgUSD_USDC), address(tgUSD)]
+                        [address(AddrCurveStableLP.USDC_fxUSD), address(AddrCurveStableLP.USDC_fxUSD), address(AddrClassicERC20.USDC), address(lpTgUSD_USDC), address(tgUSD)]
                     ),
                     swapParams,
                     collatToDump,

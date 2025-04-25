@@ -69,7 +69,7 @@ contract CvgSdtDetail is SdtPosition, BalancesAllowances {
         spenderCvgCVX[0] = address(AddrBooster.CVG_CVX_STAKING);
         spenderCvgCVX[1] = cvgCvx1Lp;
 
-        ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.TOKEN_CVX, spenders: spenderCvx});
+        ibas[0] = InputBalancesAllowances({token: AddrClassicERC20.CVX, spenders: spenderCvx});
         ibas[1] = InputBalancesAllowances({token: AddrBooster.CVG_CVX, spenders: spenderCvgCVX});
         ibas[2] = InputBalancesAllowances({token: AddrBooster.CVX1, spenders: spenderCvx1});
 

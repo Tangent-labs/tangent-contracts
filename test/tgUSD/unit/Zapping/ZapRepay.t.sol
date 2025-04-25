@@ -3,10 +3,10 @@
 // // SPDX-License-Identifier: MIT
 // pragma solidity ^0.8.24;
 // import "../../../../src/tgUSD/Utilities/Zapper.sol";
-// import "../../contexts/ConvexCurveContext.sol";
+// import "../../contexts/MarketDeploymentContext.sol";
 // import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
-// contract ZapRepay is ConvexCurveContext {
+// contract ZapRepay is MarketDeploymentContext {
 //     ConvexCrvLPMarket public market;
 //     IERC20Metadata public collatToken;
 //     HDepositConvexCrvLP public hDeposit;
@@ -17,7 +17,7 @@
 //     IERC20 constant ETH_NAKED = IERC20(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
 //     function setUp() public {
-//         collatToken = AddrCurveStableLP.CRVUSD_USDC;
+//         collatToken = AddrCurveStableLP.USDC_crvUSD;
 //         market = deployConvexCurveLPMarket(collatToken);
 //         hDeposit = new HDepositConvexCrvLP(usr1, market);
 
@@ -27,7 +27,7 @@
 //     function test_zap_repay_partial_with_eth_for_sender() external {
 //         uint256 amountIn = 0.1 ether;
 
-//         (uint256 quote, ) = ensoUtils.getQuote(ETH_NAKED, amountIn, AddrClassicERC20.TOKEN_USDC, 10);
+//         (uint256 quote, ) = ensoUtils.getQuote(ETH_NAKED, amountIn, AddrClassicERC20.USDC, 10);
 //         quote = quote * 10 ** 12;
 
 //         vm.mockFunction(address(AddrRouter.ENSO_ROUTER_V2), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector));
@@ -54,9 +54,9 @@
 //     }
 
 //     function test_zap_repay_full_with_erc20_for_sender() external {
-//         IERC20 tokenIn = AddrClassicERC20.TOKEN_AAVE;
+//         IERC20 tokenIn = AddrClassicERC20.AAVE;
 //         uint256 amountIn = 30 ether;
-//         (uint256 quote, ) = ensoUtils.getQuote(tokenIn, amountIn, AddrClassicERC20.TOKEN_FRAX, 10);
+//         (uint256 quote, ) = ensoUtils.getQuote(tokenIn, amountIn, AddrClassicERC20.FRAX, 10);
 //         uint256 tgUsdRemaining = quote - initialDebt;
 //         vm.mockFunction(address(AddrRouter.ENSO_ROUTER_V2), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector));
 

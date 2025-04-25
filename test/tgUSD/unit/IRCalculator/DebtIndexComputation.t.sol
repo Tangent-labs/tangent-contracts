@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 import "../../../../src/tgUSD/Utilities/IRCalculator.sol";
 import "../../../utils/IRCalculationFFI.sol";
-contract DebtIndexComputation is ConvexCurveContext {
+contract DebtIndexComputation is MarketDeploymentContext {
     IRCalculationFFI irFFI = new IRCalculationFFI();
 
     function test_debtIndex_computation_fuzzing(uint256 oldIndex_, uint256 ir_, uint256 timestamp) external {
