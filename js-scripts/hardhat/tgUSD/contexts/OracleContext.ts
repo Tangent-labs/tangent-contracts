@@ -25,10 +25,10 @@ export class OracleContext {
     ];
 
     oracleCoinFromCurveLPParams = [
-        {key: "frxUSD", lp: "CRV_DUO_FRAX_frxUSD", coin0Oracle: "FRAX"},
-        {key: "fxUSD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC"},
-        {key: "frxETH", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH"},
-        {key: "pxETH", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH"},
+        {key: "frxUSD", lp: "CRV_DUO_FRAX_frxUSD", coin0Oracle: "FRAX", isReversed: false},
+        {key: "fxUSD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", isReversed: false},
+        {key: "frxETH", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", isReversed: false},
+        {key: "pxETH", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", isReversed: false},
     ];
 
     oracleDuoPoolStableParams = [
@@ -68,7 +68,7 @@ export class OracleContext {
 
         for (let index = 0; index < this.oracleCoinFromCurveLPParams.length; index++) {
             const item = this.oracleCoinFromCurveLPParams[index];
-            this.oracles[item.key] = (await OracleCoinFromCurveLPFactory.deploy(curveLp[item.lp], this.oracles[item.coin0Oracle])) as unknown as IPriceOracle;
+            this.oracles[item.key] = (await OracleCoinFromCurveLPFactory.deploy(curveLp[item.lp], this.oracles[item.coin0Oracle], item.isReversed)) as unknown as IPriceOracle;
         }
     }
 
