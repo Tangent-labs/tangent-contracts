@@ -5,7 +5,7 @@ import "./MarketInitParams.sol";
 
 import "../../../src/interfaces/internals/tgUSD/IMarketCore.sol";
 import "../../../src/interfaces/internals/tgUSD/IIRCalculator.sol";
-contract ConvexCurveContext is MarketInitParams {
+contract MarketDeploymentContext is MarketInitParams {
     function deployConvexCurveLPMarket(IERC20Metadata collat) public returns (ConvexCrvLPMarket) {
         ParamsInitConvexCurveLPMarket memory initP = cvxCurveLPMaps[address(collat)];
 
@@ -22,8 +22,7 @@ contract ConvexCurveContext is MarketInitParams {
                     maxLTV: initP.marketInit.maxLTV,
                     maxMarketDebt: initP.marketInit.maxMarketDebt,
                     liquidationThreshold: initP.marketInit.liquidationThreshold,
-                    minimumLoan: initP.marketInit.minimumLoan,
-                    _rewardTokens: initP.marketInit._rewardTokens
+                    minimumLoan: initP.marketInit.minimumLoan
                 }),
                 initP.cvxRewardToken,
                 initP.pid,
@@ -38,8 +37,8 @@ contract ConvexCurveContext is MarketInitParams {
         verifyParams_and_dealCollat(initP.marketInit.collat);
 
         IERC20[] memory curveConvexRewards = new IERC20[](2);
-        curveConvexRewards[0] = AddrClassicERC20.TOKEN_CRV;
-        curveConvexRewards[1] = AddrClassicERC20.TOKEN_CVX;
+        curveConvexRewards[0] = AddrClassicERC20.CRV;
+        curveConvexRewards[1] = AddrClassicERC20.CVX;
         rewardAccumulator.addNewRewards(address(convexMarket), curveConvexRewards);
 
         vm.stopPrank();
@@ -65,8 +64,7 @@ contract ConvexCurveContext is MarketInitParams {
                     maxLTV: initP.marketInit.maxLTV,
                     maxMarketDebt: initP.marketInit.maxMarketDebt,
                     liquidationThreshold: initP.marketInit.liquidationThreshold,
-                    minimumLoan: initP.marketInit.minimumLoan,
-                    _rewardTokens: initP.marketInit._rewardTokens
+                    minimumLoan: initP.marketInit.minimumLoan
                 }),
                 initP.pid,
                 initP.socFeePercentage,
@@ -78,15 +76,47 @@ contract ConvexCurveContext is MarketInitParams {
         verifyParams_and_dealCollat(initP.marketInit.collat);
 
         IERC20[] memory curveConvexRewards = new IERC20[](3);
-        curveConvexRewards[0] = AddrClassicERC20.TOKEN_CRV;
-        curveConvexRewards[1] = AddrClassicERC20.TOKEN_CVX;
-        curveConvexRewards[2] = AddrClassicERC20.TOKEN_FXN;
+        curveConvexRewards[0] = AddrClassicERC20.CRV;
+        curveConvexRewards[1] = AddrClassicERC20.CVX;
+        curveConvexRewards[2] = AddrClassicERC20.FXN;
         rewardAccumulator.addNewRewards(address(convexMarket), curveConvexRewards);
         vm.stopPrank();
 
         labeliser.labeliseNewConvexFxnMarket(address(collat), collat.symbol(), address(convexMarket), address(convexMarket.stakingProxyVault()));
 
         return convexMarket;
+    }
+
+    function deployMarketNoSociabilisation(IERC20Metadata collat) public returns (MarketNoSociabilization) {
+        ParamsInitConvexFxnLPMarket memory initP = cvxFxnLPMaps[address(collat)];
+
+        assertTrue(address(initP.marketInit.collat) != address(0), "No init params for LP");
+        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
+
+        vm.startPrank(owner);
+
+        MarketNoSociabilization marketNoSoc = MarketNoSociabilization(
+            marketCreator.createNoSociabilizationMarket(
+                MarketInit({
+                    collatToken: initP.marketInit.collat,
+                    collatOracle: oracles[collat],
+                    maxLTV: initP.marketInit.maxLTV,
+                    maxMarketDebt: initP.marketInit.maxMarketDebt,
+                    liquidationThreshold: initP.marketInit.liquidationThreshold,
+                    minimumLoan: initP.marketInit.minimumLoan
+                }),
+                getBaseIRParams(),
+                getBaseRCParams()
+            )
+        );
+
+        verifyParams_and_dealCollat(initP.marketInit.collat);
+
+        vm.stopPrank();
+
+        // labeliser.labeliseNewConvexFxnMarket(address(collat), collat.symbol(), address(marketNoSoc), address(convexMarket.stakingProxyVault()));
+
+        return marketNoSoc;
     }
 
     function giveCollateralToUsers(IERC20Metadata collat) public {

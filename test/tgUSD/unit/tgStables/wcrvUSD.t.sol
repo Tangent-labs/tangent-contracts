@@ -1,10 +1,10 @@
 // // SPDX-License-Identifier: MIT
 // pragma solidity ^0.8.24;
-// import "../../contexts/ConvexCurveContext.sol";
+// import "../../contexts/MarketDeploymentContext.sol";
 
-// contract wcrvUSD is ConvexCurveContext {
-//     IERC20 stable = AddrClassicERC20.TOKEN_CRVUSD;
-//     IERC4626 saving = AddrERC4626.S_CRVUSD;
+// contract wcrvUSD is MarketDeploymentContext {
+//     IERC20 stable = AddrClassicERC20.crvUSD;
+//     IERC4626 saving = AddrERC4626.scrvUSD;
 
 //     function test_mint() external {
 //         vm.startPrank(usr1);

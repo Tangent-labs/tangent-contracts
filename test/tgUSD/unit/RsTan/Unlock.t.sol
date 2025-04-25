@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Curve/HLpManipulator.sol";
 
 import {ERC721, ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
-contract Unlock is ConvexCurveContext {
+contract Unlock is MarketDeploymentContext {
     uint208 amount = 1 ether;
 
     function setUp() external {

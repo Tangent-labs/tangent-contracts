@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../../src/tgUSD/Utilities/Zapper.sol";
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
-contract ZapRepayRevert is ConvexCurveContext {
+contract ZapRepayRevert is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
     HDepositConvexCrvLP public hDeposit;
@@ -15,7 +15,7 @@ contract ZapRepayRevert is ConvexCurveContext {
     IERC20 constant ETH_NAKED = IERC20(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
     function setUp() public {
-        collatToken = AddrCurveStableLP.CRVUSD_USDC;
+        collatToken = AddrCurveStableLP.USDC_crvUSD;
         market = deployConvexCurveLPMarket(collatToken);
         hDeposit = new HDepositConvexCrvLP(usr1, market);
 
@@ -57,7 +57,7 @@ contract ZapRepayRevert is ConvexCurveContext {
         bytes[] memory state = new bytes[](0);
         vm.expectRevert(abi.encodeWithSelector(Zapper.TokenInMustBeZero.selector));
         zapper.zapRepay{value: amountIn}(
-            Zapper.ZapMarket({market: address(market), tokenIn: AddrClassicERC20.TOKEN_USDC, amountIn: amountIn, minAmountOut: 0, _for: usr1}),
+            Zapper.ZapMarket({market: address(market), tokenIn: AddrClassicERC20.USDC, amountIn: amountIn, minAmountOut: 0, _for: usr1}),
             abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector, address(ETH_NAKED), amountIn, commands, state)
         );
     }
@@ -89,9 +89,9 @@ contract ZapRepayRevert is ConvexCurveContext {
             [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
         );
         bytes[] memory state = new bytes[](0);
-        vm.expectRevert(abi.encodeWithSelector(Zapper.NotMarket.selector, address(AddrClassicERC20.TOKEN_USDC)));
+        vm.expectRevert(abi.encodeWithSelector(Zapper.NotMarket.selector, address(AddrClassicERC20.USDC)));
         zapper.zapRepay(
-            Zapper.ZapMarket({market: address(AddrClassicERC20.TOKEN_USDC), tokenIn: ETH_NAKED, amountIn: amountIn, minAmountOut: 0, _for: usr1}),
+            Zapper.ZapMarket({market: address(AddrClassicERC20.USDC), tokenIn: ETH_NAKED, amountIn: amountIn, minAmountOut: 0, _for: usr1}),
             abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector, address(ETH_NAKED), amountIn, commands, state)
         );
     }

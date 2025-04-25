@@ -1,17 +1,17 @@
-import "../contexts/ConvexCurveContext.sol";
+import "../contexts/MarketDeploymentContext.sol";
 
 import "../handler/Features/BorrowRepay/BorrowInvariantHandler.sol";
 
-contract DebtInvariant is ConvexCurveContext {
+contract DebtInvariant is MarketDeploymentContext {
     address[] public users;
 
     MarketExternalActions[] public markets;
 
     BorrowInvariantHandler public borrowInvariantHandler;
     function setUp() public {
-        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.CRVUSD_USDC));
-        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.CRVUSD_USDT));
-        markets.push(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_FXUSD));
+        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD));
+        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD));
+        markets.push(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD));
 
         MarketExternalActions[] memory marketsMemory = new MarketExternalActions[](markets.length);
         for (uint256 i; i < markets.length; i++) {

@@ -10,12 +10,18 @@ import "forge-std/console.sol";
 
 /// @title OracleDuoPoolStable
 /// @notice This contract provides price oracle functionality for a dual pool stablecoin setup.
-contract OraclePTToken is IPriceOracle {
+contract OraclePendlePT is IPriceOracle {
     IPendlePYLpOracle public constant oracle = IPendlePYLpOracle(0x9a9Fa8338dd5E5B2188006f1Cd2Ef26d921650C2);
-    address public market;
 
-    constructor(address _market) {
-        market = _market;
+    OraclePendlePTStruct public params;
+    struct OraclePendlePTStruct {
+        address pendleMarket;
+        IPriceOracle underlyingOracle;
+        uint96 underlyingOracleDecimals;
+    }
+
+    constructor(address _pendleMarket, IPriceOracle _underlyingOracle) {
+        params = OraclePendlePTStruct({pendleMarket: _pendleMarket, underlyingOracle: _underlyingOracle, underlyingOracleDecimals: _underlyingOracle.decimals()});
     }
 
     /**
@@ -31,15 +37,9 @@ contract OraclePTToken is IPriceOracle {
      * @return The price of the stable pool, adjusted to 18 decimals
      */
     function latestAnswer() external view returns (uint256) {
-        oracle.getPtToAssetRate(market, 30);
-        return oracle.getPtToSyRate(market, 30);
-    }
+        OraclePendlePTStruct memory _params = params;
+        uint256 underlyingPrice = _params.underlyingOracle.latestAnswer() * 10 ** (18 - _params.underlyingOracleDecimals);
 
-    /**
-     * @notice Returns the latest price from the oracle
-     * @return The price of the stable pool, adjusted to 18 decimals
-     */
-    function cac() external view returns (uint256, uint256) {
-        return (oracle.getPtToSyRate(market, 30), oracle.getPtToAssetRate(market, 30));
+        return (oracle.getPtToAssetRate(_params.pendleMarket, 30) * underlyingPrice) / 1e18;
     }
 }

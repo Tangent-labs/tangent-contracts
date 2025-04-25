@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Curve/HLpManipulator.sol";
 
-contract IncreaseLockTime is ConvexCurveContext {
+contract IncreaseLockTime is MarketDeploymentContext {
     uint208 amount = 1 ether;
 
     function setUp() external {

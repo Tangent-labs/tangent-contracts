@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../../src/tgUSD/Utilities/Zapper.sol";
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 import "../../handler/Features/ConvexCrv/HZapDepositConvexCrvLP.sol";
 
-contract ZapDepositEnso is ConvexCurveContext {
+contract ZapDepositEnso is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
-    IERC20Metadata public collatToken = AddrCurveStableLP.CRVUSD_USDC;
+    IERC20Metadata public collatToken = AddrCurveStableLP.USDC_crvUSD;
 
     HZapDepositConvexCrvLP public hZapDeposit;
 
@@ -40,7 +40,7 @@ contract ZapDepositEnso is ConvexCurveContext {
     }
 
     function test_zap_deposit_with_erc20_and_stake() external {
-        IERC20 tokenIn = AddrClassicERC20.TOKEN_DOLA;
+        IERC20 tokenIn = AddrClassicERC20.DOLA;
         uint256 amountIn = 10_000 ether;
 
         (, uint256 adjustedQuote) = ensoUtils.getQuote(tokenIn, amountIn, collatToken, 10);
@@ -53,7 +53,7 @@ contract ZapDepositEnso is ConvexCurveContext {
     }
 
     function test_zap_deposit_with_erc20_and_no_stake() external {
-        IERC20 tokenIn = AddrClassicERC20.TOKEN_USDC;
+        IERC20 tokenIn = AddrClassicERC20.USDC;
         uint256 amountIn = 10_000 * 10 ** 6;
 
         (, uint256 adjustedQuote) = ensoUtils.getQuote(tokenIn, amountIn, collatToken, 10);

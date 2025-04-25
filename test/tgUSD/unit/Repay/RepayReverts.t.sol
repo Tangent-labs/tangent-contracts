@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Features/BorrowRepay/HRepay.sol";
 import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
-contract RepayReverts is ConvexCurveContext {
+contract RepayReverts is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
 
@@ -15,7 +15,7 @@ contract RepayReverts is ConvexCurveContext {
     uint256 minimumLoan;
     uint256 maxMarketDebt;
     function setUp() public {
-        collatToken = AddrCurveStableLP.FRXETH_WETH;
+        collatToken = AddrCurveStableLP.WETH_frxETH;
         market = deployConvexCurveLPMarket(collatToken);
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         minimumLoan = market.minimumLoan();

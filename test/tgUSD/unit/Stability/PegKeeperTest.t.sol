@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Curve/HLpManipulator.sol";
 
-contract PegKeeperTest is ConvexCurveContext {
+contract PegKeeperTest is MarketDeploymentContext {
     HLpManipulator public hLpManipulator;
     function setUp() public {
         hLpManipulator = new HLpManipulator(usr1);
@@ -14,7 +14,7 @@ contract PegKeeperTest is ConvexCurveContext {
         hLpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 0, 1, 100_000 * 10 ** 6);
         hLpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD"), 0, 1, 100_000 * 10 ** 18);
 
-        console.log("Bal USDC", AddrClassicERC20.TOKEN_USDC.balanceOf(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"))));
+        console.log("Bal USDC", AddrClassicERC20.USDC.balanceOf(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"))));
         console.log("Bal tgUSD", tgUSD.balanceOf(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"))));
 
         // console.log("benef", pegKeeperTgUSD_USDC.calc_profit());

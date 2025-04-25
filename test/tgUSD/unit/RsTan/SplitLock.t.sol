@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Curve/HLpManipulator.sol";
 
-contract SplitLock is ConvexCurveContext {
+contract SplitLock is MarketDeploymentContext {
     uint208 amount0 = 20_000 ether;
     uint208 amount1 = 10_000 ether;
     function setUp() external {

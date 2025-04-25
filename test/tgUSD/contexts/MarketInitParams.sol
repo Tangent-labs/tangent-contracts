@@ -6,6 +6,7 @@ import "./WStableContext.sol";
 contract MarketInitParams is WStableContext {
     mapping(address => ParamsInitConvexCurveLPMarket) public cvxCurveLPMaps;
     mapping(address => ParamsInitConvexFxnLPMarket) public cvxFxnLPMaps;
+    mapping(address => MarketInitSimplified) public noSociabilizationMaps;
 
     struct ParamsInitConvexCurveLPMarket {
         MarketInitSimplified marketInit;
@@ -26,7 +27,6 @@ contract MarketInitParams is WStableContext {
         uint256 maxMarketDebt;
         uint256 liquidationThreshold;
         uint256 minimumLoan;
-        IERC20Metadata[] _rewardTokens;
     }
 
     constructor() {
@@ -35,84 +35,95 @@ contract MarketInitParams is WStableContext {
     }
 
     function initConvexCurveParams() public {
-        IERC20Metadata[] memory _rewardsCrvCvx = Array.memoryIERC20([AddrClassicERC20.TOKEN_CRV, AddrClassicERC20.TOKEN_CVX]);
-
         // Convex Curve - CRVUSD-USDC
-        cvxCurveLPMaps[address(AddrCurveStableLP.CRVUSD_USDC)] = ParamsInitConvexCurveLPMarket({
+        cvxCurveLPMaps[address(AddrCurveStableLP.USDC_crvUSD)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
-                collat: AddrCurveStableLP.CRVUSD_USDC,
+                collat: AddrCurveStableLP.USDC_crvUSD,
                 maxLTV: 90_000,
                 liquidationThreshold: 93_000,
                 minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether,
-                _rewardTokens: _rewardsCrvCvx
+                maxMarketDebt: 1_000_000 ether
             }),
-            cvxRewardToken: AddrCvxRewardTokens.CRVUSD_USDC_LP,
-            pid: PidCvxCrvBooster.CRVUSD_USDC_LP,
+            cvxRewardToken: AddrCvxRewardTokens.USDC_crvUSD_LP,
+            pid: PidCvxCrvBooster.USDC_crvUSD_LP,
             socFeePercentage: 1_000
         });
 
         // Convex Curve - CRVUSD-USDT
-        cvxCurveLPMaps[address(AddrCurveStableLP.CRVUSD_USDT)] = ParamsInitConvexCurveLPMarket({
+        cvxCurveLPMaps[address(AddrCurveStableLP.USDT_crvUSD)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
-                collat: AddrCurveStableLP.CRVUSD_USDT,
+                collat: AddrCurveStableLP.USDT_crvUSD,
                 maxLTV: 90_000,
                 liquidationThreshold: 93_000,
                 minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether,
-                _rewardTokens: _rewardsCrvCvx
+                maxMarketDebt: 1_000_000 ether
             }),
-            cvxRewardToken: AddrCvxRewardTokens.CRVUSD_USDT_LP,
-            pid: PidCvxCrvBooster.CRVUSD_USDT_LP,
+            cvxRewardToken: AddrCvxRewardTokens.USDT_crvUSD_LP,
+            pid: PidCvxCrvBooster.USDT_crvUSD_LP,
             socFeePercentage: 1_000
         });
 
         // Convex Curve - FRXETH-WETH
-        cvxCurveLPMaps[address(AddrCurveStableLP.FRXETH_WETH)] = ParamsInitConvexCurveLPMarket({
+        cvxCurveLPMaps[address(AddrCurveStableLP.WETH_frxETH)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
-                collat: AddrCurveStableLP.FRXETH_WETH,
+                collat: AddrCurveStableLP.WETH_frxETH,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
                 minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether,
-                _rewardTokens: _rewardsCrvCvx
+                maxMarketDebt: 1_000_000 ether
             }),
-            cvxRewardToken: AddrCvxRewardTokens.FRXETH_WETH_LP,
-            pid: PidCvxCrvBooster.FRXETH_WETH_LP,
+            cvxRewardToken: AddrCvxRewardTokens.WETH_frxETH_LP,
+            pid: PidCvxCrvBooster.WETH_frxETH_LP,
             socFeePercentage: 1_000
         });
 
         // Convex Curve - PXETH-WETH
-        cvxCurveLPMaps[address(AddrCurveStableLP.PXETH_WETH)] = ParamsInitConvexCurveLPMarket({
+        cvxCurveLPMaps[address(AddrCurveStableLP.WETH_pxETH)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
-                collat: AddrCurveStableLP.PXETH_WETH,
+                collat: AddrCurveStableLP.WETH_pxETH,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
                 minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether,
-                _rewardTokens: _rewardsCrvCvx
+                maxMarketDebt: 1_000_000 ether
             }),
-            cvxRewardToken: AddrCvxRewardTokens.PXETH_WETH_LP,
-            pid: PidCvxCrvBooster.PXETH_WETH_LP,
+            cvxRewardToken: AddrCvxRewardTokens.WETH_pxETH_LP,
+            pid: PidCvxCrvBooster.WETH_pxETH_LP,
             socFeePercentage: 1_000
         });
     }
 
     function initConvexFxnParams() public {
-        IERC20Metadata[] memory _rewardsFxn = Array.memoryIERC20([AddrClassicERC20.TOKEN_FXN, AddrClassicERC20.TOKEN_CRV, AddrClassicERC20.TOKEN_CVX]);
-
         // Convex FXN - USDC_FXUSD
-        cvxFxnLPMaps[address(AddrCurveStableLP.USDC_FXUSD)] = ParamsInitConvexFxnLPMarket({
+        cvxFxnLPMaps[address(AddrCurveStableLP.USDC_fxUSD)] = ParamsInitConvexFxnLPMarket({
             marketInit: MarketInitSimplified({
-                collat: AddrCurveStableLP.USDC_FXUSD,
+                collat: AddrCurveStableLP.USDC_fxUSD,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
                 minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether,
-                _rewardTokens: _rewardsFxn
+                maxMarketDebt: 1_000_000 ether
             }),
-            pid: PidCvxFxnBooster.USDC_FXUSD_LP,
+            pid: PidCvxFxnBooster.USDC_fxUSD_LP,
             socFeePercentage: 1_000
+        });
+    }
+
+    function initMarketNoSociabilization() public {
+        // Pendle - eUSDe_29_05_25
+        noSociabilizationMaps[address(AddrPTPendle.eUSDe_29_05_25)] = MarketInitSimplified({
+            collat: AddrPTPendle.eUSDe_29_05_25,
+            maxLTV: 85_000,
+            liquidationThreshold: 93_000,
+            minimumLoan: 3_000 ether,
+            maxMarketDebt: 1_000_000 ether
+        });
+
+        // Pendle - sUSDe_31_07_25
+        noSociabilizationMaps[address(AddrPTPendle.sUSDe_31_07_25)] = MarketInitSimplified({
+            collat: AddrPTPendle.sUSDe_31_07_25,
+            maxLTV: 85_000,
+            liquidationThreshold: 93_000,
+            minimumLoan: 3_000 ether,
+            maxMarketDebt: 1_000_000 ether
         });
     }
 }

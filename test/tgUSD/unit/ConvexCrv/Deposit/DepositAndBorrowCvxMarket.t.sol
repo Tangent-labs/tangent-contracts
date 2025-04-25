@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../../contexts/ConvexCurveContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../../handler/Features/HProcessRewards.sol";
 import "../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
-contract DepositAndBorrowCvxMarket is ConvexCurveContext {
+contract DepositAndBorrowCvxMarket is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
 
@@ -13,7 +13,7 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
     HDepositConvexCrvLP public hDeposit;
     HBorrow public hBorrow;
     function setUp() public {
-        collatToken = AddrCurveStableLP.CRVUSD_USDC;
+        collatToken = AddrCurveStableLP.USDC_crvUSD;
         market = deployConvexCurveLPMarket(collatToken);
 
         hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
@@ -27,8 +27,8 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         uint256 borrowedAmount1 = 3_440 ether;
 
         verifyReceiveERC20(market.cvxRewardToken(), address(market), collatDeposited1, "Verify that market receives Cvx Reward tokens");
-        verifyBalERC20NotChanging(AddrCurveStableLP.CRVUSD_USDC, address(market), "Verify that as staking, no LP are received by the MarketCore");
-        verifyLostERC20(AddrCurveStableLP.CRVUSD_USDC, usr1, collatDeposited1, "Verify that user sent its LP");
+        verifyBalERC20NotChanging(AddrCurveStableLP.USDC_crvUSD, address(market), "Verify that as staking, no LP are received by the MarketCore");
+        verifyLostERC20(AddrCurveStableLP.USDC_crvUSD, usr1, collatDeposited1, "Verify that user sent its LP");
         verifyMintERC20(tgUSD, borrowedAmount1, "tgUSD are not minted");
         verifyReceiveERC20(tgUSD, usr1, borrowedAmount1, "User receives the borrowed amount");
 
@@ -49,8 +49,8 @@ contract DepositAndBorrowCvxMarket is ConvexCurveContext {
         uint256 borrowedAmount2 = 6_000 ether;
 
         verifyReceiveERC20(market.cvxRewardToken(), address(market), collatDeposited2, "Verify that market receives Cvx Reward tokens");
-        verifyBalERC20NotChanging(AddrCurveStableLP.CRVUSD_USDC, address(market), "Verify that as staking, no LP are received by the MarketCore");
-        verifyLostERC20(AddrCurveStableLP.CRVUSD_USDC, usr2, collatDeposited2, "Verify that user sent its LP");
+        verifyBalERC20NotChanging(AddrCurveStableLP.USDC_crvUSD, address(market), "Verify that as staking, no LP are received by the MarketCore");
+        verifyLostERC20(AddrCurveStableLP.USDC_crvUSD, usr2, collatDeposited2, "Verify that user sent its LP");
         verifyReceiveERC20(tgUSD, usr2, borrowedAmount2 + 12, "User receives 50 tgUSD");
 
         hDeposit.setMsgSender(usr2);

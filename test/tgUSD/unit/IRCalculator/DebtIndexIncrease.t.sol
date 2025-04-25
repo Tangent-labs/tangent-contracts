@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 import "../../../utils/IRCalculationFFI.sol";
 
-contract DebtIndexIncrease is ConvexCurveContext {
+contract DebtIndexIncrease is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken;
     IRCalculationFFI irFFI = new IRCalculationFFI();
 
     function setUp() public {
-        collatToken = AddrCurveStableLP.CRVUSD_USDC;
+        collatToken = AddrCurveStableLP.USDC_crvUSD;
         market = deployConvexCurveLPMarket(collatToken);
     }
 

@@ -1,20 +1,20 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "../contexts/ConvexCurveContext.sol";
+import "../contexts/MarketDeploymentContext.sol";
 import "../handler/Features/BorrowRepay/HBorrow.sol";
 import "../handler/Features/BorrowRepay/HBorrow.sol";
 import {QuoteLiquidationRouter, CurveQuote} from "../../../src/chainview/tgUSD/bot/QuoteLiquidationRouter.cv.sol";
 
-contract QuoteLiquidationRouterChainview is ConvexCurveContext {
+contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
     uint256 constant ZERO = 0;
 
     function test_quote_curve_router_chainview_without_wStable_fxUSD() public {
         CurveQuote[] memory quoteIn = new CurveQuote[](1);
         address[11] memory route = [
-            address(AddrCurveStableLP.USDC_FXUSD),
-            address(AddrCurveStableLP.USDC_FXUSD),
-            address(AddrClassicERC20.TOKEN_USDC),
+            address(AddrCurveStableLP.USDC_fxUSD),
+            address(AddrCurveStableLP.USDC_fxUSD),
+            address(AddrClassicERC20.USDC),
             address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")),
             address(tgUSD),
             address(0),
@@ -45,9 +45,9 @@ contract QuoteLiquidationRouterChainview is ConvexCurveContext {
     function test_quote_curve_router_chainview_without_wStable() public {
         CurveQuote[] memory curveQuotes = new CurveQuote[](2);
         address[11] memory route = [
-            address(AddrCurveStableLP.CRVUSD_USDC),
-            address(AddrCurveStableLP.CRVUSD_USDC),
-            address(AddrClassicERC20.TOKEN_USDC),
+            address(AddrCurveStableLP.USDC_crvUSD),
+            address(AddrCurveStableLP.USDC_crvUSD),
+            address(AddrClassicERC20.USDC),
             address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")),
             address(tgUSD),
             address(0),
@@ -83,9 +83,9 @@ contract QuoteLiquidationRouterChainview is ConvexCurveContext {
         CurveQuote[] memory curveQuotes = new CurveQuote[](2);
 
         address[11] memory route = [
-            address(AddrCurveStableLP.CRVUSD_USDC),
-            address(AddrCurveStableLP.CRVUSD_USDC),
-            address(AddrClassicERC20.TOKEN_CRVUSD),
+            address(AddrCurveStableLP.USDC_crvUSD),
+            address(AddrCurveStableLP.USDC_crvUSD),
+            address(AddrClassicERC20.crvUSD),
             address(0),
             address(0),
             address(0),
@@ -118,9 +118,9 @@ contract QuoteLiquidationRouterChainview is ConvexCurveContext {
         CurveQuote[] memory curveQuotes = new CurveQuote[](2);
 
         address[11] memory route = [
-            address(AddrCurveStableLP.CRVUSD_USDC),
-            address(AddrCurveStableLP.CRVUSD_USDC),
-            address(AddrClassicERC20.TOKEN_USDC),
+            address(AddrCurveStableLP.USDC_crvUSD),
+            address(AddrCurveStableLP.USDC_crvUSD),
+            address(AddrClassicERC20.USDC),
             address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")),
             address(tgUSD),
             address(0),
@@ -142,9 +142,9 @@ contract QuoteLiquidationRouterChainview is ConvexCurveContext {
         CurveQuote memory curveQuote1 = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
 
         route = [
-            address(AddrCurveStableLP.CRVUSD_USDC),
-            address(AddrCurveStableLP.CRVUSD_USDC),
-            address(AddrClassicERC20.TOKEN_CRVUSD),
+            address(AddrCurveStableLP.USDC_crvUSD),
+            address(AddrCurveStableLP.USDC_crvUSD),
+            address(AddrClassicERC20.crvUSD),
             address(0),
             address(0),
             address(0),
@@ -176,10 +176,10 @@ contract QuoteLiquidationRouterChainview is ConvexCurveContext {
     }
 
     function testSwapTokens() public {
-        IERC20 tgUSD = lpDeploymentContext.tgUSD();
-        address tgUSDAddress = address(tgUSD);
+        IERC20 _tgUSD = lpDeploymentContext.tgUSD();
+        address tgUSDAddress = address(_tgUSD);
         address poolUSDCTgUSd = address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")); // Replace with actual address
-        address marketDataCollatAddress = address(AddrCurveStableLP.USDC_FXUSD);
+        address marketDataCollatAddress = address(AddrCurveStableLP.USDC_fxUSD);
 
         IERC20 lpContract;
 
@@ -187,7 +187,7 @@ contract QuoteLiquidationRouterChainview is ConvexCurveContext {
         address[11] memory routes = [address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0)];
         routes[0] = marketDataCollatAddress; // Collateral LP
         routes[1] = marketDataCollatAddress; // LP Collat => USDC (remove liquidity)
-        routes[2] = address(AddrClassicERC20.TOKEN_USDC); // tgUSD Address
+        routes[2] = address(AddrClassicERC20.USDC); // tgUSD Address
         routes[3] = poolUSDCTgUSd; // Pool USDC -> tgUSD
         routes[4] = tgUSDAddress; // tgUSD
 

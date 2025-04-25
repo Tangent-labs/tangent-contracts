@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/ConvexCurveContext.sol";
+import "../../contexts/MarketDeploymentContext.sol";
 
-contract SgUSDDeposit is ConvexCurveContext {
+contract SgUSDDeposit is MarketDeploymentContext {
     function test_deposit_sgUSD() external {
         vm.startPrank(owner);
         // Deposit Limit

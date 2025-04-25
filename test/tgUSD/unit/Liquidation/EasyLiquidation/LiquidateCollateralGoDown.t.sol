@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../../contexts/ConvexCurveContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 import "../../../../utils/ERC20BalanceChanges.sol";
 
 import "../../../handler/Curve/HLpManipulator.sol";
@@ -8,7 +8,7 @@ import "../../../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
 import "../../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../../handler/Features/HProcessRewards.sol";
 
-contract LiquidateCollateralGoDown is ConvexCurveContext {
+contract LiquidateCollateralGoDown is MarketDeploymentContext {
     ConvexFxnLPMarket public market;
     IERC20Metadata public collatToken;
 
@@ -24,7 +24,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
 
     IERC20[] rewardTokens;
     function setUp() public {
-        collatToken = AddrCurveStableLP.USDC_FXUSD;
+        collatToken = AddrCurveStableLP.USDC_fxUSD;
         market = deployConvexFxnLPMarket(collatToken);
 
         hDeposit = new HDepositConvexFxnLP(usr1, market);
@@ -51,7 +51,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         vm.stopPrank();
 
         // Unbalance USDC_FXUSD LP for destroying the peg and so the price_oracle
-        hLpManipulator.dumpCrvPool(AddrCurveStableLP.USDC_FXUSD, 1, 0, 9_000_000 ether);
+        hLpManipulator.dumpCrvPool(AddrCurveStableLP.USDC_fxUSD, 1, 0, 9_000_000 ether);
 
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
@@ -90,7 +90,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         vm.stopPrank();
         uint256 timestampAtProcessRewards = block.timestamp;
 
-        deal(address(AddrClassicERC20.TOKEN_FXN), address(market), 1_000 ether);
+        deal(address(AddrClassicERC20.FXN), address(market), 1_000 ether);
         rewardAccumulator.processRewards(address(market), usr1);
 
         (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
@@ -147,7 +147,7 @@ contract LiquidateCollateralGoDown is ConvexCurveContext {
         vm.stopPrank();
 
         // Unbalance USDC_FXUSD LP for destroying the peg and so the price_oracle
-        hLpManipulator.dumpCrvPool(AddrCurveStableLP.USDC_FXUSD, 1, 0, 9_000_000 ether);
+        hLpManipulator.dumpCrvPool(AddrCurveStableLP.USDC_fxUSD, 1, 0, 9_000_000 ether);
 
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
