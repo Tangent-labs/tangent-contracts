@@ -9,6 +9,8 @@ import "forge-std/console.sol";
 contract GetPriceFromStableCurveLP is MarketDeploymentContext {
     IERC20Metadata[] stablecoins;
     IERC20Metadata[] ethsLike;
+    IERC20Metadata[] btcsLike;
+
     function setUp() external {
         stablecoins.push(AddrClassicERC20.fxUSD);
         stablecoins.push(AddrClassicERC20.frxUSD);
@@ -16,6 +18,8 @@ contract GetPriceFromStableCurveLP is MarketDeploymentContext {
 
         ethsLike.push(AddrClassicERC20.frxETH);
         ethsLike.push(AddrClassicERC20.pxETH);
+
+        btcsLike.push(AddrClassicERC20.eBTC);
     }
 
     function test_verify_stable_price_through_crv_lp() external view {
@@ -38,6 +42,18 @@ contract GetPriceFromStableCurveLP is MarketDeploymentContext {
             uint256 ethLikePrice = oracle.latestAnswer();
             assertApproxEqRel(ethPrice, ethLikePrice, 3e15); // 0.3% from ethPrice
             assertLt(ethLikePrice, ethPrice, "Almost always true as its liquidStaking");
+        }
+    }
+
+    function test_verify_BTC_price_through_crv_lp() external view {
+        uint256 btcPrice = oracles[AddrClassicERC20.WBTC].latestAnswer() * 10 ** (18 - oracles[AddrClassicERC20.WBTC].decimals());
+        for (uint256 i = 0; i < btcsLike.length; i++) {
+            IPriceOracle oracle = oracles[btcsLike[i]];
+            assertNotEq(address(oracle), address(0), "Oracle not config");
+
+            uint256 btcLikePrice = oracle.latestAnswer();
+            assertApproxEqRel(btcPrice, btcLikePrice, 3e15); // 0.3% from btc price
+            assertLt(btcLikePrice, btcPrice, "Almost always true as its liquidStaking");
         }
     }
 }

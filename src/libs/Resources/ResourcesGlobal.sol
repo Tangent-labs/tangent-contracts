@@ -48,6 +48,7 @@ library AddrClassicERC20 {
     // BTC
     IERC20Metadata constant WBTC = IERC20Metadata(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
     IERC20Metadata constant cbBTC = IERC20Metadata(0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf);
+    IERC20Metadata constant eBTC = IERC20Metadata(0x657e8C867D8B37dCC18fA4Caead9C45EB088C642);
 }
 
 library AddrERC4626 {

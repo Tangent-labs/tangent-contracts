@@ -1,5 +1,5 @@
 import {ethers} from "hardhat";
-import {curveLp, chainlinkPriceFeed} from "defi-resources";
+import {curveLp, PRICE_FEEDS} from "defi-resources";
 import {IAggregatorStablePriceV3, IPriceOracle} from "../../../../typechain-types";
 import {BaseContext} from "./BaseContext";
 import {LpDeployContext} from "./LPDeployContext";
@@ -7,21 +7,24 @@ import {LpDeployContext} from "./LPDeployContext";
 export class OracleContext {
     tgUSDOracle!: IAggregatorStablePriceV3;
     oracles: {[key: string]: IPriceOracle} = {};
-    chainlinkOracleParams = [
+    chainlinkOracleParams: {
+        key: string;
+        oracleName: keyof typeof PRICE_FEEDS;
+    }[] = [
         // Stable USD
-        {key: "crvUSD", oracleName: "CHAINLINK_crvUSD_USD"},
-        {key: "USDC", oracleName: "CHAINLINK_USDC_USD"},
-        {key: "FRAX", oracleName: "CHAINLINK_FRAX_USD"},
-        {key: "USDT", oracleName: "CHAINLINK_USDT_USD"},
-        {key: "USR", oracleName: "CHAINLINK_USR_USD"},
-        {key: "GHO", oracleName: "CHAINLINK_GHO_USD"},
-        {key: "USDe", oracleName: "CHAINLINK_USDe_USD"},
+        {key: "crvUSD", oracleName: "crvUSD_USD"},
+        {key: "USDC", oracleName: "USDC_USD"},
+        {key: "FRAX", oracleName: "FRAX_USD"},
+        {key: "USDT", oracleName: "USDT_USD"},
+        {key: "USR", oracleName: "USR_USD"},
+        {key: "GHO", oracleName: "GHO_USD"},
+        {key: "USDe", oracleName: "USDe_USD"},
         // ETH
-        {key: "ETH", oracleName: "CHAINLINK_ETH_USD"},
-        {key: "stETH", oracleName: "CHAINLINK_stETH_USD"},
+        {key: "ETH", oracleName: "ETH_USD"},
+        {key: "stETH", oracleName: "stETH_USD"},
         // BTC
-        {key: "BTC", oracleName: "CHAINLINK_BTC_USD"},
-        {key: "cbBTC", oracleName: "CHAINLINK_cbBTC_USD"},
+        {key: "BTC", oracleName: "BTC_USD"},
+        {key: "cbBTC", oracleName: "cbBTC_USD"},
     ];
 
     oracleCoinFromCurveLPParams = [
@@ -59,7 +62,7 @@ export class OracleContext {
     async fetchChainlinkOracle() {
         for (let index = 0; index < this.chainlinkOracleParams.length; index++) {
             const item = this.chainlinkOracleParams[index];
-            this.oracles[item.key] = await ethers.getContractAt("IPriceOracle", chainlinkPriceFeed[item.oracleName]);
+            this.oracles[item.key] = await ethers.getContractAt("IPriceOracle", PRICE_FEEDS[item.oracleName]);
         }
     }
 
