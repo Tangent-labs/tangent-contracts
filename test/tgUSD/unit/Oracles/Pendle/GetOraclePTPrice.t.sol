@@ -12,9 +12,10 @@ contract GetOraclePTPrice is MarketDeploymentContext {
     function setUp() external {
         pendlePTs.push(AddrPTPendle.sUSDe_31_07_25);
         pendlePTs.push(AddrPTPendle.eUSDe_29_05_25);
+        pendlePTs.push(AddrPTPendle.eBTC_26_06_25);
     }
 
-    function test_determine_PT_price() external {
+    function test_determine_PT_price() external view {
         for (uint256 i = 0; i < pendlePTs.length; i++) {
             IERC20Metadata pt = pendlePTs[i];
             uint256 oracleValueBeforeSwap = oracles[pt].latestAnswer();

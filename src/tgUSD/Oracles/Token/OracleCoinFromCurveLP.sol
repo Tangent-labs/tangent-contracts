@@ -2,9 +2,10 @@
 pragma solidity ^0.8.24;
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
-import "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
-import "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
+import {IPriceOracle} from "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
+import {ICurveStableSwapNG} from "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
+import {IAggregatorV3} from "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
+
 import "forge-std/console.sol";
 
 struct OracleCoinFromCurveLPStruct {

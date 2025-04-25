@@ -19,6 +19,8 @@ library AddrCurveStableLP {
     ICurveStableSwapNG constant WETH_frxETH = ICurveStableSwapNG(0x9c3B46C0Ceb5B9e304FCd6D88Fc50f7DD24B31Bc);
     ICurveStableSwapNG constant WETH_pxETH = ICurveStableSwapNG(0xC8Eb2Cf2f792F77AF0Cd9e203305a585E588179D);
 
+    ICurveStableSwapNG constant eBTC_WBTC = ICurveStableSwapNG(0x7704D01908afD31bf647d969c295BB45230cD2d6);
+
     IERC20Metadata constant TRI_USD_TOKEN = IERC20Metadata(0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490);
 }
 

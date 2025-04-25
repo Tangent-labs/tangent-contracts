@@ -2,10 +2,9 @@
 pragma solidity ^0.8.24;
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
-import "../../../interfaces/externals/Pendle/IPendlePYLpOracle.sol";
-import "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
-
+import {IPriceOracle} from "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
+import {IPendlePYLpOracle} from "../../../interfaces/externals/Pendle/IPendlePYLpOracle.sol";
+import {IPendleMarketV3} from "../../../interfaces/externals/Pendle/IPendleMarketV3.sol";
 import "forge-std/console.sol";
 
 /// @title OracleDuoPoolStable
@@ -15,12 +14,12 @@ contract OraclePendlePT is IPriceOracle {
 
     OraclePendlePTStruct public params;
     struct OraclePendlePTStruct {
-        address pendleMarket;
+        IPendleMarketV3 pendleMarket;
         IPriceOracle underlyingOracle;
         uint96 underlyingOracleDecimals;
     }
 
-    constructor(address _pendleMarket, IPriceOracle _underlyingOracle) {
+    constructor(IPendleMarketV3 _pendleMarket, IPriceOracle _underlyingOracle) {
         params = OraclePendlePTStruct({pendleMarket: _pendleMarket, underlyingOracle: _underlyingOracle, underlyingOracleDecimals: _underlyingOracle.decimals()});
     }
 
@@ -40,6 +39,10 @@ contract OraclePendlePT is IPriceOracle {
         OraclePendlePTStruct memory _params = params;
         uint256 underlyingPrice = _params.underlyingOracle.latestAnswer() * 10 ** (18 - _params.underlyingOracleDecimals);
 
-        return (oracle.getPtToAssetRate(_params.pendleMarket, 30) * underlyingPrice) / 1e18;
+        if (_params.pendleMarket.isExpired()) {
+            return underlyingPrice;
+        }
+
+        return (oracle.getPtToAssetRate(address(_params.pendleMarket), 30) * underlyingPrice) / 1e18;
     }
 }
