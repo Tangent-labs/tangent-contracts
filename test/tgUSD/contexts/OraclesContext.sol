@@ -260,7 +260,7 @@ contract OraclesContext is TgUSDDeployContext {
         oracles[AddrPTPendle.sUSDe_31_07_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrClassicERC20.USDe]);
         vm.label(address(oracles[AddrPTPendle.sUSDe_31_07_25]), "Oracle PT sUSDe 31_07_25");
 
-        // Oracle PT sUSDE 31_07_25
+        // Oracle PT eUSDE 29_05_25
         oracles[AddrPTPendle.eUSDe_29_05_25] = new OraclePendlePT(AddrMarketPendle.eUSDe_29_05_25, oracles[AddrClassicERC20.USDe]);
         vm.label(address(oracles[AddrPTPendle.eUSDe_29_05_25]), "Oracle PT eUSDe 29_05_25");
 
