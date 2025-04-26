@@ -47,7 +47,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, collatDeposited, address(0), 0, "");
+        market.liquidate(usr1, collatDeposited, 0, ZapStruct({router: address(0), routerCall: ""}));
         vm.stopPrank();
 
         // Unbalance USDC_FXUSD LP for destroying the peg and so the price_oracle
@@ -56,7 +56,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, collatDeposited, address(0), 0, "");
+        market.liquidate(usr1, collatDeposited, 0, ZapStruct({router: address(0), routerCall: ""}));
 
         (uint128 lastUpdateTime, uint256 periodFinish, uint256 rewardRate, uint256 rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
         assertEq(lastUpdateTime, periodFinish, "Times are the same as on deployment because no processRewards occured");
@@ -70,7 +70,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "tgUSD burnt from sender");
 
         // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, collatDeposited, address(0), 0, "");
+        market.liquidate(usr1, collatDeposited, 0, ZapStruct({router: address(0), routerCall: ""}));
 
         assertERC20Tracking();
         (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
@@ -143,7 +143,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, collatDeposited, address(0), 0, "");
+        market.liquidate(usr1, collatDeposited, 0, ZapStruct({router: address(0), routerCall: ""}));
         vm.stopPrank();
 
         // Unbalance USDC_FXUSD LP for destroying the peg and so the price_oracle
@@ -152,7 +152,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, collatDeposited, address(0), 0, "");
+        market.liquidate(usr1, collatDeposited, 0, ZapStruct({router: address(0), routerCall: ""}));
         vm.stopPrank();
 
         skip(200);
@@ -163,7 +163,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         verifyLostERC20(tgUSD, usr1, 4_000 ether, "tgUSD burnt from sender");
         verifyReceiveERC20(collatToken, usr1, 5_000 ether, "Collat sent to liquidator");
         // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, 5_000 ether, address(0), 0, "");
+        market.liquidate(usr1, 5_000 ether, 0, ZapStruct({router: address(0), routerCall: ""}));
 
         assertERC20Tracking();
         assertEq(market.userDebt(usr1), 4_000 ether);
@@ -177,13 +177,13 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         verifyLostERC20(tgUSD, usr1, 80, "tgUSD burnt from sender");
         verifyReceiveERC20(collatToken, usr1, collatToLiquidate, "Collat sent to liquidator");
 
-        market.liquidate(usr1, collatToLiquidate, address(0), 0, "");
+        market.liquidate(usr1, collatToLiquidate, 0, ZapStruct({router: address(0), routerCall: ""}));
         assertERC20Tracking();
 
         verifyLostERC20(tgUSD, usr1, market.userDebt(usr1), "tgUSD burnt from sender");
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "Collat sent to liquidator");
         // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, market.collateralBalances(usr1), address(0), 0, "");
+        market.liquidate(usr1, market.collateralBalances(usr1), 0, ZapStruct({router: address(0), routerCall: ""}));
         assertERC20Tracking();
 
         vm.stopPrank();

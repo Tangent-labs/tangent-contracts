@@ -23,7 +23,7 @@ contract SelfLiquidateDirect is MarketDeploymentContext {
         market = deployConvexCurveLPMarket(collatToken);
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
-        hDeposit.depositAndBorrow(collatDeposited, initialDebt, true, address(0));
+        hDeposit.depositAndBorrow(collatDeposited, initialDebt, true);
     }
 
     function test_selfLiquidate_all_position_with_tgUSD_having_before() external {
@@ -33,7 +33,7 @@ contract SelfLiquidateDirect is MarketDeploymentContext {
         verifyBurnERC20(tgUSD, initialDebt, "tgUSD Burnt after a repay");
         verifyLostERC20(tgUSD, usr1, initialDebt, "tgUSD taken from usr1");
 
-        market.selfLiquidate(collatDeposited, MAX_UINT, address(0), initialDebt, "");
+        market.selfLiquidate(collatDeposited, MAX_UINT, initialDebt, ZapStruct({router: address(0), routerCall: ""}));
 
         assertERC20Tracking();
 

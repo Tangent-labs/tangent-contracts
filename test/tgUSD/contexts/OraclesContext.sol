@@ -48,7 +48,7 @@ contract OraclesContext is TgUSDDeployContext {
             tgUSD,
             irCalculator,
             rewardAccumulator,
-            liquidatorProxy,
+            zappingProxy,
             convexCrvLPMarketImplem,
             convexFxnLPMarketImplem,
             marketNoSociabilizationImplem

@@ -33,10 +33,10 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
                         DEPOSIT  
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateRewards(_for) returns (uint256, IERC20) {
-        // Verify collat amount added > 0
-        require(lpDeposited != 0, ZeroCollatAmount());
-        return (_sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR), collatToken);
+    function _depositSociabilization(uint256 lpDeposited, bool isStaked) internal override returns (uint256) {
+        uint256 stakedAmount = _sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR);
+        require(stakedAmount != 0, ZeroCollatAmount());
+        return stakedAmount;
     }
 
     function _postDeposit(IERC20 _collatToken, bool isStaked) internal override {

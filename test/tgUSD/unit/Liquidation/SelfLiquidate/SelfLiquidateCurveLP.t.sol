@@ -40,7 +40,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         swapParams.push(unwrapLPToUSDC);
         swapParams.push(swapUsdcToTgUSD);
 
-        hDeposit.depositAndBorrow(collatDeposited, initialDebt, true, address(0));
+        hDeposit.depositAndBorrow(collatDeposited, initialDebt, true);
 
         route.push(address(AddrCurveStableLP.USDC_crvUSD));
         route.push(address(AddrCurveStableLP.USDC_crvUSD));

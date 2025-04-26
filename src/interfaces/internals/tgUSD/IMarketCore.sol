@@ -1,18 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import {ZapStruct} from "../ICommonStruct.sol";
 import {IIRCalculator} from "./IIRCalculator.sol";
 import {ITgUSD} from "./ITgUSD.sol";
 import {ICollateral, IERC20Metadata} from "./ICollateral.sol";
 import {IControlTower} from "./IControlTower.sol";
 import {IPriceOracle} from "./IPriceOracle.sol";
-import {ILiquidatorProxy} from "./ILiquidatorProxy.sol";
+import {IZappingProxy} from "./IZappingProxy.sol";
 import {IRewardAccumulator} from "./IRewardAccumulator.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
+struct ZapStructDeposit {
+    IERC20 tokenIn;
+    uint256 amountIn;
+    uint256 minAmountOut;
+    ZapStruct zap;
+}
 
 struct LiquidateCall {
     address account;
     uint256 collatToLiquidate;
-    address liquidator;
     uint256 minTgUSDOut;
     uint256 newDebtIndex;
     uint256 _collateralBalance;
@@ -25,7 +33,6 @@ struct LiquidateCall {
 struct SelfLiquidateCall {
     uint256 collatAmountToLiquidate;
     uint256 tgUSDToRepay;
-    address liquidator;
     uint256 minTgUSDOut;
     uint256 newDebtIndex;
     uint256 _collateralBalance;
@@ -41,7 +48,7 @@ struct GlobalMarketInitParams {
     IControlTower _controlTower;
     IIRCalculator _irCalculator;
     IRewardAccumulator _rewardAccumulator;
-    ILiquidatorProxy _liquidatorProxy;
+    IZappingProxy _zappingProxy;
 }
 
 struct MarketInit {

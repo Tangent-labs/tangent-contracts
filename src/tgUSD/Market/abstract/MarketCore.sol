@@ -1,24 +1,26 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {IControlTower} from "../../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
-import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount, ZapStruct} from "../../../interfaces/internals/ICommonStruct.sol";
 
 import {PauseSettings} from "./PauseSettings.sol";
 import {Collateral} from "./Collateral.sol";
-import {GlobalMarketInitParams, MarketInit, LiquidateCall, SelfLiquidateCall, ILiquidatorProxy} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
+import {GlobalMarketInitParams, MarketInit, LiquidateCall, SelfLiquidateCall, IZappingProxy, ZapStructDeposit, IERC20} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 
 /// @notice
 abstract contract MarketCore is PauseSettings, Collateral {
     using SafeERC20 for IERC20;
     IControlTower public controlTower;
 
-    /// @notice Liquidation proxy
-    ILiquidatorProxy public liquidatorProxy;
+    /// @notice Zapping proxy
+    IZappingProxy public zappingProxy;
+
+    error DepositPaused();
+    error BorrowPaused();
 
     error AlreadyInitialized();
     error TotalDebtTooHigh();
@@ -38,6 +40,11 @@ abstract contract MarketCore is PauseSettings, Collateral {
         isInitialized = true;
     }
 
+    modifier updateRewards(address _for) {
+        rewardAccumulator.updateRewards(_for);
+        _;
+    }
+
     function _initializationCommon(GlobalMarketInitParams memory _globalParams, MarketInit memory _marketInit) internal {
         require(!isInitialized, AlreadyInitialized());
         isInitialized = true;
@@ -47,7 +54,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
         controlTower = _globalParams._controlTower;
         irCalculator = _globalParams._irCalculator;
         rewardAccumulator = _globalParams._rewardAccumulator;
-        liquidatorProxy = _globalParams._liquidatorProxy;
+        zappingProxy = _globalParams._zappingProxy;
 
         collatToken = _marketInit.collatToken;
         collatOracle = _marketInit.collatOracle;
@@ -84,7 +91,16 @@ abstract contract MarketCore is PauseSettings, Collateral {
                         DEPOSITS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal virtual returns (uint256, IERC20) {}
+    function _zapDeposit(ZapStructDeposit calldata zapCall) internal returns (uint256, IERC20) {
+        IERC20 _collatToken = collatToken;
+        IZappingProxy _zappingProxy = zappingProxy;
+        zapCall.tokenIn.transferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
+        return (_zappingProxy.zapProxy(zapCall.tokenIn, _collatToken, zapCall.minAmountOut, address(this), zapCall.zap), _collatToken);
+    }
+
+    function _depositSociabilization(uint256 lpDeposited, bool isStaked) internal virtual returns (uint256) {
+        return lpDeposited;
+    }
 
     function _deposit(address _for, uint256 amountDeposited) internal {
         // Verify that newDebt is over the minimum loan
@@ -94,14 +110,6 @@ abstract contract MarketCore is PauseSettings, Collateral {
         _updateCollateral(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited);
     }
 
-    function _transferCollateralDeposit(IERC20 _collatToken, uint256 lpDeposited, bool isZapping) internal {
-        // When caller is not one of our Zapper, sender needs to send collateral token to the market.
-        // Zapper send the collateral directly on the market before calling "deposit"
-        if (!isZapping) {
-            // Transfer the collateral from the sender to the market
-            _collatToken.transferFrom(msg.sender, address(this), lpDeposited);
-        }
-    }
     function _postDeposit(IERC20 _collatToken, bool isStaked) internal virtual {}
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -137,6 +145,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
                                                     ------ */
 
     function _borrow(address borrower, address receiver, uint256 tgUSDToBorrow, uint256 collatAmount, bool isLeverage) internal returns (uint256, uint256) {
+        require(!isBorrowPaused, BorrowPaused());
         require(tgUSDToBorrow != 0, ZeroDebtAmount());
         uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
 
@@ -179,7 +188,13 @@ abstract contract MarketCore is PauseSettings, Collateral {
                             REPAY
                                                     ------ */
 
-    function _repay(address account, uint256 tgUSDToRepay, address burnAddress) internal returns (uint256, uint256) {
+    function _zapRepay(ZapStructDeposit calldata zapCall) internal returns (uint256) {
+        IZappingProxy _zappingProxy = zappingProxy;
+        zapCall.tokenIn.transferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
+        return _zappingProxy.zapProxy(zapCall.tokenIn, tgUSD, zapCall.minAmountOut, msg.sender, zapCall.zap);
+    }
+
+    function _repay(address account, uint256 tgUSDToRepay) internal returns (uint256, uint256) {
         // Cannot repay 0 debt
         require(tgUSDToRepay != 0, ZeroDebtAmount());
 
@@ -221,18 +236,16 @@ abstract contract MarketCore is PauseSettings, Collateral {
             require(newUserDebt >= minimumLoan, UserDebtTooLow());
         }
 
-        // Burns tgUSD from the burnAddress as a repayment of the debt
-        tgUSD.burnFrom(burnAddress, tgUSDToRepay);
         return (newUserDebtShares, totalDebtShares - sharesToRemove);
     }
 
-    function _withdrawAndRepay(uint256 amountToWithdraw, uint256 tgUSDToRepay, address caller) internal {
+    function _withdrawAndRepay(uint256 amountToWithdraw, uint256 tgUSDToRepay) internal {
         // Call _repay function in order to checkpoint the total debt, computes new User debt and burn corresponding amount of tgUSD.
-        (uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(caller, tgUSDToRepay, caller);
+        (uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(msg.sender, tgUSDToRepay);
 
         //TODO Problem with the _getBalanceAfterWithdrawAndCheckMaxBorrowable
         _updateCollatAndDebts(
-            caller,
+            msg.sender,
             _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, newUserDebtShares),
             totalCollateral - amountToWithdraw,
             newUserDebtShares,
@@ -244,7 +257,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
                             LIQUIDATION
                                                     ------ */
 
-    function _selfLiquidate(SelfLiquidateCall memory selfLiquidateCall, bytes calldata liquidationCall) internal {
+    function _selfLiquidate(SelfLiquidateCall memory selfLiquidateCall, ZapStruct calldata routerCall) internal {
         require(selfLiquidateCall.collatAmountToLiquidate != 0, ZeroCollatAmount());
         uint256 newCollatBalance = selfLiquidateCall._collateralBalance - selfLiquidateCall.collatAmountToLiquidate;
         uint256 debtSharesToRemove;
@@ -274,12 +287,12 @@ abstract contract MarketCore is PauseSettings, Collateral {
             selfLiquidateCall._totalDebtShares - debtSharesToRemove
         );
 
-        _postLiquidate(selfLiquidateCall.liquidator, selfLiquidateCall.collatAmountToLiquidate, tgUSDToRepay, selfLiquidateCall.minTgUSDOut, liquidationCall);
+        _postLiquidate(selfLiquidateCall.collatAmountToLiquidate, tgUSDToRepay, selfLiquidateCall.minTgUSDOut, routerCall);
 
-        emit SelfLiquidate(msg.sender, tgUSDToRepay, selfLiquidateCall.collatAmountToLiquidate, selfLiquidateCall.liquidator);
+        emit SelfLiquidate(msg.sender, tgUSDToRepay, selfLiquidateCall.collatAmountToLiquidate, routerCall.router);
     }
 
-    function _liquidate(LiquidateCall memory liquidateCall, bytes calldata liquidationCall) internal {
+    function _liquidate(LiquidateCall memory liquidateCall, ZapStruct calldata routerCall) internal {
         uint256 collatAmountToLiquidate = liquidateCall.collatToLiquidate;
         require(liquidateCall.collatToLiquidate != 0, ZeroCollatAmount());
 
@@ -312,21 +325,21 @@ abstract contract MarketCore is PauseSettings, Collateral {
             liquidateCall._totalDebtShares - debtSharesToRemove
         );
 
-        _postLiquidate(liquidateCall.liquidator, collatAmountToLiquidate, tgUSDToRepay, liquidateCall.minTgUSDOut, liquidationCall);
+        _postLiquidate(collatAmountToLiquidate, tgUSDToRepay, liquidateCall.minTgUSDOut, routerCall);
 
-        emit Liquidate(liquidateCall.account, tgUSDToRepay, collatAmountToLiquidate, liquidateCall.liquidator);
+        emit Liquidate(liquidateCall.account, tgUSDToRepay, collatAmountToLiquidate, routerCall.router);
     }
 
-    function _postLiquidate(address liquidator, uint256 collatAmountToLiquidate, uint256 tgUSDToRepay, uint256 minTgUSDOut, bytes calldata liquidationCall) internal {
-        ILiquidatorProxy _liquidatorProxy = liquidatorProxy;
+    function _postLiquidate(uint256 collatAmountToLiquidate, uint256 tgUSDToRepay, uint256 minTgUSDOut, ZapStruct calldata routerCall) internal {
+        IZappingProxy _zappingProxy = zappingProxy;
         // Withdraw the collateral from the underlying protocol if needed and
         // Transfer it to the caller when there is no liquidator passed in parameter
         // If a liquidator is passed, we send the collateral to the liquidator
-        _transferCollateralWithdraw(liquidator != address(0) ? address(_liquidatorProxy) : msg.sender, collatAmountToLiquidate);
+        _transferCollateralWithdraw(routerCall.router != address(0) ? address(_zappingProxy) : msg.sender, collatAmountToLiquidate);
         // When liquidator is not zero, it allows to the LiquidatorProxy to receive the collateral.
         // Then, if needed, liquidator will allow the custom Liquidator to sell the collateral for tgUSD in the same transaction.
-        if (liquidator != address(0)) {
-            _liquidatorProxy.callLiquidate(liquidator, msg.sender, collatToken, minTgUSDOut, liquidationCall);
+        if (routerCall.router != address(0)) {
+            _zappingProxy.zapProxy(collatToken, tgUSD, minTgUSDOut, msg.sender, routerCall);
         }
 
         // Burns tgUSD from the sender.

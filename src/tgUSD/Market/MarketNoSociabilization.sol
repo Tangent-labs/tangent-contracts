@@ -13,11 +13,6 @@ contract MarketNoSociabilization is MarketExternalActions {
         _initializationCommon(_marketConstants, _marketInit);
     }
 
-    function _preDeposit(address _for, uint256 lpDeposited, bool isStaked) internal override updateRewards(_for) returns (uint256, IERC20) {
-        require(lpDeposited != 0, ZeroCollatAmount());
-        return (lpDeposited, collatToken);
-    }
-
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {
         collatToken.transfer(to, lpToWithdraw);
     }

@@ -28,7 +28,7 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
 
     function test_liquidate_all_after_tgUSD_depegs() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether, true, address(0));
+        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether, true, ZapStructDeposit({router: address(0), routerCall: ""}));
 
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);

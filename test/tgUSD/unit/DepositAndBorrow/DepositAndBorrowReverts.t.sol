@@ -26,33 +26,33 @@ contract DepositAndBorrowReverts is MarketDeploymentContext {
 
     function test_depositBorrow_amountDeposited_0() external {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
-        market.depositAndBorrow(0, 1_000 ether, false, address(0));
+        market.depositAndBorrow(0, 1_000 ether, false);
     }
 
     function test_depositBorrow_amountDeposited_very_low() external {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
-        market.depositAndBorrow(0, 1_000 ether, false, address(0));
+        market.depositAndBorrow(0, 1_000 ether, false);
     }
 
     function test_depositBorrow_0_debt() external {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroDebtAmount.selector));
-        market.depositAndBorrow(2 ether, 0, false, address(0));
+        market.depositAndBorrow(2 ether, 0, false);
     }
 
     function test_depositBorrow_more_than_max_total_debt() external {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.TotalDebtTooHigh.selector));
-        market.depositAndBorrow(4_000 ether, maxMarketDebt + 1, false, address(0));
+        market.depositAndBorrow(4_000 ether, maxMarketDebt + 1, false);
     }
 
     function test_depositBorrow_less_than_minimum_loan() external {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooLow.selector));
-        market.depositAndBorrow(2 ether, minimumLoan - 1, false, address(0));
+        market.depositAndBorrow(2 ether, minimumLoan - 1, false);
     }
 
     function test_depositBorrow_more_than_LTV_with_not_enough_collat() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
-        market.depositAndBorrow(0.5 ether, minimumLoan, false, address(0));
+        market.depositAndBorrow(0.5 ether, minimumLoan, false);
         vm.stopPrank();
     }
 }

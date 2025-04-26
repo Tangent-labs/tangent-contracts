@@ -4,7 +4,6 @@ pragma solidity ^0.8.22;
 import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IPriceOracle} from "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {ICollateral} from "../../../interfaces/internals/tgUSD/ICollateral.sol";
-import {ILiquidatorProxy} from "../../../interfaces/internals/tgUSD/ILiquidatorProxy.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 
 import {DebtIR} from "./DebtIR.sol";

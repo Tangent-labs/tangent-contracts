@@ -57,7 +57,7 @@ contract BorrowInvariantHandler is Test {
         tgUSDToRepay = isFullRepay ? userDebt : bound(tgUSDToRepay, 1, userDebt - _market.minimumLoan());
         deal(address(tgUSD), msg.sender, tgUSDToRepay);
 
-        _market.repay(msg.sender, tgUSDToRepay, address(0));
+        _market.repay(msg.sender, tgUSDToRepay);
         vm.stopPrank();
     }
 

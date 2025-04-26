@@ -18,12 +18,12 @@ contract HDepositConvexCrvLP is HMarketBase {
         _afterDepositCheck(_for, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
     }
 
-    function depositAndBorrow(uint256 lpDeposited, uint256 borrowedAmount, bool isStaked, address callerZapper) external handler {
+    function depositAndBorrow(uint256 lpDeposited, uint256 borrowedAmount, bool isStaked) external handler {
         (uint256 totalCollateralBefore, uint256 balanceCollateralBefore, uint256 socFeePending, uint256 feeToTake) = _beforeDepositCheck(sender, lpDeposited, isStaked);
         DebtData memory debtData = _beforBorrowOrRepayCheck(marketCrvLP);
         _beforeBorrowCheck(marketCrvLP, sender, borrowedAmount);
 
-        marketCrvLP.depositAndBorrow(lpDeposited, borrowedAmount, isStaked, callerZapper);
+        marketCrvLP.depositAndBorrow(lpDeposited, borrowedAmount, isStaked);
 
         _afterDepositCheck(sender, lpDeposited, isStaked, totalCollateralBefore, balanceCollateralBefore, socFeePending, feeToTake);
         // _afterBorrowCheck(marketCrvLP, borrowedAmount, interests, newDebtIndex, userDebt, oldTotalDebt);

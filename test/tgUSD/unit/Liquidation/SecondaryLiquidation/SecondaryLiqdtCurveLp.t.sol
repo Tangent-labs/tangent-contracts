@@ -158,19 +158,21 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         market_fxUSD_USDC.liquidate(
             usr1,
             collatDeposited,
-            address(AddrRouter.ROUTER_CURVE),
             5_000 ether,
-            encoder.encodeLiquidateCallForCurveLP(
-                encoder.createCurveRouterStruct(
-                    Array.memoryAddress(
-                        [address(AddrCurveStableLP.USDC_fxUSD), address(AddrCurveStableLP.USDC_fxUSD), address(AddrClassicERC20.USDC), address(lpTgUSD_USDC), address(tgUSD)]
-                    ),
-                    swapParams,
-                    collatToDump,
-                    5_000 ether,
-                    usr2
+            ZapStruct({
+                router: address(AddrRouter.ROUTER_CURVE),
+                routerCall: encoder.encodeLiquidateCallForCurveLP(
+                    encoder.createCurveRouterStruct(
+                        Array.memoryAddress(
+                            [address(AddrCurveStableLP.USDC_fxUSD), address(AddrCurveStableLP.USDC_fxUSD), address(AddrClassicERC20.USDC), address(lpTgUSD_USDC), address(tgUSD)]
+                        ),
+                        swapParams,
+                        collatToDump,
+                        5_000 ether,
+                        usr2
+                    )
                 )
-            )
+            })
         );
 
         assertEq(market_fxUSD_USDC.userDebt(usr1), 0);
