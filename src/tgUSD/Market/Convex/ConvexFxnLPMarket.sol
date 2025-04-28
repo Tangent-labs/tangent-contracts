@@ -34,8 +34,9 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _depositSociabilization(uint256 lpDeposited, bool isStaked) internal override returns (uint256) {
+        require(lpDeposited != 0, ZeroCollatAmount());
         uint256 stakedAmount = _sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR);
-        require(stakedAmount != 0, ZeroCollatAmount());
+        require(stakedAmount != 0, ZeroAmountDepositedAfterSociabilization());
         return stakedAmount;
     }
 

@@ -99,6 +99,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
     }
 
     function _depositSociabilization(uint256 lpDeposited, bool isStaked) internal virtual returns (uint256) {
+        require(lpDeposited != 0, ZeroCollatAmount());
         return lpDeposited;
     }
 

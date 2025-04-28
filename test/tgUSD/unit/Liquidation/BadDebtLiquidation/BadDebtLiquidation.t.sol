@@ -74,9 +74,8 @@ contract BadDebtLiquidation is MarketDeploymentContext {
         assertEq(market.badDebt(), debtToRepay, "Amount of bad debt is now equal to the debt of the position liquidated");
 
         skip(1 weeks);
-
         irCalculator.checkpointIR(address(market));
-
+        vm.stopPrank();
         vm.startPrank(usr2);
         hDeposit.setMsgSender(usr2);
 
@@ -88,21 +87,17 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
         verifyLostERC20(tgUSD, usr2, badDebtToRepay, "Verify that the usr2 loose the tgUSD");
         verifyBurnERC20(tgUSD, badDebtToRepay, "Verify that the supply of tgUSD is reduced");
-        vm.prank(usr2);
         market.repayBadDebt(badDebtToRepay);
         assertERC20Tracking();
 
         assertEq(market.badDebt(), tgUSDBorrowed - badDebtToRepay, "Check that bad debt has been reduced");
 
-        vm.startPrank(usr2);
         vm.expectRevert(abi.encodeWithSelector(DebtIR.RepayMoreThanBadDebt.selector));
         market.repayBadDebt(badDebtToRepay);
-        vm.stopPrank();
 
         uint256 remainingDebt = market.badDebt();
         verifyLostERC20(tgUSD, usr2, remainingDebt, "Verify that the usr2 loose the tgUSD");
         verifyBurnERC20(tgUSD, remainingDebt, "Verify that the supply of tgUSD is reduced");
-        vm.prank(usr2);
         market.repayBadDebt(remainingDebt);
         assertERC20Tracking();
         assertEq(market.badDebt(), 0, "BadDebt is fully recovered");

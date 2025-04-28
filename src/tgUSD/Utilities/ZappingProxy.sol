@@ -10,7 +10,7 @@ contract ZappingProxy is IZappingProxy {
     uint256 constant MAX_UINT = type(uint256).max;
     address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-    error LiquidatorCallError();
+    error ZapCallError(bytes);
     error MinAmountOutNotReached();
     error TokenInMustNotBeZero();
     error TokenInMustBeZero();
@@ -29,9 +29,9 @@ contract ZappingProxy is IZappingProxy {
 
         uint256 bal = tokenOut.balanceOf(receiver);
         // Call router router and perform the swaps with raw data following recommendations.
-        (bool isRouterCallSuccess, ) = router.call{value: msg.value}(zap.routerCall);
+        (bool isRouterCallSuccess, bytes memory data) = router.call{value: msg.value}(zap.routerCall);
         // Verify the call to router was successfull
-        require(isRouterCallSuccess, LiquidatorCallError());
+        require(isRouterCallSuccess, ZapCallError(data));
 
         bal = tokenOut.balanceOf(receiver) - bal;
 

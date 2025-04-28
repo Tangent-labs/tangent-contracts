@@ -27,7 +27,8 @@
     "router-test": "npx hardhat run  js-scripts/hardhat/tgUSD/scripts/curveRoutertest.ts --network localhost ",
     "generate-routes": "npx hardhat run  js-scripts/hardhat/tgUSD/scripts/generateLiquidationRoutes.ts  --network localhost ",
     "test-exchange-routes": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/testExchangeRoutes.ts --network localhost",
-    "hydrate-route": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/hydrateRoutes.ts --network localhost"
+    "hydrate-route": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/hydrateRoutes.ts --network localhost",
+    "coverage": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"
   },
   "author": "Trottoir",
   "license": "ISC",

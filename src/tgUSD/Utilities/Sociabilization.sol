@@ -29,7 +29,6 @@ abstract contract Sociabilization is LightOwnable {
             socFeePending += feeTaken;
             amountDeposited -= feeTaken;
         }
-        require(amountDeposited != 0, ZeroAmountDepositedAfterSociabilization());
 
         return amountDeposited;
     }

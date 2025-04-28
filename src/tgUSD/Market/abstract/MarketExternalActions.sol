@@ -2,6 +2,7 @@
 pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
 
 import {MarketCore, LiquidateCall, SelfLiquidateCall, ZapStructDeposit, IZappingProxy} from "./MarketCore.sol";
 
@@ -13,7 +14,7 @@ import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {TokenAmount, ZapStruct} from "../../../interfaces/internals/ICommonStruct.sol";
 
 /// @notice
-abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
+abstract contract MarketExternalActions is MarketCore, IMarketExternalActions, ReentrancyGuardTransient {
     event Deposit(address indexed account, uint256 stakedAmount);
     event ZapDeposit(address indexed account, uint256 stakedAmount, IERC20 tokenIn, uint256 amountIn);
 
@@ -39,7 +40,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
                         USER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function deposit(address _for, uint256 depositedAmount, bool isStaked) external updateRewards(_for) {
+    function deposit(address _for, uint256 depositedAmount, bool isStaked) external updateRewards(_for) nonReentrant {
         IERC20 _collatToken = collatToken;
         _collatToken.transferFrom(msg.sender, address(this), depositedAmount);
 
@@ -56,7 +57,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  isStaked       Amount of collateral to deposit
      * @param  zapCall        Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
      */
-    function zapDeposit(address _for, bool isStaked, ZapStructDeposit calldata zapCall) external updateRewards(_for) {
+    function zapDeposit(address _for, bool isStaked, ZapStructDeposit calldata zapCall) external updateRewards(_for) nonReentrant {
         (uint256 collatReceived, IERC20 _collatToken) = _zapDeposit(zapCall);
         uint256 stakedAmount = _depositSociabilization(collatReceived, isStaked);
         _deposit(_for, stakedAmount);
