@@ -4,6 +4,7 @@ import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomiclabs/hardhat-vyper";
+import "hardhat-contract-sizer";
 
 import * as dotenv from "dotenv";
 dotenv.config();

@@ -76,17 +76,17 @@ contract BadDebtLiquidation is MarketDeploymentContext {
         skip(1 weeks);
         irCalculator.checkpointIR(address(market));
         vm.stopPrank();
-        vm.startPrank(usr2);
-        hDeposit.setMsgSender(usr2);
 
+        hDeposit.setMsgSender(usr2);
         hLpManipulator.dumpCrvPool(AddrCurveStableLP.WETH_frxETH, 0, 1, 1_400 ether);
 
         skip(1 days);
-
         hDeposit.depositAndBorrow(10 ether, tgUSDBorrowed, true);
 
         verifyLostERC20(tgUSD, usr2, badDebtToRepay, "Verify that the usr2 loose the tgUSD");
         verifyBurnERC20(tgUSD, badDebtToRepay, "Verify that the supply of tgUSD is reduced");
+
+        vm.startPrank(usr2);
         market.repayBadDebt(badDebtToRepay);
         assertERC20Tracking();
 

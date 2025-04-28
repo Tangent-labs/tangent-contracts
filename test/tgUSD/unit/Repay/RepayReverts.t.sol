@@ -28,12 +28,18 @@ contract RepayReverts is MarketDeploymentContext {
     }
 
     function test_repay_account_without_debt() external {
+        deal(address(tgUSD), usr1, 1000);
+        vm.startPrank(usr1);
+
         vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtZero.selector));
-        market.repay(usr1, 10000);
+        market.repay(usr1, 1000);
     }
 
     function test_repay_and_leave_position_under_minimum_loan() external {
+        deal(address(tgUSD), usr1, 1);
         hDeposit.depositAndBorrow(10_000 ether, 3_000 ether, true);
+
+        vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooLow.selector));
         market.repay(usr1, 1);
     }
