@@ -19,10 +19,10 @@ contract HWithdrawConvexCrvLP is HMarketBase {
         _afterWithdrawCheck(lpToWithdraw, totalCollateralBefore, balanceCollateralBefore);
     }
 
-    function withdrawAndRepay(uint256 lpToWithdraw, uint256 debtRepay, address callerZapper) external handler {
+    function repayAndWithdraw(uint256 lpToWithdraw, uint256 debtRepay, address callerZapper) external handler {
         (uint256 totalCollateralBefore, uint256 balanceCollateralBefore) = _beforeWithdrawCheck(lpToWithdraw);
 
-        marketCrvLP.withdrawAndRepay(lpToWithdraw, debtRepay, callerZapper);
+        marketCrvLP.repayAndWithdraw(lpToWithdraw, debtRepay);
 
         _afterWithdrawCheck(lpToWithdraw, totalCollateralBefore, balanceCollateralBefore);
     }

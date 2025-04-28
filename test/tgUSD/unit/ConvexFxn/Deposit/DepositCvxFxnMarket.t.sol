@@ -33,7 +33,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount, true, address(0));
+        hDeposit.depositAndBorrow(amountIn, borrowedAmount, true);
 
         uint256 withdrawnAmount = 1_000 ether;
 
@@ -52,7 +52,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount, false, address(0));
+        hDeposit.depositAndBorrow(amountIn, borrowedAmount, false);
 
         uint256 withdrawnAmount = 1_000 ether;
 
@@ -72,8 +72,8 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountInStaked = 10_000 ether;
         uint256 borrowedAmount1 = 5_000 ether;
         uint256 borrowedAmount2 = 1_000 ether;
-        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount1, true, address(0));
-        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount2, false, address(0));
+        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount1, true);
+        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount2, false);
 
         uint256 withdrawnAmount = 12_000 ether;
         uint256 availableAmount = market.collatToken().balanceOf(address(market)) - market.socFeePending();

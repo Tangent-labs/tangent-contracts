@@ -18,10 +18,10 @@ contract HWithdrawConvexFxnLP is HMarketBase {
         _afterWithdrawCheck(lpToWithdraw, totalCollateralBefore, balanceCollateralBefore);
     }
 
-    function withdrawAndRepay(uint256 lpToWithdraw, uint256 debtRepay, address caller) external handler {
+    function repayAndWithdraw(uint256 lpToWithdraw, uint256 debtRepay) external handler {
         (uint256 totalCollateralBefore, uint256 balanceCollateralBefore) = _beforeWithdrawCheck(lpToWithdraw);
 
-        marketFxnLP.withdrawAndRepay(lpToWithdraw, debtRepay, caller);
+        marketFxnLP.repayAndWithdraw(lpToWithdraw, debtRepay);
 
         _afterWithdrawCheck(lpToWithdraw, totalCollateralBefore, balanceCollateralBefore);
     }

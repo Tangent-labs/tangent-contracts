@@ -19,7 +19,6 @@ import "../../../src/tgUSD/Tokens/TgUSD.sol";
 import "../../../src/tgUSD/Tokens/WStable.sol";
 
 import "../../../src/tgUSD/Rewards/RewardAccumulator.sol";
-import "../../../src/tgUSD/Utilities/Zapper.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
 import "../../../src/tgUSD/Utilities/MarketCreator.sol";
 import "../../../src/tgUSD/Utilities/ZappingProxy.sol";

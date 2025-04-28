@@ -28,12 +28,12 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
 
     function test_liquidate_all_after_tgUSD_depegs() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether, true, ZapStructDeposit({router: address(0), routerCall: ""}));
+        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether, true);
 
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, MAX_UINT, address(0), 0, "");
+        market.liquidate(usr1, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
         vm.stopPrank();
 
         // Dumps tgUSD for USDC => Depegs tgUSD
@@ -42,7 +42,7 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, MAX_UINT, address(0), 0, "");
+        market.liquidate(usr1, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
 
         // assertLt(lp.last_price(0), 991 * 10 ** 15, "Last price dropped hard");
 

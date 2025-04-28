@@ -41,7 +41,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
     }
 
     modifier updateRewards(address _for) {
-        rewardAccumulator.updateRewards(_for);
+        rewardAccumulator.updateRewards(_for, collateralBalances[_for], totalCollateral);
         _;
     }
 

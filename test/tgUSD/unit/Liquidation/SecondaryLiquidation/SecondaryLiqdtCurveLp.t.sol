@@ -70,8 +70,6 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
         uint256 zero = 0;
 
-        uint256 collatToDump = market_crvUSD_USDC.collateralBalances(usr1);
-
         uint256[][] memory swapParams = new uint256[][](2);
         uint256[] memory unwrapLPToUSDC = Array.memoryUint256([zero, zero, uint256(6), uint256(10), uint256(2)]);
         uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
@@ -84,19 +82,21 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         market_crvUSD_USDC.liquidate(
             usr1,
             collatDeposited,
-            address(AddrRouter.ROUTER_CURVE),
             5_000 ether,
-            encoder.encodeLiquidateCallForCurveLP(
-                encoder.createCurveRouterStruct(
-                    Array.memoryAddress(
-                        [address(AddrCurveStableLP.USDC_crvUSD), address(AddrCurveStableLP.USDC_crvUSD), address(AddrClassicERC20.USDC), address(lpTgUSD_USDC), address(tgUSD)]
-                    ),
-                    swapParams,
-                    collatToDump,
-                    5_000 ether,
-                    usr2
+            ZapStruct({
+                router: address(AddrRouter.ROUTER_CURVE),
+                routerCall: encoder.encodeLiquidateCallForCurveLP(
+                    encoder.createCurveRouterStruct(
+                        Array.memoryAddress(
+                            [address(AddrCurveStableLP.USDC_crvUSD), address(AddrCurveStableLP.USDC_crvUSD), address(AddrClassicERC20.USDC), address(lpTgUSD_USDC), address(tgUSD)]
+                        ),
+                        swapParams,
+                        market_crvUSD_USDC.collateralBalances(usr1),
+                        5_000 ether,
+                        usr2
+                    )
                 )
-            )
+            })
         );
 
         assertEq(market_crvUSD_USDC.userDebt(usr1), 0);
@@ -108,7 +108,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
     function test_secondaryLiquidator_liquidate_with_secondary_liquidator_fxUSD_USDC() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit_fxUSD_USDC.depositAndBorrow(collatDeposited, 4_250 ether, true, address(0));
+        hDeposit_fxUSD_USDC.depositAndBorrow(collatDeposited, 4_250 ether, true);
 
         irCalculator.checkpointIR(address(market_fxUSD_USDC));
 
@@ -142,8 +142,6 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
         uint256 zero = 0;
 
-        uint256 collatToDump = market_fxUSD_USDC.collateralBalances(usr1);
-
         uint256[][] memory swapParams = new uint256[][](2);
         uint256[] memory unwrapLPToUSDC = Array.memoryUint256([uint256(1), zero, uint256(6), uint256(1), uint256(2)]);
         uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(1), uint256(2)]);
@@ -167,7 +165,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
                             [address(AddrCurveStableLP.USDC_fxUSD), address(AddrCurveStableLP.USDC_fxUSD), address(AddrClassicERC20.USDC), address(lpTgUSD_USDC), address(tgUSD)]
                         ),
                         swapParams,
-                        collatToDump,
+                        market_fxUSD_USDC.collateralBalances(usr1),
                         5_000 ether,
                         usr2
                     )

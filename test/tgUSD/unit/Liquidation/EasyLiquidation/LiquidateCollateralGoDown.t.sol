@@ -31,12 +31,12 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         hBorrow = new HBorrow(usr1, market);
         hLpManipulator = new HLpManipulator(usr1);
 
-        hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, true, address(0));
+        hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, true);
 
         hDeposit.setMsgSender(usr2);
-        hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, false, address(0));
+        hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, false);
         hDeposit.setMsgSender(usr3);
-        hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, false, address(0));
+        hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, false);
 
         balanceChanges = new ERC20BalanceChanges();
 

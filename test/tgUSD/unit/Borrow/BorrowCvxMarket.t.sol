@@ -107,7 +107,7 @@ contract BorrowCvxMarket is MarketDeploymentContext {
         tgUSD.mint(usr1, repayAmount);
         vm.stopPrank();
 
-        hRepay.repay(usr1, repayAmount, address(0));
+        hRepay.repay(usr1, repayAmount);
 
         assertEq(market.userDebt(usr1), market.totalDebt(), "Position debt is equal to total debt after a partial repay");
 
