@@ -8,10 +8,12 @@ import {MarketCore, LiquidateCall, SelfLiquidateCall, ZapStructDeposit, IZapping
 import {IMarketExternalActions} from "../../../interfaces/internals/tgUSD/IMarketExternalActions.sol";
 
 import {IZapper} from "../../../interfaces/internals/tgUSD/IZapper.sol";
+import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
+
 import {TokenAmount, ZapStruct} from "../../../interfaces/internals/ICommonStruct.sol";
 
 /// @notice
-abstract contract MarketExternalActions is MarketCore {
+abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     event Deposit(address indexed account, uint256 stakedAmount);
     event ZapDeposit(address indexed account, uint256 stakedAmount, IERC20 tokenIn, uint256 amountIn);
 
@@ -241,29 +243,27 @@ abstract contract MarketExternalActions is MarketCore {
     function leverage(
         uint256 collatToDeposit,
         uint256 tgUSDToFlashMint,
-        uint256 minCollatAmountReceived,
-        address zapper,
+        uint256 minCollatAmountOut,
         bool isStaked,
-        bytes calldata routerCall
-    ) external payable updateRewards(msg.sender) {
+        ZapStruct calldata routerCall
+    ) external updateRewards(msg.sender) {
         require(!isDepositPaused, DepositPaused());
         require(!isBorrowPaused, BorrowPaused());
         require(!isLeveragePaused, LeveragePaused());
-        // Only callable from a Zapper contract
-        require(controlTower.isZapper(zapper), NotZapper(zapper));
-        // Mint the tgUSD on the Zapper, ready to be exchanged through the router
-        tgUSD.mint(zapper, tgUSDToFlashMint);
-        // Exchange the tgUSD that has just been minted on the Zapper for the collateral of the market
-        uint256 collatReceived = IZapper(zapper).zapLeverage(collatToken, minCollatAmountReceived, routerCall);
 
         IERC20 _collatToken = collatToken;
-        // Computes the amount
-        uint256 stakedAmount = _depositSociabilization(collatToDeposit + collatReceived, isStaked);
-
         if (collatToDeposit != 0) {
             // Transfer the collateral coming from the user on the market
             _collatToken.transferFrom(msg.sender, address(this), collatToDeposit);
         }
+
+        ITgUSD _tgUSD = tgUSD;
+        // Mint the tgUSD on the Zapper, ready to be exchanged through the router
+        _tgUSD.mint(address(zappingProxy), tgUSDToFlashMint);
+        // Exchange the tgUSD that has just been minted on the Zapper for the collateral of the market
+        uint256 collatReceived = zappingProxy.zapProxy(_tgUSD, collatToken, minCollatAmountOut, address(this), routerCall);
+
+        uint256 stakedAmount = _depositSociabilization(collatToDeposit + collatReceived, isStaked);
 
         // Performs same modification as in depositAndBorrow
         _depositAndBorrow(msg.sender, stakedAmount, tgUSDToFlashMint, true);
