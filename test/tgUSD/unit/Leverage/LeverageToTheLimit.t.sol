@@ -24,40 +24,64 @@ contract LeverageToTheLimit is MarketDeploymentContext {
         vm.startPrank(usr1);
         uint256 collatToDeposit = 0;
         uint256 tgUSDToFlashMint = 10_000 ether;
-        uint256 collatReceived = 9_995 ether;
+        uint256 minCollatOut = 9_995 ether;
+
+        // We put some collat in pending on the zapping for mocking
+        deal(address(collatToken), address(zappingProxy), minCollatOut);
 
         // Revert beaucause LTV is too low
         vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
-        market.leverage(collatToDeposit, tgUSDToFlashMint, collatReceived, true, ZapStruct({router: address(0), routerCall: ""}));
+        market.leverage(
+            collatToDeposit,
+            tgUSDToFlashMint,
+            minCollatOut,
+            true,
+            // Simulate zap call with a transfer to the market
+            ZapStruct({router: address(collatToken), routerCall: abi.encodeWithSelector(bytes4(keccak256("transfer(address,uint256)")), address(market), minCollatOut)})
+        );
     }
 
-    // function test_leverage_to_limit() external {
-    //     vm.startPrank(usr1);
-    //     uint256 collatToDeposit = 10_000 ether;
-    //     uint256 tgUSDToFlashMint = 20_000 ether;
-    //     uint256 collatReceived = 19_000 ether;
+    function test_leverage_to_limit() external {
+        vm.startPrank(usr1);
+        uint256 collatToDeposit = 10_000 ether;
+        uint256 tgUSDToFlashMint = 20_000 ether;
+        uint256 collatReceived = 19_000 ether;
 
-    //     vm.mockFunction(address(AddrRouter.ENSO_ROUTER_V2), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector));
+        vm.mockFunction(address(AddrRouter.ENSO_ROUTER_V2), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector));
 
-    //     collatToken.approve(address(market), MAX_UINT);
-    //     deal(address(collatToken), usr1, collatToDeposit);
+        collatToken.approve(address(market), MAX_UINT);
+        deal(address(collatToken), usr1, collatToDeposit);
 
-    //     market.leverage(
-    //         collatToDeposit,
-    //         tgUSDToFlashMint,
-    //         collatReceived,
-    //         address(zapper),
-    //         true,
-    //         ensoUtils.getZapCallMocked(address(tgUSD), tgUSDToFlashMint, address(collatToken), mockedLP, address(market), address(zapper), collatReceived)
-    //     );
+        // We put some collat in pending on the zapping for mocking
+        deal(address(collatToken), address(zappingProxy), collatReceived);
 
-    //     assertEq(IERC20(stakingProxy.gaugeAddress()).balanceOf(address(stakingProxy)), collatReceived + collatToDeposit, "Convex staking proxy received Fxn Gauge");
-    //     assertEq(market.collateralBalances(usr1), collatToDeposit + collatReceived);
-    //     assertEq(market.totalCollateral(), collatToDeposit + collatReceived);
-    //     assertEq(market.userDebt(usr1), tgUSDToFlashMint);
+        verifyMintERC20(tgUSD, tgUSDToFlashMint, "Some tgUSD are minted during leverage");
 
-    //     skip(7 days);
+        market.leverage(
+            collatToDeposit,
+            tgUSDToFlashMint,
+            collatReceived,
+            true,
+            // Simulate zap call with a transfer to the market
+            ZapStruct({router: address(collatToken), routerCall: abi.encodeWithSelector(bytes4(keccak256("transfer(address,uint256)")), address(market), collatReceived)})
+        );
 
-    //     market.processRewards(usr2);
-    // }
+        assertEq(IERC20(stakingProxy.gaugeAddress()).balanceOf(address(stakingProxy)), collatReceived + collatToDeposit, "Convex staking proxy received Fxn Gauge");
+        assertEq(market.collateralBalances(usr1), collatToDeposit + collatReceived);
+        assertEq(market.totalCollateral(), collatToDeposit + collatReceived);
+        assertEq(market.userDebt(usr1), tgUSDToFlashMint);
+
+        assertERC20Tracking();
+
+        skip(7 days);
+
+        rewardAccumulator.processRewards(address(market), usr2);
+
+        skip(7 days);
+
+        rewardAccumulator.claimSimple(address(market));
+
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NoRewardToSimpleClaim.selector));
+        rewardAccumulator.claimSimple(address(market));
+    }
 }
