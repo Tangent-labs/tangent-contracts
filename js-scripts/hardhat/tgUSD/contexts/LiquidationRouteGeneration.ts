@@ -143,6 +143,7 @@ export class LiquidationRouteGeneration {
             }
 
             routes.push({
+                display : `${tokenIn} >> ${}` 
                 tokenIn: tokenIn,
                 tokenOut: tokenOut,
                 routes: routeSteps,
@@ -155,7 +156,7 @@ export class LiquidationRouteGeneration {
     }
 
     // test routes with all the step
-    async testRoute(verifiedRoutes: VerifiedRoutes, transfers: SingleSwap[][]) {
+    async testRoute(verifiedRoutes: VerifiedRoutes, allSingleSwaps: SingleSwap[]) {
         const verifiedParamsMap = new Map<string, any>();
         verifiedRoutes.params.forEach((param: any) => {
             verifiedParamsMap.set(param.route.display.trim(), param.result.swapParams);
@@ -168,18 +169,21 @@ export class LiquidationRouteGeneration {
         const errors: any[] = [];
 
         const amountIn = ethers.parseUnits("100", 18);
-        const promises = transfers.map(async (routeGroup) => {
+
+        console.log(allSingleSwaps);
+        console.log("----");
+        const promises = allSingleSwaps.map(async (singleSwapsInRoute) => {
             const routeAddresses = [];
             const swapParamsFull = [];
-            routeAddresses.push(routeGroup[0].in);
-            routeGroup.forEach((step) => {
-                if (!verifiedParamsMap.has(step.display.trim())) {
-                    errors.push({step, error: `Missing verified route parameters ${step.display.trim()}`});
+            routeAddresses.push(singleSwapsInRoute[0].in);
+            singleSwapsInRoute.forEach((singleSwap) => {
+                if (!verifiedParamsMap.has(singleSwap.display.trim())) {
+                    errors.push({singleSwap, error: `Missing verified route parameters ${singleSwap.display.trim()}`});
                     return;
                 }
-                routeAddresses.push(step.pool);
-                routeAddresses.push(step.out);
-                const stepParams = verifiedParamsMap.get(step.display.trim());
+                routeAddresses.push(singleSwap.pool);
+                routeAddresses.push(singleSwap.out);
+                const stepParams = verifiedParamsMap.get(singleSwap.display.trim());
                 swapParamsFull.push(stepParams);
             });
             if (errors?.length) {
@@ -195,19 +199,19 @@ export class LiquidationRouteGeneration {
                 //@ts-ignore
                 const output = await router.get_dy(routeAddresses, swapParamsFull, amountIn, [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]);
                 if (output.toString() === "0") {
-                    errors.push({route: routeGroup.map((r) => r.display).join(" >> "), error: "No output", params: {routeAddresses, swapParams: swapParamsFull}});
+                    errors.push({route: singleSwapsInRoute.map((r) => r.display).join(" >> "), error: "No output", params: {routeAddresses, swapParams: swapParamsFull}});
                     return;
                 }
                 results.push({
-                    start: routeGroup.at(0)!.in!,
-                    end: routeGroup.at(-1)!.out!,
+                    start: singleSwapsInRoute.at(0)!.in!,
+                    end: singleSwapsInRoute.at(-1)!.out!,
 
                     params: {routeAddresses, swapParamsFull: swapParamsFull},
-                    route: routeGroup.map((r) => r.display).join(" >> "),
+                    route: singleSwapsInRoute.map((r) => r.display).join(" >> "),
                 });
             } catch (error: any) {
                 console.log("error", error.message);
-                errors.push({route: routeGroup.map((r) => r.display).join(" >> "), error: error.message, params: {routeAddresses, swapParamsFull}});
+                errors.push({route: singleSwapsInRoute.map((r) => r.display).join(" >> "), error: error.message, params: {routeAddresses, swapParamsFull}});
             }
         });
 

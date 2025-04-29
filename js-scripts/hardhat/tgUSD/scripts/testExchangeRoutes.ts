@@ -14,8 +14,8 @@ async function main() {
 
     try {
         const finalRoutes = liquidationRoute.loadFile<VerifiedRoutes>("verifiedRoutes");
-        const transfers = liquidationRoute.loadFile<SingleSwap[][]>("transfers");
-        const results = await liquidationRoute.testRoute(finalRoutes, transfers);
+        const singleSwaps = liquidationRoute.loadFile<SingleSwap[][]>("singleSwaps");
+        const results = await liquidationRoute.testRoute(finalRoutes, singleSwaps);
 
         console.log("\n=== Exchange Test Summary ===");
         // console.log(`Total Routes: ${results.summary.totalRoutes}`);
