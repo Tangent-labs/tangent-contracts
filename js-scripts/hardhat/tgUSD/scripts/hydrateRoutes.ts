@@ -1,9 +1,9 @@
 import {LiquidationRouteGeneration} from "../contexts/LiquidationRouteGeneration";
 import fs from "fs";
-import liquidationAddresses from "../../../../../addresses.json";
+import liquidationAddresses from "../../../../addresses.json";
 async function main() {
     const action: "hydrate" | "create_template" = "hydrate";
-    const templatePath = "./js-scripts/hardhat/tgUSD/data/tplRoute.json";
+    const templatePath = "./js-scripts/hardhat/tgUSD/data/tplRoutes.json";
     const hydratedPath = "./js-scripts/hardhat/tgUSD/data/hydratedRoute.json";
     const sourcePath = "./js-scripts/hardhat/tgUSD/data/successRoutes.json";
 
@@ -24,7 +24,7 @@ async function main() {
         fs.writeFileSync(templatePath, JSON.stringify(template, null, 2));
     }
 
-    const template = fs.readFileSync("./js-scripts/hardhat/tgUSD/data/tplRoute.json", "utf-8");
+    const template = fs.readFileSync("./js-scripts/hardhat/tgUSD/data/tplRoutes.json", "utf-8");
 }
 
 main()

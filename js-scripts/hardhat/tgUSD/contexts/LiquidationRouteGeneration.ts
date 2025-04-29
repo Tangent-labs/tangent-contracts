@@ -6,6 +6,7 @@ import {giveTokenToAddresss} from "../../thief";
 import {commonERC20, routers, thiefConfig} from "defi-resources";
 import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
 import {curveLp} from "defi-resources";
+import {token} from "../../../../typechain-types/@openzeppelin/contracts";
 
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
 
@@ -232,6 +233,9 @@ export class LiquidationRouteGeneration {
             try {
                 coins = ["noONe"];
                 // No more RPC call; we use tokenIn & tokenOut from JSON
+                if (separatedCurvePoolToken[route.pool]) {
+                    route.pool = separatedCurvePoolToken[route.pool];
+                }
                 const {coins: _coins} = await this._getPoolInfo(route.pool);
                 coins = _coins;
                 const result = await this._determineSwapParams(route.pool, route, thiefData, _coins);
@@ -244,6 +248,7 @@ export class LiquidationRouteGeneration {
     }
 
     async _getPoolInfo(poolAddress: AddressLike): Promise<{coins: string[]; lp: string; symbol: string}> {
+        const _poolAddress = separatedCurvePoolToken["FRAXBP"];
         const poolAbi = ["function coins(uint256) external view returns (address)", "function symbol() external view returns (string memory)"];
 
         const poolContract = await ethers.getContractAt(poolAbi, poolAddress as string);
@@ -268,7 +273,7 @@ export class LiquidationRouteGeneration {
     async prepareUserForExchange(
         route: SingleSwap,
         user: SignerWithAddress,
-        amount: number,
+        amount: string,
         thiefConfig:
             | {
                   token: string;
@@ -282,7 +287,8 @@ export class LiquidationRouteGeneration {
         const isTgAsset = route.display.split(">>")[0].trim().endsWith("*");
         const tokenInContract = await ethers.getContractAt("IERC20Metadata", route.in);
         let initialInBalance = await tokenInContract.balanceOf(user.address);
-        const amountIn = ethers.parseUnits(amount.toString(), thiefConfig?.decimals || 18);
+        const amountIn = ethers.parseUnits(amount, thiefConfig?.decimals || 18);
+
         if (thiefConfig || isTgAsset) {
             if (initialInBalance < amountIn) {
                 await giveTokenToAddresss(user, route.in, amountIn, thiefConfig?.slot || 0, !!thiefConfig ? thiefConfig.isVyper : !isTgAsset);
@@ -325,12 +331,12 @@ export class LiquidationRouteGeneration {
         const swapTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         const poolTypes = [1, 2, 3, 4, 10, 20, 30];
 
-        const amount = "10";
+        const amount = "1";
         const tokenInContract = await ethers.getContractAt("IERC20Metadata", route.in);
         const amountIn = ethers.parseUnits(amount, thiefConfig?.decimals || 18);
 
         try {
-            await this.prepareUserForExchange(route, user, 10, thiefConfig);
+            await this.prepareUserForExchange(route, user, amount, thiefConfig);
         } catch (e: any) {
             console.log("❌ Error  > ", route.display, "\x1b[38;5;214m " + e.message + "\x1b[0m");
             throw new Error(e.message);
@@ -354,7 +360,6 @@ export class LiquidationRouteGeneration {
                 for (let k = 0; k < indexPossibilities.length; k++) {
                     const [inIndex, outIndex] = indexPossibilities[k];
                     const currentSwapParams = [inIndex, outIndex, swapTypes[j], poolTypes[i], coins.length === 1 ? 0 : coins.length];
-                    console.log(currentSwapParams);
                     testedParamsCount++;
                     const swapParamsFull = [currentSwapParams, ZEROS, ZEROS, ZEROS, ZEROS];
                     let output = 0n;
@@ -443,6 +448,11 @@ export class LiquidationRouteGeneration {
         return newRoutes;
     };
 }
+
+// Link Pools and tokens that are not the same contract
+export const separatedCurvePoolToken: {[lpToken: string]: string} = {
+    [curveLp.FRAX_USDC_LP]: curveLp.CRV_DUO_FRAXBP_POOL,
+};
 
 export const liquidationAssets: Record<string, string> = {
     "sDAI savings": commonERC20.sDAI,

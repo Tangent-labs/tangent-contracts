@@ -42,16 +42,8 @@ async function main() {
     console.log(`✅ file ${stripDirname(svc.PATHS.singleSwaps)} generated`);
     console.log(`Next step : Test all individual transfer in order  to get the good paramaters`);
 
-    const swaap: SingleSwap[] = [
-        {
-            in: "0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f",
-            pool: "0x4628f13651eaD6793F8d838B34B8f8522Fb0cc52",
-            out: "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
-            display: "GHO => USR",
-        },
-    ];
     // Step 4: Verify route steps
-    const verifiedRoutes = await svc.testRouteSteps(swaap);
+    const verifiedRoutes = await svc.testRouteSteps(singleSwaps);
     svc.saveFile("verifiedRoutes", verifiedRoutes);
 
     if (verifiedRoutes.errors.length > 0) {
