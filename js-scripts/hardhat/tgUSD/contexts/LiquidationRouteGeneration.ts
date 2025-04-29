@@ -92,31 +92,19 @@ export class LiquidationRouteGeneration {
         fs.writeFileSync(this.PATHS[type], JSON.stringify(data, null, 2));
     }
 
-    processTransfers(routeData: RouteParams[]) {
-        const transferts = routeData.map((item) => {
-            const transfers: Transfer[] = [];
-            transfers.push({
-                in: liquidationAssets[item.collateral],
-                pool: liquidationAssets[item.collateral],
-                out: liquidationAssets[item.collateralOut],
-                display: `${item.collateral} >> ${item.collateral} >> ${item.collateralOut} `,
-            });
-
-            let lastIn = item.collateralOut;
-            item?.routes?.forEach((route, index) => {
-                const inToken = (index === 0 ? liquidationAssets[item.collateralOut] : transfers?.at(-1)?.out) || "not found";
-                transfers.push({
-                    in: inToken,
-                    pool: liquidationAssets[route.pool],
-                    out: liquidationAssets[route.out],
-                    display: `${lastIn} >> ${route.pool} >> ${route.out} `,
+    processTransfers(routes: RouteParams[]): SingleSwap[] {
+        const sigleSwaps: SingleSwap[] = [];
+        routes.map((route) => {
+            route.routes?.forEach((r) => {
+                sigleSwaps.push({
+                    in: liquidationAssets[r.in],
+                    pool: liquidationAssets[r.pool],
+                    out: liquidationAssets[r.out],
+                    display: `${r.in} >> ${r.pool} >> ${r.out} `,
                 });
-                lastIn = route.out;
             });
-
-            return transfers;
         });
-        return transferts;
+        return sigleSwaps;
     }
 
     async getCsv() {
@@ -148,7 +136,7 @@ export class LiquidationRouteGeneration {
             row[0] = row[0].replace("\n", "");
             for (let j = 0; j < row.length; j++) {
                 const cell = row[j].trim();
-
+                names.add(cell);
                 // Remove empty cells
                 if (cell === "") {
                     formattedCsv.push(row.slice(0, j));
@@ -257,21 +245,16 @@ export class LiquidationRouteGeneration {
         return {results, errors};
     }
 
-    async testRouteSteps(transfers: Transfer[][]): Promise<VerifiedRoutes> {
-        const pools = new Map<string, Transfer>();
+    async testRouteSteps(singleSwaps: SingleSwap[]): Promise<VerifiedRoutes> {
+        const pools = new Map<string, SingleSwap>();
         const params: VerifiedRoute[] = [];
-        const errors: {route: Transfer; error: string}[] = [];
+        const errors: {route: SingleSwap; error: string}[] = [];
 
         // Extract pools and their respective input/output tokens
-        transfers.forEach((routeGroup: any[]) =>
-            routeGroup.forEach((route) => {
-                if (route.pool && route.in && route.out) {
-                    pools.set(route.display, route);
-                } else {
-                    console.error("incomplete route found", route);
-                }
-            })
-        );
+        singleSwaps.forEach((singleSwap) => {
+            pools.set(singleSwap.display, singleSwap);
+        });
+
         let coins: string[] = [];
         for (const [_, route] of pools.entries()) {
             try {
@@ -285,7 +268,7 @@ export class LiquidationRouteGeneration {
                 errors.push({error: error.message, route});
             }
         }
-        return {params, errors} as VerifiedRoutes;
+        return {params, errors};
     }
 
     async _getPoolInfo(poolAddress: AddressLike): Promise<{coins: string[]; lp: string; symbol: string}> {
@@ -528,8 +511,7 @@ export type LiquidationAsset = keyof typeof liquidationAssets;
 export type RouteParams = {
     tokenIn: LiquidationAsset;
     tokenOut: LiquidationAsset;
-    routes?: {pool: LiquidationAsset; out: LiquidationAsset}[];
-    swapParams: {poolType: number; swapType: number}[];
+    routes: {in: LiquidationAsset; pool: LiquidationAsset; out: LiquidationAsset}[];
 };
 
 export type PoolCurveData = {
@@ -549,7 +531,7 @@ type MissingData = {
     symbols: Set<String>;
 };
 
-export interface Transfer {
+export interface SingleSwap {
     in: string;
     pool: string;
     out: string;
@@ -562,20 +544,13 @@ type VerifiedRouteParams = {
 };
 
 type VerifiedRoute = {
-    route: Transfer;
+    route: SingleSwap;
     result: VerifiedRouteParams;
 };
 
 export type VerifiedRoutes = {
     params: VerifiedRoute[];
-    errors: {route: Transfer; error: string}[];
-};
-
-type FinalRouteStep = {
-    in: string;
-    pool: string;
-    out: string;
-    display: string;
+    errors: {route: SingleSwap; error: string}[];
 };
 
 type FinalRouteParams = {
@@ -584,7 +559,7 @@ type FinalRouteParams = {
 };
 
 type FinalRouteResult = {
-    route: FinalRouteStep[];
+    route: SingleSwap[];
     output: string;
     params: FinalRouteParams;
 };

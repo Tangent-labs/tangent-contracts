@@ -1,4 +1,4 @@
-import {LiquidationRouteGeneration, Transfer, VerifiedRoutes} from "../contexts/LiquidationRouteGeneration";
+import {LiquidationRouteGeneration, SingleSwap, VerifiedRoutes} from "../contexts/LiquidationRouteGeneration";
 import {ethers} from "hardhat";
 import fs from "fs";
 import liquidationAddresses from "../../../../addresses.json";
@@ -14,7 +14,7 @@ async function main() {
 
     try {
         const finalRoutes = liquidationRoute.loadFile<VerifiedRoutes>("verifiedRoutes");
-        const transfers = liquidationRoute.loadFile<Transfer[][]>("transfers");
+        const transfers = liquidationRoute.loadFile<SingleSwap[][]>("transfers");
         const results = await liquidationRoute.testRoute(finalRoutes, transfers);
 
         console.log("\n=== Exchange Test Summary ===");

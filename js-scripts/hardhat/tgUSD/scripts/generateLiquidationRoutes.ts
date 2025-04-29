@@ -1,7 +1,7 @@
 import readline from "readline";
-import {LiquidationRouteGeneration, Transfer} from "../contexts/LiquidationRouteGeneration";
+import {LiquidationRouteGeneration} from "../contexts/LiquidationRouteGeneration";
 import path from "path";
-import liquidationAddresses from "../../../../../addresses.json";
+import liquidationAddresses from "../../../../addresses.json";
 const svc = new LiquidationRouteGeneration();
 svc.loadDynamicAssets(liquidationAddresses);
 
@@ -14,34 +14,7 @@ function stripDirname(filePath: string) {
     return path.relative(process.cwd(), filePath);
 }
 
-function askToContinue(step: string): Promise<boolean> {
-    return new Promise((resolve) => {
-        rl.question(`➡️  Continue ? (y/n): `, (answer) => {
-            const normalized = answer.trim().toLowerCase();
-            resolve(normalized === "y" || normalized === "");
-        });
-    });
-}
-
 main();
-//mainStepTargetTed();
-
-async function mainStepTargetTed() {
-    const transfers = [
-        [
-            {
-                in: "0xdac17f958d2ee523a2206206994597c13d831ec7",
-                pool: "0x7C4e143B23D72E6938E06291f705B5ae3D5c7c7C",
-                out: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                display: "USDT >> USDT/USDC >> USDC ",
-            } as Transfer,
-        ],
-    ];
-
-    // [ 1,          0,          1,          1,          2        ],
-    const verifiedRoutes = await svc.testRouteSteps(transfers);
-    console.log(JSON.stringify(verifiedRoutes, null, 2));
-}
 
 async function main() {
     // Step 1: Validate CSV
