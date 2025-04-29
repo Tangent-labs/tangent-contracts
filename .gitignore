@@ -32,8 +32,7 @@ addresses-liquidation.json
 pyproject.toml
 requirements*
 
-js-scripts/hardhat/tgUSD/data/verifiedRoutes.json
-js-scripts/hardhat/tgUSD/data/successRoutes.json
-js-scripts/hardhat/tgUSD/data/transfers.json
-js-scripts/hardhat/tgUSD/data/hydratedRoute.json
+js-scripts/hardhat/tgUSD/data/routesRaw.json
+js-scripts/hardhat/tgUSD/data/singleSwaps.json
+js-scripts/hardhat/tgUSD/data/finalRoutes.json
 

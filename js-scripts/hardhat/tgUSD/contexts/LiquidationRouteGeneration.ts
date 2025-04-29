@@ -3,9 +3,8 @@ import fs from "fs";
 import {ethers} from "hardhat";
 import path from "path";
 import {giveTokenToAddresss} from "../../thief";
-import {commonERC20, routers, thiefConfig} from "defi-resources";
+import {commonERC20, routers, thiefConfig, curveLp} from "defi-resources";
 import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
-import {curveLp} from "defi-resources";
 
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
 
@@ -42,11 +41,9 @@ export class LiquidationRouteGeneration {
 
     routeData?: RouteParams[];
     abis?: Record<string, AbiRow[]>;
-    CSV_PATH = path.join(__dirname, "../data", "routes.csv");
     PATHS = {
-        routesRaw: path.join(__dirname, "../data", "routes.json"),
+        routesRaw: path.join(__dirname, "../data", "routesRaw.json"),
         singleSwaps: path.join(__dirname, "../data", "singleSwaps.json"),
-        verifiedRoutes: path.join(__dirname, "../data", "verifiedRoutes.json"),
         finalRoutes: path.join(__dirname, "../data", "finalRoutes.json"),
     };
 
@@ -58,39 +55,40 @@ export class LiquidationRouteGeneration {
         fs.writeFileSync(this.PATHS[type], JSON.stringify(data, null, 2));
     }
 
-    formatSingleSwaps(routes: RouteParams[]): SingleSwap[] {
-        const sigleSwaps: SingleSwap[] = [];
-        const map = new Map<string, string>();
+    async loadDynamicAssets(addressesData: {lps: Record<string, string>; wStables: Record<string, string>; tokens: {tgUSD: string}}) {
+        try {
+            // Add LP tokens
+            if (addressesData.lps) {
+                Object.entries(addressesData.lps).forEach(([key, value]) => {
+                    (liquidationAssets as any)[`${key}*`] = value;
+                });
+            }
 
-        routes.map((route) => {
-            route.routes?.forEach((r) => {
-                const display = `${r.in} >> ${r.pool} >> ${r.out}`;
-                if (!map.has(display)) {
-                    sigleSwaps.push({
-                        in: liquidationAssets[r.in],
-                        pool: liquidationAssets[r.pool],
-                        out: liquidationAssets[r.out],
-                        display: display,
-                    });
-                }
-            });
-        });
-        return sigleSwaps;
+            // Add wrapped stables
+            if (addressesData.wStables) {
+                Object.entries(addressesData.wStables).forEach(([key, value]) => {
+                    (liquidationAssets as any)[`${key}*`] = value;
+                });
+            }
+            liquidationAssets["tgUSD*"] = addressesData.tokens.tgUSD;
+
+            console.log("Dynamic assets loaded successfully");
+        } catch (error) {
+            console.error("Error loading dynamic assets:", error);
+            throw error;
+        }
     }
 
     async getCsv() {
         const sheetId = "1iHxA1src-lwCQjp396I6CCuM1u_catd2pp-EmjrSiT8";
         const gid = "2047399010";
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Erreur HTTP: ${response.status}`);
-            }
-            return await response.text();
-        } catch (error) {
-            return fs.readFileSync(this.CSV_PATH, "utf8");
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
         }
+        return await response.text();
     }
 
     async validateCsv() {
@@ -127,11 +125,13 @@ export class LiquidationRouteGeneration {
     loadRoutesFromCSV(csvData: string[][]): RouteParams[] {
         const routes: RouteParams[] = [];
 
+        // Iterate over rows
         csvData.forEach((row) => {
             const tokenIn = row[0];
             const tokenOut = row[row.length - 1];
             const routeSteps = [];
 
+            // Iterate over Row and cell from A to Z
             for (let i = 0; i < row.length - 1; ) {
                 routeSteps.push({
                     in: row[i],
@@ -148,70 +148,52 @@ export class LiquidationRouteGeneration {
             });
         });
 
+        // Iterate over Row and cell from Z to A
+        csvData.forEach((row) => {
+            const tokenIn = row[row.length - 1];
+            const tokenOut = row[0];
+            const routeSteps = [];
+
+            // Iterate over cells from Z to A
+            for (let i = row.length - 1; i > 0; ) {
+                routeSteps.push({
+                    in: row[i],
+                    pool: row[i - 1],
+                    out: row[i - 2],
+                });
+                i -= 2;
+            }
+
+            routes.push({
+                tokenIn: tokenIn,
+                tokenOut: tokenOut,
+                routes: routeSteps,
+            });
+        });
+
         console.log(routes.length, ' routes found &  processed in the CSV file "this.routeData" setted');
         this.routeData = routes;
         return routes;
     }
 
-    // test routes with all the step
-    async testRoute(verifiedRoutes: VerifiedRoutes, transfers: SingleSwap[][]) {
-        const verifiedParamsMap = new Map<string, any>();
-        verifiedRoutes.params.forEach((param: any) => {
-            verifiedParamsMap.set(param.route.display.trim(), param.result.swapParams);
-        });
+    formatSingleSwaps(routes: RouteParams[]): SingleSwap[] {
+        const sigleSwaps: SingleSwap[] = [];
+        const map = new Map<string, string>();
 
-        const [, , , , , user] = await ethers.getSigners();
-        const router = await ethers.getContractAt("ICurveRouter", routerAddress, user);
-
-        const results: RouteResult[] = [];
-        const errors: any[] = [];
-
-        const amountIn = ethers.parseUnits("100", 18);
-        const promises = transfers.map(async (routeGroup) => {
-            const routeAddresses = [];
-            const swapParamsFull = [];
-            routeAddresses.push(routeGroup[0].in);
-            routeGroup.forEach((step) => {
-                if (!verifiedParamsMap.has(step.display.trim())) {
-                    errors.push({step, error: `Missing verified route parameters ${step.display.trim()}`});
-                    return;
+        routes.map((route) => {
+            route.routes?.forEach((r) => {
+                const display = `${r.in} >> ${r.pool} >> ${r.out}`;
+                if (!map.has(display)) {
+                    sigleSwaps.push({
+                        in: liquidationAssets[r.in],
+                        pool: liquidationAssets[r.pool],
+                        out: liquidationAssets[r.out],
+                        display: display,
+                    });
                 }
-                routeAddresses.push(step.pool);
-                routeAddresses.push(step.out);
-                const stepParams = verifiedParamsMap.get(step.display.trim());
-                swapParamsFull.push(stepParams);
             });
-            if (errors?.length) {
-                return;
-            }
-            while (routeAddresses.length < 11) {
-                routeAddresses.push(ZeroAddress);
-            }
-            while (swapParamsFull.length < 5) {
-                swapParamsFull.push([0, 0, 0, 0, 0]);
-            }
-            try {
-                //@ts-ignore
-                const output = await router.get_dy(routeAddresses, swapParamsFull, amountIn, [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress]);
-                if (output.toString() === "0") {
-                    errors.push({route: routeGroup.map((r) => r.display).join(" >> "), error: "No output", params: {routeAddresses, swapParams: swapParamsFull}});
-                    return;
-                }
-                results.push({
-                    start: routeGroup.at(0)!.in!,
-                    end: routeGroup.at(-1)!.out!,
-
-                    params: {routeAddresses, swapParamsFull: swapParamsFull},
-                    route: routeGroup.map((r) => r.display).join(" >> "),
-                });
-            } catch (error: any) {
-                console.log("error", error.message);
-                errors.push({route: routeGroup.map((r) => r.display).join(" >> "), error: error.message, params: {routeAddresses, swapParamsFull}});
-            }
         });
-
-        await Promise.all(promises);
-        return {results, errors};
+        return sigleSwaps;
     }
 
     async testRouteSteps(singleSwaps: SingleSwap[]): Promise<VerifiedRoutes> {
@@ -354,7 +336,6 @@ export class LiquidationRouteGeneration {
                 for (let k = 0; k < indexPossibilities.length; k++) {
                     const [inIndex, outIndex] = indexPossibilities[k];
                     const currentSwapParams = [inIndex, outIndex, swapTypes[j], poolTypes[i], coins.length === 1 ? 0 : coins.length];
-                    console.log(currentSwapParams);
                     testedParamsCount++;
                     const swapParamsFull = [currentSwapParams, ZEROS, ZEROS, ZEROS, ZEROS];
                     let output = 0n;
@@ -386,66 +367,70 @@ export class LiquidationRouteGeneration {
         throw new Error(`No valid params found, tested ${testedParamsCount} params`);
     }
 
-    async loadDynamicAssets(addressesData: {lps: Record<string, string>; wStables: Record<string, string>; tokens: {tgUSD: string}}) {
-        try {
-            // Add LP tokens
-            if (addressesData.lps) {
-                Object.entries(addressesData.lps).forEach(([key, value]) => {
-                    (liquidationAssets as any)[`${key}*`] = value;
-                });
+    hydrateRawRoutes = (routes: RouteParams[], verifiedSingleSwaps: VerifiedRoute[]): RouteResult[] => {
+        const routeResult: RouteResult[] = [];
+        routes.forEach((route) => {
+            const routeAddresses: string[] = [];
+            const swapParamsFull = [];
+            let finalDisplay = "";
+            for (let i = 0; i < route.routes.length; i++) {
+                const routeString = route.routes[i];
+                const display = routeString.in + " >> " + routeString.pool + " >> " + routeString.out;
+                const singleSwap = verifiedSingleSwaps.find((s) => s.route.display === display);
+
+                // We can hydrate only if the single swap test has been found previously
+                if (singleSwap) {
+                    if (i === 0) {
+                        finalDisplay = `${display} >> `;
+
+                        routeAddresses.push(singleSwap?.route.in);
+                        routeAddresses.push(singleSwap?.route.pool);
+                        routeAddresses.push(singleSwap?.route.out);
+                    } else {
+                        finalDisplay += `${routeString.pool} >> ${routeString.out} >> `;
+
+                        routeAddresses.push(singleSwap?.route?.pool);
+                        routeAddresses.push(singleSwap?.route?.out);
+                    }
+                    swapParamsFull.push(singleSwap.result.swapParams);
+                }
+                // If we didn't find it, we can pass and console an error
+                else {
+                    console.error("No single swap for ", display);
+                    break;
+                }
             }
 
-            // Add wrapped stables
-            if (addressesData.wStables) {
-                Object.entries(addressesData.wStables).forEach(([key, value]) => {
-                    (liquidationAssets as any)[`${key}*`] = value;
-                });
+            if (finalDisplay === "") {
+                console.error("Couldn't hydrate route ", route.tokenIn, " >> ", route.tokenOut);
+            } else {
+                // Remove the last >>
+                finalDisplay = finalDisplay.slice(0, finalDisplay.length - 4);
+
+                while (routeAddresses.length < 11) {
+                    routeAddresses.push(ZeroAddress);
+                }
+                while (swapParamsFull.length < 5) {
+                    swapParamsFull.push([0, 0, 0, 0, 0]);
+                }
+
+                const finalRoute = {
+                    start: liquidationAssets[route.tokenIn],
+                    end: liquidationAssets[route.tokenOut],
+                    params: {
+                        routeAddresses: routeAddresses,
+                        swapParamsFull: swapParamsFull,
+                    },
+                    route: finalDisplay,
+                };
+                routeResult.push(finalRoute);
             }
-            liquidationAssets["tgUSD*"] = addressesData.tokens.tgUSD;
-
-            console.log("Dynamic assets loaded successfully");
-        } catch (error) {
-            console.error("Error loading dynamic assets:", error);
-            throw error;
-        }
-    }
-
-    _replaceRouteResult = (route: RouteResult, map: Record<string, string>): RouteResult => {
-        const replace = (address: string): string => {
-            if (map[address]) {
-                return map[address];
-            }
-            return address;
-        };
-
-        const newRoute = {
-            ...route,
-        };
-        newRoute.start = replace(route.start);
-        newRoute.end = replace(route.end);
-        newRoute.params.routeAddresses = route.params.routeAddresses.map((address) => replace(address));
-        return newRoute;
-    };
-
-    createRouteTemplate = (route: RouteResult[]): RouteResult[] => {
-        const map = {} as Record<string, string>;
-        Object.entries(liquidationAssets).reduce((_map, [key, value]) => {
-            _map[value] = key;
-            return _map;
-        }, map);
-        console.log(map);
-        const newRoutes = route.map((route) => this._replaceRouteResult(route, map));
-        return newRoutes;
-    };
-
-    hydrateRouteTemplate = (route: RouteResult[]): RouteResult[] => {
-        const newRoutes = route.map((route) => this._replaceRouteResult(route, liquidationAssets));
-        return newRoutes;
+        });
+        return routeResult;
     };
 }
 
 export const liquidationAssets: Record<string, string> = {
-    "sDAI savings": commonERC20.sDAI,
     DAI: commonERC20.DAI,
     sDAI: commonERC20.sDAI,
     USDT: commonERC20.USDT,
