@@ -1,5 +1,5 @@
 import readline from "readline";
-import {LiquidationRouteGeneration} from "../contexts/LiquidationRouteGeneration";
+import {LiquidationRouteGeneration, SingleSwap} from "../contexts/LiquidationRouteGeneration";
 import path from "path";
 import liquidationAddresses from "../../../../addresses.json";
 const svc = new LiquidationRouteGeneration();
@@ -37,23 +37,25 @@ async function main() {
     console.log(`Next step : Extract all the transfers from the routes`);
 
     // Step 3: Extract transfers
-    const transfers = svc.processTransfers(routes);
-    svc.saveFile("transfers", transfers);
-    console.log(`✅ file ${stripDirname(svc.PATHS.transfers)} generated`);
+    const singleSwaps = svc.formatSingleSwaps(routes);
+    svc.saveFile("singleSwaps", singleSwaps);
+    console.log(`✅ file ${stripDirname(svc.PATHS.singleSwaps)} generated`);
     console.log(`Next step : Test all individual transfer in order  to get the good paramaters`);
 
-    if (!(await askToContinue("transfer extraction"))) {
-        rl.close();
-        return;
-    }
-
+    const swaap: SingleSwap[] = [
+        {
+            in: "0x40d16fc0246ad3160ccc09b8d0d3a2cd28ae6c2f",
+            pool: "0x4628f13651eaD6793F8d838B34B8f8522Fb0cc52",
+            out: "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110",
+            display: "GHO => USR",
+        },
+    ];
     // Step 4: Verify route steps
-    const verifiedRoutes = await svc.testRouteSteps(transfers);
+    const verifiedRoutes = await svc.testRouteSteps(swaap);
     svc.saveFile("verifiedRoutes", verifiedRoutes);
 
     if (verifiedRoutes.errors.length > 0) {
         console.error("❌ -------------------------");
-        //Array.from(verifiedRoutes.errors).map((s) => console.log(` -> \x1b[38;5;214m${s.route.display}\x1b[0m`));
         console.log("OK route => ", verifiedRoutes.params.length, "errors => ", verifiedRoutes.errors.length);
         console.error("-------------------------");
     } else {

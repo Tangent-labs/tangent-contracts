@@ -1,45 +1,11 @@
-import {AddressLike, MaxUint256, ZeroAddress} from "ethers";
+import {AddressLike, BigNumberish, MaxUint256, ZeroAddress} from "ethers";
 import fs from "fs";
 import {ethers} from "hardhat";
 import path from "path";
-import {giveTokensoAddresss} from "../../thief";
+import {giveTokenToAddresss} from "../../thief";
 import {commonERC20, routers, thiefConfig} from "defi-resources";
 import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
-import {
-    FRAX_USDC_LP,
-    CRV_LP_FRAX_USDe,
-    CRV_DUO_FRAXBP_POOL,
-    CRV_DUO_DOLA_USR,
-    CRV_DUO_DOLA_FRAXBP,
-    CRV_DUO_crvUSD_fxUSD,
-    CRV_DUO_deUSD_USDC,
-    CRV_DUO_deUSD_DOLA,
-    CRV_DUO_USDe_USDC,
-    CRV_DUO_FRAX_frxUSD,
-    CRV_DUO_DOLA_sUSDe,
-    CRV_DUO_deUSD_USDT,
-    CRV_DUO_sUSDS_frxUSD,
-    CRV_DUO_DOLA_sUSDS,
-    CRV_DUO_DOLA_scrvUSD,
-    CRV_DUO_scrvUSD_sUSDS,
-    CRV_DUO_USDC_crvUSD,
-    CRV_DUO_USDT_crvUSD,
-    CRV_DUO_USR_RLP,
-    CRV_DUO_frxUSD_USDe,
-    CRV_DUO_scrvUSD_sUSDe,
-    CRV_DUO_crvUSD_USDe,
-    CRV_TRI_DAI_USDC_USDT,
-    CRV_DUO_USR_USDC,
-    CRV_DUO_USDC_USDT,
-    CRV_LP_FRAX_sDAI,
-    CRV_DUO_crvUSD_FRAX,
-    CRV_DUO_DOLA_crvUSD,
-    CRV_LP_USDC_fxUSD,
-    CRV_DUO_sDAI_sUSDe,
-    CRV_TRI_CRYPTO_USDC,
-    CRV_DUO_cbBTC_WBTC,
-    CRV_DUO_stETH_ETH,
-} from "defi-resources/build/ressources/lps/curve";
+import {curveLp} from "defi-resources";
 
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
 
@@ -59,7 +25,7 @@ import {
 */
 const routerAddress = routers.CURVE_V1_2_ROUTER;
 
-export const lpTokensINfo = [
+export const ThiefConfig = [
     ...Object.entries(thiefConfig.THIEF_TOKEN_CONFIG).map(([key, value]) => ({
         token: key,
         address: value.address,
@@ -79,7 +45,7 @@ export class LiquidationRouteGeneration {
     CSV_PATH = path.join(__dirname, "../data", "routes.csv");
     PATHS = {
         routesRaw: path.join(__dirname, "../data", "routes.json"),
-        transfers: path.join(__dirname, "../data", "transfers.json"),
+        singleSwaps: path.join(__dirname, "../data", "singleSwaps.json"),
         verifiedRoutes: path.join(__dirname, "../data", "verifiedRoutes.json"),
         finalRoutes: path.join(__dirname, "../data", "finalRoutes.json"),
     };
@@ -92,16 +58,21 @@ export class LiquidationRouteGeneration {
         fs.writeFileSync(this.PATHS[type], JSON.stringify(data, null, 2));
     }
 
-    processTransfers(routes: RouteParams[]): SingleSwap[] {
+    formatSingleSwaps(routes: RouteParams[]): SingleSwap[] {
         const sigleSwaps: SingleSwap[] = [];
+        const map = new Map<string, string>();
+
         routes.map((route) => {
             route.routes?.forEach((r) => {
-                sigleSwaps.push({
-                    in: liquidationAssets[r.in],
-                    pool: liquidationAssets[r.pool],
-                    out: liquidationAssets[r.out],
-                    display: `${r.in} >> ${r.pool} >> ${r.out} `,
-                });
+                const display = `${r.in} >> ${r.pool} >> ${r.out}`;
+                if (!map.has(display)) {
+                    sigleSwaps.push({
+                        in: liquidationAssets[r.in],
+                        pool: liquidationAssets[r.pool],
+                        out: liquidationAssets[r.out],
+                        display: display,
+                    });
+                }
             });
         });
         return sigleSwaps;
@@ -147,7 +118,6 @@ export class LiquidationRouteGeneration {
 
         names.forEach((name) => {
             if (!liquidationAssets[name]) {
-                console.log(name);
                 this.missing.symbols.add(name);
             }
         });
@@ -175,7 +145,6 @@ export class LiquidationRouteGeneration {
                 tokenIn: tokenIn,
                 tokenOut: tokenOut,
                 routes: routeSteps,
-                swapParams: routeSteps.map(() => ({poolType: 0, swapType: 0})),
             });
         });
 
@@ -185,7 +154,7 @@ export class LiquidationRouteGeneration {
     }
 
     // test routes with all the step
-    async testRoute(verifiedRoutes: VerifiedRoutes, transfers: Transfer[][]) {
+    async testRoute(verifiedRoutes: VerifiedRoutes, transfers: SingleSwap[][]) {
         const verifiedParamsMap = new Map<string, any>();
         verifiedRoutes.params.forEach((param: any) => {
             verifiedParamsMap.set(param.route.display.trim(), param.result.swapParams);
@@ -255,14 +224,17 @@ export class LiquidationRouteGeneration {
             pools.set(singleSwap.display, singleSwap);
         });
 
+        // const thiefData = ThiefConfig.reverse().find((token) => token.address.toLowerCase() === route.in.toLowerCase());
+        const thiefData = ThiefConfig.reverse();
+
         let coins: string[] = [];
         for (const [_, route] of pools.entries()) {
             try {
                 coins = ["noONe"];
                 // No more RPC call; we use tokenIn & tokenOut from JSON
-                const {coins: _coins, symbol} = await this._getPoolInfo(route.pool);
+                const {coins: _coins} = await this._getPoolInfo(route.pool);
                 coins = _coins;
-                const result = await this._determineSwapParams(route.pool, route);
+                const result = await this._determineSwapParams(route.pool, route, thiefData, _coins);
                 params.push({route, result: {coins: result.coins, swapParams: result.swapParams}});
             } catch (error: any) {
                 errors.push({error: error.message, route});
@@ -293,49 +265,77 @@ export class LiquidationRouteGeneration {
         return {coins, lp, symbol};
     }
 
-    async prepareUserForExchange(route: Transfer, user: SignerWithAddress, amount: number) {
-        const giveData = lpTokensINfo.reverse().find((token) => token.address.toLowerCase() === route.in.toLowerCase());
-        const isTgtAsset = route.display.split(">>")[0].trim().endsWith("*");
-        const inContract = await ethers.getContractAt("IERC20Metadata", route.in);
-        let initialInBalance = await inContract.balanceOf(user.address);
-        const amountIn = ethers.parseUnits(amount.toString(), giveData?.decimals || 18);
-        if (giveData || isTgtAsset) {
+    async prepareUserForExchange(
+        route: SingleSwap,
+        user: SignerWithAddress,
+        amount: number,
+        thiefConfig:
+            | {
+                  token: string;
+                  address: string;
+                  slot: number;
+                  isVyper: boolean;
+                  decimals: number;
+              }
+            | undefined
+    ) {
+        const isTgAsset = route.display.split(">>")[0].trim().endsWith("*");
+        const tokenInContract = await ethers.getContractAt("IERC20Metadata", route.in);
+        let initialInBalance = await tokenInContract.balanceOf(user.address);
+        const amountIn = ethers.parseUnits(amount.toString(), thiefConfig?.decimals || 18);
+        if (thiefConfig || isTgAsset) {
             if (initialInBalance < amountIn) {
-                await giveTokensoAddresss(user, route.in, amountIn, giveData?.slot || 0, !!giveData ? giveData.isVyper : !isTgtAsset);
-                initialInBalance = await inContract.balanceOf(user.address);
+                await giveTokenToAddresss(user, route.in, amountIn, thiefConfig?.slot || 0, !!thiefConfig ? thiefConfig.isVyper : !isTgAsset);
+                initialInBalance = await tokenInContract.balanceOf(user.address);
             }
         } else {
-            throw new Error(`No giveData for for  ${route.display} / ${route.in}`);
-        }
-        try {
-            {
-                const txApprove = await inContract.connect(user).approve(routerAddress, 0);
-                await txApprove.wait();
-            }
-            const txApprove = await inContract.connect(user).approve(routerAddress, MaxUint256);
-            await txApprove.wait();
-        } catch (e) {
-            throw new Error(`Approve error for  ${route.display} : ${(e as Error).message}`);
+            throw Error(`Thief config for ${route.in} not found`);
         }
 
-        const allowance = await inContract.allowance(user.address, routerAddress);
+        const txApprove0 = await tokenInContract.connect(user).approve(routerAddress, 0);
+        await txApprove0.wait();
+
+        const txApproveMax = await tokenInContract.connect(user).approve(routerAddress, MaxUint256);
+        await txApproveMax.wait();
+
+        const allowance = await tokenInContract.allowance(user.address, routerAddress);
         if (allowance < amountIn) {
-            throw new Error(`No allowance for  ${route.display}`);
+            throw Error(`No allowance for  ${route.display}`);
         }
-        return {initialInBalance, inContract, isTgtAsset, giveData, amountIn};
     }
 
-    async _determineSwapParams(poolAddress: AddressLike, route: Transfer) {
-        const {coins} = await this._getPoolInfo(poolAddress);
-        const zapPools = [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress] as AddressLike[];
+    async _determineSwapParams(
+        poolAddress: AddressLike,
+        route: SingleSwap,
+        thiefData: {
+            token: string;
+            address: string;
+            slot: number;
+            isVyper: boolean;
+            decimals: number;
+        }[],
+        coins: string[]
+    ) {
+        const thiefConfig = thiefData.find((token) => token.address.toLowerCase() === route.in.toLowerCase());
+        const zapPools: AddressLike[] = [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress];
         const [, , , , , , , , user] = await ethers.getSigners();
         const router = await ethers.getContractAt("ICurveRouter", routerAddress);
-        const routeAddresses = [route.in, poolAddress, route.out, ...Array(8).fill(ZeroAddress)] as AddressLike[];
+        const routeAddresses: AddressLike[] = [route.in, poolAddress, route.out, ...Array(8).fill(ZeroAddress)];
         const ZEROS = [0, 0, 0, 0, 0];
         const swapTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         const poolTypes = [1, 2, 3, 4, 10, 20, 30];
 
-        const {inContract, amountIn} = await this.prepareUserForExchange(route, user, 10);
+        const amount = "10";
+        const tokenInContract = await ethers.getContractAt("IERC20Metadata", route.in);
+        const amountIn = ethers.parseUnits(amount, thiefConfig?.decimals || 18);
+
+        try {
+            await this.prepareUserForExchange(route, user, 10, thiefConfig);
+        } catch (e: any) {
+            console.log("❌ Error  > ", route.display, "\x1b[38;5;214m " + e.message + "\x1b[0m");
+            throw new Error(e.message);
+        }
+
         const outContract = await ethers.getContractAt("IERC20", route.out, user);
 
         let indexPossibilities: [number, number][] = [];
@@ -353,21 +353,23 @@ export class LiquidationRouteGeneration {
             for (let j = 0; j < swapTypes.length; j++) {
                 for (let k = 0; k < indexPossibilities.length; k++) {
                     const [inIndex, outIndex] = indexPossibilities[k];
-                    const currentSwapParams = [inIndex, outIndex, swapTypes[j], poolTypes[i], coins.length === 1 ? 0 : coins.length] as number[];
+                    const currentSwapParams = [inIndex, outIndex, swapTypes[j], poolTypes[i], coins.length === 1 ? 0 : coins.length];
+                    console.log(currentSwapParams);
                     testedParamsCount++;
                     const swapParamsFull = [currentSwapParams, ZEROS, ZEROS, ZEROS, ZEROS];
                     let output = 0n;
                     let dy = 0n;
                     try {
-                        const initialCollateralBalance = await inContract.balanceOf(user.address);
+                        const initialCollateralBalance = await tokenInContract.balanceOf(user.address);
                         const initialOutBalance = await outContract.balanceOf(user.address);
+
                         //@ts-ignore
-                        dy = await router.connect(user).get_dy(routeAddresses, swapParamsFull!, amountIn, zapPools);
+                        dy = await router.connect(user).get_dy(routeAddresses, swapParamsFull, amountIn, zapPools);
 
                         //@ts-ignore
                         await router.connect(user).exchange(routeAddresses!, swapParamsFull!, amountIn, dy - (dy * 10n) / 100n, zapPools, await user.getAddress());
 
-                        const afterCollateralBalance = await inContract.balanceOf(user.address);
+                        const afterCollateralBalance = await tokenInContract.balanceOf(user.address);
                         const afterOutBalance = await outContract.balanceOf(user.address);
                         if (afterCollateralBalance - initialCollateralBalance === 0n || afterOutBalance - initialOutBalance === 0n) {
                             console.log("try", {swap: swapParamsFull.at(0), amountIn, error: "No balance change", output});
@@ -380,7 +382,7 @@ export class LiquidationRouteGeneration {
                 }
             }
         }
-        console.log("❌ Error  > ", route.display, "\x1b[38;5;214m No combnaison found \x1b[0m");
+        console.log("❌ Error  > ", route.display, "\x1b[38;5;214m No combination found \x1b[0m");
         throw new Error(`No valid params found, tested ${testedParamsCount} params`);
     }
 
@@ -464,46 +466,50 @@ export const liquidationAssets: Record<string, string> = {
     ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     WBTC: commonERC20.WBTC,
 
-    FRAXBP: FRAX_USDC_LP,
+    FRAXBP: curveLp.FRAX_USDC_LP,
     /* Pools */
-    FRAXUSDe: CRV_LP_FRAX_USDe,
-    fraxusdc: CRV_DUO_FRAXBP_POOL,
-    "DOLA/USR": CRV_DUO_DOLA_USR,
-    "DOLA/FRAXBP": CRV_DUO_DOLA_FRAXBP,
-    "crvUSD/fxUSD": CRV_DUO_crvUSD_fxUSD,
-    "deUSD/USDC": CRV_DUO_deUSD_USDC,
-    "deUSD/DOLA": CRV_DUO_deUSD_DOLA,
-    "USDe-USDC": CRV_DUO_USDe_USDC,
-    "frxUSD/USDe": CRV_DUO_frxUSD_USDe,
-    "FRAX/frxUSD": CRV_DUO_FRAX_frxUSD,
-    "USDC/fxUSD": CRV_LP_USDC_fxUSD,
-    "USDC/crvUSD": CRV_DUO_USDC_crvUSD,
-    "crvUSD/USDC": CRV_DUO_USDC_crvUSD,
-    "USDT/crvUSD": CRV_DUO_USDT_crvUSD,
-    "sDAI/sUSDe": CRV_DUO_sDAI_sUSDe,
-    "USDC/USDT": CRV_DUO_USDC_USDT, //0x4f493b7de8aac7d55f71853688b1f7c8f0243c85
-    "USDT/USDC": CRV_DUO_USDC_USDT, //0x4f493b7de8aac7d55f71853688b1f7c8f0243c85
-    "USR/RLP": CRV_DUO_USR_RLP,
-    "scrvUSD/sUSDe": CRV_DUO_scrvUSD_sUSDe,
-    "USR/USDC": CRV_DUO_USR_USDC,
-    "DAI/USDC/USDT": CRV_TRI_DAI_USDC_USDT,
+    FRAXUSDe: curveLp.CRV_LP_FRAX_USDe,
+    fraxusdc: curveLp.CRV_DUO_FRAXBP_POOL,
+    "DOLA/USR": curveLp.CRV_DUO_DOLA_USR,
+    "DOLA/FRAXBP": curveLp.CRV_DUO_DOLA_FRAXBP,
+    "crvUSD/fxUSD": curveLp.CRV_DUO_crvUSD_fxUSD,
+    "deUSD/USDC": curveLp.CRV_DUO_deUSD_USDC,
+    "deUSD/DOLA": curveLp.CRV_DUO_deUSD_DOLA,
+    "USDe-USDC": curveLp.CRV_DUO_USDe_USDC,
+    "frxUSD/USDe": curveLp.CRV_DUO_frxUSD_USDe,
+    "FRAX/frxUSD": curveLp.CRV_DUO_FRAX_frxUSD,
+    "USDC/fxUSD": curveLp.CRV_LP_USDC_fxUSD,
+    "USDC/crvUSD": curveLp.CRV_DUO_USDC_crvUSD,
+    "crvUSD/USDC": curveLp.CRV_DUO_USDC_crvUSD,
+    "USDT/crvUSD": curveLp.CRV_DUO_USDT_crvUSD,
+    "sDAI/sUSDe": curveLp.CRV_DUO_sDAI_sUSDe,
+    "USDC/USDT": curveLp.CRV_DUO_USDC_USDT, //0x4f493b7de8aac7d55f71853688b1f7c8f0243c85
+    "USR/RLP": curveLp.CRV_DUO_USR_RLP,
+    "scrvUSD/sUSDe": curveLp.CRV_DUO_scrvUSD_sUSDe,
+    "USR/USDC": curveLp.CRV_DUO_USR_USDC,
+    "DAI/USDC/USDT": curveLp.CRV_TRI_DAI_USDC_USDT,
     "scrvUSD savings": commonERC20.scrvUSD,
-    "USDC/USDe": CRV_DUO_USDe_USDC,
-    "FRAX/USDC": CRV_DUO_FRAXBP_POOL,
-    "crvUSD/DOLA": CRV_DUO_DOLA_crvUSD, // 0x8272E1A3dBef607C04AA6e5BD3a1A134c8ac063B
-    "crvUSD/FRAX": CRV_DUO_crvUSD_FRAX,
-    "DOLA/sUSDe": CRV_DUO_DOLA_sUSDe,
-    "sDAI/FRAX": CRV_LP_FRAX_sDAI,
-    "deUSD/USDT": CRV_DUO_deUSD_USDT,
-    "crvUSD/USDT": CRV_DUO_USDT_crvUSD,
-    "sUSDS/frxUSD": CRV_DUO_sUSDS_frxUSD,
-    "DOLA/sUSDS": CRV_DUO_DOLA_sUSDS,
+    "USDC/USDe": curveLp.CRV_DUO_USDe_USDC,
+    "FRAX/USDC": curveLp.CRV_DUO_FRAXBP_POOL,
+    "crvUSD/DOLA": curveLp.CRV_DUO_DOLA_crvUSD, // 0x8272E1A3dBef607C04AA6e5BD3a1A134c8ac063B
+    "crvUSD/FRAX": curveLp.CRV_DUO_crvUSD_FRAX,
+    "DOLA/sUSDe": curveLp.CRV_DUO_DOLA_sUSDe,
+    "sDAI/FRAX": curveLp.CRV_LP_FRAX_sDAI,
+    "deUSD/USDT": curveLp.CRV_DUO_deUSD_USDT,
+    "crvUSD/USDT": curveLp.CRV_DUO_USDT_crvUSD,
+    "sUSDS/frxUSD": curveLp.CRV_DUO_sUSDS_frxUSD,
+    "DOLA/sUSDS": curveLp.CRV_DUO_DOLA_sUSDS,
     "crvUSD/USDe": "0xF55B0f6F2Da5ffDDb104b58a60F2862745960442",
-    "DOLA/scrvUSD": CRV_DUO_DOLA_scrvUSD,
-    "scrvUSD/sUSDS": CRV_DUO_scrvUSD_sUSDS,
-    "WBTC/ETH/USDC": CRV_TRI_CRYPTO_USDC,
-    "WBTC/cbBTC": CRV_DUO_cbBTC_WBTC,
-    "stETH/ETH": CRV_DUO_stETH_ETH,
+    "DOLA/scrvUSD": curveLp.CRV_DUO_DOLA_scrvUSD,
+    "scrvUSD/sUSDS": curveLp.CRV_DUO_scrvUSD_sUSDS,
+    "WBTC/ETH/USDC": curveLp.CRV_TRI_CRYPTO_USDC,
+    "WBTC/cbBTC": curveLp.CRV_DUO_cbBTC_WBTC,
+    "stETH/ETH": curveLp.CRV_DUO_stETH_ETH,
+    "GHO/fxUSD": curveLp.CRV_DUO_GHO_fxUSD,
+    "GHO/USR": curveLp.CRV_DUO_GHO_USR,
+    "GHO/crvUSD": curveLp.CRV_DUO_GHO_crvUSD,
+    "GHO/USDe": curveLp.CRV_DUO_GHO_USDe,
+    "pxETH/stETH": curveLp.CRV_DUO_pxETH_stETH,
 };
 
 export type LiquidationAsset = keyof typeof liquidationAssets;
