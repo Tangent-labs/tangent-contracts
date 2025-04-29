@@ -65,6 +65,9 @@ export class BaseContext extends MainSetup {
         this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy("Tangent USD", "tgUSD", this.controlTower);
         await this.tgUSD.waitForDeployment();
 
+        this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy();
+        await this.zappingProxy.waitForDeployment();
+
         await this.deploySgUSD();
 
         this.tan = await (await ethers.getContractFactory("Tan")).deploy();
@@ -79,14 +82,13 @@ export class BaseContext extends MainSetup {
         this.rsTanERC721 = await (await ethers.getContractFactory("RsTanERC721")).deploy(this.owner);
         await this.rsTanERC721.waitForDeployment();
 
-        this.rsTanService = await (await ethers.getContractFactory("RsTanService")).deploy(this.owner, this.controlTower, this.tan, this.rsTanERC721, this.tgUSD, this.sgUSD);
+        this.rsTanService = await (
+            await ethers.getContractFactory("RsTanService")
+        ).deploy(this.owner, this.controlTower, this.tan, this.rsTanERC721, this.tgUSD, this.sgUSD, this.zappingProxy);
         await this.rsTanService.waitForDeployment();
         await this.rsTanService.addNewReward(this.tgUSD);
 
         await this.rsTanERC721.setService(this.rsTanService);
-
-        this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy();
-        await this.zappingProxy.waitForDeployment();
 
         this.marketCvxCrvImplem = await (await ethers.getContractFactory("ConvexCrvLPMarket")).deploy();
         await this.marketCvxCrvImplem.waitForDeployment();

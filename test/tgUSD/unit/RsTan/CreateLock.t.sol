@@ -17,7 +17,7 @@ contract CreateLock is MarketDeploymentContext {
         verifyLostERC20(tan, usr1, amount1, "User 1 lost TAN");
 
         tan.approve(address(rsTanService), amount1);
-        rsTanService.createLock(amount1, true, address(0));
+        rsTanService.createLock(amount1, true);
 
         assertERC20Tracking();
         assertEq(rsTanERC721.balanceOf(usr1), 1);
@@ -44,7 +44,7 @@ contract CreateLock is MarketDeploymentContext {
         uint256 expectedEndTime = ((block.timestamp + rsTanService.LOCK_DURATION()) / 1 weeks) * 1 weeks;
 
         tan.approve(address(rsTanService), amount2);
-        rsTanService.createLock(amount2, false, address(0));
+        rsTanService.createLock(amount2, false);
 
         assertERC20Tracking();
         assertEq(rsTanERC721.balanceOf(usr2), 1);
@@ -67,7 +67,7 @@ contract CreateLock is MarketDeploymentContext {
         expectedEndTime = ((block.timestamp + rsTanService.LOCK_DURATION()) / 1 weeks) * 1 weeks;
 
         tan.approve(address(rsTanService), amount2);
-        rsTanService.createLock(amount2, false, address(0));
+        rsTanService.createLock(amount2, false);
 
         assertERC20Tracking();
         assertEq(rsTanERC721.balanceOf(usr2), 1);
@@ -85,6 +85,6 @@ contract CreateLock is MarketDeploymentContext {
         tan.approve(address(rsTanService), 1 ether);
 
         vm.expectRevert(abi.encodeWithSelector(RsTanService.ZeroAmount.selector));
-        rsTanService.createLock(0, true, address(0));
+        rsTanService.createLock(0, true);
     }
 }

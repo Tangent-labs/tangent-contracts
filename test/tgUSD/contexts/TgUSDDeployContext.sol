@@ -114,7 +114,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         sgUSD = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(tgUSD), "Staked tgUSD", "sgUSD", owner, 7 days));
 
-        rsTanService = new RsTanService(owner, controlTower, tan, rsTanERC721, tgUSD, sgUSD);
+        rsTanService = new RsTanService(owner, controlTower, tan, rsTanERC721, tgUSD, sgUSD, zappingProxy);
         rsTanERC721.setService(address(rsTanService));
         rsTanService.addNewReward(tgUSD);
 

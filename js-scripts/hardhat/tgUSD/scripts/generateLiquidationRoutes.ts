@@ -45,31 +45,23 @@ async function mainStepTargetTed() {
 
 async function main() {
     // Step 1: Validate CSV
-    const {valid, mising} = svc.validateCsv();
+    const {csv, valid, missing} = await svc.validateCsv();
+
     if (!valid) {
         console.error("-------------------------");
         console.error(' ❌ Some strings are not associated to an address \n See "js-scripts/hardhat/tgUSD/contexts/LiquidationRouteGeneration:liquidationAssets" \n');
-        Array.from(mising).map((s) => console.log(` -> \x1b[38;5;214m${s}\x1b[0m`));
+        Array.from(missing).map((s) => console.log(` -> \x1b[38;5;214m${s}\x1b[0m`));
         console.error("-------------------------");
     } else {
         console.log("✅ csv is valid");
-        console.log("Next step : Extract csv to a toute.json file");
-    }
-
-    if (!(await askToContinue("CSV validation"))) {
-        rl.close();
-        return;
+        console.log("Next step : Extract csv to a route.json file");
     }
 
     // Step 2: Extract routes from CSV
-    const routes = svc.loadRoutesFromCSV();
+    const routes = svc.loadRoutesFromCSV(csv);
     svc.saveFile("routesRaw", routes);
     console.log(`✅ file ${stripDirname(svc.PATHS.routesRaw)} generated`);
     console.log(`Next step : Extract all the transfers from the routes`);
-    if (!(await askToContinue("routes extraction"))) {
-        rl.close();
-        return;
-    }
 
     // Step 3: Extract transfers
     const transfers = svc.processTransfers(routes);

@@ -14,9 +14,9 @@ contract RageQuit is MarketDeploymentContext {
         deal(address(tan), usr1, 2 * amount);
         tan.approve(address(rsTanService), 2 * amount);
         // 1 is permalocked
-        rsTanService.createLock(amount, true, address(0));
+        rsTanService.createLock(amount, true);
         // 2 is not permalocked
-        rsTanService.createLock(amount, false, address(0));
+        rsTanService.createLock(amount, false);
         vm.stopPrank();
     }
 

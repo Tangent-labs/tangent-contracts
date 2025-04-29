@@ -1,10 +1,15 @@
 [
   {
-    "collateral": "USDC/fxUSD",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wtgUSD*",
+    "tokenIn": "USDC/fxUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/fxUSD",
+        "pool": "USDC/fxUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "tgUSD-USDC*",
         "out": "tgUSD*"
       }
@@ -13,29 +18,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/fxUSD",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wdeUSD",
+    "tokenIn": "USDC/fxUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/fxUSD",
+        "pool": "USDC/fxUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "deUSD/USDC",
         "out": "deUSD"
       },
       {
-        "pool": "deUSD/DOLA",
+        "in": "deUSD",
+        "pool": "USDC/crvUSD",
         "out": "DOLA"
       },
       {
+        "in": "DOLA",
         "pool": "wDOLA*",
         "out": "wDOLA*"
       },
       {
+        "in": "wDOLA*",
         "pool": "tgUSD-wDOLA*",
         "out": "tgUSD*"
       }
@@ -56,25 +71,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/fxUSD",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wcrvUSD",
+    "tokenIn": "USDC/fxUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
-        "pool": "crvUSD/USDC",
+        "in": "USDC/fxUSD",
+        "pool": "USDC/fxUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "USDC/crvUSD",
         "out": "crvUSD"
       },
       {
+        "in": "crvUSD",
         "pool": "wcrvUSD*",
         "out": "wcrvUSD*"
       },
       {
+        "in": "wcrvUSD*",
         "pool": "tgUSD-wcrvUSD*",
         "out": "tgUSD*"
       }
@@ -91,25 +115,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/fxUSD",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wUSR",
+    "tokenIn": "USDC/fxUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/fxUSD",
+        "pool": "USDC/fxUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "USR/USDC",
         "out": "USR"
       },
       {
+        "in": "USR",
         "pool": "wUSR*",
         "out": "wUSR*"
       },
       {
+        "in": "wUSR*",
         "pool": "tgUSD-wUSR*",
         "out": "tgUSD*"
       }
@@ -126,25 +159,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/fxUSD",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wUSDe",
+    "tokenIn": "USDC/fxUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/fxUSD",
+        "pool": "USDC/fxUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "USDC/USDe",
         "out": "USDe"
       },
       {
+        "in": "USDe",
         "pool": "wUSDe*",
         "out": "wUSDe*"
       },
       {
+        "in": "wUSDe*",
         "pool": "tgUSD-wUSDe*",
         "out": "tgUSD*"
       }
@@ -161,29 +203,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/fxUSD",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wFRAX",
+    "tokenIn": "USDC/fxUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/fxUSD",
+        "pool": "USDC/fxUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "FRAX/USDC",
         "out": "FRAX"
       },
       {
+        "in": "FRAX",
         "pool": "FRAX/frxUSD",
         "out": "frxUSD"
       },
       {
+        "in": "frxUSD",
         "pool": "wfrxUSD*",
         "out": "wfrxUSD*"
       },
       {
+        "in": "wfrxUSD*",
         "pool": "tgUSD-wfrxUSD*",
         "out": "tgUSD*"
       }
@@ -204,75 +256,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/crvUSD",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wtgUSD*",
+    "tokenIn": "USDC/fxUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
-        "pool": "tgUSD-USDC*",
-        "out": "tgUSD*"
-      }
-    ],
-    "swapParams": [
-      {
-        "poolType": 0,
-        "swapType": 0
-      }
-    ],
-    "zapPools": [],
-    "pools": []
-  },
-  {
-    "collateral": "USDC/crvUSD",
-    "collateralOut": "crvUSD",
-    "wTOkenPool": "wDOLA",
-    "routes": [
-      {
-        "pool": "crvUSD/DOLA",
-        "out": "DOLA"
+        "in": "USDC/fxUSD",
+        "pool": "USDC/fxUSD",
+        "out": "fxUSD"
       },
       {
-        "pool": "wDOLA*",
-        "out": "wDOLA*"
+        "in": "fxUSD",
+        "pool": "GHO/fxUSD",
+        "out": "GHO"
       },
       {
-        "pool": "tgUSD-wDOLA*",
-        "out": "tgUSD*"
-      }
-    ],
-    "swapParams": [
-      {
-        "poolType": 0,
-        "swapType": 0
+        "in": "GHO",
+        "pool": "GHO/crvUSD",
+        "out": "crvUSD"
       },
       {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      }
-    ],
-    "zapPools": [],
-    "pools": []
-  },
-  {
-    "collateral": "USDC/crvUSD",
-    "collateralOut": "crvUSD",
-    "wTOkenPool": "wwcrvUSD*",
-    "routes": [
-      {
+        "in": "crvUSD",
         "pool": "wcrvUSD*",
         "out": "wcrvUSD*"
       },
       {
+        "in": "wcrvUSD*",
         "pool": "tgUSD-wcrvUSD*",
         "out": "tgUSD*"
       }
@@ -285,25 +301,47 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/crvUSD",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wUSR",
+    "tokenIn": "USDC/fxUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
-        "pool": "USR/USDC",
+        "in": "USDC/fxUSD",
+        "pool": "USDC/fxUSD",
+        "out": "fxUSD"
+      },
+      {
+        "in": "fxUSD",
+        "pool": "GHO/fxUSD",
+        "out": "GHO"
+      },
+      {
+        "in": "GHO",
+        "pool": "GHO/USR",
         "out": "USR"
       },
       {
+        "in": "USR",
         "pool": "wUSR*",
         "out": "wUSR*"
       },
       {
+        "in": "wUSR*",
         "pool": "tgUSD-wUSR*",
         "out": "tgUSD*"
       }
@@ -320,25 +358,43 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/crvUSD",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wUSDe",
+    "tokenIn": "USDC/fxUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
-        "pool": "USDC/USDe",
+        "in": "USDC/fxUSD",
+        "pool": "USDC/fxUSD",
+        "out": "fxUSD"
+      },
+      {
+        "in": "fxUSD",
+        "pool": "GHO/fxUSD",
+        "out": "GHO"
+      },
+      {
+        "in": "GHO",
+        "pool": "GHO/USDe",
         "out": "USDe"
       },
       {
+        "in": "USDe",
         "pool": "wUSDe*",
         "out": "wUSDe*"
       },
       {
+        "in": "wUSDe*",
         "pool": "tgUSD-wUSDe*",
         "out": "tgUSD*"
       }
@@ -355,29 +411,236 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/crvUSD",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wFRAX",
+    "tokenIn": "USDC/crvUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/crvUSD",
+        "pool": "USDC/crvUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "tgUSD-USDC*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "USDC/crvUSD",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "USDC/crvUSD",
+        "pool": "USDC/crvUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "crvUSD/DOLA",
+        "out": "DOLA"
+      },
+      {
+        "in": "DOLA",
+        "pool": "wDOLA*",
+        "out": "wDOLA*"
+      },
+      {
+        "in": "wDOLA*",
+        "pool": "tgUSD-wDOLA*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "USDC/crvUSD",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "USDC/crvUSD",
+        "pool": "USDC/crvUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "wcrvUSD*",
+        "out": "wcrvUSD*"
+      },
+      {
+        "in": "wcrvUSD*",
+        "pool": "tgUSD-wcrvUSD*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "USDC/crvUSD",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "USDC/crvUSD",
+        "pool": "USDC/crvUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "USR/USDC",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
+        "pool": "wUSR*",
+        "out": "wUSR*"
+      },
+      {
+        "in": "wUSR*",
+        "pool": "tgUSD-wUSR*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "USDC/crvUSD",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "USDC/crvUSD",
+        "pool": "USDC/crvUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "USDC/USDe",
+        "out": "USDe"
+      },
+      {
+        "in": "USDe",
+        "pool": "wUSDe*",
+        "out": "wUSDe*"
+      },
+      {
+        "in": "wUSDe*",
+        "pool": "tgUSD-wUSDe*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "USDC/crvUSD",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "USDC/crvUSD",
+        "pool": "USDC/crvUSD",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "FRAX/USDC",
         "out": "FRAX"
       },
       {
+        "in": "FRAX",
         "pool": "FRAX/frxUSD",
         "out": "frxUSD"
       },
       {
+        "in": "frxUSD",
         "pool": "wfrxUSD*",
         "out": "wfrxUSD*"
       },
       {
+        "in": "wfrxUSD*",
         "pool": "tgUSD-wfrxUSD*",
         "out": "tgUSD*"
       }
@@ -398,21 +661,29 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDT/crvUSD",
-    "collateralOut": "USDT",
-    "wTOkenPool": "wtgUSD*",
+    "tokenIn": "USDT/crvUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDT/crvUSD",
+        "pool": "USDT/crvUSD",
+        "out": "USDT"
+      },
+      {
+        "in": "USDT",
         "pool": "USDT/USDC",
         "out": "USDC"
       },
       {
+        "in": "USDC",
         "pool": "tgUSD-USDC*",
         "out": "tgUSD*"
       }
@@ -425,25 +696,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDT/crvUSD",
-    "collateralOut": "crvUSD",
-    "wTOkenPool": "wDOLA",
+    "tokenIn": "USDT/crvUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDT/crvUSD",
+        "pool": "USDT/crvUSD",
+        "out": "crvUSD"
+      },
+      {
+        "in": "crvUSD",
         "pool": "crvUSD/DOLA",
         "out": "DOLA"
       },
       {
+        "in": "DOLA",
         "pool": "wDOLA*",
         "out": "wDOLA*"
       },
       {
+        "in": "wDOLA*",
         "pool": "tgUSD-wDOLA*",
         "out": "tgUSD*"
       }
@@ -460,21 +740,29 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDT/crvUSD",
-    "collateralOut": "crvUSD",
-    "wTOkenPool": "wwcrvUSD*",
+    "tokenIn": "USDT/crvUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDT/crvUSD",
+        "pool": "USDT/crvUSD",
+        "out": "crvUSD"
+      },
+      {
+        "in": "crvUSD",
         "pool": "wcrvUSD*",
         "out": "wcrvUSD*"
       },
       {
+        "in": "wcrvUSD*",
         "pool": "tgUSD-wcrvUSD*",
         "out": "tgUSD*"
       }
@@ -487,29 +775,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDT/crvUSD",
-    "collateralOut": "USDT",
-    "wTOkenPool": "wUSR",
+    "tokenIn": "USDT/crvUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDT/crvUSD",
+        "pool": "USDT/crvUSD",
+        "out": "USDT"
+      },
+      {
+        "in": "USDT",
         "pool": "USDT/USDC",
         "out": "USDC"
       },
       {
+        "in": "USDC",
         "pool": "USR/USDC",
         "out": "USR"
       },
       {
+        "in": "USR",
         "pool": "wUSR*",
         "out": "wUSR*"
       },
       {
+        "in": "wUSR*",
         "pool": "tgUSD-wUSR*",
         "out": "tgUSD*"
       }
@@ -530,29 +828,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDT/crvUSD",
-    "collateralOut": "crvUSD",
-    "wTOkenPool": "wFRAX",
+    "tokenIn": "USDT/crvUSD",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDT/crvUSD",
+        "pool": "USDT/crvUSD",
+        "out": "crvUSD"
+      },
+      {
+        "in": "crvUSD",
         "pool": "crvUSD/FRAX",
         "out": "FRAX"
       },
       {
+        "in": "FRAX",
         "pool": "FRAX/frxUSD",
         "out": "frxUSD"
       },
       {
+        "in": "frxUSD",
         "pool": "wfrxUSD*",
         "out": "wfrxUSD*"
       },
       {
+        "in": "wfrxUSD*",
         "pool": "tgUSD-wfrxUSD*",
         "out": "tgUSD*"
       }
@@ -573,25 +881,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "sDAI/sUSDe",
-    "collateralOut": "sUSDe",
-    "wTOkenPool": "wDOLA",
+    "tokenIn": "sDAI/sUSDe",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "sDAI/sUSDe",
+        "pool": "sDAI/sUSDe",
+        "out": "sUSDe"
+      },
+      {
+        "in": "sUSDe",
         "pool": "DOLA/sUSDe",
         "out": "DOLA"
       },
       {
+        "in": "DOLA",
         "pool": "wDOLA*",
         "out": "wDOLA*"
       },
       {
+        "in": "wDOLA*",
         "pool": "tgUSD-wDOLA*",
         "out": "tgUSD*"
       }
@@ -608,29 +925,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "sDAI/sUSDe",
-    "collateralOut": "sUSDe",
-    "wTOkenPool": "wscrvUSD",
+    "tokenIn": "sDAI/sUSDe",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "sDAI/sUSDe",
+        "pool": "sDAI/sUSDe",
+        "out": "sUSDe"
+      },
+      {
+        "in": "sUSDe",
         "pool": "scrvUSD/sUSDe",
         "out": "scrvUSD"
       },
       {
+        "in": "scrvUSD",
         "pool": "scrvUSD",
         "out": "crvUSD"
       },
       {
+        "in": "crvUSD",
         "pool": "wcrvUSD*",
         "out": "wcrvUSD*"
       },
       {
+        "in": "wcrvUSD*",
         "pool": "tgUSD-wcrvUSD*",
         "out": "tgUSD*"
       }
@@ -651,29 +978,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "sDAI/sUSDe",
-    "collateralOut": "sUSDe",
-    "wTOkenPool": "wDOLA",
+    "tokenIn": "sDAI/sUSDe",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "sDAI/sUSDe",
+        "pool": "sDAI/sUSDe",
+        "out": "sUSDe"
+      },
+      {
+        "in": "sUSDe",
         "pool": "DOLA/sUSDe",
         "out": "DOLA"
       },
       {
+        "in": "DOLA",
         "pool": "DOLA/USR",
         "out": "USR"
       },
       {
+        "in": "USR",
         "pool": "wUSR*",
         "out": "wUSR*"
       },
       {
+        "in": "wUSR*",
         "pool": "tgUSD-wUSR*",
         "out": "tgUSD*"
       }
@@ -694,29 +1031,83 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "sDAI/sUSDe",
-    "collateralOut": "sDAI",
-    "wTOkenPool": "wFRAX",
+    "tokenIn": "sDAI/sUSDe",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "sDAI/sUSDe",
+        "pool": "sDAI/sUSDe",
+        "out": "sUSDe"
+      },
+      {
+        "in": "sUSDe",
+        "pool": "sUSDe",
+        "out": "USDe"
+      },
+      {
+        "in": "USDe",
+        "pool": "wUSDe*",
+        "out": "wUSDe*"
+      },
+      {
+        "in": "wUSDe*",
+        "pool": "tgUSD-wUSDe*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "sDAI/sUSDe",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "sDAI/sUSDe",
+        "pool": "sDAI/sUSDe",
+        "out": "sDAI"
+      },
+      {
+        "in": "sDAI",
         "pool": "sDAI/FRAX",
         "out": "FRAX"
       },
       {
+        "in": "FRAX",
         "pool": "FRAX/frxUSD",
         "out": "frxUSD"
       },
       {
+        "in": "frxUSD",
         "pool": "wfrxUSD*",
         "out": "wfrxUSD*"
       },
       {
+        "in": "wfrxUSD*",
         "pool": "tgUSD-wfrxUSD*",
         "out": "tgUSD*"
       }
@@ -737,17 +1128,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/USDT",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wtgUSD*",
+    "tokenIn": "sDAI/sUSDe",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "sDAI/sUSDe",
+        "pool": "sDAI/sUSDe",
+        "out": "sDAI"
+      },
+      {
+        "in": "sDAI",
+        "pool": "sDAI/FRAX",
+        "out": "FRAX"
+      },
+      {
+        "in": "FRAX",
+        "pool": "FRAX/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "tgUSD-USDC*",
         "out": "tgUSD*"
       }
@@ -756,29 +1164,73 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/USDT",
-    "collateralOut": "USDT",
-    "wTOkenPool": "wdeUSD",
+    "tokenIn": "USDC/USDT",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/USDT",
+        "pool": "USDC/USDT",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "tgUSD-USDC*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "USDC/USDT",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "USDC/USDT",
+        "pool": "USDC/USDT",
+        "out": "USDT"
+      },
+      {
+        "in": "USDT",
         "pool": "deUSD/USDT",
         "out": "deUSD"
       },
       {
+        "in": "deUSD",
         "pool": "deUSD/DOLA",
         "out": "DOLA"
       },
       {
+        "in": "DOLA",
         "pool": "wDOLA*",
         "out": "wDOLA*"
       },
       {
+        "in": "wDOLA*",
         "pool": "tgUSD-wDOLA*",
         "out": "tgUSD*"
       }
@@ -799,25 +1251,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/USDT",
-    "collateralOut": "USDT",
-    "wTOkenPool": "wcrvUSD",
+    "tokenIn": "USDC/USDT",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/USDT",
+        "pool": "USDC/USDT",
+        "out": "USDT"
+      },
+      {
+        "in": "USDT",
         "pool": "crvUSD/USDT",
         "out": "crvUSD"
       },
       {
+        "in": "crvUSD",
         "pool": "wcrvUSD*",
         "out": "wcrvUSD*"
       },
       {
+        "in": "wcrvUSD*",
         "pool": "tgUSD-wcrvUSD*",
         "out": "tgUSD*"
       }
@@ -834,25 +1295,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/USDT",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wUSR",
+    "tokenIn": "USDC/USDT",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/USDT",
+        "pool": "USDC/USDT",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "USR/USDC",
         "out": "USR"
       },
       {
+        "in": "USR",
         "pool": "wUSR*",
         "out": "wUSR*"
       },
       {
+        "in": "wUSR*",
         "pool": "tgUSD-wUSR*",
         "out": "tgUSD*"
       }
@@ -869,25 +1339,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/USDT",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wUSDe",
+    "tokenIn": "USDC/USDT",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/USDT",
+        "pool": "USDC/USDT",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "USDC/USDe",
         "out": "USDe"
       },
       {
+        "in": "USDe",
         "pool": "wUSDe*",
         "out": "wUSDe*"
       },
       {
+        "in": "wUSDe*",
         "pool": "tgUSD-wUSDe*",
         "out": "tgUSD*"
       }
@@ -904,29 +1383,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USDC/USDT",
-    "collateralOut": "USDC",
-    "wTOkenPool": "wFRAX",
+    "tokenIn": "USDC/USDT",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USDC/USDT",
+        "pool": "USDC/USDT",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "FRAX/USDC",
         "out": "FRAX"
       },
       {
+        "in": "FRAX",
         "pool": "FRAX/frxUSD",
         "out": "frxUSD"
       },
       {
+        "in": "frxUSD",
         "pool": "wfrxUSD*",
         "out": "wfrxUSD*"
       },
       {
+        "in": "wfrxUSD*",
         "pool": "tgUSD-wfrxUSD*",
         "out": "tgUSD*"
       }
@@ -947,21 +1436,29 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USR/RLP",
-    "collateralOut": "USR",
-    "wTOkenPool": "wtgUSD*",
+    "tokenIn": "USR/RLP",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USR/RLP",
+        "pool": "USR/RLP",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
         "pool": "USR/USDC",
         "out": "USDC"
       },
       {
+        "in": "USDC",
         "pool": "tgUSD-USDC*",
         "out": "tgUSD*"
       }
@@ -974,25 +1471,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USR/RLP",
-    "collateralOut": "USR",
-    "wTOkenPool": "wDOLA",
+    "tokenIn": "USR/RLP",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USR/RLP",
+        "pool": "USR/RLP",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
         "pool": "DOLA/USR",
         "out": "DOLA"
       },
       {
+        "in": "DOLA",
         "pool": "wDOLA*",
         "out": "wDOLA*"
       },
       {
+        "in": "wDOLA*",
         "pool": "tgUSD-wDOLA*",
         "out": "tgUSD*"
       }
@@ -1009,29 +1515,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USR/RLP",
-    "collateralOut": "USR",
-    "wTOkenPool": "wcrvUSD",
+    "tokenIn": "USR/RLP",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USR/RLP",
+        "pool": "USR/RLP",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
         "pool": "USR/USDC",
         "out": "USDC"
       },
       {
+        "in": "USDC",
         "pool": "crvUSD/USDC",
         "out": "crvUSD"
       },
       {
+        "in": "crvUSD",
         "pool": "wcrvUSD*",
         "out": "wcrvUSD*"
       },
       {
+        "in": "wcrvUSD*",
         "pool": "tgUSD-wcrvUSD*",
         "out": "tgUSD*"
       }
@@ -1052,21 +1568,29 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USR/RLP",
-    "collateralOut": "USR",
-    "wTOkenPool": "wwUSR*",
+    "tokenIn": "USR/RLP",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USR/RLP",
+        "pool": "USR/RLP",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
         "pool": "wUSR*",
         "out": "wUSR*"
       },
       {
+        "in": "wUSR*",
         "pool": "tgUSD-wUSR*",
         "out": "tgUSD*"
       }
@@ -1079,29 +1603,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "USR/RLP",
-    "collateralOut": "USR",
-    "wTOkenPool": "wUSDe",
+    "tokenIn": "USR/RLP",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "USR/RLP",
+        "pool": "USR/RLP",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
         "pool": "USR/USDC",
         "out": "USDC"
       },
       {
+        "in": "USDC",
         "pool": "USDC/USDe",
         "out": "USDe"
       },
       {
+        "in": "USDe",
         "pool": "wUSDe*",
         "out": "wUSDe*"
       },
       {
+        "in": "wUSDe*",
         "pool": "tgUSD-wUSDe*",
         "out": "tgUSD*"
       }
@@ -1122,21 +1656,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "frxUSD/USDe",
-    "collateralOut": "USDe",
-    "wTOkenPool": "wtgUSD*",
+    "tokenIn": "USR/RLP",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
-        "pool": "USDC/USDe",
+        "in": "USR/RLP",
+        "pool": "USR/RLP",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
+        "pool": "USR/USDC",
         "out": "USDC"
       },
       {
+        "in": "USDC",
+        "pool": "FRAX/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "tgUSD-USDC*",
         "out": "tgUSD*"
       }
@@ -1149,29 +1696,78 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "frxUSD/USDe",
-    "collateralOut": "frxUSD",
-    "wTOkenPool": "wsUSDS",
+    "tokenIn": "frxUSD/USDe",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "frxUSD/USDe",
+        "pool": "frxUSD/USDe",
+        "out": "USDe"
+      },
+      {
+        "in": "USDe",
+        "pool": "USDC/USDe",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "tgUSD-USDC*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "frxUSD/USDe",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "frxUSD/USDe",
+        "pool": "frxUSD/USDe",
+        "out": "frxUSD"
+      },
+      {
+        "in": "frxUSD",
         "pool": "sUSDS/frxUSD",
         "out": "sUSDS"
       },
       {
+        "in": "sUSDS",
         "pool": "DOLA/sUSDS",
         "out": "DOLA"
       },
       {
+        "in": "DOLA",
         "pool": "wDOLA*",
         "out": "wDOLA*"
       },
       {
+        "in": "wDOLA*",
         "pool": "tgUSD-wDOLA*",
         "out": "tgUSD*"
       }
@@ -1192,25 +1788,34 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "frxUSD/USDe",
-    "collateralOut": "USDe",
-    "wTOkenPool": "wcrvUSD",
+    "tokenIn": "frxUSD/USDe",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "frxUSD/USDe",
+        "pool": "frxUSD/USDe",
+        "out": "USDe"
+      },
+      {
+        "in": "USDe",
         "pool": "crvUSD/USDe",
         "out": "crvUSD"
       },
       {
+        "in": "crvUSD",
         "pool": "wcrvUSD*",
         "out": "wcrvUSD*"
       },
       {
+        "in": "wcrvUSD*",
         "pool": "tgUSD-wcrvUSD*",
         "out": "tgUSD*"
       }
@@ -1227,29 +1832,39 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "frxUSD/USDe",
-    "collateralOut": "USDe",
-    "wTOkenPool": "wUSR",
+    "tokenIn": "frxUSD/USDe",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "frxUSD/USDe",
+        "pool": "frxUSD/USDe",
+        "out": "USDe"
+      },
+      {
+        "in": "USDe",
         "pool": "USDC/USDe",
         "out": "USDC"
       },
       {
+        "in": "USDC",
         "pool": "USR/USDC",
         "out": "USR"
       },
       {
+        "in": "USR",
         "pool": "wUSR*",
         "out": "wUSR*"
       },
       {
+        "in": "wUSR*",
         "pool": "tgUSD-wUSR*",
         "out": "tgUSD*"
       }
@@ -1270,21 +1885,29 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "frxUSD/USDe",
-    "collateralOut": "USDe",
-    "wTOkenPool": "wwUSDe*",
+    "tokenIn": "frxUSD/USDe",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "frxUSD/USDe",
+        "pool": "frxUSD/USDe",
+        "out": "USDe"
+      },
+      {
+        "in": "USDe",
         "pool": "wUSDe*",
         "out": "wUSDe*"
       },
       {
+        "in": "wUSDe*",
         "pool": "tgUSD-wUSDe*",
         "out": "tgUSD*"
       }
@@ -1297,21 +1920,29 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "frxUSD/USDe",
-    "collateralOut": "frxUSD",
-    "wTOkenPool": "wwfrxUSD*",
+    "tokenIn": "frxUSD/USDe",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "frxUSD/USDe",
+        "pool": "frxUSD/USDe",
+        "out": "frxUSD"
+      },
+      {
+        "in": "frxUSD",
         "pool": "wfrxUSD*",
         "out": "wfrxUSD*"
       },
       {
+        "in": "wfrxUSD*",
         "pool": "tgUSD-wfrxUSD*",
         "out": "tgUSD*"
       }
@@ -1324,21 +1955,1135 @@
       {
         "poolType": 0,
         "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "DOLA/USR",
-    "collateralOut": "USR",
-    "wTOkenPool": "wtgUSD*",
+    "tokenIn": "DOLA/USR",
+    "tokenOut": "tgUSD*",
     "routes": [
       {
+        "in": "DOLA/USR",
+        "pool": "DOLA/USR",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
         "pool": "USR/USDC",
         "out": "USDC"
       },
       {
+        "in": "USDC",
+        "pool": "tgUSD-USDC*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "DOLA/USR",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "DOLA/USR",
+        "pool": "DOLA/USR",
+        "out": "DOLA"
+      },
+      {
+        "in": "DOLA",
+        "pool": "wDOLA*",
+        "out": "wDOLA*"
+      },
+      {
+        "in": "wDOLA*",
+        "pool": "tgUSD-wDOLA*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "DOLA/USR",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "DOLA/USR",
+        "pool": "DOLA/USR",
+        "out": "DOLA"
+      },
+      {
+        "in": "DOLA",
+        "pool": "DOLA/scrvUSD",
+        "out": "scrvUSD"
+      },
+      {
+        "in": "scrvUSD",
+        "pool": "scrvUSD",
+        "out": "crvUSD"
+      },
+      {
+        "in": "crvUSD",
+        "pool": "wcrvUSD*",
+        "out": "wcrvUSD*"
+      },
+      {
+        "in": "wcrvUSD*",
+        "pool": "tgUSD-wcrvUSD*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "DOLA/USR",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "DOLA/USR",
+        "pool": "DOLA/USR",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
+        "pool": "wUSR*",
+        "out": "wUSR*"
+      },
+      {
+        "in": "wUSR*",
+        "pool": "tgUSD-wUSR*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "DOLA/USR",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "DOLA/USR",
+        "pool": "DOLA/USR",
+        "out": "DOLA"
+      },
+      {
+        "in": "DOLA",
+        "pool": "DOLA/sUSDe",
+        "out": "sUSDe"
+      },
+      {
+        "in": "sUSDe",
+        "pool": "sUSDe",
+        "out": "USDe"
+      },
+      {
+        "in": "USDe",
+        "pool": "wUSDe*",
+        "out": "wUSDe*"
+      },
+      {
+        "in": "wUSDe*",
+        "pool": "tgUSD-wUSDe*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "DOLA/USR",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "DOLA/USR",
+        "pool": "DOLA/USR",
+        "out": "DOLA"
+      },
+      {
+        "in": "DOLA",
+        "pool": "DOLA/sUSDS",
+        "out": "sUSDS"
+      },
+      {
+        "in": "sUSDS",
+        "pool": "sUSDS/frxUSD",
+        "out": "frxUSD"
+      },
+      {
+        "in": "frxUSD",
+        "pool": "wfrxUSD*",
+        "out": "wfrxUSD*"
+      },
+      {
+        "in": "wfrxUSD*",
+        "pool": "tgUSD-wfrxUSD*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "scrvUSD/sUSDe",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "scrvUSD/sUSDe",
+        "pool": "scrvUSD/sUSDe",
+        "out": "sUSDe"
+      },
+      {
+        "in": "sUSDe",
+        "pool": "DOLA/sUSDe",
+        "out": "DOLA"
+      },
+      {
+        "in": "DOLA",
+        "pool": "wDOLA*",
+        "out": "wDOLA*"
+      },
+      {
+        "in": "wDOLA*",
+        "pool": "tgUSD-wDOLA*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "scrvUSD/sUSDe",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "scrvUSD/sUSDe",
+        "pool": "scrvUSD/sUSDe",
+        "out": "scrvUSD"
+      },
+      {
+        "in": "scrvUSD",
+        "pool": "scrvUSD",
+        "out": "crvUSD"
+      },
+      {
+        "in": "crvUSD",
+        "pool": "wcrvUSD*",
+        "out": "wcrvUSD*"
+      },
+      {
+        "in": "wcrvUSD*",
+        "pool": "tgUSD-wcrvUSD*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "scrvUSD/sUSDe",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "scrvUSD/sUSDe",
+        "pool": "scrvUSD/sUSDe",
+        "out": "sUSDe"
+      },
+      {
+        "in": "sUSDe",
+        "pool": "DOLA/sUSDe",
+        "out": "DOLA"
+      },
+      {
+        "in": "DOLA",
+        "pool": "DOLA/USR",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
+        "pool": "USR/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "tgUSD-USDC*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "scrvUSD/sUSDe",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "scrvUSD/sUSDe",
+        "pool": "scrvUSD/sUSDe",
+        "out": "scrvUSD"
+      },
+      {
+        "in": "scrvUSD",
+        "pool": "scrvUSD/sUSDS",
+        "out": "sUSDS"
+      },
+      {
+        "in": "sUSDS",
+        "pool": "sUSDS/frxUSD",
+        "out": "frxUSD"
+      },
+      {
+        "in": "frxUSD",
+        "pool": "wfrxUSD*",
+        "out": "wfrxUSD*"
+      },
+      {
+        "in": "wfrxUSD*",
+        "pool": "tgUSD-wfrxUSD*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "scrvUSD/sUSDe",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "scrvUSD/sUSDe",
+        "pool": "scrvUSD/sUSDe",
+        "out": "sUSDe"
+      },
+      {
+        "in": "sUSDe",
+        "pool": "DOLA/sUSDe",
+        "out": "DOLA"
+      },
+      {
+        "in": "DOLA",
+        "pool": "DOLA/USR",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
+        "pool": "wUSR*",
+        "out": "wUSR*"
+      },
+      {
+        "in": "wUSR*",
+        "pool": "tgUSD-wUSR*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "scrvUSD/sUSDe",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "scrvUSD/sUSDe",
+        "pool": "scrvUSD/sUSDe",
+        "out": "sUSDe"
+      },
+      {
+        "in": "sUSDe",
+        "pool": "wUSDe*",
+        "out": "wUSDe*"
+      },
+      {
+        "in": "wUSDe*",
+        "pool": "tgUSD-wUSDe*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "pxETH/stETH",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "pxETH/stETH",
+        "pool": "pxETH/stETH",
+        "out": "stETH"
+      },
+      {
+        "in": "stETH",
+        "pool": "stETH/ETH",
+        "out": "ETH"
+      },
+      {
+        "in": "ETH",
+        "pool": "WBTC/ETH/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "tgUSD-USDC*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "pxETH/stETH",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "pxETH/stETH",
+        "pool": "pxETH/stETH",
+        "out": "stETH"
+      },
+      {
+        "in": "stETH",
+        "pool": "stETH/ETH",
+        "out": "ETH"
+      },
+      {
+        "in": "ETH",
+        "pool": "WBTC/ETH/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "USR/USDC",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
+        "pool": "wUSR*",
+        "out": "wUSR*"
+      },
+      {
+        "in": "wUSR*",
+        "pool": "tgUSD-wUSR*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "pxETH/stETH",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "pxETH/stETH",
+        "pool": "pxETH/stETH",
+        "out": "stETH"
+      },
+      {
+        "in": "stETH",
+        "pool": "stETH/ETH",
+        "out": "ETH"
+      },
+      {
+        "in": "ETH",
+        "pool": "WBTC/ETH/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "crvUSD/USDC",
+        "out": "crvUSD"
+      },
+      {
+        "in": "crvUSD",
+        "pool": "wcrvUSD*",
+        "out": "wcrvUSD*"
+      },
+      {
+        "in": "wcrvUSD*",
+        "pool": "tgUSD-wcrvUSD*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "pxETH/stETH",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "pxETH/stETH",
+        "pool": "pxETH/stETH",
+        "out": "stETH"
+      },
+      {
+        "in": "stETH",
+        "pool": "stETH/ETH",
+        "out": "ETH"
+      },
+      {
+        "in": "ETH",
+        "pool": "WBTC/ETH/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "USDC/USDe",
+        "out": "USDe"
+      },
+      {
+        "in": "USDe",
+        "pool": "wUSDe*",
+        "out": "wUSDe*"
+      },
+      {
+        "in": "wUSDe*",
+        "pool": "tgUSD-wUSDe*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "WBTC/cbBTC",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "WBTC/cbBTC",
+        "pool": "WBTC/cbBTC",
+        "out": "WBTC"
+      },
+      {
+        "in": "WBTC",
+        "pool": "WBTC/ETH/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "tgUSD-USDC*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "WBTC/cbBTC",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "WBTC/cbBTC",
+        "pool": "WBTC/cbBTC",
+        "out": "WBTC"
+      },
+      {
+        "in": "WBTC",
+        "pool": "WBTC/ETH/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "USR/USDC",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
+        "pool": "wUSR*",
+        "out": "wUSR*"
+      },
+      {
+        "in": "wUSR*",
+        "pool": "tgUSD-wUSR*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "WBTC/cbBTC",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "WBTC/cbBTC",
+        "pool": "WBTC/cbBTC",
+        "out": "WBTC"
+      },
+      {
+        "in": "WBTC",
+        "pool": "WBTC/ETH/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "crvUSD/USDC",
+        "out": "crvUSD"
+      },
+      {
+        "in": "crvUSD",
+        "pool": "wcrvUSD*",
+        "out": "wcrvUSD*"
+      },
+      {
+        "in": "wcrvUSD*",
+        "pool": "tgUSD-wcrvUSD*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "WBTC/cbBTC",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "WBTC/cbBTC",
+        "pool": "WBTC/cbBTC",
+        "out": "WBTC"
+      },
+      {
+        "in": "WBTC",
+        "pool": "WBTC/ETH/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "USR/USDC",
+        "out": "USR"
+      },
+      {
+        "in": "USR",
+        "pool": "DOLA/USR",
+        "out": "DOLA"
+      },
+      {
+        "in": "DOLA",
+        "pool": "wDOLA*",
+        "out": "wDOLA*"
+      },
+      {
+        "in": "wDOLA*",
+        "pool": "tgUSD-wDOLA*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "WBTC/cbBTC",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "WBTC/cbBTC",
+        "pool": "WBTC/cbBTC",
+        "out": "WBTC"
+      },
+      {
+        "in": "WBTC",
+        "pool": "WBTC/ETH/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "USDC/USDe",
+        "out": "USDe"
+      },
+      {
+        "in": "USDe",
+        "pool": "wUSDe*",
+        "out": "wUSDe*"
+      },
+      {
+        "in": "wUSDe*",
+        "pool": "tgUSD-wUSDe*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "WBTC/cbBTC",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "WBTC/cbBTC",
+        "pool": "WBTC/cbBTC",
+        "out": "WBTC"
+      },
+      {
+        "in": "WBTC",
+        "pool": "WBTC/ETH/USDC",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
+        "pool": "FRAX/USDC",
+        "out": "FRAX"
+      },
+      {
+        "in": "FRAX",
+        "pool": "FRAX/frxUSD",
+        "out": "frxUSD"
+      },
+      {
+        "in": "frxUSD",
+        "pool": "wfrxUSD*",
+        "out": "wfrxUSD*"
+      },
+      {
+        "in": "wfrxUSD*",
+        "pool": "tgUSD-wfrxUSD*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      },
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "USDC",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "USDC",
+        "pool": "tgUSD-USDC*",
+        "out": "tgUSD*"
+      }
+    ],
+    "swapParams": [
+      {
+        "poolType": 0,
+        "swapType": 0
+      }
+    ]
+  },
+  {
+    "tokenIn": "USDT",
+    "tokenOut": "tgUSD*",
+    "routes": [
+      {
+        "in": "USDT",
+        "pool": "USDC/USDT",
+        "out": "USDC"
+      },
+      {
+        "in": "USDC",
         "pool": "tgUSD-USDC*",
         "out": "tgUSD*"
       }
@@ -1352,261 +3097,18 @@
         "poolType": 0,
         "swapType": 0
       }
-    ],
-    "zapPools": [],
-    "pools": []
+    ]
   },
   {
-    "collateral": "DOLA/USR",
-    "collateralOut": "DOLA",
-    "wTOkenPool": "wwDOLA*",
-    "routes": [
-      {
-        "pool": "wDOLA*",
-        "out": "wDOLA*"
-      },
-      {
-        "pool": "tgUSD-wDOLA*",
-        "out": "tgUSD*"
-      }
-    ],
-    "swapParams": [
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      }
-    ],
-    "zapPools": [],
-    "pools": []
+    "tokenIn": "ETH",
+    "tokenOut": "ETH",
+    "routes": [],
+    "swapParams": []
   },
   {
-    "collateral": "DOLA/USR",
-    "collateralOut": "DOLA",
-    "wTOkenPool": "wscrvUSD",
-    "routes": [
-      {
-        "pool": "DOLA/scrvUSD",
-        "out": "scrvUSD"
-      },
-      {
-        "pool": "scrvUSD",
-        "out": "crvUSD"
-      },
-      {
-        "pool": "wcrvUSD*",
-        "out": "wcrvUSD*"
-      },
-      {
-        "pool": "tgUSD-wcrvUSD*",
-        "out": "tgUSD*"
-      }
-    ],
-    "swapParams": [
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      }
-    ],
-    "zapPools": [],
-    "pools": []
-  },
-  {
-    "collateral": "DOLA/USR",
-    "collateralOut": "USR",
-    "wTOkenPool": "wwUSR*",
-    "routes": [
-      {
-        "pool": "wUSR*",
-        "out": "wUSR*"
-      },
-      {
-        "pool": "tgUSD-wUSR*",
-        "out": "tgUSD*"
-      }
-    ],
-    "swapParams": [
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      }
-    ],
-    "zapPools": [],
-    "pools": []
-  },
-  {
-    "collateral": "DOLA/USR",
-    "collateralOut": "DOLA",
-    "wTOkenPool": "wsUSDS",
-    "routes": [
-      {
-        "pool": "DOLA/sUSDS",
-        "out": "sUSDS"
-      },
-      {
-        "pool": "sUSDS/frxUSD",
-        "out": "frxUSD"
-      },
-      {
-        "pool": "wfrxUSD*",
-        "out": "wfrxUSD*"
-      },
-      {
-        "pool": "tgUSD-wfrxUSD*",
-        "out": "tgUSD*"
-      }
-    ],
-    "swapParams": [
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      }
-    ],
-    "zapPools": [],
-    "pools": []
-  },
-  {
-    "collateral": "scrvUSD/sUSDe",
-    "collateralOut": "sUSDe",
-    "wTOkenPool": "wDOLA",
-    "routes": [
-      {
-        "pool": "DOLA/sUSDe",
-        "out": "DOLA"
-      },
-      {
-        "pool": "wDOLA*",
-        "out": "wDOLA*"
-      },
-      {
-        "pool": "tgUSD-wDOLA*",
-        "out": "tgUSD*"
-      }
-    ],
-    "swapParams": [
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      }
-    ],
-    "zapPools": [],
-    "pools": []
-  },
-  {
-    "collateral": "scrvUSD/sUSDe",
-    "collateralOut": "scrvUSD",
-    "wTOkenPool": "wcrvUSD",
-    "routes": [
-      {
-        "pool": "scrvUSD",
-        "out": "crvUSD"
-      },
-      {
-        "pool": "wcrvUSD*",
-        "out": "wcrvUSD*"
-      },
-      {
-        "pool": "tgUSD-wcrvUSD*",
-        "out": "tgUSD*"
-      }
-    ],
-    "swapParams": [
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      }
-    ],
-    "zapPools": [],
-    "pools": []
-  },
-  {
-    "collateral": "scrvUSD/sUSDe",
-    "collateralOut": "scrvUSD",
-    "wTOkenPool": "wsUSDS",
-    "routes": [
-      {
-        "pool": "scrvUSD/sUSDS",
-        "out": "sUSDS"
-      },
-      {
-        "pool": "sUSDS/frxUSD",
-        "out": "frxUSD"
-      },
-      {
-        "pool": "wfrxUSD*",
-        "out": "wfrxUSD*"
-      },
-      {
-        "pool": "tgUSD-wfrxUSD*",
-        "out": "tgUSD*"
-      }
-    ],
-    "swapParams": [
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      },
-      {
-        "poolType": 0,
-        "swapType": 0
-      }
-    ],
-    "zapPools": [],
-    "pools": []
+    "tokenIn": "WBTC",
+    "tokenOut": "WBTC",
+    "routes": [],
+    "swapParams": []
   }
 ]

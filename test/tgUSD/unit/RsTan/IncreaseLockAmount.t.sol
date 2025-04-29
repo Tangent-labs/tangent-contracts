@@ -14,13 +14,13 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         deal(address(tan), usr1, fullAmount);
         tan.approve(address(rsTanService), fullAmount);
 
-        rsTanService.createLock(amount0, true, address(0));
+        rsTanService.createLock(amount0, true);
 
         (uint256 endLockTime0, ) = rsTanService.locks(1);
 
         verifyReceiveERC20(tan, address(rsTanService), amount1);
         verifyLostERC20(tan, usr1, amount1);
-        rsTanService.increaseLockAmount(1, amount1, address(0));
+        rsTanService.increaseLockAmount(1, amount1);
 
         assertERC20Tracking();
 
@@ -38,14 +38,14 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         deal(address(tan), usr1, fullAmount);
         tan.approve(address(rsTanService), fullAmount);
 
-        rsTanService.createLock(amount0, false, address(0));
+        rsTanService.createLock(amount0, false);
         uint48 endLockTime = rsTanService.nextEndLockTime();
         (uint256 endLockTime0, ) = rsTanService.locks(1);
 
         verifyReceiveERC20(tan, address(rsTanService), amount1);
         verifyLostERC20(tan, usr1, amount1);
 
-        rsTanService.increaseLockAmount(1, amount1, address(0));
+        rsTanService.increaseLockAmount(1, amount1);
 
         assertERC20Tracking();
 
@@ -63,19 +63,19 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         deal(address(tan), usr1, 100_000 ether);
         tan.approve(address(rsTanService), MAX_UINT);
 
-        rsTanService.createLock(amount0, false, address(0));
+        rsTanService.createLock(amount0, false);
         uint48 endLockTime0 = rsTanService.nextEndLockTime();
 
         skip(6 weeks);
 
-        rsTanService.createLock(amount0, false, address(0));
+        rsTanService.createLock(amount0, false);
 
         skip(6 weeks);
 
         verifyReceiveERC20(tan, address(rsTanService), amount1);
         verifyLostERC20(tan, usr1, amount1);
 
-        rsTanService.increaseLockAmount(1, amount1, address(0));
+        rsTanService.increaseLockAmount(1, amount1);
 
         assertERC20Tracking();
 
@@ -107,11 +107,11 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(tan), usr1, 1 ether);
         tan.approve(address(rsTanService), 1 ether);
-        rsTanService.createLock(1 ether, true, address(0));
+        rsTanService.createLock(1 ether, true);
         vm.stopPrank();
 
         vm.startPrank(usr2);
         vm.expectRevert(abi.encodeWithSelector(RsTanService.NotTokenOwner.selector));
-        rsTanService.increaseLockAmount(1, 1, address(0));
+        rsTanService.increaseLockAmount(1, 1);
     }
 }

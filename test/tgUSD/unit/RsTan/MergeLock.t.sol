@@ -14,12 +14,12 @@ contract MergeLock is MarketDeploymentContext {
         deal(address(tan), usr1, 3 * amount);
         tan.approve(address(rsTanService), 3 * amount);
         // 1 is permalocked
-        rsTanService.createLock(amount, true, address(0));
+        rsTanService.createLock(amount, true);
         // 2 is not permalocked
-        rsTanService.createLock(amount, false, address(0));
+        rsTanService.createLock(amount, false);
         skip(1 weeks);
         // 3 is not permalocked and created later than 2
-        rsTanService.createLock(amount, false, address(0));
+        rsTanService.createLock(amount, false);
         vm.stopPrank();
     }
 

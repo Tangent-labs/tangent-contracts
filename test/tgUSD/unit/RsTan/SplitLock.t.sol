@@ -11,8 +11,8 @@ contract SplitLock is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(tan), usr1, 2 * amount0);
         tan.approve(address(rsTanService), 2 * amount0);
-        rsTanService.createLock(amount0, true, address(0));
-        rsTanService.createLock(amount1, false, address(0));
+        rsTanService.createLock(amount0, true);
+        rsTanService.createLock(amount1, false);
         vm.stopPrank();
     }
 

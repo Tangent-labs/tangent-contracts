@@ -16,7 +16,7 @@ contract RewardsLock is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(tan), address(usr1), amount1);
         tan.approve(address(rsTanService), MAX_UINT);
-        rsTanService.createLock(amount1, true, address(0));
+        rsTanService.createLock(amount1, true);
 
         uint256 ts = block.timestamp;
         uint256 rateExpected = rewardAmount / uint256(1 weeks);
@@ -46,7 +46,7 @@ contract RewardsLock is MarketDeploymentContext {
         skip(timeToSkip);
         deal(address(tan), address(usr2), amount2);
         tan.approve(address(rsTanService), MAX_UINT);
-        rsTanService.createLock(amount2, false, address(0));
+        rsTanService.createLock(amount2, false);
 
         (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = rsTanService.rewardData(tgUSD);
         assertEq(lastUpdateTime, block.timestamp, "A");
@@ -82,7 +82,7 @@ contract RewardsLock is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(tan), address(usr1), amount1);
         tan.approve(address(rsTanService), MAX_UINT);
-        rsTanService.createLock(amount1, true, address(0));
+        rsTanService.createLock(amount1, true);
 
         uint256 ts = block.timestamp;
         uint256 rateExpected = rewardAmount / uint256(1 weeks);
@@ -104,13 +104,13 @@ contract RewardsLock is MarketDeploymentContext {
         skip(timeToSkip);
         deal(address(tan), address(usr2), amount2);
         tan.approve(address(rsTanService), MAX_UINT);
-        rsTanService.createLock(amount2, false, address(0));
+        rsTanService.createLock(amount2, false);
         rsTanERC721.transferFrom(usr2, usr1, 2);
 
         // Create a third token
         vm.startPrank(usr1);
         deal(address(tan), address(usr1), amount3);
-        rsTanService.createLock(amount3, true, address(0));
+        rsTanService.createLock(amount3, true);
 
         skip(5 days);
 

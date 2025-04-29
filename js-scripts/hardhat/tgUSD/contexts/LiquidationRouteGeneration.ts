@@ -36,6 +36,9 @@ import {
     CRV_DUO_DOLA_crvUSD,
     CRV_LP_USDC_fxUSD,
     CRV_DUO_sDAI_sUSDe,
+    CRV_TRI_CRYPTO_USDC,
+    CRV_DUO_cbBTC_WBTC,
+    CRV_DUO_stETH_ETH,
 } from "defi-resources/build/ressources/lps/curve";
 
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
@@ -116,79 +119,81 @@ export class LiquidationRouteGeneration {
         return transferts;
     }
 
-    validateCsv = () => {
+    async getCsv() {
+        const sheetId = "1iHxA1src-lwCQjp396I6CCuM1u_catd2pp-EmjrSiT8";
+        const gid = "2047399010";
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Erreur HTTP: ${response.status}`);
+            }
+            return await response.text();
+        } catch (error) {
+            return fs.readFileSync(this.CSV_PATH, "utf8");
+        }
+    }
+
+    async validateCsv() {
         const names = new Set<string>();
+        const csvData = await this.getCsv();
 
-        const csvData = fs.readFileSync(this.CSV_PATH, "utf8");
+        const rows = csvData.split("\r").map((row: string) => row.split(","));
 
-        const rows = csvData.split("\r").map((row: string) => row.split(";"));
+        const formattedCsv: string[][] = [];
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-            if (!row[0].trim()) continue; // Skip rows without a starting collateral
 
-            names.add(row[0].trim());
-            names.add(row[1].trim());
-            const dynamicRouteCount = 4;
-            for (let j = 2; j <= dynamicRouteCount * 2; j += 2) {
-                const pool = row[j]?.trim();
-                const out = row[j + 1]?.trim();
-                if (!pool || !out) continue;
-                names.add(out);
-                names.add(pool);
+            row[0] = row[0].replace("\n", "");
+            for (let j = 0; j < row.length; j++) {
+                const cell = row[j].trim();
+
+                // Remove empty cells
+                if (cell === "") {
+                    formattedCsv.push(row.slice(0, j));
+                    break;
+                }
             }
         }
+
         names.forEach((name) => {
-            if (!(liquidationAssets as any)[name]) {
+            if (!liquidationAssets[name]) {
+                console.log(name);
                 this.missing.symbols.add(name);
             }
         });
-        console.log(names.size, " symbols found &  processed in the CSV file");
-        return {valid: (this.missing?.symbols?.size || 0) === 0, mising: this.missing.symbols};
-    };
+        return {csv: formattedCsv, valid: (this.missing?.symbols?.size || 0) === 0, missing: this.missing.symbols};
+    }
 
-    loadRoutesFromCSV() {
-        // Read CSV file
-        const csvData = fs.readFileSync(this.CSV_PATH, "utf8");
+    loadRoutesFromCSV(csvData: string[][]): RouteParams[] {
+        const routes: RouteParams[] = [];
 
-        // Parse CSV data
-        const rows = csvData.split("\n").map((row: string) => row.split(";"));
-
-        const routes = [];
-
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            if (!row[0].trim()) continue; // Skip rows without a starting collateral
-            const collateral = row[0].trim();
-            const collateralOut = row[1].trim();
-            let wTOkenPool = undefined;
+        csvData.forEach((row) => {
+            const tokenIn = row[0];
+            const tokenOut = row[row.length - 1];
             const routeSteps = [];
 
-            const dynamicRouteCount = 4;
-
-            // let's get the dynamic portion of the route
-            for (let j = 2; j <= dynamicRouteCount * 2; j += 2) {
-                const pool = row[j]?.trim();
-                const out = row[j + 1]?.trim();
-                if (pool && out) {
-                    routeSteps.push({pool, out});
-                    if (!wTOkenPool) wTOkenPool = out === "USDC" ? undefined : `w${out}`;
-                }
+            for (let i = 0; i < row.length - 1; ) {
+                routeSteps.push({
+                    in: row[i],
+                    pool: row[i + 1],
+                    out: row[i + 2],
+                });
+                i += 2;
             }
 
             routes.push({
-                collateral,
-                collateralOut,
-                wTOkenPool,
+                tokenIn: tokenIn,
+                tokenOut: tokenOut,
                 routes: routeSteps,
                 swapParams: routeSteps.map(() => ({poolType: 0, swapType: 0})),
-                zapPools: [],
-                pools: [],
-            } as RouteParams);
-        }
+            });
+        });
+
         console.log(routes.length, ' routes found &  processed in the CSV file "this.routeData" setted');
         this.routeData = routes;
-        return routes as RouteParams[];
+        return routes;
     }
 
     // test routes with all the step
@@ -466,11 +471,16 @@ export const liquidationAssets: Record<string, string> = {
     DOLA: commonERC20.DOLA,
     USR: commonERC20.USR,
     USDC: commonERC20.USDC,
-
     crvUSD: commonERC20.crvUSD,
     frxUSD: commonERC20.frxUSD,
     USDe: commonERC20.USDe,
     sUSDe: commonERC20.sUSDe,
+    fxUSD: commonERC20.fxUSD,
+    GHO: commonERC20.GHO,
+    stETH: commonERC20.stETH,
+    ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    WBTC: commonERC20.WBTC,
+
     FRAXBP: FRAX_USDC_LP,
     /* Pools */
     FRAXUSDe: CRV_LP_FRAX_USDe,
@@ -508,16 +518,18 @@ export const liquidationAssets: Record<string, string> = {
     "crvUSD/USDe": "0xF55B0f6F2Da5ffDDb104b58a60F2862745960442",
     "DOLA/scrvUSD": CRV_DUO_DOLA_scrvUSD,
     "scrvUSD/sUSDS": CRV_DUO_scrvUSD_sUSDS,
+    "WBTC/ETH/USDC": CRV_TRI_CRYPTO_USDC,
+    "WBTC/cbBTC": CRV_DUO_cbBTC_WBTC,
+    "stETH/ETH": CRV_DUO_stETH_ETH,
 };
 
+export type LiquidationAsset = keyof typeof liquidationAssets;
+
 export type RouteParams = {
-    collateral: keyof typeof liquidationAssets;
-    collateralOut: keyof typeof liquidationAssets;
-    wTOkenPool?: string; // Leave empty for none wTOken route
-    routes?: {pool: keyof typeof liquidationAssets; out: keyof typeof liquidationAssets}[];
+    tokenIn: LiquidationAsset;
+    tokenOut: LiquidationAsset;
+    routes?: {pool: LiquidationAsset; out: LiquidationAsset}[];
     swapParams: {poolType: number; swapType: number}[];
-    zapPools: AddressLike[];
-    pools: (PoolCurveData | undefined)[];
 };
 
 export type PoolCurveData = {
@@ -528,7 +540,7 @@ export type PoolCurveData = {
     symbol: string;
     in?: AddressLike;
     out?: AddressLike;
-    inINdex: number;
+    inIndex: number;
     outIndex: number;
 };
 

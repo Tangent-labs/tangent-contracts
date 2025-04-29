@@ -11,8 +11,8 @@ contract IncreaseLockTime is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(tan), usr1, 2 * amount);
         tan.approve(address(rsTanService), 2 * amount);
-        rsTanService.createLock(amount, true, address(0));
-        rsTanService.createLock(amount, false, address(0));
+        rsTanService.createLock(amount, true);
+        rsTanService.createLock(amount, false);
         vm.stopPrank();
     }
 

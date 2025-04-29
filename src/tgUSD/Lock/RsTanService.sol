@@ -5,6 +5,9 @@ import {IERC4626, IERC20} from "@openzeppelin/contracts/interfaces/IERC4626.sol"
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import {IZappingProxy} from "../../interfaces/internals/tgUSD/IZappingProxy.sol";
+import {ZapStructDeposit} from "../../interfaces/internals/tgUSD/IMarketCore.sol";
+
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IRsTanERC721} from "../../interfaces/internals/tgUSD/IRsTanERC721.sol";
 
@@ -37,6 +40,8 @@ contract RsTanService is LightOwnable {
 
     /// @notice Reference to the control tower contract.
     IControlTower public controlTower;
+
+    IZappingProxy public zappingProxy;
 
     /// @notice Total amount of locked tokens.
     uint256 public totalSupplyRsTan;
@@ -93,7 +98,7 @@ contract RsTanService is LightOwnable {
     event RewardNotified(IERC20 indexed _token, uint256 _reward);
     event RewardPaid(uint256 indexed tokenId, IERC20 indexed _rewardToken, uint256 _reward);
 
-    constructor(address _owner, IControlTower _controlTower, IERC20 _tan, IRsTanERC721 _rsTanERC721, IERC20 _tgUSD, IERC4626 _sgUSD) {
+    constructor(address _owner, IControlTower _controlTower, IERC20 _tan, IRsTanERC721 _rsTanERC721, IERC20 _tgUSD, IERC4626 _sgUSD, IZappingProxy _zappingProxy) {
         _transferOwnership(_owner);
 
         controlTower = _controlTower;
@@ -101,6 +106,7 @@ contract RsTanService is LightOwnable {
         rsTanERC721 = _rsTanERC721;
         tgUSD = _tgUSD;
         sgUSD = _sgUSD;
+        zappingProxy = _zappingProxy;
 
         _tgUSD.approve(address(_sgUSD), type(uint256).max);
 
@@ -188,24 +194,6 @@ contract RsTanService is LightOwnable {
     }
 
     /**
-     * @notice Check if the caller is a zapper and return the appropriate address
-     * @param  callerZapper Address of the
-     * @return isZapping Boolean indicating if the caller is a zapper
-     * @return caller Address of the caller or zapper
-     */
-    function _checkZapper(address callerZapper) internal view returns (bool, address) {
-        bool isZapping;
-        if (address(callerZapper) != address(0)) {
-            isZapping = controlTower.isZapper(msg.sender);
-        } else {
-            callerZapper = msg.sender;
-        }
-        callerZapper = isZapping ? callerZapper : msg.sender;
-
-        return (isZapping, callerZapper);
-    }
-
-    /**
      * @notice Get the lock details for a specific token ID
      * @param tokenId ID of the locking position
      * @return endLockTime The end time of the lock
@@ -220,13 +208,22 @@ contract RsTanService is LightOwnable {
      * @notice Create a new lock for the specified amount
      * @param amountIn Amount of tokens to lock
      * @param isPermaLock Boolean indicating if the lock is permanent
-     * @param callerZapper Address of the zapper (if applicable)
      */
-    function createLock(uint208 amountIn, bool isPermaLock, address callerZapper) external {
-        require(amountIn != 0, ZeroAmount());
-        (bool isZap, address receiver) = _checkZapper(callerZapper);
+    function createLock(uint208 amountIn, bool isPermaLock) external {
+        _createLock(amountIn, isPermaLock);
 
-        uint256 tokenId = rsTanERC721.mintForCreate(receiver);
+        tan.transferFrom(msg.sender, address(this), amountIn);
+    }
+
+    function zapCreateLock(bool isPermalock, ZapStructDeposit calldata zapCall) external {
+        uint256 amountIn = zappingProxy.zapProxy(zapCall.tokenIn, tan, zapCall.minAmountOut, address(this), zapCall.zap);
+
+        _createLock(uint208(amountIn), isPermalock);
+    }
+
+    function _createLock(uint208 amountIn, bool isPermaLock) internal {
+        require(amountIn != 0, ZeroAmount());
+        uint256 tokenId = rsTanERC721.mintForCreate(msg.sender);
 
         _updateReward(tokenId);
 
@@ -234,35 +231,40 @@ contract RsTanService is LightOwnable {
         locks[tokenId] = Lock({endLockTime: isPermaLock ? MAX_UINT48 : _newEndLockTime(), amount: amountIn});
         // Increase the total amount locked
         totalSupplyRsTan += amountIn;
-
-        if (!isZap) {
-            tan.transferFrom(msg.sender, address(this), amountIn);
-        }
     }
 
     /**
      * @notice Increase the amount of an existing lock
      * @param tokenId ID of the locking position
      * @param amountIn Amount to add to the lock
-     * @param callerZapper Address of the zapper (if applicable)
      */
-    function increaseLockAmount(uint256 tokenId, uint208 amountIn, address callerZapper) external updateReward(tokenId) {
+    function increaseLockAmount(uint256 tokenId, uint208 amountIn) external updateReward(tokenId) {
+        _increaseLockAmount(tokenId, amountIn);
+
+        tan.transferFrom(msg.sender, address(this), amountIn);
+    }
+
+    /**
+     * @notice Increase the amount of an existing lock
+     * @param tokenId ID of the locking position
+     * @param zapCall Packed struct with the zap parameters
+     */
+    function zapIncreaseLockAmount(uint256 tokenId, ZapStructDeposit calldata zapCall) external updateReward(tokenId) {
+        uint256 amountIn = zappingProxy.zapProxy(zapCall.tokenIn, tan, zapCall.minAmountOut, address(this), zapCall.zap);
+        _increaseLockAmount(tokenId, uint208(amountIn));
+    }
+
+    function _increaseLockAmount(uint256 tokenId, uint208 amountIn) internal {
         require(amountIn != 0, ZeroAmount());
         (uint48 oldLockTime, uint208 oldAmount) = _getLock(tokenId);
         require(oldLockTime > block.timestamp, LockExpired());
 
-        (bool isZap, address tokenOwner) = _checkZapper(callerZapper);
-
-        require(rsTanERC721.ownerOf(tokenId) == tokenOwner, NotTokenOwner());
+        require(rsTanERC721.ownerOf(tokenId) == msg.sender, NotTokenOwner());
 
         locks[tokenId] = Lock({endLockTime: oldLockTime != MAX_UINT48 ? _newEndLockTime() : MAX_UINT48, amount: oldAmount + amountIn});
 
         // Increase the total amount locked
         totalSupplyRsTan += amountIn;
-
-        if (!isZap) {
-            tan.transferFrom(msg.sender, address(this), amountIn);
-        }
     }
 
     /**
