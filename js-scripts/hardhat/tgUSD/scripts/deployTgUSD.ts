@@ -1,8 +1,8 @@
-import {createJSONAddress} from "./contexts/BaseContext";
+import {createJSONAddress} from "../contexts/BaseContext";
 
 import * as fs from "fs";
 
-import {deploytgUsd} from "./actions/deploytgUsd";
+import {deploytgUsd} from "../actions/deploytgUsd";
 
 async function main() {
     const {baseContext, marketContext, oracleContext, lpDeployContext, wStableContext} = await deploytgUsd();

@@ -11,7 +11,7 @@
   "scripts": {
     "hh-node": "npx hardhat node --hostname 0.0.0.0 ",
     "dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
-    "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/_deploy.ts --network localhost",
+    "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/deployTgUSD.ts --network localhost",
     "flatten-contracts": "npx ts-node js-scripts/utils/flattenContracts.ts",
     "verify-contracts-blockscout": "npx ts-node js-scripts/hardhat/tgUSD/blockscout/verify-contracts.ts",
     "distribute-rewards-rsTan": "npx hardhat run js-scripts/hardhat/tgUSD/actions/distributeRewardsRsTan.ts --network localhost",
@@ -22,9 +22,10 @@
     "full-tgUSD": "npm run deploy-tgUSD &  npm run distribute-rewards-tgUSD & npm run deposit-markets-tgUSD  & npm run borrow-markets-tgUSD",
     "time-travel": "npx hardhat run js-scripts/hardhat/tgUSD/actions/time-travel.ts --network localhost",
     "liquidation-context": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/liquidationSetUp.ts --network localhost",
-    "liquidation-swap": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/liquidationSwap.ts --network localhost",
     "booster-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
-    "generate-routes": "npx hardhat run  js-scripts/hardhat/tgUSD/scripts/generateLiquidationRoutes.ts  --network localhost",
+    "generate-routes": "npx hardhat run  js-scripts/hardhat/tgUSD/routing/Curve/generateCurveRoutes.ts --network localhost",
+    "hydrate-routes": "npx hardhat run  js-scripts/hardhat/tgUSD/routing/Curve/hydrateFinalRoutes.ts --network localhost",
+    "test-curve-routes": "npx hardhat run  js-scripts/hardhat/tgUSD/routing/Curve/testFinalRoutes.ts --network localhost",
     "coverage": "forge coverage --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage"
   },
   "author": "Trottoir",

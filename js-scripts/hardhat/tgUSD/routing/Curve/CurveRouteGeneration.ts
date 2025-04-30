@@ -2,7 +2,7 @@ import {AddressLike, MaxUint256, ZeroAddress} from "ethers";
 import fs from "fs";
 import {ethers} from "hardhat";
 import path from "path";
-import {giveTokenToAddresss} from "../../thief";
+import {giveTokenToAddresss} from "../../../thief";
 import {commonERC20, routers, thiefConfig, curveLp} from "defi-resources";
 import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
 
@@ -22,7 +22,6 @@ import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
         30 - tricrypto-ng
 
 */
-const routerAddress = routers.CURVE_V1_2_ROUTER;
 
 export const ThiefConfig = [
     ...Object.entries(thiefConfig.THIEF_TOKEN_CONFIG).map(([key, value]) => ({
@@ -34,17 +33,13 @@ export const ThiefConfig = [
     })),
 ];
 
-export class LiquidationRouteGeneration {
-    missing: MissingData = {
-        symbols: new Set<string>(),
-    };
-
+export class CurveRouteGeneration {
     routeData?: RouteParams[];
-    abis?: Record<string, AbiRow[]>;
     PATHS = {
-        routesRaw: path.join(__dirname, "../data", "routesRaw.json"),
-        singleSwaps: path.join(__dirname, "../data", "singleSwaps.json"),
-        finalRoutes: path.join(__dirname, "../data", "finalRoutes.json"),
+        rawRoutes: path.join(__dirname, "./data", "rawRoutes.json"),
+        singleSwaps: path.join(__dirname, "./data", "singleSwaps.json"),
+        finalRoutes: path.join(__dirname, "./data", "finalRoutes.json"),
+        finalRoutesTestRepport: path.join(__dirname, "./data", "finalRoutesTestRepport.json"),
     };
 
     loadFile<T>(type: keyof typeof this.PATHS) {
@@ -52,7 +47,7 @@ export class LiquidationRouteGeneration {
     }
 
     saveFile<T>(type: keyof typeof this.PATHS, data: T) {
-        fs.writeFileSync(this.PATHS[type], JSON.stringify(data, null, 2));
+        fs.writeFileSync(this.PATHS[type], JSON.stringify(data));
     }
 
     async loadDynamicAssets(addressesData: {lps: Record<string, string>; wStables: Record<string, string>; tokens: {tgUSD: string}}) {
@@ -93,6 +88,7 @@ export class LiquidationRouteGeneration {
 
     async validateCsv() {
         const names = new Set<string>();
+        const missings = new Set<string>();
         const csvData = await this.getCsv();
 
         const rows = csvData.split("\r").map((row: string) => row.split(","));
@@ -101,11 +97,11 @@ export class LiquidationRouteGeneration {
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-
             row[0] = row[0].replace("\n", "");
             for (let j = 0; j < row.length; j++) {
                 const cell = row[j].trim();
                 names.add(cell);
+
                 // Remove empty cells
                 if (cell === "") {
                     formattedCsv.push(row.slice(0, j));
@@ -115,90 +111,87 @@ export class LiquidationRouteGeneration {
         }
 
         names.forEach((name) => {
-            if (!liquidationAssets[name]) {
-                this.missing.symbols.add(name);
+            if (name !== "" && !liquidationAssets[name]) {
+                missings.add(name);
             }
         });
-        return {csv: formattedCsv, valid: (this.missing?.symbols?.size || 0) === 0, missing: this.missing.symbols};
+
+        return {csv: formattedCsv, valid: (missings.size || 0) === 0, missing: missings};
     }
 
     loadRoutesFromCSV(csvData: string[][]): RouteParams[] {
         const routes: RouteParams[] = [];
 
-        // Iterate over rows
+        // Iterate over rows.
         csvData.forEach((row) => {
-            const tokenIn = row[0];
-            const tokenOut = row[row.length - 1];
-            const routeSteps = [];
-
-            // Iterate over Row and cell from A to Z
-            for (let i = 0; i < row.length - 1; ) {
-                routeSteps.push({
-                    in: row[i],
-                    pool: row[i + 1],
-                    out: row[i + 2],
-                });
-                i += 2;
-            }
-
-            routes.push({
-                tokenIn: tokenIn,
-                tokenOut: tokenOut,
-                routes: routeSteps,
-            });
+            // Generates routes in the normal order of the CSV for Liquidations
+            routes.push(this._formatRoutesFromCSV(row));
+            // And now reverse order for Leverage
+            routes.push(this._formatRoutesFromCSV(row.reverse()));
         });
 
-        // Iterate over Row and cell from Z to A
-        csvData.forEach((row) => {
-            const tokenIn = row[row.length - 1];
-            const tokenOut = row[0];
-            const routeSteps = [];
-
-            // Iterate over cells from Z to A
-            for (let i = row.length - 1; i > 0; ) {
-                routeSteps.push({
-                    in: row[i],
-                    pool: row[i - 1],
-                    out: row[i - 2],
-                });
-                i -= 2;
-            }
-
-            routes.push({
-                tokenIn: tokenIn,
-                tokenOut: tokenOut,
-                routes: routeSteps,
-            });
-        });
-
-        console.log(routes.length, ' routes found &  processed in the CSV file "this.routeData" setted');
-        this.routeData = routes;
         return routes;
+    }
+
+    _formatRoutesFromCSV(row: string[]): RouteParams {
+        const routeSteps = [];
+        let display = "";
+
+        // Iterate over Row and cell from A to Z
+        for (let i = 0; i < row.length - 1; ) {
+            const tokenIn = row[i];
+            const pool = row[i + 1];
+            const out = row[i + 2];
+
+            if (i === 0) {
+                display += tokenIn + " >> " + pool + " >> " + out + " >> ";
+            } else {
+                display += pool + " >> " + out + " >> ";
+            }
+            routeSteps.push({
+                in: tokenIn,
+                pool: pool,
+                out: out,
+            });
+            i += 2;
+        }
+
+        // Remove the last >>
+        display = display.slice(0, display.length - 4);
+
+        return {
+            display,
+            in: row[0],
+            out: row[row.length - 1],
+            singleSwaps: routeSteps,
+        };
     }
 
     formatSingleSwaps(routes: RouteParams[]): SingleSwap[] {
         const singleSwaps: SingleSwap[] = [];
-        const map = new Map<string, string>();
+        const map = new Map<string, boolean>();
 
-        routes.map((route) => {
-            route.routes?.forEach((r) => {
-                const display = `${r.in} >> ${r.pool} >> ${r.out}`;
+        routes.forEach((route) => {
+            route.singleSwaps?.forEach((singleSwap) => {
+                const display = `${singleSwap.in} >> ${singleSwap.pool} >> ${singleSwap.out}`;
                 if (!map.has(display)) {
                     singleSwaps.push({
-                        in: liquidationAssets[r.in],
-                        pool: liquidationAssets[r.pool],
-                        out: liquidationAssets[r.out],
+                        in: liquidationAssets[singleSwap.in],
+                        pool: liquidationAssets[singleSwap.pool],
+                        out: liquidationAssets[singleSwap.out],
                         display: display,
                     });
+                    map.set(display, true);
                 }
             });
         });
+
         return singleSwaps;
     }
 
-    async testRouteSteps(singleSwaps: SingleSwap[]): Promise<VerifiedRoutes> {
+    async testRouteSteps(singleSwaps: SingleSwap[]): Promise<SingleSwapProcessResult> {
         const pools = new Map<string, SingleSwap>();
-        const params: VerifiedRoute[] = [];
+        const params: VerifiedSingleSwap[] = [];
         const errors: {route: SingleSwap; error: string}[] = [];
 
         // Extract pools and their respective input/output tokens
@@ -206,11 +199,9 @@ export class LiquidationRouteGeneration {
             pools.set(singleSwap.display, singleSwap);
         });
 
-        // const thiefData = ThiefConfig.reverse().find((token) => token.address.toLowerCase() === route.in.toLowerCase());
-        const thiefData = ThiefConfig.reverse();
-
         let coins: string[] = [];
         for (const [_, route] of pools.entries()) {
+            const thiefData = ThiefConfig.find((token) => token.address.toLowerCase() === route.in.toLowerCase());
             try {
                 coins = ["noONe"];
                 // No more RPC call; we use tokenIn & tokenOut from JSON
@@ -225,11 +216,10 @@ export class LiquidationRouteGeneration {
                 errors.push({error: error.message, route});
             }
         }
-        return {params, errors};
+        return {success: params, errors};
     }
 
     async _getPoolInfo(poolAddress: AddressLike): Promise<{coins: string[]; lp: string; symbol: string}> {
-        const _poolAddress = separatedCurvePoolToken["FRAXBP"];
         const poolAbi = ["function coins(uint256) external view returns (address)", "function symbol() external view returns (string memory)"];
 
         const poolContract = await ethers.getContractAt(poolAbi, poolAddress as string);
@@ -252,7 +242,8 @@ export class LiquidationRouteGeneration {
     }
 
     async prepareUserForExchange(
-        route: SingleSwap,
+        tokenIn: string,
+        display: string,
         user: SignerWithAddress,
         amount: string,
         thiefConfig:
@@ -265,61 +256,66 @@ export class LiquidationRouteGeneration {
               }
             | undefined
     ) {
-        const isTgAsset = route.display.split(">>")[0].trim().endsWith("*");
-        const tokenInContract = await ethers.getContractAt("IERC20Metadata", route.in);
-        let initialInBalance = await tokenInContract.balanceOf(user.address);
+        const isTgAsset = display.split(">>")[0].trim().endsWith("*");
+        const isETH = tokenIn === "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+        const tokenInContract = await ethers.getContractAt("IERC20Metadata", tokenIn);
+
+        let initialInBalance = isETH ? await ethers.provider.getBalance(user.address) : await tokenInContract.balanceOf(user.address);
         const amountIn = ethers.parseUnits(amount, thiefConfig?.decimals || 18);
 
         if (thiefConfig || isTgAsset) {
             if (initialInBalance < amountIn) {
-                await giveTokenToAddresss(user, route.in, amountIn, thiefConfig?.slot || 0, !!thiefConfig ? thiefConfig.isVyper : !isTgAsset);
+                await giveTokenToAddresss(user, tokenIn, amountIn, thiefConfig?.slot || 0, !!thiefConfig ? thiefConfig.isVyper : !isTgAsset);
                 initialInBalance = await tokenInContract.balanceOf(user.address);
             }
+        } else if (isETH) {
+            // initialInBalance = await tokenInContract.balanceOf(user.address);
         } else {
-            throw Error(`Thief config for ${route.in} not found`);
+            throw Error(`Thief config for ${tokenIn} not found`);
         }
 
-        const txApprove0 = await tokenInContract.connect(user).approve(routerAddress, 0);
-        await txApprove0.wait();
+        if (!isETH) {
+            const txApprove0 = await tokenInContract.connect(user).approve(routers.CURVE_V1_2_ROUTER, 0);
+            await txApprove0.wait();
 
-        const txApproveMax = await tokenInContract.connect(user).approve(routerAddress, MaxUint256);
-        await txApproveMax.wait();
-
-        const allowance = await tokenInContract.allowance(user.address, routerAddress);
-        if (allowance < amountIn) {
-            throw Error(`No allowance for  ${route.display}`);
+            const txApproveMax = await tokenInContract.connect(user).approve(routers.CURVE_V1_2_ROUTER, MaxUint256);
+            await txApproveMax.wait();
         }
     }
 
     async _determineSwapParams(
         poolAddress: AddressLike,
         route: SingleSwap,
-        thiefData: {
-            token: string;
-            address: string;
-            slot: number;
-            isVyper: boolean;
-            decimals: number;
-        }[],
+        thiefData:
+            | {
+                  token: string;
+                  address: string;
+                  slot: number;
+                  isVyper: boolean;
+                  decimals: number;
+              }
+            | undefined,
         coins: string[]
     ) {
-        const thiefConfig = thiefData.find((token) => token.address.toLowerCase() === route.in.toLowerCase());
+        const isInETH = route.in === liquidationAssets.ETH;
+        const isOutETH = route.out === liquidationAssets.ETH;
+
         const zapPools: AddressLike[] = [ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress, ZeroAddress];
         const [, , , , , , , , user] = await ethers.getSigners();
-        const router = await ethers.getContractAt("ICurveRouter", routerAddress);
+        const router = await ethers.getContractAt("ICurveRouter", routers.CURVE_V1_2_ROUTER);
         const routeAddresses: AddressLike[] = [route.in, poolAddress, route.out, ...Array(8).fill(ZeroAddress)];
         const ZEROS = [0, 0, 0, 0, 0];
-        const swapTypes = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-        const poolTypes = [1, 2, 3, 4, 10, 20, 30];
+        const swapTypes = [1, 4, 6, 8, 9];
+        const poolTypes = [1, 2, 3, 10, 20, 30];
 
         const amount = "1";
+
         const tokenInContract = await ethers.getContractAt("IERC20Metadata", route.in);
-        const amountIn = ethers.parseUnits(amount, thiefConfig?.decimals || 18);
+        const amountIn = ethers.parseUnits(amount, thiefData?.decimals || 18);
 
         try {
-            await this.prepareUserForExchange(route, user, amount, thiefConfig);
+            await this.prepareUserForExchange(route.in, route.display, user, amount, thiefData);
         } catch (e: any) {
-            console.log("❌ Error  > ", route.display, "\x1b[38;5;214m " + e.message + "\x1b[0m");
             throw new Error(e.message);
         }
 
@@ -334,6 +330,8 @@ export class LiquidationRouteGeneration {
                 indexPossibilities.push([i, j]);
             }
         }
+        let deltaInBalance = isInETH ? await ethers.provider.getBalance(user.address) : await tokenInContract.balanceOf(user.address);
+        let deltaOutBalance = isOutETH ? await ethers.provider.getBalance(user.address) : await outContract.balanceOf(user.address);
 
         let testedParamsCount = 0;
         for (let i = 0; i < poolTypes.length; i++) {
@@ -346,47 +344,50 @@ export class LiquidationRouteGeneration {
                     let output = 0n;
                     let dy = 0n;
                     try {
-                        const initialCollateralBalance = await tokenInContract.balanceOf(user.address);
-                        const initialOutBalance = await outContract.balanceOf(user.address);
-
                         //@ts-ignore
                         dy = await router.connect(user).get_dy(routeAddresses, swapParamsFull, amountIn, zapPools);
 
-                        //@ts-ignore
-                        await router.connect(user).exchange(routeAddresses!, swapParamsFull!, amountIn, dy - (dy * 10n) / 100n, zapPools, await user.getAddress());
+                        if (isInETH) {
+                            //@ts-ignore
+                            await router.connect(user).exchange(routeAddresses!, swapParamsFull!, amountIn, dy - (dy * 1n) / 1000n, zapPools, user.address, {value: amountIn});
+                        } else {
+                            //@ts-ignore
+                            await router.connect(user).exchange(routeAddresses!, swapParamsFull!, amountIn, dy - (dy * 1n) / 1000n, zapPools, user.address);
+                        }
 
-                        const afterCollateralBalance = await tokenInContract.balanceOf(user.address);
-                        const afterOutBalance = await outContract.balanceOf(user.address);
-                        if (afterCollateralBalance - initialCollateralBalance === 0n || afterOutBalance - initialOutBalance === 0n) {
+                        deltaInBalance = deltaInBalance - (isInETH ? await ethers.provider.getBalance(user.address) : await tokenInContract.balanceOf(user.address));
+                        deltaOutBalance = (isOutETH ? await ethers.provider.getBalance(user.address) : await outContract.balanceOf(user.address)) - deltaOutBalance;
+
+                        if (deltaInBalance === 0n || deltaOutBalance === 0n) {
                             console.log("try", {swap: swapParamsFull.at(0), amountIn, error: "No balance change", output});
                             continue;
                         } else {
-                            console.log("✅ Sucess > ", route.display);
                             return {swapType: swapTypes[j], poolType: poolTypes[i], swapParams: currentSwapParams, ...route, coins};
                         }
                     } catch (e: any) {}
                 }
             }
         }
-        console.log("❌ Error  > ", route.display, "\x1b[38;5;214m No combination found \x1b[0m");
+
         throw new Error(`No valid params found, tested ${testedParamsCount} params`);
     }
 
-    hydrateRawRoutes = (routes: RouteParams[], verifiedSingleSwaps: VerifiedRoute[]): RouteResult[] => {
-        const routeResult: RouteResult[] = [];
+    hydrateRawRoutes = (routes: RouteParams[], verifiedSingleSwaps: VerifiedSingleSwap[]) => {
+        const finalHydratedRoutes: RouteResult[] = [];
+        const errors: string[] = [];
         routes.forEach((route) => {
             const routeAddresses: string[] = [];
             const swapParamsFull = [];
             let finalDisplay = "";
-            for (let i = 0; i < route.routes.length; i++) {
-                const routeString = route.routes[i];
-                const display = routeString.in + " >> " + routeString.pool + " >> " + routeString.out;
-                const singleSwap = verifiedSingleSwaps.find((s) => s.route.display === display);
+            for (let i = 0; i < route.singleSwaps.length; i++) {
+                const routeString = route.singleSwaps[i];
+                const singleSwapDisplay = routeString.in + " >> " + routeString.pool + " >> " + routeString.out;
+                const singleSwap = verifiedSingleSwaps.find((s) => s.route.display === singleSwapDisplay);
 
                 // We can hydrate only if the single swap test has been found previously
                 if (singleSwap) {
                     if (i === 0) {
-                        finalDisplay = `${display} >> `;
+                        finalDisplay = `${singleSwapDisplay} >> `;
 
                         routeAddresses.push(singleSwap?.route.in);
                         routeAddresses.push(singleSwap?.route.pool);
@@ -399,15 +400,15 @@ export class LiquidationRouteGeneration {
                     }
                     swapParamsFull.push(singleSwap.result.swapParams);
                 }
-                // If we didn't find it, we can pass and console an error
+                // If we didn't find a corresponding single swap, we stop the loop
                 else {
-                    console.error("No single swap for ", display);
+                    finalDisplay = "";
                     break;
                 }
             }
 
             if (finalDisplay === "") {
-                console.error("Couldn't hydrate route ", route.tokenIn, " >> ", route.tokenOut);
+                errors.push(route.display);
             } else {
                 // Remove the last >>
                 finalDisplay = finalDisplay.slice(0, finalDisplay.length - 4);
@@ -419,25 +420,25 @@ export class LiquidationRouteGeneration {
                     swapParamsFull.push([0, 0, 0, 0, 0]);
                 }
 
-                const finalRoute = {
-                    start: liquidationAssets[route.tokenIn],
-                    end: liquidationAssets[route.tokenOut],
+                finalHydratedRoutes.push({
+                    in: liquidationAssets[route.in],
+                    out: liquidationAssets[route.out],
                     params: {
                         routeAddresses: routeAddresses,
                         swapParamsFull: swapParamsFull,
                     },
-                    route: finalDisplay,
-                };
-                routeResult.push(finalRoute);
+                    display: finalDisplay,
+                });
             }
         });
-        return routeResult;
+        return {success: finalHydratedRoutes, errors};
     };
 }
 
 // Link Pools and tokens that are not the same contract
 export const separatedCurvePoolToken: {[lpToken: string]: string} = {
     [curveLp.FRAX_USDC_LP]: curveLp.CRV_DUO_FRAXBP_POOL,
+    [curveLp.CRV_DUO_stETH_ETH]: "0xDC24316b9AE028F1497c275EB9192a3Ea0f67022",
 };
 
 export const liquidationAssets: Record<string, string> = {
@@ -457,6 +458,7 @@ export const liquidationAssets: Record<string, string> = {
     sUSDe: commonERC20.sUSDe,
     fxUSD: commonERC20.fxUSD,
     GHO: commonERC20.GHO,
+    WETH: commonERC20.WETH,
     stETH: commonERC20.stETH,
     ETH: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     WBTC: commonERC20.WBTC,
@@ -510,26 +512,10 @@ export const liquidationAssets: Record<string, string> = {
 export type LiquidationAsset = keyof typeof liquidationAssets;
 
 export type RouteParams = {
-    tokenIn: LiquidationAsset;
-    tokenOut: LiquidationAsset;
-    routes: {in: LiquidationAsset; pool: LiquidationAsset; out: LiquidationAsset}[];
-};
-
-export type PoolCurveData = {
-    id: string;
-    address: AddressLike;
-    coinsAddresses: [AddressLike, AddressLike];
-    registryId: string;
-    symbol: string;
-    in?: AddressLike;
-    out?: AddressLike;
-    inIndex: number;
-    outIndex: number;
-};
-
-type AbiRow = {name: string; type: string; outputs: any[]};
-type MissingData = {
-    symbols: Set<String>;
+    display: string;
+    in: LiquidationAsset;
+    out: LiquidationAsset;
+    singleSwaps: {in: LiquidationAsset; pool: LiquidationAsset; out: LiquidationAsset}[];
 };
 
 export interface SingleSwap {
@@ -539,18 +525,18 @@ export interface SingleSwap {
     display: string;
 }
 
-type VerifiedRouteParams = {
+type ResultRouteParams = {
     swapParams: number[];
     coins: string[];
 };
 
-type VerifiedRoute = {
+type VerifiedSingleSwap = {
     route: SingleSwap;
-    result: VerifiedRouteParams;
+    result: ResultRouteParams;
 };
 
-export type VerifiedRoutes = {
-    params: VerifiedRoute[];
+export type SingleSwapProcessResult = {
+    success: VerifiedSingleSwap[];
     errors: {route: SingleSwap; error: string}[];
 };
 
@@ -570,9 +556,9 @@ export type FinalRoute = {
 };
 
 export type RouteResult = {
-    route: string;
-    start: string;
-    end: string;
+    display: string;
+    in: string;
+    out: string;
     params: {
         routeAddresses: string[];
         swapParamsFull: number[][];

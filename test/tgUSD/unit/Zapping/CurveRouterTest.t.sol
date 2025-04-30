@@ -140,4 +140,61 @@ contract CurveRouterTest is MarketDeploymentContext {
 
         ROUTER.exchange(routerSwap._route, routerSwap._swap_params, amount, 1, routerSwap._pools, usr1);
     }
+
+    function test_wrapping_usr_to_USR_RLP() external {
+        vm.startPrank(usr1);
+
+        IERC20 tokenIn = tgUSD;
+        IERC20 tokenOut = AddrCryptoSwapLP.USR_RLP;
+
+        deal(address(tokenIn), usr1, amount);
+        tokenIn.approve(address(ROUTER), amount);
+
+        address[] memory route = Array.memoryAddress(
+            [
+                address(tokenIn),
+                address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")),
+                address(AddrClassicERC20.USDC),
+                address(AddrCurveStableLP.USR_USDC),
+                address(AddrClassicERC20.USR),
+                address(tokenOut),
+                address(tokenOut)
+            ]
+        );
+        uint256[][] memory swapParams = new uint256[][](3);
+        swapParams[0] = Array.memoryUint256([uint256(1), uint256(0), uint256(1), uint256(1), uint256(2)]);
+        swapParams[1] = Array.memoryUint256([uint256(1), uint256(0), uint256(1), uint256(1), uint256(2)]);
+        swapParams[2] = Array.memoryUint256([uint256(0), uint256(0), uint256(4), uint256(3), uint256(2)]);
+
+        CurveRouterSwap memory routerSwap = encoder.createCurveRouterStruct(route, swapParams, amount, 0, usr1);
+
+        uint256 dy = ROUTER.get_dy(routerSwap._route, routerSwap._swap_params, amount, routerSwap._pools);
+
+        uint256 returned = ROUTER.exchange(routerSwap._route, routerSwap._swap_params, amount, 1, routerSwap._pools, usr1);
+
+        assertEq(returned, dy);
+    }
+
+    function test_unwrapping_WBTC_cbBTC_to_WBTC() external {
+        vm.startPrank(usr1);
+
+        IERC20 tokenIn = AddrCurveStableLP.cbBTC_WBTC;
+        IERC20 tokenOut = AddrClassicERC20.WBTC;
+
+        deal(address(tokenIn), usr1, amount);
+        tokenIn.approve(address(ROUTER), amount);
+
+        address[] memory route = Array.memoryAddress([address(tokenIn), address(tokenIn), address(tokenOut)]);
+
+        uint256[][] memory swapParams = new uint256[][](1);
+        swapParams[0] = Array.memoryUint256([uint256(1), uint256(1), uint256(6), uint256(1), uint256(2)]);
+
+        CurveRouterSwap memory routerSwap = encoder.createCurveRouterStruct(route, swapParams, amount, 0, usr1);
+
+        uint256 dy = ROUTER.get_dy(routerSwap._route, routerSwap._swap_params, amount, routerSwap._pools);
+
+        uint256 returned = ROUTER.exchange(routerSwap._route, routerSwap._swap_params, amount, 1, routerSwap._pools, usr1);
+
+        assertApproxEqAbs(dy, returned, 10);
+    }
 }

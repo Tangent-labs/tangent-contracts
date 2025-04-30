@@ -58,9 +58,6 @@ export class LiquidationContext {
         this.lpDeployContext = lpDeployContext;
         this.wStableContext = wStableContext;
 
-        // get data form context
-        // this.markets = [...Object.values(this.marketContext.convexCrvMarkets), ...Object.values(this.marketContext.convexFxnMarkets)];
-        // this.fxUSDindex = 2;
         this.markets = [...Object.values(this.marketContext.convexFxnMarkets)];
 
         this.fxUSDindex = 0;
@@ -137,17 +134,12 @@ export class LiquidationContext {
 
         if (!this.marketAddresses?.length || !this.baseContext) throw new Error("Contracts not depoyed");
 
-        // await giveTokensoAddresss(this.baseContext!.users[0], tgUSD_USDC!.getAddress(), amount);
-
         await swap(this.baseContext!.users[4], await tgUSD_USDC!.getAddress(), 1, 0, amount.toString());
         await swap(this.baseContext!.users[4], await tgUSD_wfrxUSD!.getAddress(), 1, 0, amount.toString());
 
         await time.increase(30 * 60 * 60);
 
-        // const toSwapMarketIndex = this.fxUSDindex; // others markets are link to chainlink so swap dosen't have an effect on price.
-        // const lpAddress = await this.markets![toSwapMarketIndex].collatToken();
-        // await swap(this.baseContext!.users[0], lpAddress, 1, 0, (4_000_000).toString());
-        //deposit  sur tous les marché pour l'IR calculation
+        // Deposit on all markets to checkpoint the IR
         const depositParams: UserMarketParams = {};
         this.marketAddresses.forEach((marketAddress) => {
             depositParams[marketAddress] = {

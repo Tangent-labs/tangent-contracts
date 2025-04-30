@@ -20,6 +20,9 @@ library AddrCurveStableLP {
     ICurveStableSwapNG constant WETH_pxETH = ICurveStableSwapNG(0xC8Eb2Cf2f792F77AF0Cd9e203305a585E588179D);
 
     ICurveStableSwapNG constant eBTC_WBTC = ICurveStableSwapNG(0x7704D01908afD31bf647d969c295BB45230cD2d6);
+    ICurveStableSwapNG constant cbBTC_WBTC = ICurveStableSwapNG(0x839d6bDeDFF886404A6d7a788ef241e4e28F4802);
+
+    ICurveStableSwapNG constant USR_USDC = ICurveStableSwapNG(0x3eE841F47947FEFbE510366E4bbb49e145484195);
 
     IERC20Metadata constant TRI_USD_TOKEN = IERC20Metadata(0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490);
 }
