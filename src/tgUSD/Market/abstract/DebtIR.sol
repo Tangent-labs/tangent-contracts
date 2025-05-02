@@ -5,9 +5,10 @@ import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {LightOwnable} from "../../Utilities/LightOwnable.sol";
+import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
 
 /// @notice
-abstract contract DebtIR is LightOwnable, IDebtIR {
+abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
     uint256 public constant RAY = 1e27; // Facteur de précision ray (1 * 10^27)
 
     /// @notice Computes the interest rate and the cut of rewards.
@@ -57,7 +58,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR {
      *  @dev    Callable by anyone
      *  @param  amount Amount of tgUSD to burn to cover the bad debt
      */
-    function repayBadDebt(uint256 amount) external {
+    function repayBadDebt(uint256 amount) external nonReentrant {
         uint256 _badDebt = badDebt;
         require(amount <= _badDebt, RepayMoreThanBadDebt());
         badDebt = _badDebt - amount;

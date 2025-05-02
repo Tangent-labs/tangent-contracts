@@ -77,7 +77,7 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
      * @notice Claim and process the governance rewards
      * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
      */
-    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override updateRewards(address(0)) returns (TokenAmount[] memory) {
+    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
         require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
         // Claim rewards on behalf
         cvxRewardToken.getReward();
@@ -86,7 +86,7 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
     }
 
     //TODO Seems strange to me, enters maybe in collision with sociabilization pending fees.
-    function stakeAll(address receiver) external {
+    function stakeAll(address receiver) external nonReentrant {
         IERC20 _collatToken = collatToken;
         _collatToken.transfer(receiver, socFeePending);
         CVX_BOOSTER.deposit(pid, _collatToken.balanceOf(address(this)), true);

@@ -1,9 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {MintAndSwapWStable, CurveRouterSwap} from "../../src/interfaces/internals/tgUSD/ICurveLPLiquidator.sol";
+import {CurveRouterSwap} from "../../src/interfaces/internals/tgUSD/ICurveLPLiquidator.sol";
+import {ZapStruct} from "../../src/interfaces/internals/ICommonStruct.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract Encoder {
+    function encodeSwapToMockRouter(address router, IERC20 tokenIn, uint256 amountIn, IERC20 tokenOut, address receiver, uint256 amountOut) public pure returns (ZapStruct memory) {
+        return
+            ZapStruct({
+                router: router,
+                routerCall: abi.encodeWithSelector(bytes4(keccak256("swap(address,uint256,address,address,uint256)")), tokenIn, amountIn, tokenOut, receiver, amountOut)
+            });
+    }
+
     function encodeLiquidateCallForCurveLP(CurveRouterSwap calldata curveRouterSwap) public pure returns (bytes memory) {
         return abi.encodeWithSelector(bytes4(keccak256("exchange(address[11],uint256[5][5],uint256,uint256,address[5],address)")), curveRouterSwap);
     }

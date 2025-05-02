@@ -24,7 +24,7 @@ import "../../../src/tgUSD/Rewards/RewardAccumulator.sol";
 import "../../../src/tgUSD/Utilities/ControlTower.sol";
 import "../../../src/tgUSD/Utilities/MarketCreator.sol";
 import "../../../src/tgUSD/Utilities/ZappingProxy.sol";
-import "../../../test/tgUSD/mocks/MockEnsoRouter.sol";
+import "../../../test/tgUSD/mocks/MockRouter.sol";
 import "../../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
 import "../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
 import "../../../src/tgUSD/Market/MarketNoSociabilization.sol";
@@ -74,10 +74,11 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     TgUSD public tgUsdBase;
     IYearnV3Vault public sgUSD;
     RewardAccumulator public rewardAccumulator;
-    MockEnsoRouter public mockEnsoRouter;
+    MockRouter public mockRouter;
     EnsoUtils public ensoUtils;
     Labeliser public labeliser;
     ICREATE3Factory public create3Factory = ICREATE3Factory(0x9fBB3DF7C40Da2e5A0dE984fFE2CCB7C47cd0ABf);
+    IERC20 constant ETH_NAKED = IERC20(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
     LpDeploymentContext public lpDeploymentContext;
 
@@ -118,7 +119,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         rsTanERC721.setService(address(rsTanService));
         rsTanService.addNewReward(tgUSD);
 
-        mockEnsoRouter = new MockEnsoRouter();
+        mockRouter = new MockRouter();
 
         vm.allowCheatcodes(address(AddrRouter.ENSO_ROUTER_V1));
         vm.allowCheatcodes(address(AddrRouter.ENSO_ROUTER_V2));
@@ -135,7 +136,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(AddrRouter.ENSO_ROUTER_V1), "Enso Router V1");
         vm.label(address(AddrRouter.ENSO_ROUTER_V2), "Enso Router V2");
 
-        vm.label(address(mockEnsoRouter), "Mock Odos Router");
+        vm.label(address(mockRouter), "Mock Router");
         vm.label(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e, "Curve Router");
 
         vm.label(address(zappingProxy), "Zapping Proxy");

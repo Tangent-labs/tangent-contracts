@@ -3,6 +3,7 @@ pragma solidity ^0.8.22;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {IControlTower} from "../../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {TokenAmount, ZapStruct} from "../../../interfaces/internals/ICommonStruct.sol";
@@ -11,9 +12,12 @@ import {PauseSettings} from "./PauseSettings.sol";
 import {Collateral} from "./Collateral.sol";
 import {GlobalMarketInitParams, MarketInit, LiquidateCall, SelfLiquidateCall, IZappingProxy, ZapStructDeposit, IERC20} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 
+import "forge-std/console.sol";
+
 /// @notice
 abstract contract MarketCore is PauseSettings, Collateral {
     using SafeERC20 for IERC20;
+    address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     IControlTower public controlTower;
 
     /// @notice Zapping proxy
@@ -21,6 +25,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
 
     error DepositPaused();
     error BorrowPaused();
+    error LeveragePaused();
 
     error AlreadyInitialized();
     error TotalDebtTooHigh();
@@ -32,6 +37,8 @@ abstract contract MarketCore is PauseSettings, Collateral {
     error NotLiquidablePosition();
     error PositionWithoutBadDebt();
     error NotZapper(address zapper);
+
+    error InvalidValueSent();
 
     event Liquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
     event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
@@ -92,10 +99,17 @@ abstract contract MarketCore is PauseSettings, Collateral {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _zapDeposit(ZapStructDeposit calldata zapCall) internal returns (uint256, IERC20) {
+        require(0 != zapCall.amountIn, InvalidValueSent());
         IERC20 _collatToken = collatToken;
         IZappingProxy _zappingProxy = zappingProxy;
-        zapCall.tokenIn.transferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
-        return (_zappingProxy.zapProxy(zapCall.tokenIn, _collatToken, zapCall.minAmountOut, address(this), zapCall.zap), _collatToken);
+
+        if (address(zapCall.tokenIn) != CHAIN_COIN) {
+            zapCall.tokenIn.safeTransferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
+        } else {
+            require(msg.value == zapCall.amountIn, InvalidValueSent());
+        }
+
+        return (_zappingProxy.zapProxy{value: msg.value}(zapCall.tokenIn, _collatToken, zapCall.minAmountOut, address(this), zapCall.zap), _collatToken);
     }
 
     function _depositSociabilization(uint256 lpDeposited, bool isStaked) internal virtual returns (uint256) {
@@ -191,11 +205,14 @@ abstract contract MarketCore is PauseSettings, Collateral {
 
     function _zapRepay(ZapStructDeposit calldata zapCall) internal returns (uint256) {
         IZappingProxy _zappingProxy = zappingProxy;
-        zapCall.tokenIn.transferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
-        return _zappingProxy.zapProxy(zapCall.tokenIn, tgUSD, zapCall.minAmountOut, msg.sender, zapCall.zap);
+
+        if (address(zapCall.tokenIn) != CHAIN_COIN) {
+            zapCall.tokenIn.safeTransferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
+        }
+        return _zappingProxy.zapProxy{value: msg.value}(zapCall.tokenIn, tgUSD, zapCall.minAmountOut, msg.sender, zapCall.zap);
     }
 
-    function _repay(address account, uint256 tgUSDToRepay) internal returns (uint256, uint256) {
+    function _repay(address account, uint256 tgUSDToRepay) internal returns (uint256, uint256, uint256) {
         // Cannot repay 0 debt
         require(tgUSDToRepay != 0, ZeroDebtAmount());
 
@@ -237,12 +254,12 @@ abstract contract MarketCore is PauseSettings, Collateral {
             require(newUserDebt >= minimumLoan, UserDebtTooLow());
         }
 
-        return (newUserDebtShares, totalDebtShares - sharesToRemove);
+        return (tgUSDToRepay, newUserDebtShares, totalDebtShares - sharesToRemove);
     }
 
     function _withdrawAndRepay(uint256 amountToWithdraw, uint256 tgUSDToRepay) internal {
         // Call _repay function in order to checkpoint the total debt, computes new User debt and burn corresponding amount of tgUSD.
-        (uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(msg.sender, tgUSDToRepay);
+        (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(msg.sender, tgUSDToRepay);
 
         //TODO Problem with the _getBalanceAfterWithdrawAndCheckMaxBorrowable
         _updateCollatAndDebts(
@@ -373,16 +390,34 @@ abstract contract MarketCore is PauseSettings, Collateral {
                         LEVERAGE
                                                     ------ */
 
-    function _checkZapper(address callerZapper) internal view returns (bool, address) {
-        bool isZapping;
-        if (address(callerZapper) != address(0)) {
-            isZapping = controlTower.isZapper(msg.sender);
-        } else {
-            callerZapper = msg.sender;
-        }
-        callerZapper = isZapping ? callerZapper : msg.sender;
+    function _preLeverage() internal {
+        require(!isDepositPaused, DepositPaused());
+        require(!isBorrowPaused, BorrowPaused());
+        require(!isLeveragePaused, LeveragePaused());
+    }
 
-        return (isZapping, callerZapper);
+    function _leverage(
+        IERC20 _collatToken,
+        uint256 collatToDeposit,
+        uint256 tgUSDToFlashMint,
+        uint256 minCollatAmountOut,
+        bool isStaked,
+        ZapStruct calldata dumpTgUSDCall
+    ) internal returns (uint256, uint256) {
+        ITgUSD _tgUSD = tgUSD;
+        // Mint the tgUSD on the Zapper, ready to be exchanged through the router
+        _tgUSD.mint(address(zappingProxy), tgUSDToFlashMint);
+        // Exchange the tgUSD that has just been minted on the Zapper for the collateral of the market
+        uint256 collatBought = zappingProxy.zapProxy(_tgUSD, collatToken, minCollatAmountOut, address(this), dumpTgUSDCall);
+
+        uint256 stakedAmount = _depositSociabilization(collatToDeposit + collatBought, isStaked);
+
+        // Performs same modification as in depositAndBorrow
+        _depositAndBorrow(msg.sender, stakedAmount, tgUSDToFlashMint, true);
+
+        _postDeposit(_collatToken, isStaked);
+
+        return (collatBought, stakedAmount);
     }
 
     function _claimUnderlyingRewards(IERC20[] memory _rewardTokens) internal returns (TokenAmount[] memory) {

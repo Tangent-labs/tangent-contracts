@@ -64,7 +64,7 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
      * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
      *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
-    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override updateRewards(address(0)) returns (TokenAmount[] memory) {
+    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
         require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
         // Claim rewards of Convex FXN market
         stakingProxyVault.getReward();
@@ -73,7 +73,7 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
     }
 
     //TODO Seems strange to me, enters maybe in collision with sociabilization pending fees.
-    function stakeAll(address receiver) external {
+    function stakeAll(address receiver) external nonReentrant {
         // Claim rewards on behalf
         IERC20 _collatToken = collatToken;
         _collatToken.transfer(receiver, socFeePending);

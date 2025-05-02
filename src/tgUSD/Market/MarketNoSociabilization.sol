@@ -22,7 +22,7 @@ contract MarketNoSociabilization is MarketExternalActions {
      * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
      *      Anyone can trigger this function and will be incentivized with a processor fee.
      */
-    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override updateRewards(address(0)) returns (TokenAmount[] memory) {
+    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
         require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
         return _claimUnderlyingRewards(_rewardTokens);
     }

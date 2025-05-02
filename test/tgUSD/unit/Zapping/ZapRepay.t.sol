@@ -1,84 +1,90 @@
-//TODO remove this comment when the test is ready
+// TODO remove this comment when the test is ready
 
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.24;
-// import "../../../../src/tgUSD/Utilities/Zapper.sol";
-// import "../../contexts/MarketDeploymentContext.sol";
-// import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 
-// contract ZapRepay is MarketDeploymentContext {
-//     ConvexCrvLPMarket public market;
-//     IERC20Metadata public collatToken;
-//     HDepositConvexCrvLP public hDeposit;
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-//     uint256 initialDeposit = 10_000 ether;
-//     uint256 initialDebt = 6_000 ether;
+import "../../contexts/MarketDeploymentContext.sol";
+import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
-//     IERC20 constant ETH_NAKED = IERC20(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
+contract ZapRepay is MarketDeploymentContext {
+    using SafeERC20 for IERC20Metadata;
+    ConvexCrvLPMarket public market;
+    IERC20Metadata public collatToken;
+    HDepositConvexCrvLP public hDeposit;
 
-//     function setUp() public {
-//         collatToken = AddrCurveStableLP.USDC_crvUSD;
-//         market = deployConvexCurveLPMarket(collatToken);
-//         hDeposit = new HDepositConvexCrvLP(usr1, market);
+    uint256 initialDeposit = 10_000 ether;
+    uint256 initialDebt = 6_000 ether;
 
-//         hDeposit.depositAndBorrow(initialDeposit, initialDebt, true, usr1);
-//     }
+    function setUp() public {
+        collatToken = AddrCurveStableLP.USDC_crvUSD;
+        market = deployConvexCurveLPMarket(collatToken);
+        hDeposit = new HDepositConvexCrvLP(usr1, market);
 
-//     function test_zap_repay_partial_with_eth_for_sender() external {
-//         uint256 amountIn = 0.1 ether;
+        hDeposit.depositAndBorrow(initialDeposit, initialDebt, true);
 
-//         (uint256 quote, ) = ensoUtils.getQuote(ETH_NAKED, amountIn, AddrClassicERC20.USDC, 10);
-//         quote = quote * 10 ** 12;
+        skip(10 days);
 
-//         vm.mockFunction(address(AddrRouter.ENSO_ROUTER_V2), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector));
+        irCalculator.checkpointIR(address(market));
+    }
 
-//         vm.startPrank(usr1);
-//         deal(usr1, amountIn);
+    function test_zap_repay_partial_with_eth() external {
+        vm.startPrank(usr2);
+        uint256 amountIn = 1 ether;
+        uint256 amountOut = 3_000 ether;
+        deal(usr2, amountIn);
 
-//         uint256 nativeCoinBalance = usr1.balance;
-//         uint256 tgUsdBalance = tgUSD.balanceOf(address(usr1));
-//         bytes32[] memory commands = Array.memoryBytes32(
-//             [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(quote)]
-//         );
-//         bytes[] memory state = new bytes[](0);
+        deal(address(tgUSD), address(mockRouter), amountOut);
 
-//         zapper.zapRepay{value: amountIn}(
-//             Zapper.ZapMarket({market: address(market), tokenIn: ETH_NAKED, amountIn: amountIn, minAmountOut: quote, _for: usr1}),
-//             abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector, address(ETH_NAKED), amountIn, commands, state)
-//         );
+        verifyBurnERC20(tgUSD, amountOut, "tgUSD burnt after zap");
 
-//         assertEq(tgUsdBalance, tgUSD.balanceOf(address(usr1)), "The repay is not complete, so there are no tgUSD left on the user");
-//         assertEq(tgUSD.balanceOf(address(zapper)), 0, "No tgUSD should stays on the zapper");
-//         assertEq(nativeCoinBalance - usr1.balance, amountIn, "Native coin is sent from sender");
-//         assertEq(market.userDebt(address(usr1)), initialDebt - quote, "The new debt is equal to the initial minus what has been repayed");
-//     }
+        verifyLostERC20(ETH_NAKED, usr2, amountIn, "Usr2 sends ETH");
+        verifyReceiveERC20(ETH_NAKED, address(mockRouter), amountIn, "Router received this ETH");
 
-//     function test_zap_repay_full_with_erc20_for_sender() external {
-//         IERC20 tokenIn = AddrClassicERC20.AAVE;
-//         uint256 amountIn = 30 ether;
-//         (uint256 quote, ) = ensoUtils.getQuote(tokenIn, amountIn, AddrClassicERC20.FRAX, 10);
-//         uint256 tgUsdRemaining = quote - initialDebt;
-//         vm.mockFunction(address(AddrRouter.ENSO_ROUTER_V2), address(mockEnsoRouter), abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector));
+        market.zapRepay{value: amountIn}(
+            usr1,
+            ZapStructDeposit({
+                tokenIn: ETH_NAKED,
+                amountIn: amountIn,
+                minAmountOut: 2_999 ether,
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tgUSD, usr2, amountOut)
+            })
+        );
 
-//         vm.startPrank(usr1);
+        assertERC20Tracking();
 
-//         deal(address(tokenIn), usr1, amountIn);
-//         tokenIn.approve(address(zapper), MAX_UINT);
-//         uint256 erc20Balance = tokenIn.balanceOf(usr1);
+        assertEq(market.userDebt(usr1), amountOut);
+        assertEq(usr2.balance, 0, "Native coin is sent from sender");
+        assertEq(address(mockRouter).balance, amountIn, "Native coin sent to router");
+    }
 
-//         bytes32[] memory commands = Array.memoryBytes32(
-//             [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(quote)]
-//         );
-//         bytes[] memory state = new bytes[](0);
+    function test_zap_repay_total_with_ERC20_more_than_actualDebt_returns_tgUSD_surplus() external {
+        vm.startPrank(usr1);
+        uint256 amountIn = 10_000 ether;
+        uint256 amountOut = 10_001 ether;
 
-//         zapper.zapRepay(
-//             Zapper.ZapMarket({market: address(market), tokenIn: tokenIn, amountIn: amountIn, minAmountOut: quote, _for: usr1}),
-//             abi.encodeWithSelector(IEnsoRouterV2.routeSingle.selector, address(tokenIn), amountIn, commands, state)
-//         );
+        deal(address(AddrClassicERC20.USDT), usr1, amountIn);
+        deal(address(tgUSD), address(mockRouter), amountOut);
 
-//         assertEq(tgUsdRemaining, quote - initialDebt, "The repay is complete, all tgUSD in excess from the zap returns to the sender");
-//         assertEq(tgUSD.balanceOf(address(zapper)), 0, "No tgUSD should stays on the zapper");
-//         assertEq(erc20Balance - tokenIn.balanceOf(usr1), amountIn, "Native coin is sent from sender");
-//         assertEq(market.userDebt(address(usr1)), 0, "Position should be fully repayed");
-//     }
-// }
+        verifyBurnERC20(tgUSD, initialDebt, "tgUSD burnt after zap");
+        verifyReceiveERC20(tgUSD, address(usr1), amountOut - initialDebt, "Usr1 receives the surplus of tgUSD");
+
+        verifyLostERC20(AddrClassicERC20.USDT, usr1, amountIn, "Usr1 sends USDT");
+        verifyReceiveERC20(AddrClassicERC20.USDT, address(mockRouter), amountIn, "Router received USDT");
+
+        AddrClassicERC20.USDT.forceApprove(address(market), amountIn);
+
+        market.zapRepay(
+            usr1,
+            ZapStructDeposit({
+                tokenIn: AddrClassicERC20.USDT,
+                amountIn: amountIn,
+                minAmountOut: amountOut,
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, tgUSD, usr1, amountOut)
+            })
+        );
+
+        assertERC20Tracking();
+    }
+}
