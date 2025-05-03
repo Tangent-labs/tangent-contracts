@@ -6,11 +6,13 @@ import "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 
+import {OracleBase} from "../OracleBase.sol";
+
 import "forge-std/console.sol";
 
 /// @title OracleDuoPoolStable
 /// @notice This contract provides price oracle functionality for a dual pool stablecoin setup.
-contract OracleDuoPoolStable is IPriceOracle {
+contract OracleDuoPoolStable is OracleBase {
     /// @notice Struct to store oracle parameters
     struct OracleDuoPoolStruct {
         /// @dev Oracle for the first coin
@@ -45,31 +47,13 @@ contract OracleDuoPoolStable is IPriceOracle {
     }
 
     /**
-     * @notice Returns the number of decimals used by the oracle
-     * @return The number of decimals (18)
-     */
-    function decimals() external pure returns (uint8) {
-        return 18;
-    }
-
-    /**
-     * @notice Internal function to get the latest price from an oracle
-     * @param _oracle The oracle to get the price from
-     * @param oracleDecimals The number of decimals used by the oracle
-     * @return The latest price from the oracle, adjusted to 18 decimals
-     */
-    function coinPrice(IPriceOracle _oracle, uint256 oracleDecimals) internal view returns (uint256) {
-        return _oracle.latestAnswer() * 10 ** (18 - oracleDecimals);
-    }
-
-    /**
      * @notice Returns the latest price from the oracle
      * @return The price of the stable pool, adjusted to 18 decimals
      */
-    function latestAnswer() external view returns (uint256) {
+    function latestAnswer() external view override returns (uint256) {
         OracleDuoPoolStruct memory _params = params;
         return
-            (_params.lp.get_virtual_price() * min(coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals), coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals))) /
+            (_params.lp.get_virtual_price() * min(_coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals), _coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals))) /
             10 ** 18;
     }
 

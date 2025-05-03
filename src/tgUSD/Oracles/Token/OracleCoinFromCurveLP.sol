@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {IPriceOracle} from "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {ICurveStableSwapNG} from "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
-import {IAggregatorV3} from "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
-
+import {OracleBase} from "../OracleBase.sol";
 import "forge-std/console.sol";
 
 struct OracleCoinFromCurveLPStruct {
@@ -16,7 +14,7 @@ struct OracleCoinFromCurveLPStruct {
     bool isReversed;
 }
 
-contract OracleCoinFromCurveLP is IPriceOracle {
+contract OracleCoinFromCurveLP is OracleBase {
     OracleCoinFromCurveLPStruct public oracleParams;
     constructor(address _lp, IPriceOracle _otherStableOracle, bool isReversed) {
         uint128 isParamsForPriceOracle;
@@ -35,18 +33,14 @@ contract OracleCoinFromCurveLP is IPriceOracle {
         });
     }
 
-    function latestAnswer() external view returns (uint256) {
+    function latestAnswer() external view override returns (uint256) {
         OracleCoinFromCurveLPStruct memory params = oracleParams;
 
-        uint256 priceOtherStable = params.otherStableOracle.latestAnswer() * 10 ** (18 - params.otherStableDecimals);
+        uint256 priceOtherStable = _coinPrice(params.otherStableOracle, params.otherStableDecimals);
 
         uint256 priceOracle = params.isReversed ? 1e36 / _priceOracle(params.lp, params.isParamsForPriceOracle) : _priceOracle(params.lp, params.isParamsForPriceOracle);
 
         return (priceOracle * priceOtherStable) / 1e18;
-    }
-
-    function decimals() external pure returns (uint8) {
-        return 18;
     }
 
     function _priceOracle(ICurveStableSwapNG lp, uint128 isParamsForPriceOracle) internal view returns (uint256) {

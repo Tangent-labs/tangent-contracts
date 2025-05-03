@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-import "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 
+import {OracleBase} from "../OracleBase.sol";
+
 import "forge-std/console.sol";
 
-contract OracleTriPoolStable is IPriceOracle {
+contract OracleTriPoolStable is OracleBase {
     struct OracleTriPoolStruct {
         IPriceOracle coin0Oracle;
         uint96 coin0OracleDecimals;
@@ -32,10 +32,6 @@ contract OracleTriPoolStable is IPriceOracle {
         });
     }
 
-    function decimals() external pure returns (uint8) {
-        return 18;
-    }
-
     function min(uint256 a, uint256 b, uint256 c) internal pure returns (uint256) {
         // b is smaller than a
         if (a > b) {
@@ -55,11 +51,11 @@ contract OracleTriPoolStable is IPriceOracle {
         }
     }
 
-    function latestAnswer() external view returns (uint256) {
+    function latestAnswer() external view override returns (uint256) {
         OracleTriPoolStruct memory _params = params;
-        uint256 answer0 = uint256(_params.coin0Oracle.latestAnswer()) * 10 ** (18 - _params.coin0OracleDecimals);
-        uint256 answer1 = uint256(_params.coin1Oracle.latestAnswer()) * 10 ** (18 - _params.coin1OracleDecimals);
-        uint256 answer2 = uint256(_params.coin2Oracle.latestAnswer()) * 10 ** (18 - _params.coin2OracleDecimals);
+        uint256 answer0 = _coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals);
+        uint256 answer1 = _coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals);
+        uint256 answer2 = _coinPrice(_params.coin2Oracle, _params.coin2OracleDecimals);
 
         return (_params.lp.get_virtual_price() * min(answer0, answer1, answer2)) / 10 ** 18;
     }
