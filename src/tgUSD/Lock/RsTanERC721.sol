@@ -67,11 +67,11 @@ contract RsTanERC721 is ERC721Enumerable, LightOwnable, IRsTanERC721 {
         _burn(tokenId);
     }
 
-    function burKickPosition(uint256 tokenId) external onlyService returns (address) {
-        address _owner = ownerOf(tokenId);
-        _burn(tokenId);
-        return _owner;
-    }
+    // function burKickPosition(uint256 tokenId) external onlyService returns (address) {
+    //     address _owner = ownerOf(tokenId);
+    //     _burn(tokenId);
+    //     return _owner;
+    // }
 
     function verifyTokenIdsOwned(address caller, uint256[] calldata positionIds) external view {
         for (uint256 i; i < positionIds.length; ) {

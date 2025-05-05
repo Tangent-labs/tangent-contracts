@@ -284,5 +284,13 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         emit ZapLeverage(msg.sender, stakedAmount, collatToDeposit, collatBought, tgUSDToFlashMint, zapDepositCall.tokenIn, zapDepositCall.amountIn);
     }
 
-    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external virtual returns (TokenAmount[] memory);
+    /**
+     * @notice Claim and process the governance rewards
+     * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
+     *      Anyone can trigger this function and will be incentivized with a processor fee.
+     */
+    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external virtual nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
+        require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
+        return _claimUnderlyingRewards(_rewardTokens);
+    }
 }

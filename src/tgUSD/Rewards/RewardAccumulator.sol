@@ -53,6 +53,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     error NoRewardToMultiClaim();
     error NoRewardToSimpleClaim();
     error NotAMarketRewards();
+    error CantAddCollatTokenAsReward();
 
     error HarvesterFeeToHigh();
     error NothingToProcess();
@@ -350,11 +351,12 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      * @param newRewardTokens rewards percentage value
      */
     function addNewRewards(address market, IERC20[] calldata newRewardTokens) external onlyOwner {
+        IERC20 _collatToken = ICollateral(market).collatToken();
         for (uint256 i; i < newRewardTokens.length; ) {
             IERC20 _newRewardToken = newRewardTokens[i];
-            /// @dev If lastUpdateTime is equal to 0, it means the token is not already added as a reward
+            /// If lastUpdateTime is equal to 0, it means the token is not already added as a reward
             require(rewardData[market][_newRewardToken].lastUpdateTime == 0, RewardAlreadyAdded(_newRewardToken));
-            //TODO Verify the token is not the collateral
+            require(_collatToken != _newRewardToken, CantAddCollatTokenAsReward());
 
             rewardTokens[market].push(_newRewardToken);
             rewardData[market][_newRewardToken].lastUpdateTime = uint128(block.timestamp);

@@ -12,18 +12,4 @@ contract MarketNoSociabilization is MarketExternalActions {
         // Common
         _initializationCommon(_marketConstants, _marketInit);
     }
-
-    function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {
-        collatToken.transfer(to, lpToWithdraw);
-    }
-
-    /**
-     * @notice Claim and process the governance rewards
-     * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
-     *      Anyone can trigger this function and will be incentivized with a processor fee.
-     */
-    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
-        require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
-        return _claimUnderlyingRewards(_rewardTokens);
-    }
 }

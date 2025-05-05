@@ -153,7 +153,9 @@ abstract contract MarketCore is PauseSettings, Collateral {
         );
     }
 
-    function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal virtual {}
+    function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal virtual {
+        collatToken.transfer(to, lpToWithdraw);
+    }
 
     /* --------
                             BORROW 
