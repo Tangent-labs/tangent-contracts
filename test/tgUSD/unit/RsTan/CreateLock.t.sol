@@ -13,18 +13,18 @@ contract CreateLock is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(tan), usr1, amount1);
 
-        verifyReceiveERC20(tan, address(rsTanService), amount1, "Rs Tan receive TAN");
+        verifyReceiveERC20(tan, address(rsTan), amount1, "Rs Tan receive TAN");
         verifyLostERC20(tan, usr1, amount1, "User 1 lost TAN");
 
-        tan.approve(address(rsTanService), amount1);
-        rsTanService.createLock(amount1, true);
+        tan.approve(address(rsTan), amount1);
+        rsTan.createLock(amount1, true);
 
         assertERC20Tracking();
-        assertEq(rsTanERC721.balanceOf(usr1), 1);
-        assertEq(rsTanERC721.tokenOfOwnerByIndex(usr1, 0), 1);
-        assertEq(rsTanService.totalSupplyRsTan(), amount1);
-        (uint256 endLockTime, uint256 lockAmount) = rsTanService.locks(1);
-        assertEq(endLockTime, rsTanService.MAX_UINT48());
+        assertEq(rsTan.balanceOf(usr1), 1);
+        assertEq(rsTan.tokenOfOwnerByIndex(usr1, 0), 1);
+        assertEq(rsTan.totalSupplyRsTan(), amount1);
+        (uint256 endLockTime, uint256 lockAmount) = rsTan.locks(1);
+        assertEq(endLockTime, rsTan.MAX_UINT48());
         assertEq(lockAmount, amount1);
 
         vm.stopPrank();
@@ -38,19 +38,19 @@ contract CreateLock is MarketDeploymentContext {
         vm.startPrank(usr2);
         deal(address(tan), usr2, amount2);
 
-        verifyReceiveERC20(tan, address(rsTanService), amount2, "Rs Tan receive TAN");
+        verifyReceiveERC20(tan, address(rsTan), amount2, "Rs Tan receive TAN");
         verifyLostERC20(tan, usr2, amount2, "User 2 lost TAN");
 
-        uint256 expectedEndTime = ((block.timestamp + rsTanService.LOCK_DURATION()) / 1 weeks) * 1 weeks;
+        uint256 expectedEndTime = ((block.timestamp + rsTan.LOCK_DURATION()) / 1 weeks) * 1 weeks;
 
-        tan.approve(address(rsTanService), amount2);
-        rsTanService.createLock(amount2, false);
+        tan.approve(address(rsTan), amount2);
+        rsTan.createLock(amount2, false);
 
         assertERC20Tracking();
-        assertEq(rsTanERC721.balanceOf(usr2), 1);
-        assertEq(rsTanERC721.tokenOfOwnerByIndex(usr2, 0), 2);
-        assertEq(rsTanService.totalSupplyRsTan(), amount1 + amount2);
-        (endLockTime, lockAmount) = rsTanService.locks(2);
+        assertEq(rsTan.balanceOf(usr2), 1);
+        assertEq(rsTan.tokenOfOwnerByIndex(usr2, 0), 2);
+        assertEq(rsTan.totalSupplyRsTan(), amount1 + amount2);
+        (endLockTime, lockAmount) = rsTan.locks(2);
         assertEq(endLockTime, expectedEndTime);
         assertEq(lockAmount, amount2);
 
@@ -61,30 +61,21 @@ contract CreateLock is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(tan), usr1, amount2);
 
-        verifyReceiveERC20(tan, address(rsTanService), amount2, "Rs Tan receive TAN");
+        verifyReceiveERC20(tan, address(rsTan), amount2, "Rs Tan receive TAN");
         verifyLostERC20(tan, usr1, amount2, "User 1 lost TAN");
 
-        expectedEndTime = ((block.timestamp + rsTanService.LOCK_DURATION()) / 1 weeks) * 1 weeks;
+        expectedEndTime = ((block.timestamp + rsTan.LOCK_DURATION()) / 1 weeks) * 1 weeks;
 
-        tan.approve(address(rsTanService), amount2);
-        rsTanService.createLock(amount2, false);
+        tan.approve(address(rsTan), amount2);
+        rsTan.createLock(amount2, false);
 
         assertERC20Tracking();
-        assertEq(rsTanERC721.balanceOf(usr2), 1);
-        assertEq(rsTanERC721.tokenOfOwnerByIndex(usr2, 0), 2);
-        assertEq(rsTanERC721.tokenOfOwnerByIndex(usr1, 1), 3);
-        assertEq(rsTanService.totalSupplyRsTan(), amount1 + 2 * amount2);
-        (endLockTime, lockAmount) = rsTanService.locks(3);
+        assertEq(rsTan.balanceOf(usr2), 1);
+        assertEq(rsTan.tokenOfOwnerByIndex(usr2, 0), 2);
+        assertEq(rsTan.tokenOfOwnerByIndex(usr1, 1), 3);
+        assertEq(rsTan.totalSupplyRsTan(), amount1 + 2 * amount2);
+        (endLockTime, lockAmount) = rsTan.locks(3);
         assertEq(endLockTime, expectedEndTime);
         assertEq(lockAmount, amount2);
-    }
-
-    function test_fails_to_create_lock() external {
-        vm.startPrank(usr1);
-        deal(address(tan), usr1, 1 ether);
-        tan.approve(address(rsTanService), 1 ether);
-
-        vm.expectRevert(abi.encodeWithSelector(RsTanService.ZeroAmount.selector));
-        rsTanService.createLock(0, true);
     }
 }

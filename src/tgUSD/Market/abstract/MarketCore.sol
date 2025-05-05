@@ -37,8 +37,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
     error NotLiquidablePosition();
     error PositionWithoutBadDebt();
     error NotZapper(address zapper);
-
-    error InvalidValueSent();
+    error InvalidZapValue();
 
     event Liquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
     event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
@@ -99,15 +98,9 @@ abstract contract MarketCore is PauseSettings, Collateral {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _zapDeposit(ZapStructDeposit calldata zapCall) internal returns (uint256, IERC20) {
-        require(0 != zapCall.amountIn, InvalidValueSent());
-        IERC20 _collatToken = collatToken;
-        IZappingProxy _zappingProxy = zappingProxy;
+        IZappingProxy _zappingProxy = _preZap(zapCall);
 
-        if (address(zapCall.tokenIn) != CHAIN_COIN) {
-            zapCall.tokenIn.safeTransferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
-        } else {
-            require(msg.value == zapCall.amountIn, InvalidValueSent());
-        }
+        IERC20 _collatToken = collatToken;
 
         return (_zappingProxy.zapProxy{value: msg.value}(zapCall.tokenIn, _collatToken, zapCall.minAmountOut, address(this), zapCall.zap), _collatToken);
     }
@@ -205,12 +198,21 @@ abstract contract MarketCore is PauseSettings, Collateral {
                             REPAY
                                                     ------ */
 
-    function _zapRepay(ZapStructDeposit calldata zapCall) internal returns (uint256) {
+    function _preZap(ZapStructDeposit calldata zapCall) internal returns (IZappingProxy) {
+        require(0 != zapCall.amountIn, InvalidZapValue());
         IZappingProxy _zappingProxy = zappingProxy;
 
         if (address(zapCall.tokenIn) != CHAIN_COIN) {
             zapCall.tokenIn.safeTransferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
+        } else {
+            require(msg.value == zapCall.amountIn, InvalidZapValue());
         }
+
+        return _zappingProxy;
+    }
+
+    function _zapRepay(ZapStructDeposit calldata zapCall) internal returns (uint256) {
+        IZappingProxy _zappingProxy = _preZap(zapCall);
         return _zappingProxy.zapProxy{value: msg.value}(zapCall.tokenIn, tgUSD, zapCall.minAmountOut, msg.sender, zapCall.zap);
     }
 
@@ -392,7 +394,7 @@ abstract contract MarketCore is PauseSettings, Collateral {
                         LEVERAGE
                                                     ------ */
 
-    function _preLeverage() internal {
+    function _preLeverage() internal view {
         require(!isDepositPaused, DepositPaused());
         require(!isBorrowPaused, BorrowPaused());
         require(!isLeveragePaused, LeveragePaused());

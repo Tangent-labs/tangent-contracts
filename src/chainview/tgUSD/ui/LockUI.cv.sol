@@ -9,29 +9,29 @@ import {ERC20Infos, IERC20, TokenAmount} from "../../ERC20Infos.sol";
 contract LockUI {
     error LockUIOutError(LockUIOut output);
 
-    constructor(address user, IRsTan rsTanService, IRsTanERC721 rsTanERC721, IERC20 tan) {
-        uint256 positionOwned = rsTanERC721.balanceOf(user);
+    constructor(address user, IRsTan rsTan, IERC20 tan) {
+        uint256 positionOwned = rsTan.balanceOf(user);
 
         LockUIOut memory output;
         output.totalSupply = tan.totalSupply();
-        output.totalLocked = rsTanService.totalSupplyRsTan();
+        output.totalLocked = rsTan.totalSupplyRsTan();
         output.percentageLocked = output.totalSupply != 0 ? (output.totalLocked * 10 ** 6) / output.totalSupply : 0;
         output.tanAPR = 10 ** 19;
 
         if (user != address(0)) {
-            positionOwned = rsTanERC721.balanceOf(user);
+            positionOwned = rsTan.balanceOf(user);
             output.balance = tan.balanceOf(user);
-            output.allowance = tan.allowance(user, address(rsTanService));
+            output.allowance = tan.allowance(user, address(rsTan));
         } else {
             positionOwned = 0;
         }
         LockedPosition[] memory positions = new LockedPosition[](positionOwned);
 
         for (uint256 i; i < positionOwned; ) {
-            uint256 tokenId = rsTanERC721.tokenOfOwnerByIndex(user, i);
-            (uint48 endLockTime, uint208 amount) = rsTanService.locks(tokenId);
+            uint256 tokenId = rsTan.tokenOfOwnerByIndex(user, i);
+            (uint48 endLockTime, uint208 amount) = rsTan.locks(tokenId);
 
-            positions[i] = LockedPosition({tokenId: tokenId, endLockTime: endLockTime, amount: amount, claimable: rsTanService.claimableRewards(tokenId)[0].amount});
+            positions[i] = LockedPosition({tokenId: tokenId, endLockTime: endLockTime, amount: amount, claimable: rsTan.claimableRewards(tokenId)[0].amount});
             unchecked {
                 ++i;
             }

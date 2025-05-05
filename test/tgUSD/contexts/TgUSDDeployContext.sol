@@ -13,8 +13,7 @@ import "../../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../../src/libs/Resources/ResourcesPendle.sol";
 import "../../../src/libs/Resources/ResourcesYearn.sol";
 
-import "../../../src/tgUSD/Lock/RsTanService.sol";
-import "../../../src/tgUSD/Lock/RsTanERC721.sol";
+import "../../../src/tgUSD/Lock/RsTan.sol";
 
 import "../../../src/tgUSD/Tokens/Tan.sol";
 import "../../../src/tgUSD/Tokens/TgUSD.sol";
@@ -69,8 +68,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     TgUSD public tgUSD;
     Tan public tan;
-    RsTanService public rsTanService;
-    RsTanERC721 public rsTanERC721;
+    RsTan public rsTan;
     TgUSD public tgUsdBase;
     IYearnV3Vault public sgUSD;
     RewardAccumulator public rewardAccumulator;
@@ -102,7 +100,6 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         controlTower = new ControlTower(owner, feeTreasury);
 
         tan = new Tan();
-        rsTanERC721 = new RsTanERC721(owner);
 
         // Deploy tgUSD on Base
         // tgUsdBase = deployTgUSD(baseFork, l0EndpointBase);
@@ -115,9 +112,8 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         sgUSD = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(tgUSD), "Staked tgUSD", "sgUSD", owner, 7 days));
 
-        rsTanService = new RsTanService(owner, controlTower, tan, rsTanERC721, tgUSD, sgUSD, zappingProxy);
-        rsTanERC721.setService(address(rsTanService));
-        rsTanService.addNewReward(tgUSD);
+        rsTan = new RsTan(owner, controlTower, tan, tgUSD, sgUSD, zappingProxy);
+        rsTan.addNewReward(tgUSD);
 
         mockRouter = new MockRouter();
 
@@ -130,8 +126,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(sgUSD), "sgUSD");
         vm.label(address(controlTower), "ControlTower");
         vm.label(address(tan), "Tan");
-        vm.label(address(rsTanService), "RsTanService");
-        vm.label(address(rsTanERC721), "RsTanERC721");
+        vm.label(address(rsTan), "RsTan");
 
         vm.label(address(AddrRouter.ENSO_ROUTER_V1), "Enso Router V1");
         vm.label(address(AddrRouter.ENSO_ROUTER_V2), "Enso Router V2");

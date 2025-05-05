@@ -17,8 +17,7 @@ import {
     MarketCreator,
     MarketNoSociabilization,
     RewardAccumulator,
-    RsTanERC721,
-    RsTanService,
+    RsTan,
     Tan,
     TgUSD,
     ZappingProxy,
@@ -38,8 +37,7 @@ export class BaseContext extends MainSetup {
     tgUSD!: TgUSD;
     sgUSD!: IYearnV3Vault;
     tan!: Tan;
-    rsTanService!: RsTanService;
-    rsTanERC721!: RsTanERC721;
+    rsTan!: RsTan;
     rewardAccumulator!: RewardAccumulator;
     irCalculator!: IRCalculator;
     marketCreator!: MarketCreator;
@@ -79,16 +77,9 @@ export class BaseContext extends MainSetup {
         await this.tan.mint(this.users[3], parseEther("100000"));
         await this.tan.mint(this.users[4], parseEther("100000"));
 
-        this.rsTanERC721 = await (await ethers.getContractFactory("RsTanERC721")).deploy(this.owner);
-        await this.rsTanERC721.waitForDeployment();
-
-        this.rsTanService = await (
-            await ethers.getContractFactory("RsTanService")
-        ).deploy(this.owner, this.controlTower, this.tan, this.rsTanERC721, this.tgUSD, this.sgUSD, this.zappingProxy);
-        await this.rsTanService.waitForDeployment();
-        await this.rsTanService.addNewReward(this.tgUSD);
-
-        await this.rsTanERC721.setService(this.rsTanService);
+        this.rsTan = await (await ethers.getContractFactory("RsTan")).deploy(this.owner, this.controlTower, this.tan, this.rsTan, this.tgUSD, this.sgUSD, this.zappingProxy);
+        await this.rsTan.waitForDeployment();
+        await this.rsTan.addNewReward(this.tgUSD);
 
         this.marketCvxCrvImplem = await (await ethers.getContractFactory("ConvexCrvLPMarket")).deploy();
         await this.marketCvxCrvImplem.waitForDeployment();
@@ -260,8 +251,8 @@ export async function createJSONAddress(
             pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
         },
         lock: {
-            rsTanService: await baseContext.rsTanService.getAddress(),
-            rsTanERC721: await baseContext.rsTanERC721.getAddress(),
+            rsTan: await baseContext.rsTan.getAddress(),
+            rsTan: await baseContext.rsTan.getAddress(),
         },
         tokens: {
             tgUSD: await baseContext.tgUSD.getAddress(),

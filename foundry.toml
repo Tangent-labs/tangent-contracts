@@ -1,5 +1,5 @@
 [profile.default]
-src = "src"
+src = "src/tgUSD"
 out = "out"
 ffi = true
 ast = true
@@ -19,7 +19,7 @@ ignored_error_codes = [
 ]
 
 # optimizer = true
-# optimizer-runs = 1
+# optimizer-runs = 1_000_000
 
 fs_permissions = [{ access = "read-write", path = "./" }]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
