@@ -4,7 +4,7 @@ import "../../contexts/MarketDeploymentContext.sol";
 
 import {ERC721, ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
-contract ZapCreateLock is MarketDeploymentContext {
+contract ZapIncreaseLockAmount is MarketDeploymentContext {
     using SafeERC20 for IERC20Metadata;
 
     uint208 amountIn = 1 ether;
@@ -32,8 +32,8 @@ contract ZapCreateLock is MarketDeploymentContext {
 
         verifyReceiveERC20(tan, address(rsTan), amountOutTan, "Tan receives by RsTan");
 
-        rsTan.zapCreateLock{value: amountIn}(
-            true,
+        rsTan.zapIncreaseLockAmount{value: amountIn}(
+            1,
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
@@ -44,8 +44,8 @@ contract ZapCreateLock is MarketDeploymentContext {
 
         assertERC20Tracking();
 
-        Lock memory lock = rsTan.getLock(3);
-        assertEq(lock.amount, amountOutTan);
+        Lock memory lock = rsTan.getLock(1);
+        assertEq(lock.amount, amountOutTan + amountIn);
         assertEq(lock.endLockTime, rsTan.MAX_UINT48());
     }
 
@@ -62,8 +62,8 @@ contract ZapCreateLock is MarketDeploymentContext {
 
         verifyReceiveERC20(tan, address(rsTan), amountOutTan, "Tan receives by RsTan");
 
-        rsTan.zapCreateLock(
-            true,
+        rsTan.zapIncreaseLockAmount(
+            1,
             ZapStructDeposit({
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
@@ -74,39 +74,8 @@ contract ZapCreateLock is MarketDeploymentContext {
 
         assertERC20Tracking();
 
-        Lock memory lock = rsTan.getLock(3);
-        assertEq(lock.amount, amountOutTan);
+        Lock memory lock = rsTan.getLock(1);
+        assertEq(lock.amount, amountOutTan + amountIn);
         assertEq(lock.endLockTime, rsTan.MAX_UINT48());
-    }
-
-    function test_zapCreateLock_fails_with_0_in_amountIn() external {
-        vm.startPrank(usr1);
-
-        ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, tan, address(rsTan), amountOutTan);
-
-        vm.expectRevert(abi.encodeWithSelector(RsTan.InvalidZapValue.selector));
-        rsTan.zapCreateLock(true, ZapStructDeposit({tokenIn: AddrClassicERC20.USDT, amountIn: 0, minAmountOut: 0, zap: zapCall}));
-    }
-
-    function test_zapCreateLock_fails_with_msgValue_0_and_ethIN() external {
-        vm.startPrank(usr1);
-
-        deal(usr1, 10 ether);
-
-        ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(rsTan), amountOutTan);
-
-        vm.expectRevert(abi.encodeWithSelector(RsTan.InvalidZapValue.selector));
-        rsTan.zapCreateLock{value: 0}(true, ZapStructDeposit({tokenIn: ETH_NAKED, amountIn: 10 ether, minAmountOut: 0, zap: zapCall}));
-    }
-
-    function test_zapCreateLock_fails_with_msgValue_noEq_amountIn_for_ETH() external {
-        vm.startPrank(usr1);
-
-        deal(usr1, 10 ether);
-
-        ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(rsTan), amountOutTan);
-
-        vm.expectRevert(abi.encodeWithSelector(RsTan.InvalidZapValue.selector));
-        rsTan.zapCreateLock{value: 9 ether}(true, ZapStructDeposit({tokenIn: ETH_NAKED, amountIn: 10 ether, minAmountOut: 0, zap: zapCall}));
     }
 }

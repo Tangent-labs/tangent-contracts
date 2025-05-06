@@ -46,4 +46,22 @@ contract MergeLock is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSignature("ERC721NonexistentToken(uint256)", 3));
         rsTan.ownerOf(3);
     }
+
+    function test_merge_fails_bcs_position_A_expired() external {
+        vm.startPrank(usr1);
+
+        skip(rsTan.LOCK_DURATION());
+
+        vm.expectRevert(abi.encodeWithSelector(RsTan.LockExpired.selector));
+        rsTan.merge(1, 3, false);
+    }
+
+    function test_merge_fails_bcs_position_B_expired() external {
+        vm.startPrank(usr1);
+
+        skip(rsTan.LOCK_DURATION());
+
+        vm.expectRevert(abi.encodeWithSelector(RsTan.LockExpired.selector));
+        rsTan.merge(3, 1, false);
+    }
 }

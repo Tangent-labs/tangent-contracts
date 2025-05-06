@@ -78,4 +78,13 @@ contract CreateLock is MarketDeploymentContext {
         assertEq(endLockTime, expectedEndTime);
         assertEq(lockAmount, amount2);
     }
+
+    function test_fails_to_create_lock_with_0_TAN() external {
+        vm.startPrank(usr1);
+        deal(address(tan), usr1, 1 ether);
+        tan.approve(address(rsTan), 1 ether);
+
+        vm.expectRevert(abi.encodeWithSelector(RsTan.ZeroAmount.selector));
+        rsTan.createLock(0, true);
+    }
 }

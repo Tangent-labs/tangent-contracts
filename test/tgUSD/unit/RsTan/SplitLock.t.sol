@@ -75,4 +75,13 @@ contract SplitLock is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(RsTan.ZeroAmount.selector));
         rsTan.split(2, 0);
     }
+
+    function test_split_fails_bcs_position_expired() external {
+        vm.startPrank(usr1);
+
+        skip(rsTan.LOCK_DURATION());
+
+        vm.expectRevert(abi.encodeWithSelector(RsTan.LockExpired.selector));
+        rsTan.split(2, 1 ether);
+    }
 }

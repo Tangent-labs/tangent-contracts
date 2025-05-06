@@ -114,4 +114,25 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(RsTan.NotTokenOwner.selector));
         rsTan.increaseLockAmount(1, 1);
     }
+
+    function test_fails_to_increaseLockAmount_zeroAmount() external {
+        vm.startPrank(usr1);
+        deal(address(tan), usr1, 1 ether);
+        tan.approve(address(rsTan), 1 ether);
+        rsTan.createLock(1 ether, true);
+
+        vm.expectRevert(abi.encodeWithSelector(RsTan.ZeroAmount.selector));
+        rsTan.increaseLockAmount(1, 0);
+    }
+
+    function test_fails_to_increaseLockAmount_on_expired_position() external {
+        vm.startPrank(usr1);
+        deal(address(tan), usr1, 10 ether);
+        tan.approve(address(rsTan), 10 ether);
+        rsTan.createLock(1 ether, false);
+
+        skip(rsTan.LOCK_DURATION());
+        vm.expectRevert(abi.encodeWithSelector(RsTan.LockExpired.selector));
+        rsTan.increaseLockAmount(1, 1);
+    }
 }

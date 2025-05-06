@@ -112,4 +112,13 @@ contract RageQuit is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(RsTan.NotTokenOwner.selector));
         rsTan.rageQuit(2, false);
     }
+
+    function test_rageQuit_fails_bcs_positionExpired() external {
+        vm.startPrank(usr1);
+
+        skip(rsTan.LOCK_DURATION());
+
+        vm.expectRevert(abi.encodeWithSelector(RsTan.LockExpired.selector));
+        rsTan.rageQuit(2, false);
+    }
 }

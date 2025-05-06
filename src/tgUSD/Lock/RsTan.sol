@@ -168,7 +168,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
      * @param zapCall Packed struct with the zap parameters
      */
     function zapIncreaseLockAmount(uint256 tokenId, ZapStructDeposit calldata zapCall) external payable nonReentrant {
-        uint256 amountIn = zappingProxy.zapProxy(zapCall.tokenIn, tan, zapCall.minAmountOut, address(this), zapCall.zap);
+        uint256 amountIn = _zapDeposit(zapCall);
         _increaseLockAmount(tokenId, uint208(amountIn));
     }
 
@@ -418,6 +418,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
         IZappingProxy _zappingProxy = zappingProxy;
 
         if (address(zapCall.tokenIn) != CHAIN_COIN) {
+            require(0 == msg.value, InvalidZapValue());
             zapCall.tokenIn.safeTransferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
         } else {
             require(msg.value == zapCall.amountIn, InvalidZapValue());
@@ -435,7 +436,6 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
         locks[tokenId] = Lock({endLockTime: isPermaLock ? MAX_UINT48 : _newEndLockTime(), amount: amountIn});
         // Increase the total amount locked
         totalSupplyRsTan += amountIn;
-
         _mint(msg.sender, tokenId);
     }
 
