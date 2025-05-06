@@ -77,7 +77,7 @@ export class BaseContext extends MainSetup {
         await this.tan.mint(this.users[3], parseEther("100000"));
         await this.tan.mint(this.users[4], parseEther("100000"));
 
-        this.rsTan = await (await ethers.getContractFactory("RsTan")).deploy(this.owner, this.controlTower, this.tan, this.rsTan, this.tgUSD, this.sgUSD, this.zappingProxy);
+        this.rsTan = await (await ethers.getContractFactory("RsTan")).deploy(this.owner, this.controlTower, this.tan, this.tgUSD, this.sgUSD, this.zappingProxy);
         await this.rsTan.waitForDeployment();
         await this.rsTan.addNewReward(this.tgUSD);
 
@@ -250,14 +250,11 @@ export async function createJSONAddress(
             irCalculator: await baseContext.irCalculator.getAddress(),
             pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
         },
-        lock: {
-            rsTan: await baseContext.rsTan.getAddress(),
-            rsTan: await baseContext.rsTan.getAddress(),
-        },
         tokens: {
             tgUSD: await baseContext.tgUSD.getAddress(),
             sgUSD: await baseContext.sgUSD.getAddress(),
             tan: await baseContext.tan.getAddress(),
+            rsTan: await baseContext.rsTan.getAddress(),
         },
         implementations: {
             convexCrvMarket: await baseContext.marketCvxCrvImplem.getAddress(),

@@ -18,6 +18,6 @@ contract MockRouter is StdCheats, StdUtils, Test {
         if (address(tokenIn) != CHAIN_COIN) {
             tokenIn.safeTransferFrom(msg.sender, address(this), amountIn);
         }
-        tokenOut.transfer(receiver, amountOut);
+        tokenOut.safeTransfer(receiver, amountOut);
     }
 }
