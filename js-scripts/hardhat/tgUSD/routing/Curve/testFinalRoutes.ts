@@ -26,7 +26,6 @@ async function main() {
 
     for (let index = 0; index < finalRoutes.success.length; index++) {
         const finalRoute = finalRoutes.success[index];
-        // if (finalRoute.display === "tgUSD* >> tgUSD-wUSR* >> wUSR* >> wUSR* >> USR >> USR/RLP >> USR/RLP") {
         const thiefData = ThiefConfig.find((a) => a.address.toLowerCase() === finalRoute.in.toLowerCase());
 
         const amountIn = ethers.parseUnits(amount, thiefData?.decimals || 18);
@@ -45,7 +44,6 @@ async function main() {
             });
             break;
         }
-
         try {
             //@ts-ignore
             await router

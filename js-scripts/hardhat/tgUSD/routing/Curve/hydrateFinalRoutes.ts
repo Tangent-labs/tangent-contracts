@@ -27,15 +27,13 @@ async function main() {
             const routeAddresses = [];
             const singleSwaps = rawRoute.singleSwaps;
 
-            for (let index = 0; index < singleSwaps.length; ) {
+            for (let index = 0; index < singleSwaps.length; ++index) {
                 const singleSwap = singleSwaps[index];
                 if (index === 0) {
                     routeAddresses.push(liquidationAssets[singleSwap.in]);
                 }
                 routeAddresses.push(liquidationAssets[singleSwap.pool]);
                 routeAddresses.push(liquidationAssets[singleSwap.out]);
-
-                index += 2;
             }
 
             while (routeAddresses.length < 11) {
