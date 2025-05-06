@@ -148,7 +148,6 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
 
     function zapCreateLock(bool isPermalock, ZapStructDeposit calldata zapCall) external payable nonReentrant {
         uint256 amountIn = _zapDeposit(zapCall);
-
         _createLock(uint208(amountIn), isPermalock);
     }
 
@@ -210,10 +209,10 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
         require(endLockTime < block.timestamp, LockNotOver());
 
         totalSupplyRsTan -= amount;
-        _burn(tokenId);
-        _claimSimple(tokenId, msg.sender, isClaimAsSgUSD);
         delete locks[tokenId];
+        _burn(tokenId);
 
+        _claimSimple(tokenId, msg.sender, isClaimAsSgUSD);
         tan.transfer(msg.sender, amount);
     }
 
@@ -224,21 +223,15 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
     function rageQuit(uint256 tokenId, bool isClaimAsSgUSD) external nonReentrant onlyTokenOwner(tokenId) updateReward(tokenId) {
         (uint48 endLockTime, uint208 amount) = _getLock(tokenId);
         bool isPermaLocked = endLockTime == MAX_UINT48;
-
-        // If a position is not permalocked
-        // Remove it from the checkpoint where the lock was supposed to finish
-
         require(endLockTime > block.timestamp, LockExpired());
+        uint256 penality = (amount * ((isPermaLocked ? _newEndLockTime() : endLockTime) - block.timestamp)) / LOCK_DURATION;
 
         // Remove the amount locked from the total supply as it will not be triggered by the checkpoint
         totalSupplyRsTan -= amount;
-
-        uint256 penality = (amount * ((isPermaLocked ? _newEndLockTime() : endLockTime) - block.timestamp)) / LOCK_DURATION;
-
-        _burn(tokenId);
-        _claimSimple(tokenId, msg.sender, isClaimAsSgUSD);
         delete locks[tokenId];
+        _burn(tokenId);
 
+        _claimSimple(tokenId, msg.sender, isClaimAsSgUSD);
         IERC20 _tan = tan;
         _tan.transfer(msg.sender, amount - penality);
         _tan.transfer(controlTower.feeTreasury(), penality);
@@ -258,9 +251,9 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
         address tokenOwner = ownerOf(tokenId);
 
         _burn(tokenId);
-        _claimSimple(tokenId, tokenOwner, false);
         delete locks[tokenId];
 
+        _claimSimple(tokenId, tokenOwner, false);
         IERC20 _tan = tan;
         _tan.transfer(tokenOwner, amount - kickIncentivization);
         _tan.transfer(receiver, kickIncentivization);
@@ -279,11 +272,10 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
         require(endLockTime > block.timestamp, LockExpired());
 
         uint256 newTokenId = nextId++;
-        _mint(msg.sender, newTokenId);
         _updateReward(newTokenId);
-
         locks[newTokenId] = Lock({endLockTime: endLockTime, amount: amountToRemove});
         locks[tokenId].amount = amount - amountToRemove;
+        _mint(msg.sender, newTokenId);
     }
 
     /**
@@ -304,10 +296,10 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
         require(endLockB > block.timestamp, LockExpired());
 
         locks[tokenIdA] = Lock({endLockTime: endLockA < endLockB ? endLockB : endLockA, amount: amountA + amountB});
+        delete locks[tokenIdB];
 
         _burn(tokenIdB);
         _claimSimple(tokenIdB, msg.sender, isClaimAsSgUSD);
-        delete locks[tokenIdB];
     }
 
     /**
@@ -383,7 +375,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
                 if (token == _tgUSD && isClaimAsSgUSD) {
                     _sgUSD.deposit(amount, msg.sender);
                 } else {
-                    token.transfer(msg.sender, amount);
+                    token.safeTransfer(msg.sender, amount);
                 }
             }
 
@@ -438,13 +430,13 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
         require(amountIn != 0, ZeroAmount());
 
         uint256 tokenId = nextId++;
-        _mint(msg.sender, tokenId);
         _updateReward(tokenId);
-
         // Store the position information
         locks[tokenId] = Lock({endLockTime: isPermaLock ? MAX_UINT48 : _newEndLockTime(), amount: amountIn});
         // Increase the total amount locked
         totalSupplyRsTan += amountIn;
+
+        _mint(msg.sender, tokenId);
     }
 
     function _increaseLockAmount(uint256 tokenId, uint208 amountIn) internal onlyTokenOwner(tokenId) updateReward(tokenId) {
@@ -474,7 +466,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
                 if (_rewardToken == _tgUSD && isClaimAsSgUSD) {
                     _sgUSD.deposit(rewardAmount, receiver);
                 } else {
-                    _rewardToken.transfer(receiver, rewardAmount);
+                    _rewardToken.safeTransfer(receiver, rewardAmount);
                 }
                 emit RewardPaid(tokenId, _rewardToken, rewardAmount);
             }
@@ -492,11 +484,11 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
-     * @notice Add a new reward token to the contract
+     * @notice Add a new reward token to be stream to lockers
      * @param _newRewardToken Address of the new reward token
      */
     function addNewReward(IERC20 _newRewardToken) external onlyOwner {
-        // If lastUpdateTime is equal to 0, it means the token is not already added as a reward
+        // If lastUpdateTime is equal to 0, it means _newRewardToken is not for now a reward
         require(rewardData[_newRewardToken].lastUpdateTime == 0, RewardAlreadyAdded(_newRewardToken));
 
         rewardTokens.push(_newRewardToken);
@@ -542,7 +534,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
             rewardData[rewardToken].lastUpdateTime = uint128(block.timestamp);
             rewardData[rewardToken].periodFinish = uint128(block.timestamp + ONE_WEEK);
 
-            rewardToken.transferFrom(msg.sender, address(this), amount);
+            rewardToken.safeTransferFrom(msg.sender, address(this), amount);
 
             emit RewardNotified(rewardToken, amount);
 
