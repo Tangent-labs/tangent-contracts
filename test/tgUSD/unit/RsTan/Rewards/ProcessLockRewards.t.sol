@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/MarketDeploymentContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 
 contract ProcessLockRewards is MarketDeploymentContext {
     using SafeERC20 for IERC20Metadata;

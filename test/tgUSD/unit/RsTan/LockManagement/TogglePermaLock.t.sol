@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/MarketDeploymentContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 
 contract TogglePermaLock is MarketDeploymentContext {
     uint208 amount = 1 ether;

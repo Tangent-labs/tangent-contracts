@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/MarketDeploymentContext.sol";
-
-import "../../handler/Curve/HLpManipulator.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 
 contract IncreaseLockTime is MarketDeploymentContext {
     uint208 amount = 1 ether;

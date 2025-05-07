@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/MarketDeploymentContext.sol";
-
-import {ERC721, ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 
 contract KickPosition is MarketDeploymentContext {
     uint208 amountToLock = 1 ether;

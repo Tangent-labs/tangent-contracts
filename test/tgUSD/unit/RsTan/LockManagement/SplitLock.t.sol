@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/MarketDeploymentContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 
 contract SplitLock is MarketDeploymentContext {
     uint208 amount0 = 20_000 ether;

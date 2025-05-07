@@ -137,7 +137,7 @@ contract LeverageMock is MarketDeploymentContext {
 
         market.leverage(
             0,
-            21_000 ether,
+            20_000 ether,
             0,
             true,
             // Simulate zap call with a transfer to the market
