@@ -173,6 +173,9 @@ abstract contract MarketCore is PauseSettings, Collateral {
         //  Verify that newDebt is over the minimum loan
         require(newUserDebt >= minimumLoan, UserDebtTooLow());
 
+        console.log("collatAmount", collatAmount);
+        console.log("_maxBorrowable(collatAmount)", _maxBorrowable(collatAmount));
+        console.log("newUserDebt", newUserDebt);
         // Verify that the newDebt of the loan is not over the maximum borrrowable
         require(_maxBorrowable(collatAmount) >= newUserDebt, UserDebtTooHigh());
 
@@ -409,10 +412,13 @@ abstract contract MarketCore is PauseSettings, Collateral {
         ZapStruct calldata dumpTgUSDCall
     ) internal returns (uint256, uint256) {
         ITgUSD _tgUSD = tgUSD;
+
+        IZappingProxy _zappingProxy = zappingProxy;
+
         // Mint the tgUSD on the Zapper, ready to be exchanged through the router
-        _tgUSD.mint(address(zappingProxy), tgUSDToFlashMint);
+        _tgUSD.mint(address(_zappingProxy), tgUSDToFlashMint);
         // Exchange the tgUSD that has just been minted on the Zapper for the collateral of the market
-        uint256 collatBought = zappingProxy.zapProxy(_tgUSD, collatToken, minCollatAmountOut, address(this), dumpTgUSDCall);
+        uint256 collatBought = _zappingProxy.zapProxy(_tgUSD, collatToken, minCollatAmountOut, address(this), dumpTgUSDCall);
 
         uint256 stakedAmount = _depositSociabilization(collatToDeposit + collatBought, isStaked);
 

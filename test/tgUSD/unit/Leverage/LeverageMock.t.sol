@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 import "../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../handler/Curve/HLPManipulator.sol";
-contract LeverageToTheLimit is MarketDeploymentContext {
+contract LeverageMock is MarketDeploymentContext {
     ConvexFxnLPMarket public market;
     IERC20Metadata public collatToken;
 
@@ -104,7 +104,7 @@ contract LeverageToTheLimit is MarketDeploymentContext {
         deal(address(collatToken), usr1, collatToDeposit);
 
         // We put some collat in pending on the zapping for mocking
-        deal(address(collatToken), address(zappingProxy), collatReceived);
+        deal(address(collatToken), address(zappingProxy), collatReceived * 10);
 
         verifyMintERC20(tgUSD, tgUSDToFlashMint, "Some tgUSD are minted during leverage");
 
@@ -134,6 +134,15 @@ contract LeverageToTheLimit is MarketDeploymentContext {
 
         vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NoRewardToSimpleClaim.selector));
         rewardAccumulator.claimSimple(address(market));
+
+        market.leverage(
+            0,
+            21_000 ether,
+            0,
+            true,
+            // Simulate zap call with a transfer to the market
+            ZapStruct({router: address(collatToken), routerCall: abi.encodeWithSelector(bytes4(keccak256("transfer(address,uint256)")), address(market), 19_000 ether)})
+        );
     }
 
     function test_leverage_small_tgUSD_amount() external {

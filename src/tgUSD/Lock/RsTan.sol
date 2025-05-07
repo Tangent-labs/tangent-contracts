@@ -511,9 +511,10 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
      * @notice Process rewards for the specified reward tokens
      * @param tokenAmounts Array of reward tokens and their amounts to distribute
      */
-    function processRewards(TokenAmount[] memory tokenAmounts) external onlyOwner {
+    function processRewards(TokenAmount[] memory tokenAmounts) external onlyOwner updateReward(0) {
         // Reward tokens updated
         uint256 rewardTokensLength = tokenAmounts.length;
+        uint256 timestamp = block.timestamp;
 
         for (uint256 i; i < rewardTokensLength; ) {
             IERC20 rewardToken = tokenAmounts[i].token;
@@ -524,15 +525,15 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
             require(0 != rData.lastUpdateTime, RewardNotAdded(rewardToken));
             require(0 != amount, ZeroAmount());
 
-            if (block.timestamp >= rData.periodFinish) {
+            if (timestamp >= rData.periodFinish) {
                 rewardData[rewardToken].rewardRate = amount / ONE_WEEK;
             } else {
-                uint256 leftover = (rData.periodFinish - block.timestamp) * rData.rewardRate;
+                uint256 leftover = (rData.periodFinish - timestamp) * rData.rewardRate;
                 rewardData[rewardToken].rewardRate = (amount + leftover) / ONE_WEEK;
             }
 
-            rewardData[rewardToken].lastUpdateTime = uint128(block.timestamp);
-            rewardData[rewardToken].periodFinish = uint128(block.timestamp + ONE_WEEK);
+            rewardData[rewardToken].lastUpdateTime = uint128(timestamp);
+            rewardData[rewardToken].periodFinish = uint128(timestamp + ONE_WEEK);
 
             rewardToken.safeTransferFrom(msg.sender, address(this), amount);
 

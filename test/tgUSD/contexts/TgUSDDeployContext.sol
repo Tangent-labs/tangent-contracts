@@ -40,6 +40,8 @@ import "../../../src/interfaces/externals/ICREATE3Factory.sol";
 import "./LpDeploymentContext.sol";
 
 contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
+    using SafeERC20 for IERC20Metadata;
+
     uint256 public mainnetFork;
     uint256 public baseFork;
 
