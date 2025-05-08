@@ -131,6 +131,11 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
         _;
     }
 
+    modifier isReentrancyGuartEntered() {
+        require(!_reentrancyGuardEntered(), ReentrancyGuardReentrantCall());
+        _;
+    }
+
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                        EXTERNAL USER 
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -320,7 +325,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
         // We save this length on his own variable, to not miss with the assembly manipulations
         uint256 positionsLen = positionIds.length;
         uint256 rewardTokenLen = rewardTokens.length;
-        TokenAmount[] memory tokenAmount = new TokenAmount[](rewardTokens.length);
+        TokenAmount[] memory tokenAmount = new TokenAmount[](rewardTokenLen);
 
         // Initialize TokenAmount array
         for (uint256 i; i < tokenAmount.length; ) {
@@ -454,7 +459,6 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
 
         bool isClaimable;
         IERC20 _tgUSD = tgUSD;
-        IERC4626 _sgUSD = sgUSD;
 
         for (uint256 rewardIndex; rewardIndex < rewardTokensLength; ) {
             IERC20 _rewardToken = rewardTokens[rewardIndex];
@@ -464,7 +468,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
                 isClaimable = true;
                 rewards[tokenId][_rewardToken] = 0;
                 if (_rewardToken == _tgUSD && isClaimAsSgUSD) {
-                    _sgUSD.deposit(rewardAmount, receiver);
+                    sgUSD.deposit(rewardAmount, receiver);
                 } else {
                     _rewardToken.safeTransfer(receiver, rewardAmount);
                 }
@@ -523,6 +527,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
             Reward memory rData = rewardData[rewardToken];
 
             require(0 != rData.lastUpdateTime, RewardNotAdded(rewardToken));
+            //TODO This require is not enough as check. We cannot distributes less than a certain amount because we are loosing a lot of precision by dividing by ONE week to get the rate
             require(0 != amount, ZeroAmount());
 
             if (timestamp >= rData.periodFinish) {
@@ -603,15 +608,15 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
                             VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function getRewardData(IERC20 erc20) external view returns (Reward memory) {
+    function getRewardData(IERC20 erc20) external view isReentrancyGuartEntered returns (Reward memory) {
         return rewardData[erc20];
     }
 
-    function lastTimeRewardApplicable(IERC20 _rewardToken) external view returns (uint256) {
+    function lastTimeRewardApplicable(IERC20 _rewardToken) external view isReentrancyGuartEntered returns (uint256) {
         return _lastTimeRewardApplicable(rewardData[_rewardToken].periodFinish);
     }
 
-    function rewardPerToken(IERC20 _rewardToken) external view returns (uint256) {
+    function rewardPerToken(IERC20 _rewardToken) external view isReentrancyGuartEntered returns (uint256) {
         return _rewardPerToken(_rewardToken);
     }
 
@@ -623,7 +628,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
      * @notice Get the next end lock time based on the current timestamp
      * @return The next end lock time
      */
-    function nextEndLockTime() external view returns (uint48) {
+    function nextEndLockTime() external view isReentrancyGuartEntered returns (uint48) {
         return _newEndLockTime();
     }
 
@@ -632,7 +637,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
      * @param tokenId ID of the locking position
      * @return Lock
      */
-    function getLock(uint256 tokenId) external view returns (Lock memory) {
+    function getLock(uint256 tokenId) external view isReentrancyGuartEntered returns (Lock memory) {
         return locks[tokenId];
     }
 
@@ -641,7 +646,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
      * @param  tokenId Address of the user
      * @return userRewards Array of rewards claimable by the position
      */
-    function claimableRewards(uint256 tokenId) external view returns (TokenAmount[] memory userRewards) {
+    function claimableRewards(uint256 tokenId) external view isReentrancyGuartEntered returns (TokenAmount[] memory userRewards) {
         userRewards = new TokenAmount[](rewardTokens.length);
 
         uint256 rsTanBalance = locks[tokenId].amount;

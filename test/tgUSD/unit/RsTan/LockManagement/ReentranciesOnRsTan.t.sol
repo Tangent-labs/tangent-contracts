@@ -211,4 +211,88 @@ contract ReentranciesOnRsTan is MarketDeploymentContext {
             })
         );
     }
+
+    function test_reentrancy_getRewardData() external {
+        // Verify that the call to the "router" returns an error about the reentrancy
+        vm.expectRevert(ZapCallErrorReentrancy);
+        rsTan.zapCreateLock(
+            true,
+            ZapStructDeposit({
+                tokenIn: AddrClassicERC20.USDT,
+                amountIn: amountIn,
+                minAmountOut: 0,
+                zap: ZapStruct({router: address(rsTan), routerCall: abi.encodeWithSelector(RsTan.getRewardData.selector, tgUSD)})
+            })
+        );
+    }
+
+    function test_reentrancy_lastTimeRewardApplicable() external {
+        // Verify that the call to the "router" returns an error about the reentrancy
+        vm.expectRevert(ZapCallErrorReentrancy);
+        rsTan.zapCreateLock(
+            true,
+            ZapStructDeposit({
+                tokenIn: AddrClassicERC20.USDT,
+                amountIn: amountIn,
+                minAmountOut: 0,
+                zap: ZapStruct({router: address(rsTan), routerCall: abi.encodeWithSelector(RsTan.lastTimeRewardApplicable.selector, tgUSD)})
+            })
+        );
+    }
+
+    function test_reentrancy_rewardPerToken() external {
+        // Verify that the call to the "router" returns an error about the reentrancy
+        vm.expectRevert(ZapCallErrorReentrancy);
+        rsTan.zapCreateLock(
+            true,
+            ZapStructDeposit({
+                tokenIn: AddrClassicERC20.USDT,
+                amountIn: amountIn,
+                minAmountOut: 0,
+                zap: ZapStruct({router: address(rsTan), routerCall: abi.encodeWithSelector(RsTan.rewardPerToken.selector, tgUSD)})
+            })
+        );
+    }
+
+    function test_reentrancy_nextEndLockTime() external {
+        // Verify that the call to the "router" returns an error about the reentrancy
+        vm.expectRevert(ZapCallErrorReentrancy);
+        rsTan.zapCreateLock(
+            true,
+            ZapStructDeposit({
+                tokenIn: AddrClassicERC20.USDT,
+                amountIn: amountIn,
+                minAmountOut: 0,
+                zap: ZapStruct({router: address(rsTan), routerCall: abi.encodeWithSelector(RsTan.nextEndLockTime.selector)})
+            })
+        );
+    }
+
+    function test_reentrancy_getLock() external {
+        // Verify that the call to the "router" returns an error about the reentrancy
+        vm.expectRevert(ZapCallErrorReentrancy);
+        rsTan.zapCreateLock(
+            true,
+            ZapStructDeposit({
+                tokenIn: AddrClassicERC20.USDT,
+                amountIn: amountIn,
+                minAmountOut: 0,
+                zap: ZapStruct({router: address(rsTan), routerCall: abi.encodeWithSelector(RsTan.getLock.selector, 1)})
+            })
+        );
+    }
+
+    function test_reentrancy_claimableRewards() external {
+        // Verify that the call to the "router" returns an error about the reentrancy
+        vm.expectRevert(ZapCallErrorReentrancy);
+        rsTan.zapCreateLock(
+            true,
+            ZapStructDeposit({
+                tokenIn: AddrClassicERC20.USDT,
+                amountIn: amountIn,
+                minAmountOut: 0,
+                zap: ZapStruct({router: address(rsTan), routerCall: abi.encodeWithSelector(RsTan.claimableRewards.selector, 1)})
+            })
+        );
+    }
 }

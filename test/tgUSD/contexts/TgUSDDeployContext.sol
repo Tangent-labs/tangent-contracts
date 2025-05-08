@@ -115,6 +115,20 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         sgUSD = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(tgUSD), "Staked tgUSD", "sgUSD", owner, 7 days));
 
+        // Deposit Limit
+        sgUSD.add_role(owner, 256);
+        // Set reward processor
+        sgUSD.add_role(owner, 32);
+
+        sgUSD.set_deposit_limit(MAX_UINT);
+
+        deal(address(tgUSD), owner, 1_500 ether);
+        tgUSD.approve(address(sgUSD), MAX_UINT);
+        sgUSD.deposit(1_000 ether, owner);
+
+        tgUSD.transfer(address(sgUSD), 500 ether);
+        sgUSD.process_report(address(sgUSD));
+
         rsTan = new RsTan(owner, controlTower, tan, tgUSD, sgUSD, zappingProxy);
         rsTan.addNewReward(tgUSD);
 

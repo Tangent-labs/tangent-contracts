@@ -174,11 +174,27 @@ contract ProcessLockRewards is MarketDeploymentContext {
     function test_processRewards_fails_when_not_owner() external {
         vm.startPrank(usr1);
         TokenAmount[] memory tokenAmounts = new TokenAmount[](1);
-        tokenAmounts[0] = TokenAmount({token: tan, amount: tgUSDToDistribute});
+        tokenAmounts[0] = TokenAmount({token: tgUSD, amount: tgUSDToDistribute});
 
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
         rsTan.processRewards(tokenAmounts);
+    }
 
-        console.logBytes(abi.encodeWithSignature("ZeroDebtAmount()"));
+    function test_processRewards_fails_when_try_to_distribute_token_that_is_not_a_reward() external {
+        vm.startPrank(owner);
+        TokenAmount[] memory tokenAmounts = new TokenAmount[](1);
+        tokenAmounts[0] = TokenAmount({token: tan, amount: tgUSDToDistribute});
+
+        vm.expectRevert(abi.encodeWithSelector(RsTan.RewardNotAdded.selector, address(tan)));
+        rsTan.processRewards(tokenAmounts);
+    }
+
+    function test_processRewards_fails_when_try_to_distribute_0() external {
+        vm.startPrank(owner);
+        TokenAmount[] memory tokenAmounts = new TokenAmount[](1);
+        tokenAmounts[0] = TokenAmount({token: tgUSD, amount: 0});
+
+        vm.expectRevert(abi.encodeWithSelector(RsTan.ZeroAmount.selector));
+        rsTan.processRewards(tokenAmounts);
     }
 }
