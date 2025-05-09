@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import {LightOwnable} from "../../Utilities/LightOwnable.sol";
+import {LightOwnable} from "../../Utilities/abstract/LightOwnable.sol";
 abstract contract PauseSettings is LightOwnable {
     bool public isInitialized;
 

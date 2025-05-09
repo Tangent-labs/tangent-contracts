@@ -82,7 +82,7 @@ contract ZapCreateLock is MarketDeploymentContext {
 
         ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, tan, address(rsTan), amountOutTan);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.InvalidZapValue.selector));
+        vm.expectRevert(abi.encodeWithSelector(ZappingUtil.InvalidZapValue.selector));
         rsTan.zapCreateLock(true, ZapStructDeposit({tokenIn: AddrClassicERC20.USDT, amountIn: 0, minAmountOut: 0, zap: zapCall}));
     }
 
@@ -93,7 +93,7 @@ contract ZapCreateLock is MarketDeploymentContext {
 
         ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(rsTan), amountOutTan);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.InvalidZapValue.selector));
+        vm.expectRevert(abi.encodeWithSelector(ZappingUtil.InvalidZapValue.selector));
         rsTan.zapCreateLock{value: 0}(true, ZapStructDeposit({tokenIn: ETH_NAKED, amountIn: 10 ether, minAmountOut: 0, zap: zapCall}));
     }
 
@@ -104,7 +104,7 @@ contract ZapCreateLock is MarketDeploymentContext {
 
         ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(rsTan), amountOutTan);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.InvalidZapValue.selector));
+        vm.expectRevert(abi.encodeWithSelector(ZappingUtil.InvalidZapValue.selector));
         rsTan.zapCreateLock{value: 9 ether}(true, ZapStructDeposit({tokenIn: ETH_NAKED, amountIn: 10 ether, minAmountOut: 0, zap: zapCall}));
     }
 }

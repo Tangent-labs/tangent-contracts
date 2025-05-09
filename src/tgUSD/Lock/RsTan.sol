@@ -7,13 +7,15 @@ import {IERC4626, IERC20} from "@openzeppelin/contracts/interfaces/IERC4626.sol"
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import {IZappingProxy} from "../../interfaces/internals/tgUSD/IZappingProxy.sol";
-import {ZapStructDeposit} from "../../interfaces/internals/tgUSD/IMarketCore.sol";
 
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 
+import {ZapStructDeposit} from "../../interfaces/internals/ICommonStruct.sol";
+
 import {Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 
-import {LightOwnable} from "../Utilities/LightOwnable.sol";
+import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
+import {ZappingUtil} from "../Utilities/abstract/ZappingUtil.sol";
 
 import "forge-std/console.sol";
 
@@ -34,7 +36,7 @@ struct KickParams {
 }
 
 /// @notice
-contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
+contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, ZappingUtil {
     using SafeERC20 for IERC20;
     /// @notice Duration for which tokens are locked (13 weeks).
     uint256 public constant LOCK_DURATION = 13 weeks;
@@ -42,8 +44,6 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
     uint256 internal constant ONE_WEEK = 1 weeks;
     /// @notice Maximum value for a uint48.
     uint48 public constant MAX_UINT48 = type(uint48).max;
-
-    address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     uint256 public nextId = 1;
 
@@ -60,8 +60,6 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
 
     /// @notice Reference to the control tower contract.
     IControlTower public controlTower;
-
-    IZappingProxy public zappingProxy;
 
     /// @notice Total amount of locked tokens.
     uint256 public totalSupplyRsTan;
@@ -98,7 +96,6 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
     error NothingToProcess();
     error RewardAlreadyAdded(IERC20 erc20);
     error RewardNotAdded(IERC20 erc20);
-    error InvalidZapValue();
 
     error KickDelayTooShort();
     error KickDelayTooLong();
@@ -152,7 +149,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
     }
 
     function zapCreateLock(bool isPermalock, ZapStructDeposit calldata zapCall) external payable nonReentrant {
-        uint256 amountIn = _zapDeposit(zapCall);
+        uint256 amountIn = _zapDeposit(zapCall, tan, address(this));
         _createLock(uint208(amountIn), isPermalock);
     }
 
@@ -173,7 +170,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
      * @param zapCall Packed struct with the zap parameters
      */
     function zapIncreaseLockAmount(uint256 tokenId, ZapStructDeposit calldata zapCall) external payable nonReentrant {
-        uint256 amountIn = _zapDeposit(zapCall);
+        uint256 amountIn = _zapDeposit(zapCall, tan, address(this));
         _increaseLockAmount(tokenId, uint208(amountIn));
     }
 
@@ -416,20 +413,6 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable {
                 ++i;
             }
         }
-    }
-
-    function _zapDeposit(ZapStructDeposit calldata zapCall) internal returns (uint256) {
-        require(0 != zapCall.amountIn, InvalidZapValue());
-        IZappingProxy _zappingProxy = zappingProxy;
-
-        if (address(zapCall.tokenIn) != CHAIN_COIN) {
-            require(0 == msg.value, InvalidZapValue());
-            zapCall.tokenIn.safeTransferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
-        } else {
-            require(msg.value == zapCall.amountIn, InvalidZapValue());
-        }
-
-        return _zappingProxy.zapProxy{value: msg.value}(zapCall.tokenIn, tan, zapCall.minAmountOut, address(this), zapCall.zap);
     }
 
     function _createLock(uint208 amountIn, bool isPermaLock) internal {

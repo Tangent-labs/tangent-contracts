@@ -10,3 +10,9 @@ struct ZapStruct {
     address router;
     bytes routerCall;
 }
+struct ZapStructDeposit {
+    IERC20 tokenIn;
+    uint256 amountIn;
+    uint256 minAmountOut;
+    ZapStruct zap;
+}

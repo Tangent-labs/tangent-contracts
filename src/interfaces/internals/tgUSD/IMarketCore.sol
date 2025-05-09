@@ -11,13 +11,6 @@ import {IZappingProxy} from "./IZappingProxy.sol";
 import {IRewardAccumulator} from "./IRewardAccumulator.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-struct ZapStructDeposit {
-    IERC20 tokenIn;
-    uint256 amountIn;
-    uint256 minAmountOut;
-    ZapStruct zap;
-}
-
 struct LiquidateCall {
     address account;
     uint256 collatToLiquidate;

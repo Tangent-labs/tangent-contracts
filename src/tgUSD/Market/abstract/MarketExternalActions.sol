@@ -58,7 +58,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  zapCall        Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
      */
     function zapDeposit(address _for, bool isStaked, ZapStructDeposit calldata zapCall) external payable nonReentrant updateRewards(_for) {
-        (uint256 collatReceived, IERC20 _collatToken) = _zapDeposit(zapCall);
+        IERC20 _collatToken = collatToken;
+        uint256 collatReceived = _zapDeposit(zapCall, _collatToken, address(this));
+
         uint256 stakedAmount = _depositSociabilization(collatReceived, isStaked);
         _deposit(_for, stakedAmount);
         _postDeposit(_collatToken, isStaked);
@@ -90,7 +92,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  zapCall        Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
      */
     function zapDepositAndBorrow(uint256 debtBorrow, bool isStaked, ZapStructDeposit calldata zapCall) external nonReentrant updateRewards(msg.sender) {
-        (uint256 collatReceived, IERC20 _collatToken) = _zapDeposit(zapCall);
+        IERC20 _collatToken = collatToken;
+        uint256 collatReceived = _zapDeposit(zapCall, _collatToken, address(this));
+
         uint256 stakedAmount = _depositSociabilization(collatReceived, isStaked);
 
         _depositAndBorrow(msg.sender, stakedAmount, debtBorrow, false);
@@ -130,7 +134,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  zapCall        Zap details
      */
     function zapRepayAndWithdraw(uint256 withdrawAmount, ZapStructDeposit calldata zapCall) external nonReentrant updateRewards(msg.sender) {
-        uint256 tgUSDToRepay = _zapRepay(zapCall);
+        uint256 tgUSDToRepay = _zapDeposit(zapCall, tgUSD, msg.sender);
 
         _withdrawAndRepay(withdrawAmount, tgUSDToRepay);
         _transferCollateralWithdraw(msg.sender, withdrawAmount);
@@ -170,7 +174,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  zapCall   Only used on zapAndRepay. It's the address calling the zapper and that will receive the tgUSD during the zapping.
      */
     function zapRepay(address account, ZapStructDeposit calldata zapCall) external payable nonReentrant {
-        uint256 tgUSDToRepay = _zapRepay(zapCall);
+        uint256 tgUSDToRepay = _zapDeposit(zapCall, tgUSD, msg.sender);
 
         (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(account, tgUSDToRepay);
         _updateDebts(account, newUserDebtShares, newTotalDebtShares);
@@ -276,8 +280,8 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         ZapStructDeposit calldata zapDepositCall
     ) external payable nonReentrant updateRewards(msg.sender) {
         _preLeverage();
-
-        (uint256 collatToDeposit, IERC20 _collatToken) = _zapDeposit(zapDepositCall);
+        IERC20 _collatToken = collatToken;
+        uint256 collatToDeposit = _zapDeposit(zapDepositCall, _collatToken, address(this));
 
         (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, tgUSDToFlashMint, minCollatAmountOut, isStaked, dumpTgUSDCall);
 

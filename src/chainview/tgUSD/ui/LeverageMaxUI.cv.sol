@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {IPriceOracle} from "../../../interfaces/internals/TgUSD/IPriceOracle.sol";
+import {IPriceOracle} from "../../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {ICurveStableSwapNG} from "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import {IAggregatorStablePriceV3} from "../../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 

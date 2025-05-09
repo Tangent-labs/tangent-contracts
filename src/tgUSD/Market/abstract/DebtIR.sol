@@ -4,7 +4,7 @@ pragma solidity ^0.8.22;
 import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.sol";
-import {LightOwnable} from "../../Utilities/LightOwnable.sol";
+import {LightOwnable} from "../../Utilities/abstract/LightOwnable.sol";
 import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
 
 /// @notice

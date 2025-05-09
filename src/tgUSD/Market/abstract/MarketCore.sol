@@ -6,22 +6,20 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
 import {IControlTower} from "../../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
-import {TokenAmount, ZapStruct} from "../../../interfaces/internals/ICommonStruct.sol";
+import {TokenAmount, ZapStruct, ZapStructDeposit} from "../../../interfaces/internals/ICommonStruct.sol";
 
 import {PauseSettings} from "./PauseSettings.sol";
 import {Collateral} from "./Collateral.sol";
-import {GlobalMarketInitParams, MarketInit, LiquidateCall, SelfLiquidateCall, IZappingProxy, ZapStructDeposit, IERC20} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
+import {ZappingUtil} from "../../Utilities/abstract/ZappingUtil.sol";
+
+import {GlobalMarketInitParams, MarketInit, LiquidateCall, SelfLiquidateCall, IZappingProxy, IERC20} from "../../../interfaces/internals/tgUSD/IMarketCore.sol";
 
 import "forge-std/console.sol";
 
 /// @notice
-abstract contract MarketCore is PauseSettings, Collateral {
+abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
     using SafeERC20 for IERC20;
-    address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
     IControlTower public controlTower;
-
-    /// @notice Zapping proxy
-    IZappingProxy public zappingProxy;
 
     error DepositPaused();
     error BorrowPaused();
@@ -36,8 +34,6 @@ abstract contract MarketCore is PauseSettings, Collateral {
     error ZeroDebtAmount();
     error NotLiquidablePosition();
     error PositionWithoutBadDebt();
-    error NotZapper(address zapper);
-    error InvalidZapValue();
 
     event Liquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
     event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
@@ -96,14 +92,6 @@ abstract contract MarketCore is PauseSettings, Collateral {
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         DEPOSITS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    function _zapDeposit(ZapStructDeposit calldata zapCall) internal returns (uint256, IERC20) {
-        IZappingProxy _zappingProxy = _preZap(zapCall);
-
-        IERC20 _collatToken = collatToken;
-
-        return (_zappingProxy.zapProxy{value: msg.value}(zapCall.tokenIn, _collatToken, zapCall.minAmountOut, address(this), zapCall.zap), _collatToken);
-    }
 
     function _depositSociabilization(uint256 lpDeposited, bool isStaked) internal virtual returns (uint256) {
         require(lpDeposited != 0, ZeroCollatAmount());
@@ -200,24 +188,6 @@ abstract contract MarketCore is PauseSettings, Collateral {
     /* --------
                             REPAY
                                                     ------ */
-
-    function _preZap(ZapStructDeposit calldata zapCall) internal returns (IZappingProxy) {
-        require(0 != zapCall.amountIn, InvalidZapValue());
-        IZappingProxy _zappingProxy = zappingProxy;
-
-        if (address(zapCall.tokenIn) != CHAIN_COIN) {
-            zapCall.tokenIn.safeTransferFrom(msg.sender, address(_zappingProxy), zapCall.amountIn);
-        } else {
-            require(msg.value == zapCall.amountIn, InvalidZapValue());
-        }
-
-        return _zappingProxy;
-    }
-
-    function _zapRepay(ZapStructDeposit calldata zapCall) internal returns (uint256) {
-        IZappingProxy _zappingProxy = _preZap(zapCall);
-        return _zappingProxy.zapProxy{value: msg.value}(zapCall.tokenIn, tgUSD, zapCall.minAmountOut, msg.sender, zapCall.zap);
-    }
 
     function _repay(address account, uint256 tgUSDToRepay) internal returns (uint256, uint256, uint256) {
         // Cannot repay 0 debt
