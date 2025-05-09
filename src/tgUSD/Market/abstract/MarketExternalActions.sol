@@ -136,7 +136,10 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function zapRepayAndWithdraw(uint256 withdrawAmount, ZapStructDeposit calldata zapCall) external nonReentrant updateRewards(msg.sender) {
         uint256 tgUSDToRepay = _zapDeposit(zapCall, tgUSD, msg.sender);
 
-        _withdrawAndRepay(withdrawAmount, tgUSDToRepay);
+        uint256 tgUSDToBurn = _withdrawAndRepay(withdrawAmount, tgUSDToRepay);
+
+        tgUSD.burnFrom(msg.sender, tgUSDToBurn);
+
         _transferCollateralWithdraw(msg.sender, withdrawAmount);
 
         emit ZapRepayAndWithdraw(msg.sender, withdrawAmount, tgUSDToRepay, zapCall.tokenIn, zapCall.amountIn);
@@ -161,9 +164,10 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      */
     function repay(address account, uint256 tgUSDToRepay) external nonReentrant {
         (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(account, tgUSDToRepay);
-        _updateDebts(account, newUserDebtShares, newTotalDebtShares);
 
         tgUSD.burnFrom(msg.sender, tgUSDToBurn);
+
+        _updateDebts(account, newUserDebtShares, newTotalDebtShares);
 
         emit Repay(account, msg.sender, tgUSDToBurn);
     }
@@ -177,9 +181,10 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         uint256 tgUSDToRepay = _zapDeposit(zapCall, tgUSD, msg.sender);
 
         (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(account, tgUSDToRepay);
-        _updateDebts(account, newUserDebtShares, newTotalDebtShares);
 
         tgUSD.burnFrom(msg.sender, tgUSDToBurn);
+
+        _updateDebts(account, newUserDebtShares, newTotalDebtShares);
 
         emit ZapRepay(account, msg.sender, tgUSDToBurn, zapCall.tokenIn, zapCall.amountIn);
     }

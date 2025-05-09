@@ -161,9 +161,6 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         //  Verify that newDebt is over the minimum loan
         require(newUserDebt >= minimumLoan, UserDebtTooLow());
 
-        console.log("collatAmount", collatAmount);
-        console.log("_maxBorrowable(collatAmount)", _maxBorrowable(collatAmount));
-        console.log("newUserDebt", newUserDebt);
         // Verify that the newDebt of the loan is not over the maximum borrrowable
         require(_maxBorrowable(collatAmount) >= newUserDebt, UserDebtTooHigh());
 
@@ -234,7 +231,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         return (tgUSDToRepay, newUserDebtShares, totalDebtShares - sharesToRemove);
     }
 
-    function _withdrawAndRepay(uint256 amountToWithdraw, uint256 tgUSDToRepay) internal {
+    function _withdrawAndRepay(uint256 amountToWithdraw, uint256 tgUSDToRepay) internal returns (uint256) {
         // Call _repay function in order to checkpoint the total debt, computes new User debt and burn corresponding amount of tgUSD.
         (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(msg.sender, tgUSDToRepay);
 
@@ -246,6 +243,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             newUserDebtShares,
             newTotalDebtShares
         );
+
+        return tgUSDToBurn;
     }
 
     /* --------
