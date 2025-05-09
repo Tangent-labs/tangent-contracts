@@ -156,27 +156,27 @@ contract OraclesContext is TgUSDDeployContext {
 
     function setupCurveTriCryptoSwapLPOracles() internal {
         // Oracle USDT_WBTC_ETH
-        oracles[AddrCryptoSwapLP.USDT_WBTC_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.USDT_WBTC_ETH, AddrChainlinkOracle.USDT);
+        oracles[AddrCryptoSwapLP.USDT_WBTC_ETH] = new OracleCryptoSwap(address(AddrCryptoSwapLP.USDT_WBTC_ETH), AddrChainlinkOracle.USDT);
         vm.label(address(oracles[AddrCryptoSwapLP.USDT_WBTC_ETH]), "Oracle LP USDT/WBTC/ETH");
 
         // Oracle USDC_WBTC_ETH
-        oracles[AddrCryptoSwapLP.USDC_WBTC_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.USDC_WBTC_ETH, AddrChainlinkOracle.USDC);
+        oracles[AddrCryptoSwapLP.USDC_WBTC_ETH] = new OracleCryptoSwap(address(AddrCryptoSwapLP.USDC_WBTC_ETH), AddrChainlinkOracle.USDC);
         vm.label(address(oracles[AddrCryptoSwapLP.USDC_WBTC_ETH]), "Oracle LP USDC/WBTC/ETH");
 
         // Oracle CRVUSD_ETH_CRV
-        oracles[AddrCryptoSwapLP.crvUSD_ETH_CRV] = new OracleCryptoSwap(AddrCryptoSwapLP.crvUSD_ETH_CRV, AddrChainlinkOracle.crvUSD);
+        oracles[AddrCryptoSwapLP.crvUSD_ETH_CRV] = new OracleCryptoSwap(address(AddrCryptoSwapLP.crvUSD_ETH_CRV), AddrChainlinkOracle.crvUSD);
         vm.label(address(oracles[AddrCryptoSwapLP.crvUSD_ETH_CRV]), "Oracle LP crvUSD/ETH/CRV");
 
         // Oracle GHO_CBBTC_ETH
-        oracles[AddrCryptoSwapLP.GHO_cbBTC_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.GHO_cbBTC_ETH, AddrChainlinkOracle.GHO);
+        oracles[AddrCryptoSwapLP.GHO_cbBTC_ETH] = new OracleCryptoSwap(address(AddrCryptoSwapLP.GHO_cbBTC_ETH), AddrChainlinkOracle.GHO);
         vm.label(address(oracles[AddrCryptoSwapLP.GHO_cbBTC_ETH]), "Oracle LP GHO/cbBTC/ETH");
 
         // Oracle USR_RLP
-        oracles[AddrCryptoSwapLP.USR_RLP] = new OracleCryptoSwap(AddrCryptoSwapLP.USR_RLP, AddrChainlinkOracle.USR);
+        oracles[AddrCryptoSwapLP.USR_RLP] = new OracleCryptoSwap(address(AddrCryptoSwapLP.USR_RLP), AddrChainlinkOracle.USR);
         vm.label(address(oracles[AddrCryptoSwapLP.USR_RLP]), "Oracle LP USR/RLP");
 
         // Oracle CVX_ETH
-        oracles[AddrCryptoSwapLP.CVX_ETH] = new OracleCryptoSwap(AddrCryptoSwapLP.CVX_ETH, AddrChainlinkOracle.ETH);
+        oracles[AddrCryptoSwapLP.CVX_ETH] = new OracleCryptoSwap(address(AddrCryptoSwapLP.CVX_ETH), AddrChainlinkOracle.ETH);
         vm.label(address(oracles[AddrCryptoSwapLP.CVX_ETH]), "Oracle LP CVX/ETH");
     }
 

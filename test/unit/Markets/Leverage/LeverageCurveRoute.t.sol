@@ -24,6 +24,8 @@ contract LeverageCurveRoute is MarketDeploymentContext {
         deal(address(collatToken), address(usr1), collatToDeposit);
         collatToken.approve(address(market), MAX_UINT);
 
+        // Leverage 1
+
         uint256[][] memory swapParams = new uint256[][](2);
         swapParams[0] = Array.memoryUint256([uint256(1), uint256(0), uint256(1), uint256(1), uint256(2)]);
         swapParams[1] = Array.memoryUint256([uint256(0), uint256(0), uint256(4), uint256(1), uint256(2)]);
@@ -54,6 +56,8 @@ contract LeverageCurveRoute is MarketDeploymentContext {
             // Simulate zap call with a transfer to the market
             ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routeCall})
         );
+
+        // Leverage 2
 
         routeCall = encoder.encodeLiquidateCallForCurveLP(
             encoder.createCurveRouterStruct(

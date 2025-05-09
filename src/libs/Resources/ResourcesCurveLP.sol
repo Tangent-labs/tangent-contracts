@@ -5,6 +5,8 @@ import "../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../interfaces/externals/Curve/ICurveStableSwapFactoryNG.sol";
 
 import "../../interfaces/externals/Curve/ICurveTriCryptoSwap.sol";
+import "../../interfaces/externals/Curve/ICurveCryptoSwap.sol";
+
 library AddrCurveStableLP {
     ICurveStableSwapFactoryNG constant STABLE_SWAP_FACTORY = ICurveStableSwapFactoryNG(0x6A8cbed756804B16E05E741eDaBd5cB544AE21bf);
 
@@ -36,5 +38,5 @@ library AddrCryptoSwapLP {
 
     // DUO
     ICurveTriCryptoSwap constant USR_RLP = ICurveTriCryptoSwap(0xC907ba505C2E1cbc4658c395d4a2c7E6d2c32656);
-    ICurveTriCryptoSwap constant CVX_ETH = ICurveTriCryptoSwap(0xB576491F1E6e5E62f1d8F26062Ee822B40B0E0d4);
+    ICurveCryptoSwap constant CVX_ETH = ICurveCryptoSwap(0xB576491F1E6e5E62f1d8F26062Ee822B40B0E0d4);
 }

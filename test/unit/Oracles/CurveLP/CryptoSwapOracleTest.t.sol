@@ -5,18 +5,18 @@ import "../../../handler/Curve/HLPManipulator.sol";
 import "forge-std/console.sol";
 
 contract CryptoSwapOracleTest is MarketDeploymentContext {
-    ICurveTriCryptoSwap[] cryptoSwaps;
+    address[] cryptoSwaps;
 
     function setUp() external {
         // TRI POOL
-        cryptoSwaps.push(AddrCryptoSwapLP.USDT_WBTC_ETH);
-        cryptoSwaps.push(AddrCryptoSwapLP.USDC_WBTC_ETH);
-        cryptoSwaps.push(AddrCryptoSwapLP.crvUSD_ETH_CRV);
-        cryptoSwaps.push(AddrCryptoSwapLP.GHO_cbBTC_ETH);
+        cryptoSwaps.push(address(AddrCryptoSwapLP.USDT_WBTC_ETH));
+        cryptoSwaps.push(address(AddrCryptoSwapLP.USDC_WBTC_ETH));
+        cryptoSwaps.push(address(AddrCryptoSwapLP.crvUSD_ETH_CRV));
+        cryptoSwaps.push(address(AddrCryptoSwapLP.GHO_cbBTC_ETH));
 
         // DUO POOL
-        cryptoSwaps.push(AddrCryptoSwapLP.USR_RLP);
-        cryptoSwaps.push(AddrCryptoSwapLP.CVX_ETH);
+        cryptoSwaps.push(address(AddrCryptoSwapLP.USR_RLP));
+        cryptoSwaps.push(address(AddrCryptoSwapLP.CVX_ETH));
     }
     /// WARNING THIS IS ONLY USED FOR TESTING PURPOSE
     /// THIS METHOD CAN BE MANIPULATED IN PROD
@@ -60,7 +60,7 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
         HLPManipulator lpManipulator = new HLPManipulator(usr1);
 
         for (uint256 i = 0; i < cryptoSwaps.length; i++) {
-            ICurveTriCryptoSwap lp = cryptoSwaps[i];
+            ICurveTriCryptoSwap lp = ICurveTriCryptoSwap(cryptoSwaps[i]);
             uint256 oracleValueBeforeSwap = oracles[lp].latestAnswer();
             uint256 totalLPValue = approximateTotalLPValue(lp);
 
@@ -92,7 +92,7 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
     }
     function test_atomic_verification() external view {
         for (uint256 i = 0; i < cryptoSwaps.length; i++) {
-            ICurveTriCryptoSwap lp = cryptoSwaps[i];
+            ICurveTriCryptoSwap lp = ICurveTriCryptoSwap(cryptoSwaps[i]);
             uint256 approx = approximateLPValue(lp);
             assertApproxEqRel(approx, oracles[lp].latestAnswer(), 7e15); // 0.7% maximum
         }

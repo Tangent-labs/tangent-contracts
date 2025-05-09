@@ -8,19 +8,19 @@ import "forge-std/console.sol";
 
 contract OracleCryptoSwap is OracleBase {
     struct OracleCryptoSwapStruct {
-        ICurveTriCryptoSwap lp;
+        address lp;
         IPriceOracle coin0Oracle;
         uint192 coin0OracleDecimals;
     }
     OracleCryptoSwapStruct public params;
 
-    constructor(ICurveTriCryptoSwap _lp, IPriceOracle coin0Oracle) {
+    constructor(address _lp, IPriceOracle coin0Oracle) {
         params = OracleCryptoSwapStruct({lp: _lp, coin0Oracle: coin0Oracle, coin0OracleDecimals: uint192(coin0Oracle.decimals())});
     }
 
     function latestAnswer() external view override returns (uint256) {
         OracleCryptoSwapStruct memory _params = params;
 
-        return (_params.lp.lp_price() * _coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals)) / 1e18;
+        return (ICurveTriCryptoSwap(_params.lp).lp_price() * _coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals)) / 1e18;
     }
 }
