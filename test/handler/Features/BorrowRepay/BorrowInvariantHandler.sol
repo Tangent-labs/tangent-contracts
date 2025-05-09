@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.22;
 
-import "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 
 import "../../../../src/tgUSD/Market/abstract/MarketExternalActions.sol";
 
