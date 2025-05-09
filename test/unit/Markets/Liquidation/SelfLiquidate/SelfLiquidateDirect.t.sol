@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import "../../../../contexts/MarketDeploymentContext.sol";
 
 import "../../../../handler/Features/BorrowRepay/HBorrow.sol";
-import "../../../../handler/Curve/HLpManipulator.sol";
+import "../../../../handler/Curve/HLPManipulator.sol";
 import "../../../../handler/Features/HProcessRewards.sol";
 import "../../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 contract SelfLiquidateDirect is MarketDeploymentContext {

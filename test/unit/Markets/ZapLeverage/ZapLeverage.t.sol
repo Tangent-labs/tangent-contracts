@@ -16,7 +16,7 @@ contract ZapLeverage is MarketDeploymentContext {
 
     IStakingProxyERC20 stakingProxy;
 
-    HLpManipulator hLpManipulator;
+    HLPManipulator hLpManipulator;
 
     uint256 ethIn = 100 ether;
     uint256 usdtIn = 220_000 ether;
@@ -34,7 +34,7 @@ contract ZapLeverage is MarketDeploymentContext {
 
         stakingProxy = market.stakingProxyVault();
 
-        hLpManipulator = new HLpManipulator(usr2);
+        hLpManipulator = new HLPManipulator(usr2);
 
         hLpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 1, 0, 400_000 ether);
         skip(30 minutes);

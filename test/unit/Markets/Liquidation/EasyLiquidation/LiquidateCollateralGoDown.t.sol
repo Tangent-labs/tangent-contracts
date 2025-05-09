@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import "../../../../contexts/MarketDeploymentContext.sol";
 import "../../../../utils/ERC20BalanceChanges.sol";
 
-import "../../../../handler/Curve/HLpManipulator.sol";
+import "../../../../handler/Curve/HLPManipulator.sol";
 import "../../../../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
 import "../../../../handler/Features/BorrowRepay/HBorrow.sol";
 import "../../../../handler/Features/HProcessRewards.sol";
@@ -15,7 +15,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
     HProcessRewards public hRewards;
     HDepositConvexFxnLP public hDeposit;
     HBorrow public hBorrow;
-    HLpManipulator public hLpManipulator;
+    HLPManipulator public hLpManipulator;
 
     ERC20BalanceChanges public balanceChanges;
 
@@ -29,7 +29,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         hDeposit = new HDepositConvexFxnLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
-        hLpManipulator = new HLpManipulator(usr1);
+        hLpManipulator = new HLPManipulator(usr1);
 
         hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, true);
 

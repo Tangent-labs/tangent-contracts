@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import "../../../../contexts/MarketDeploymentContext.sol";
 
 import "../../../../handler/Features/BorrowRepay/HBorrow.sol";
-import "../../../../handler/Curve/HLpManipulator.sol";
+import "../../../../handler/Curve/HLPManipulator.sol";
 import "../../../../handler/Features/HProcessRewards.sol";
 import "../../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 import "../../../../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
@@ -17,7 +17,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
     HDepositConvexCrvLP public hDeposit_crvUSD_USDC;
     HDepositConvexFxnLP public hDeposit_fxUSD_USDC;
 
-    HLpManipulator public hLpManipulator;
+    HLPManipulator public hLpManipulator;
     ICurveStableSwapNG public lpTgUSD_USDC;
     ICurveStableSwapNG public lpTgUSD_wfrxUSD;
     function setUp() public {
@@ -31,7 +31,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         hDeposit_crvUSD_USDC = new HDepositConvexCrvLP(usr1, market_crvUSD_USDC);
         hDeposit_fxUSD_USDC = new HDepositConvexFxnLP(usr1, market_fxUSD_USDC);
 
-        hLpManipulator = new HLpManipulator(usr1);
+        hLpManipulator = new HLPManipulator(usr1);
     }
 
     function test_secondaryLiquidator_liquidate_with_secondary_liquidator_crvUSD_USDC() external {

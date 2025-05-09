@@ -9,7 +9,7 @@ contract LeverageCurveRoute is MarketDeploymentContext {
 
     IStakingProxyERC20 stakingProxy;
 
-    HLpManipulator hLpManipulator;
+    HLPManipulator hLpManipulator;
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
         market = deployConvexCurveLPMarket(collatToken);

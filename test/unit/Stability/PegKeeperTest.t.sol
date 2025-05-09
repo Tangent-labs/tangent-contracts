@@ -2,12 +2,12 @@
 pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 
-import "../../handler/Curve/HLpManipulator.sol";
+import "../../handler/Curve/HLPManipulator.sol";
 
 contract PegKeeperTest is MarketDeploymentContext {
-    HLpManipulator public hLpManipulator;
+    HLPManipulator public hLpManipulator;
     function setUp() public {
-        hLpManipulator = new HLpManipulator(usr1);
+        hLpManipulator = new HLPManipulator(usr1);
     }
     function test_pegKeeper_take_profit() external {
         // Dump a lot of FRXETH in the LP to depeg FRXETH

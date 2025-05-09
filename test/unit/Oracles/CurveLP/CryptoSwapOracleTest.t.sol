@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
-import "../../../handler/Curve/HLpManipulator.sol";
+import "../../../handler/Curve/HLPManipulator.sol";
 import "forge-std/console.sol";
 
 contract CryptoSwapOracleTest is MarketDeploymentContext {
@@ -57,7 +57,7 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
         return usdValue;
     }
     function test_flash_exploit_TriCryptoSwap_oracle() external {
-        HLpManipulator lpManipulator = new HLpManipulator(usr1);
+        HLPManipulator lpManipulator = new HLPManipulator(usr1);
 
         for (uint256 i = 0; i < cryptoSwaps.length; i++) {
             ICurveTriCryptoSwap lp = cryptoSwaps[i];

@@ -11,7 +11,7 @@ contract LeverageMock is MarketDeploymentContext {
 
     IStakingProxyERC20 stakingProxy;
 
-    HLpManipulator hLpManipulator;
+    HLPManipulator hLpManipulator;
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_fxUSD;
         market = deployConvexFxnLPMarket(collatToken);
@@ -20,7 +20,7 @@ contract LeverageMock is MarketDeploymentContext {
 
         stakingProxy = market.stakingProxyVault();
 
-        hLpManipulator = new HLpManipulator(usr2);
+        hLpManipulator = new HLPManipulator(usr2);
 
         hLpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 1, 0, 400_000 ether);
         skip(30 minutes);

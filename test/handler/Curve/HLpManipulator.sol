@@ -8,7 +8,7 @@ import {Test} from "forge-std/Test.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "forge-std/console.sol";
 
-contract HLpManipulator is Test {
+contract HLPManipulator is Test {
     using SafeERC20 for IERC20;
     address public sender;
     constructor(address _sender) {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
-import "../../../handler/Curve/HLpManipulator.sol";
+import "../../../handler/Curve/HLPManipulator.sol";
 import "forge-std/console.sol";
 
 contract GetPriceFromStableCurveLP is MarketDeploymentContext {

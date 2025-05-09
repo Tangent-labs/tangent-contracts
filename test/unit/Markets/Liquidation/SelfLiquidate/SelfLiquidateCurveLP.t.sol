@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import "../../../../contexts/MarketDeploymentContext.sol";
 
 import "../../../../handler/Features/BorrowRepay/HBorrow.sol";
-import "../../../../handler/Curve/HLpManipulator.sol";
+import "../../../../handler/Curve/HLPManipulator.sol";
 import "../../../../handler/Features/HProcessRewards.sol";
 import "../../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 contract SelfLiquidateCurveLP is MarketDeploymentContext {
@@ -13,7 +13,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
     HProcessRewards public hRewards;
     HDepositConvexCrvLP public hDeposit;
     HBorrow public hBorrow;
-    HLpManipulator public hLpManipulator;
+    HLPManipulator public hLpManipulator;
     ICurveStableSwapNG public lpTgUSD_USDC;
     ICurveStableSwapNG public lpTgUSD_wfrxUSD;
 
@@ -31,7 +31,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
-        hLpManipulator = new HLpManipulator(usr1);
+        hLpManipulator = new HLPManipulator(usr1);
 
         uint256 zero = 0;
 
