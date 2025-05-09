@@ -48,5 +48,5 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          forge test --match-path test/tgUSD/*.t.sol
+          forge test
         id: test
