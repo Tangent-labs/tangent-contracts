@@ -3,53 +3,69 @@ pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {MarketCore, LiquidateCall, SelfLiquidateCall} from "./MarketCore.sol";
+import {MarketCore, LiquidateCall, SelfLiquidateCall, ZapStructDeposit, IZappingProxy} from "./MarketCore.sol";
 
 import {IMarketExternalActions} from "../../../interfaces/internals/tgUSD/IMarketExternalActions.sol";
+
 import {IZapper} from "../../../interfaces/internals/tgUSD/IZapper.sol";
-import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
+import {ITgUSD} from "../../../interfaces/internals/tgUSD/ITgUSD.sol";
+
+import {TokenAmount, ZapStruct} from "../../../interfaces/internals/ICommonStruct.sol";
+import "forge-std/console.sol";
 
 /// @notice
 abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
-    event Deposit(address indexed account, uint256 depositedAmount, uint256 stakedAmount, bool isZapping);
-    event DepositAndBorrow(address indexed account, uint256 depositedAmount, uint256 stakedAmount, uint256 borrowedAmount, bool isZapping);
+    event Deposit(address indexed account, uint256 stakedAmount);
+    event ZapDeposit(address indexed account, uint256 stakedAmount, IERC20 tokenIn, uint256 amountIn);
+
+    event DepositAndBorrow(address indexed account, uint256 stakedAmount, uint256 borrowedAmount);
+    event ZapDepositAndBorrow(address indexed account, uint256 stakedAmount, uint256 borrowedAmount, IERC20 tokenIn, uint256 amountIn);
 
     event Withdraw(address indexed account, uint256 amount);
-    event WithdrawAndRepay(address indexed account, uint256 withdrawnAmount, uint256 repaidAmount, bool isZapping);
 
-    event Borrow(address indexed account, address receiver, uint256 amount);
-    event Repay(address indexed account, address repayer, uint256 amount, bool isZapping);
+    event RepayAndWithdraw(address indexed account, uint256 withdrawnAmount, uint256 repaidAmount);
+    event ZapRepayAndWithdraw(address indexed account, uint256 withdrawnAmount, uint256 repaidAmount, IERC20 tokenIn, uint256 amountIn);
 
-    event Leverage(address indexed account, uint256 depositedAmount, uint256 collatBought, uint256 borrowedAmount);
+    event Borrow(address indexed account, address receiver, uint256 borrowedAmount);
 
-    error DepositPaused();
-    error BorrowPaused();
-    error LeveragePaused();
+    event Repay(address indexed account, address repayer, uint256 repaidAmount);
+    event ZapRepay(address indexed account, address repayer, uint256 repaidAmount, IERC20 tokenIn, uint256 amountIn);
+
+    event Leverage(address indexed account, uint256 stakedAmount, uint256 collatBought, uint256 borrowedAmount);
+    event ZapLeverage(address indexed account, uint256 stakedAmount, uint256 collatZapDeposit, uint256 collatLeverage, uint256 borrowedAmount, IERC20 tokenIn, uint256 amountIn);
+
     error NotRewardAccumulator();
 
-    modifier updateRewards(address _for) {
-        rewardAccumulator.updateRewards(_for);
-        _;
-    }
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         USER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    function deposit(address _for, uint256 depositedAmount, bool isStaked) external nonReentrant updateRewards(_for) {
+        IERC20 _collatToken = collatToken;
+        _collatToken.transferFrom(msg.sender, address(this), depositedAmount);
+
+        uint256 stakedAmount = _depositSociabilization(depositedAmount, isStaked);
+        _deposit(_for, stakedAmount);
+        _postDeposit(_collatToken, isStaked);
+
+        emit Deposit(_for, stakedAmount);
+    }
+
     /**
      * @notice Deposit some collateral on the market for an account.
      * @param  _for            The collateral is deposited to this address
-     * @param  depositedAmount Amount of collateral to deposit
-     * @param  isStaked        Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
+     * @param  isStaked       Amount of collateral to deposit
+     * @param  zapCall        Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
      */
-    function deposit(address _for, uint256 depositedAmount, bool isStaked) external {
-        // Check if the deposit is paused
-        require(!isDepositPaused, DepositPaused());
-        bool isZapping = controlTower.isZapper(msg.sender);
-        (uint256 stakedAmount, IERC20 _collatToken) = _preDeposit(_for, depositedAmount, isStaked);
+    function zapDeposit(address _for, bool isStaked, ZapStructDeposit calldata zapCall) external payable nonReentrant updateRewards(_for) {
+        IERC20 _collatToken = collatToken;
+        uint256 collatReceived = _zapDeposit(zapCall, _collatToken, address(this));
+
+        uint256 stakedAmount = _depositSociabilization(collatReceived, isStaked);
         _deposit(_for, stakedAmount);
-        _transferCollateralDeposit(_collatToken, depositedAmount, isZapping);
         _postDeposit(_collatToken, isStaked);
 
-        emit Deposit(_for, depositedAmount, stakedAmount, isZapping);
+        emit ZapDeposit(_for, stakedAmount, zapCall.tokenIn, zapCall.amountIn);
     }
 
     /**
@@ -57,28 +73,41 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  depositedAmount Amount of collateral to deposit
      * @param  debtBorrow      Amount of tgUSD to borrow
      * @param  isStaked        Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
-     * @param  callerZapper    Only used on zapDepositAndBorrow. It's the address calling the zapper. Is the receiver of the tgUSD borrowed and will be marked as the staker of the collateral.
      */
-    function depositAndBorrow(uint256 depositedAmount, uint256 debtBorrow, bool isStaked, address callerZapper) external {
-        require(!isDepositPaused, DepositPaused());
-        require(!isBorrowPaused, BorrowPaused());
+    function depositAndBorrow(uint256 depositedAmount, uint256 debtBorrow, bool isStaked) external nonReentrant updateRewards(msg.sender) {
+        IERC20 _collatToken = collatToken;
+        _collatToken.transferFrom(msg.sender, address(this), depositedAmount);
+        uint256 stakedAmount = _depositSociabilization(depositedAmount, isStaked);
 
-        (bool isZapping, address caller) = _checkZapper(callerZapper);
-
-        (uint256 stakedAmount, IERC20 _collatToken) = _preDeposit(caller, depositedAmount, isStaked);
-
-        _depositAndBorrow(caller, stakedAmount, debtBorrow, false);
-        _transferCollateralDeposit(_collatToken, depositedAmount, isZapping);
+        _depositAndBorrow(msg.sender, stakedAmount, debtBorrow, false);
         _postDeposit(_collatToken, isStaked);
 
-        emit DepositAndBorrow(caller, depositedAmount, stakedAmount, debtBorrow, isZapping);
+        emit DepositAndBorrow(msg.sender, stakedAmount, debtBorrow);
+    }
+
+    /**
+     * @notice Deposit some collateral on the market for an account.
+     * @param  debtBorrow            The collateral is deposited to this address
+     * @param  isStaked       Amount of collateral to deposit
+     * @param  zapCall        Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
+     */
+    function zapDepositAndBorrow(uint256 debtBorrow, bool isStaked, ZapStructDeposit calldata zapCall) external nonReentrant updateRewards(msg.sender) {
+        IERC20 _collatToken = collatToken;
+        uint256 collatReceived = _zapDeposit(zapCall, _collatToken, address(this));
+
+        uint256 stakedAmount = _depositSociabilization(collatReceived, isStaked);
+
+        _depositAndBorrow(msg.sender, stakedAmount, debtBorrow, false);
+        _postDeposit(_collatToken, isStaked);
+
+        emit ZapDepositAndBorrow(msg.sender, stakedAmount, debtBorrow, zapCall.tokenIn, zapCall.amountIn);
     }
 
     /**
      * @notice Withdraw the collateral and send it to the caller.
      * @param  withdrawAmount Amount of collateral to withdraw
      */
-    function withdraw(uint256 withdrawAmount) external {
+    function withdraw(uint256 withdrawAmount) external nonReentrant updateRewards(msg.sender) {
         _withdraw(withdrawAmount);
         _transferCollateralWithdraw(msg.sender, withdrawAmount);
 
@@ -88,16 +117,32 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     /**
      * @notice Withdraw the collateral, send it back to the caller and repay the whole or a part of the debt.
      * @param  withdrawAmount Amount of collateral to withdraw
-     * @param  debtRepay      Amount of debt to repay. This amount will be burnt
-     * @param  callerZapper   Only used on zapWithdrawAndRepay. It's the address calling the zapper and that will receive the collateral back & where the tgUSD will be burnt.
+     * @param  tgUSDToRepay   Amount of debt to repay. This amount will be burnt
      */
-    function withdrawAndRepay(uint256 withdrawAmount, uint256 debtRepay, address callerZapper) external {
-        (bool isZapping, address caller) = _checkZapper(callerZapper);
+    function repayAndWithdraw(uint256 withdrawAmount, uint256 tgUSDToRepay) external nonReentrant updateRewards(msg.sender) {
+        tgUSD.burnFrom(msg.sender, tgUSDToRepay);
 
-        _withdrawAndRepay(withdrawAmount, debtRepay, caller);
-        _transferCollateralWithdraw(caller, withdrawAmount);
+        _withdrawAndRepay(withdrawAmount, tgUSDToRepay);
+        _transferCollateralWithdraw(msg.sender, withdrawAmount);
 
-        emit WithdrawAndRepay(caller, withdrawAmount, debtRepay, isZapping);
+        emit RepayAndWithdraw(msg.sender, withdrawAmount, tgUSDToRepay);
+    }
+
+    /**
+     * @notice Withdraw the collateral, send it back to the caller and repay the whole or a part of the debt.
+     * @param  withdrawAmount Amount of collateral to withdraw
+     * @param  zapCall        Zap details
+     */
+    function zapRepayAndWithdraw(uint256 withdrawAmount, ZapStructDeposit calldata zapCall) external nonReentrant updateRewards(msg.sender) {
+        uint256 tgUSDToRepay = _zapDeposit(zapCall, tgUSD, msg.sender);
+
+        uint256 tgUSDToBurn = _withdrawAndRepay(withdrawAmount, tgUSDToRepay);
+
+        tgUSD.burnFrom(msg.sender, tgUSDToBurn);
+
+        _transferCollateralWithdraw(msg.sender, withdrawAmount);
+
+        emit ZapRepayAndWithdraw(msg.sender, withdrawAmount, tgUSDToRepay, zapCall.tokenIn, zapCall.amountIn);
     }
 
     /**
@@ -105,8 +150,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  receiver       Receiver of the tgUSD that is borrowed.
      * @param  tgUSDToBorrow  Amount of tgUSD to mint to the receiver.
      */
-    function borrow(address receiver, uint256 tgUSDToBorrow) external {
-        require(!isBorrowPaused, BorrowPaused());
+    function borrow(address receiver, uint256 tgUSDToBorrow) external nonReentrant {
         (uint256 newUserDebtShares, uint256 newTotalDebtShares) = _borrow(msg.sender, receiver, tgUSDToBorrow, collateralBalances[msg.sender], false);
         _updateDebts(msg.sender, newUserDebtShares, newTotalDebtShares);
 
@@ -117,15 +161,32 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @notice Repay some tgUSD debt on the market
      * @param  account        Account of the position to repay debt on.
      * @param  tgUSDToRepay   Amount of tgUSD to repay
-     * @param  callerZapper   Only used on zapAndRepay. It's the address calling the zapper and that will receive the tgUSD during the zapping.
      */
-    function repay(address account, uint256 tgUSDToRepay, address callerZapper) external {
-        (bool isZapping, address repayer) = _checkZapper(callerZapper);
+    function repay(address account, uint256 tgUSDToRepay) external nonReentrant {
+        (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(account, tgUSDToRepay);
 
-        (uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(account, tgUSDToRepay, repayer);
+        tgUSD.burnFrom(msg.sender, tgUSDToBurn);
+
         _updateDebts(account, newUserDebtShares, newTotalDebtShares);
 
-        emit Repay(account, repayer, tgUSDToRepay, isZapping);
+        emit Repay(account, msg.sender, tgUSDToBurn);
+    }
+
+    /**
+     * @notice Repay some tgUSD debt on the market
+     * @param  account        Account of the position to repay debt on.
+     * @param  zapCall   Only used on zapAndRepay. It's the address calling the zapper and that will receive the tgUSD during the zapping.
+     */
+    function zapRepay(address account, ZapStructDeposit calldata zapCall) external payable nonReentrant {
+        uint256 tgUSDToRepay = _zapDeposit(zapCall, tgUSD, msg.sender);
+
+        (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(account, tgUSDToRepay);
+
+        tgUSD.burnFrom(msg.sender, tgUSDToBurn);
+
+        _updateDebts(account, newUserDebtShares, newTotalDebtShares);
+
+        emit ZapRepay(account, msg.sender, tgUSDToBurn, zapCall.tokenIn, zapCall.amountIn);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -139,7 +200,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     }
 
     //TODO Verify require on HR
-    function liquidate(address account, uint256 collatToLiquidate, address liquidator, uint256 minTgUSDOut, bytes calldata liquidationCall) external updateRewards(account) {
+    function liquidate(address account, uint256 collatToLiquidate, uint256 minTgUSDOut, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(account) {
         (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
         // Can liquidate only if the health ratio is below 1
         require(_healthRatio(userDebt_, collatBalance) < 1 ether, NotLiquidablePosition());
@@ -148,7 +209,6 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
             LiquidateCall({
                 account: account,
                 collatToLiquidate: collatToLiquidate,
-                liquidator: liquidator,
                 minTgUSDOut: minTgUSDOut,
                 newDebtIndex: newDebtIndex,
                 _collateralBalance: collatBalance,
@@ -166,17 +226,15 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function selfLiquidate(
         uint256 collatAmountToLiquidate,
         uint256 tgUSDToRepay,
-        address liquidator,
         uint256 minTgUSDOut,
-        bytes calldata routerCall
-    ) external updateRewards(msg.sender) {
+        ZapStruct calldata routerCall
+    ) external nonReentrant updateRewards(msg.sender) {
         (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(msg.sender);
 
         _selfLiquidate(
             SelfLiquidateCall({
                 collatAmountToLiquidate: collatAmountToLiquidate,
                 tgUSDToRepay: tgUSDToRepay,
-                liquidator: liquidator,
                 minTgUSDOut: minTgUSDOut,
                 newDebtIndex: newDebtIndex,
                 _collateralBalance: collatBalance,
@@ -189,7 +247,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         );
     }
 
-    function liquidateBadDebt(address account) external updateRewards(account) {
+    function liquidateBadDebt(address account) external nonReentrant updateRewards(account) {
         // Checkpoint IR
         (, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
 
@@ -202,36 +260,46 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function leverage(
         uint256 collatToDeposit,
         uint256 tgUSDToFlashMint,
-        uint256 minCollatAmountReceived,
-        address zapper,
+        uint256 minCollatAmountOut,
         bool isStaked,
-        bytes calldata routerCall
-    ) external payable updateRewards(msg.sender) {
-        require(!isDepositPaused, DepositPaused());
-        require(!isBorrowPaused, BorrowPaused());
-        require(!isLeveragePaused, LeveragePaused());
-        // Only callable from a Zapper contract
-        require(controlTower.isZapper(zapper), NotZapper(zapper));
-        // Mint the tgUSD on the Zapper, ready to be exchanged through the router
-        tgUSD.mint(zapper, tgUSDToFlashMint);
-        // Exchange the tgUSD that has just been minted on the Zapper for the collateral of the market
-        uint256 collatReceived = IZapper(zapper).zapLeverage(collatToken, minCollatAmountReceived, routerCall);
+        ZapStruct calldata dumpTgUSDCall
+    ) external nonReentrant updateRewards(msg.sender) {
+        _preLeverage();
 
-        // Computes the amount
-        (uint256 stakedAmount, IERC20 _collatToken) = _preDeposit(msg.sender, collatToDeposit + collatReceived, isStaked);
-
+        IERC20 _collatToken = collatToken;
         if (collatToDeposit != 0) {
             // Transfer the collateral coming from the user on the market
-            _transferCollateralDeposit(_collatToken, collatToDeposit, false);
+            _collatToken.transferFrom(msg.sender, address(this), collatToDeposit);
         }
 
-        // Performs same modification as in depositAndBorrow
-        _depositAndBorrow(msg.sender, stakedAmount, tgUSDToFlashMint, true);
+        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, tgUSDToFlashMint, minCollatAmountOut, isStaked, dumpTgUSDCall);
 
-        _postDeposit(_collatToken, isStaked);
-
-        emit Leverage(msg.sender, collatToDeposit, collatReceived, tgUSDToFlashMint);
+        emit Leverage(msg.sender, stakedAmount, collatBought, tgUSDToFlashMint);
     }
 
-    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external virtual returns (TokenAmount[] memory);
+    function zapLeverage(
+        uint256 tgUSDToFlashMint,
+        uint256 minCollatAmountOut,
+        bool isStaked,
+        ZapStruct calldata dumpTgUSDCall,
+        ZapStructDeposit calldata zapDepositCall
+    ) external payable nonReentrant updateRewards(msg.sender) {
+        _preLeverage();
+        IERC20 _collatToken = collatToken;
+        uint256 collatToDeposit = _zapDeposit(zapDepositCall, _collatToken, address(this));
+
+        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, tgUSDToFlashMint, minCollatAmountOut, isStaked, dumpTgUSDCall);
+
+        emit ZapLeverage(msg.sender, stakedAmount, collatToDeposit, collatBought, tgUSDToFlashMint, zapDepositCall.tokenIn, zapDepositCall.amountIn);
+    }
+
+    /**
+     * @notice Claim and process the governance rewards
+     * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
+     *      Anyone can trigger this function and will be incentivized with a processor fee.
+     */
+    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external virtual nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
+        require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
+        return _claimUnderlyingRewards(_rewardTokens);
+    }
 }

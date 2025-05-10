@@ -6,3 +6,13 @@ struct TokenAmount {
     IERC20 token;
     uint256 amount;
 }
+struct ZapStruct {
+    address router;
+    bytes routerCall;
+}
+struct ZapStructDeposit {
+    IERC20 tokenIn;
+    uint256 amountIn;
+    uint256 minAmountOut;
+    ZapStruct zap;
+}

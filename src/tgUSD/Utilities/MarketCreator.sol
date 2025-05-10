@@ -21,7 +21,7 @@ import {IMarketNoSociabilization} from "../../interfaces/internals/tgUSD/IMarket
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import {IRParams, IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {RCParams} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
-import {ILiquidatorProxy} from "../../interfaces/internals/tgUSD/ILiquidatorProxy.sol";
+import {IZappingProxy} from "../../interfaces/internals/tgUSD/IZappingProxy.sol";
 import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
 /// @title MarketCreator
 /// @notice Convergence's factory to deploy clone of contracts
@@ -41,7 +41,7 @@ contract MarketCreator is Ownable {
     IRewardAccumulator public rewardAccumulator;
 
     /// @notice
-    ILiquidatorProxy public liquidatorProxy;
+    IZappingProxy public zappingProxy;
 
     /// @notice
     address public marketConvexCrv;
@@ -66,7 +66,7 @@ contract MarketCreator is Ownable {
         ITgUSD _tgUSD,
         IIRCalculator _irCalculator,
         IRewardAccumulator _rewardAccumulator,
-        ILiquidatorProxy _liquidatorProxy,
+        IZappingProxy _zappingProxy,
         address _marketConvexCrv,
         address _marketConvexFxn,
         address _marketNoSociabilization
@@ -75,7 +75,7 @@ contract MarketCreator is Ownable {
         tgUSD = _tgUSD;
         irCalculator = _irCalculator;
         rewardAccumulator = _rewardAccumulator;
-        liquidatorProxy = _liquidatorProxy;
+        zappingProxy = _zappingProxy;
         marketConvexCrv = _marketConvexCrv;
         marketConvexFxn = _marketConvexFxn;
         marketNoSociabilization = _marketNoSociabilization;
@@ -89,7 +89,7 @@ contract MarketCreator is Ownable {
                 _controlTower: controlTower,
                 _irCalculator: irCalculator,
                 _rewardAccumulator: rewardAccumulator,
-                _liquidatorProxy: liquidatorProxy
+                _zappingProxy: zappingProxy
             });
     }
 

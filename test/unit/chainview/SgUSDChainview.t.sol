@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+import "../../contexts/MarketDeploymentContext.sol";
+
+import "../../../src/chainview/tgUSD/ui/SgUSDUI.cv.sol";
+
+contract SgUSDChainview is MarketDeploymentContext {
+    // LIST
+    function test_sgUSD_UI_not_connected() public {
+        try new SgUSDUI(address(0), tgUSDOracle, tgUSD, sgUSD) {} catch (bytes memory reason) {
+            assertTrue(reason.length > 3, "Chainview failed");
+        }
+    }
+
+    function test_sgUSD_UI_connected() public {
+        try new SgUSDUI(address(0), tgUSDOracle, tgUSD, sgUSD) {} catch (bytes memory reason) {
+            assertTrue(reason.length > 3, "Chainview failed");
+        }
+    }
+}

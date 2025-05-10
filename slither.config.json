@@ -1,0 +1,4 @@
+{
+  "filter_paths": "lib|chainview|interfaces",
+  "detectors_to_exclude": "unchecked-transfer"
+}

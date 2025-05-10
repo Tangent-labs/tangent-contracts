@@ -20,6 +20,7 @@ contract Labeliser is Test {
         vm.label(address(AddrClassicERC20.stUSR), "stUSR");
         vm.label(address(AddrClassicERC20.USDe), "USDE");
         vm.label(address(AddrClassicERC20.GHO), "GHO");
+        vm.label(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE, "ETH");
 
         // Volatiles
         vm.label(address(AddrClassicERC20.CRV), "CRV");

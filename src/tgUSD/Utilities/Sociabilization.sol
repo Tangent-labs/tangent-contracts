@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import "./LightOwnable.sol";
+import "../Utilities/abstract/LightOwnable.sol";
 abstract contract Sociabilization is LightOwnable {
     /// @notice Percentage of the sociabilization fee in base 100_000.
     uint256 public socFeePercentage;
@@ -29,7 +29,6 @@ abstract contract Sociabilization is LightOwnable {
             socFeePending += feeTaken;
             amountDeposited -= feeTaken;
         }
-        require(amountDeposited != 0, ZeroAmountDepositedAfterSociabilization());
 
         return amountDeposited;
     }

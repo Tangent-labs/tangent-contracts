@@ -71,9 +71,9 @@ Distribute rewards into markets in order to be processed. We are transfering rew
 npm run distribute-rewards-markets
 ```
 
-### Distribute and streams tgUSD rewards into RsTanService
+### Distribute and streams tgUSD rewards into RsTan
 
-Distribute rewards tgUSD into RsTanService and start the streaming process.
+Distribute rewards tgUSD into RsTan and start the streaming process.
 
 ```
 npm run distribute-rewards-rsTan
@@ -86,7 +86,6 @@ npm run distribute-rewards-rsTan
 ```
 LP=0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E AMOUNT_IN=100 I=0 J=1 npm run swap-curve
 ```
-
 
 ## Install vyper with rye
 
@@ -129,11 +128,10 @@ vyper --version
 
 # Liquidation routes generation
 
-
 ## Generate Liquidation Routes
 
-This script generates  liquidation path from the `js-scripts\hardhat\tgUSD\data\routes.csv`,
-and create the file  `js-scripts\hardhat\tgUSD\data\verifiedRoutes.json`
+This script generates liquidation path from the `js-scripts\hardhat\tgUSD\data\routes.csv`,
+and create the file `js-scripts\hardhat\tgUSD\data\verifiedRoutes.json`
 
 ```
 npm run generate-routes
@@ -141,18 +139,18 @@ npm run generate-routes
 
 ## Test Exchange Routes
 
-This script tests the generated liquidation routes from `js-scripts\hardhat\tgUSD\data\verifiedRoutes.json` to 
+This script tests the generated liquidation routes from `js-scripts\hardhat\tgUSD\data\verifiedRoutes.json` to
 `js-scripts\hardhat\tgUSD\data\successRoutes.json`.
 
 ```
 npm run test-exchange-routes
 ```
 
-## Hydrate Route  (2 ways)
+## Hydrate Route (2 ways)
 
-This script takes a generated route  with string `js-scripts\hardhat\tgUSD\data\tplRoute.json` and "hydrates"  with addresses in `js-scripts\hardhat\tgUSD\data\hydratedRoute.json` that can be use by the liquidation bot.
+This script takes a generated route with string `js-scripts\hardhat\tgUSD\data\tplRoute.json` and "hydrates" with addresses in `js-scripts\hardhat\tgUSD\data\hydratedRoute.json` that can be use by the liquidation bot.
 
-by changing the script you can also take `js-scripts\hardhat\tgUSD\data\successRoutes.json` and make it a template  `js-scripts\hardhat\tgUSD\data\tplRoute.json`
+by changing the script you can also take `js-scripts\hardhat\tgUSD\data\successRoutes.json` and make it a template `js-scripts\hardhat\tgUSD\data\tplRoute.json`
 
 ```
 npm run hydrate-route

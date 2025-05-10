@@ -17,10 +17,6 @@ export async function swap(user: Signer, lpAddress: string, i: number, j: number
 
     const amountRawIn = BigInt(amountIn) * 10n ** tokenInDecimals;
 
-    // const balancePoolIn= await tokenIn.balanceOf(lpAddress)
-    // const balancePoolOut = await tokenOut.balanceOf(lpAddress)
-    // console.log({balancePoolIn:formatUnits(balancePoolIn,tokenInDecimals),balancePoolOut:formatUnits(balancePoolOut,tokenOutDecimals) })
-
     let balanceIn = await tokenIn.balanceOf(userAddress);
     if (balanceIn < amountRawIn) {
         console.info("\x1b[38;5;208m%s\x1b[0m", `Not enough balance  ${formatUnits(balanceIn, tokenInDecimals)} / ${amountIn} ${tokenInName} `);
@@ -35,7 +31,6 @@ export async function swap(user: Signer, lpAddress: string, i: number, j: number
         console.info("\x1b[32m%s\x1b[0m", "Swapped " + amountIn + " " + tokenInName + " and received " + formatUnits(balance, tokenOutDecimals) + " " + tokenOutName + "!");
     } catch (e) {
         console.info("\x1b[38;5;208m%s\x1b[0m", "Error Swap : " + tokenInName + "/ " + tokenOutName, (e as Error).message);
-        //console.log(e);
     }
 }
 

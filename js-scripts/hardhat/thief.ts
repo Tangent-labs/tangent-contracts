@@ -29,7 +29,7 @@ export async function giveTokensToAddresses(users: Signer[], tokensAmounts: Toke
     }
 }
 
-export async function giveTokensoAddresss(user: Signer, address: string, amount: bigint, slotBalance: number, isVyper: boolean) {
+export async function giveTokenToAddresss(user: Signer, address: string, amount: bigint, slotBalance: number, isVyper: boolean) {
     const userAddress = await user.getAddress();
     const UpgradeableAddresses = ["0x15700b564ca08d9439c58ca5053166e8317aa138", "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110"];
     let storageSlot = "";

@@ -44,9 +44,9 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
     return result;
 }
 
-getSlot([{address: "0xc907ba505c2e1cbc4658c395d4a2c7e6d2c32656", isVyper: true}]).catch((error) => {
+getSlot([{address: "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf", isVyper: false}]).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });
 
-//npx hardhat run utils/erc20/slotGuesser.ts
+//npx hardhat run js-scripts/hardhat/slotGuesser.ts

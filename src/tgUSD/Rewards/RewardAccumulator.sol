@@ -53,6 +53,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     error NoRewardToMultiClaim();
     error NoRewardToSimpleClaim();
     error NotAMarketRewards();
+    error CantAddCollatTokenAsReward();
 
     error HarvesterFeeToHigh();
     error NothingToProcess();
@@ -61,7 +62,8 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     error CallerNotOwnerOrMarketCreator(address caller);
 
     modifier updateReward(address market, address account) {
-        _updateReward(market, account);
+        (uint256 collateralBalance, uint256 totalCollateral) = ICollateral(market).getBalanceAndTotalCollateral(account);
+        _updateReward(market, account, collateralBalance, totalCollateral);
         _;
     }
 
@@ -123,9 +125,9 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         return block.timestamp < _finishTime ? uint128(block.timestamp) : uint128(_finishTime);
     }
 
-    function updateRewards(address account) external {
+    function updateRewards(address account, uint256 collateralBalance, uint256 totalCollateral) external {
         require(controlTower.isMarket(msg.sender), NotAMarketRewards());
-        _updateReward(msg.sender, account);
+        _updateReward(msg.sender, account, collateralBalance, totalCollateral);
     }
 
     /**
@@ -133,11 +135,9 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      * @param market Address of the user
      * @param account Address of the user
      */
-    function _updateReward(address market, address account) internal {
+    function _updateReward(address market, address account, uint256 collateralBalance, uint256 totalCollateral) internal {
         uint256 rewardLength = rewardTokens[market].length;
         if (rewardLength != 0) {
-            (uint256 userBal, uint256 totalCollateral) = ICollateral(market).getBalanceAndTotalCollateral(account);
-
             for (uint256 i; i < rewardLength; ) {
                 IERC20 token = rewardTokens[market][i];
 
@@ -145,7 +145,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
                 rewardData[market][token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[market][token].periodFinish);
 
                 if (account != address(0)) {
-                    rewards[market][account][token] = _earned(market, account, token, userBal, totalCollateral);
+                    rewards[market][account][token] = _earned(market, account, token, collateralBalance, totalCollateral);
                     userRewardPerTokenPaid[market][account][token] = rewardData[market][token].rewardPerTokenStored;
                 }
 
@@ -351,11 +351,12 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      * @param newRewardTokens rewards percentage value
      */
     function addNewRewards(address market, IERC20[] calldata newRewardTokens) external onlyOwner {
+        IERC20 _collatToken = ICollateral(market).collatToken();
         for (uint256 i; i < newRewardTokens.length; ) {
             IERC20 _newRewardToken = newRewardTokens[i];
-            /// @dev If lastUpdateTime is equal to 0, it means the token is not already added as a reward
+            /// If lastUpdateTime is equal to 0, it means the token is not already added as a reward
             require(rewardData[market][_newRewardToken].lastUpdateTime == 0, RewardAlreadyAdded(_newRewardToken));
-            //TODO Verify the token is not the collateral
+            require(_collatToken != _newRewardToken, CantAddCollatTokenAsReward());
 
             rewardTokens[market].push(_newRewardToken);
             rewardData[market][_newRewardToken].lastUpdateTime = uint128(block.timestamp);
@@ -405,7 +406,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
 
     function processRewards(address market, address harvestFeeReceiver) public {
         require(controlTower.isMarket(market), NotAMarketRewards());
-        _updateReward(market, address(0));
+        _updateReward(market, address(0), 0, ICollateral(market).totalCollateral());
         TokenAmount[] memory rewardAmounts = IMarketExternalActions(market).claimUnderlyingRewards(rewardTokens[market]);
         uint256 rewardTokensLength = rewardAmounts.length;
         // require(rewardTokensLength != 0, NothingToProcess()); TODO Cannot modify some RC params if no rewards ?
@@ -454,7 +455,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
 
         for (uint256 i = 0; i < markets.length; ) {
             address market = markets[i];
-            _updateReward(market, address(0));
+            _updateReward(market, address(0), 0, ICollateral(market).totalCollateral());
             TokenAmount[] memory rewardAmounts = IMarketExternalActions(market).claimUnderlyingRewards(rewardTokens[market]);
             uint256 rewardTokensLength = rewardAmounts.length;
 

@@ -14,15 +14,13 @@ import {
     IPegKeeperV2,
     IRCalculator,
     IYearnV3Vault,
-    LiquidatorProxy,
     MarketCreator,
     MarketNoSociabilization,
     RewardAccumulator,
-    RsTanERC721,
-    RsTanService,
+    RsTan,
     Tan,
     TgUSD,
-    Zapper,
+    ZappingProxy,
 } from "../../../../typechain-types";
 import {LpDeployContext} from "./LPDeployContext";
 import {setStorageAt} from "@nomicfoundation/hardhat-toolbox/network-helpers";
@@ -39,13 +37,11 @@ export class BaseContext extends MainSetup {
     tgUSD!: TgUSD;
     sgUSD!: IYearnV3Vault;
     tan!: Tan;
-    rsTanService!: RsTanService;
-    rsTanERC721!: RsTanERC721;
-    zapper!: Zapper;
+    rsTan!: RsTan;
     rewardAccumulator!: RewardAccumulator;
-    liquidatorProxy!: LiquidatorProxy;
     irCalculator!: IRCalculator;
     marketCreator!: MarketCreator;
+    zappingProxy!: ZappingProxy;
 
     pegKeeperRegulator!: IPegKeeperRegulator;
     pegKeeperTgUSD_USDC!: IPegKeeperV2;
@@ -67,6 +63,9 @@ export class BaseContext extends MainSetup {
         this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy("Tangent USD", "tgUSD", this.controlTower);
         await this.tgUSD.waitForDeployment();
 
+        this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy();
+        await this.zappingProxy.waitForDeployment();
+
         await this.deploySgUSD();
 
         this.tan = await (await ethers.getContractFactory("Tan")).deploy();
@@ -78,20 +77,9 @@ export class BaseContext extends MainSetup {
         await this.tan.mint(this.users[3], parseEther("100000"));
         await this.tan.mint(this.users[4], parseEther("100000"));
 
-        this.rsTanERC721 = await (await ethers.getContractFactory("RsTanERC721")).deploy(this.owner);
-        await this.rsTanERC721.waitForDeployment();
-
-        this.rsTanService = await (await ethers.getContractFactory("RsTanService")).deploy(this.owner, this.controlTower, this.tan, this.rsTanERC721, this.tgUSD, this.sgUSD);
-        await this.rsTanService.waitForDeployment();
-        await this.rsTanService.addNewReward(this.tgUSD);
-
-        await this.rsTanERC721.setService(this.rsTanService);
-
-        this.zapper = await (await ethers.getContractFactory("Zapper")).deploy(this.owner, this.controlTower, this.tgUSD);
-        await this.zapper.waitForDeployment();
-
-        this.liquidatorProxy = await (await ethers.getContractFactory("LiquidatorProxy")).deploy(this.tgUSD);
-        await this.liquidatorProxy.waitForDeployment();
+        this.rsTan = await (await ethers.getContractFactory("RsTan")).deploy(this.owner, this.controlTower, this.tan, this.tgUSD, this.sgUSD, this.zappingProxy);
+        await this.rsTan.waitForDeployment();
+        await this.rsTan.addNewReward(this.tgUSD);
 
         this.marketCvxCrvImplem = await (await ethers.getContractFactory("ConvexCrvLPMarket")).deploy();
         await this.marketCvxCrvImplem.waitForDeployment();
@@ -101,8 +89,6 @@ export class BaseContext extends MainSetup {
 
         this.marketNoSociabilizationImplem = await (await ethers.getContractFactory("MarketNoSociabilization")).deploy();
         await this.marketNoSociabilizationImplem.waitForDeployment();
-
-        await this.controlTower.connect(this.owner).toggleZapper(this.zapper);
     }
 
     async deploySgUSD() {
@@ -138,7 +124,7 @@ export class BaseContext extends MainSetup {
             this.tgUSD,
             this.irCalculator,
             this.rewardAccumulator,
-            this.liquidatorProxy,
+            this.zappingProxy,
             this.marketCvxCrvImplem,
             this.marketCvxFxnImplem,
             this.marketNoSociabilizationImplem
@@ -259,20 +245,16 @@ export async function createJSONAddress(
         utilities: {
             controlTower: await baseContext.controlTower.getAddress(),
             rewardAccumulator: await baseContext.rewardAccumulator.getAddress(),
-            zapper: await baseContext.zapper.getAddress(),
+            zappingProxy: await baseContext.zappingProxy.getAddress(),
             marketCreator: await baseContext.marketCreator.getAddress(),
             irCalculator: await baseContext.irCalculator.getAddress(),
             pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
-            liquidatorProxy: await baseContext.liquidatorProxy.getAddress(),
-        },
-        lock: {
-            rsTanService: await baseContext.rsTanService.getAddress(),
-            rsTanERC721: await baseContext.rsTanERC721.getAddress(),
         },
         tokens: {
             tgUSD: await baseContext.tgUSD.getAddress(),
             sgUSD: await baseContext.sgUSD.getAddress(),
             tan: await baseContext.tan.getAddress(),
+            rsTan: await baseContext.rsTan.getAddress(),
         },
         implementations: {
             convexCrvMarket: await baseContext.marketCvxCrvImplem.getAddress(),

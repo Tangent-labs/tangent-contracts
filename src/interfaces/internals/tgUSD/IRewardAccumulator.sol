@@ -27,7 +27,7 @@ interface IRewardAccumulator {
 
     function getRewardData(address market, IERC20 token) external view returns (Reward memory);
 
-    function updateRewards(address account) external;
+    function updateRewards(address account, uint256 collateralBalances, uint256 totalCollateral) external;
 
     function processRewards(address market, address harvestFeeReceiver) external;
 
