@@ -14,9 +14,6 @@ contract PegKeeperTest is MarketDeploymentContext {
         hLpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 0, 1, 450_000 * 10 ** 6);
         hLpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD"), 0, 1, 450_000 * 10 ** 18);
 
-        console.log("Bal USDC", AddrClassicERC20.USDC.balanceOf(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"))));
-        console.log("Bal tgUSD", tgUSD.balanceOf(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"))));
-
         // console.log("benef", pegKeeperTgUSD_USDC.calc_profit());
 
         skip(1 days);

@@ -9,9 +9,6 @@ contract MarketDeploymentContext is MarketInitParams {
     function deployConvexCurveLPMarket(IERC20Metadata collat, bool isConvexLinked) public returns (ConvexCrvLPMarket) {
         ParamsInitConvexCurveLPMarket memory initP = cvxCurveLPMaps[address(collat)];
 
-        assertTrue(address(initP.marketInit.collat) != address(0), "No init params for LP");
-        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
-
         vm.startPrank(owner);
 
         ConvexCrvLPMarket convexMarket = ConvexCrvLPMarket(
@@ -46,9 +43,6 @@ contract MarketDeploymentContext is MarketInitParams {
     function deployConvexFxnLPMarket(IERC20Metadata collat) public returns (ConvexFxnLPMarket) {
         ParamsInitConvexFxnLPMarket memory initP = cvxFxnLPMaps[address(collat)];
 
-        assertTrue(address(initP.marketInit.collat) != address(0), "No init params for LP");
-        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
-
         vm.startPrank(owner);
 
         ConvexFxnLPMarket convexMarket = ConvexFxnLPMarket(
@@ -70,18 +64,14 @@ contract MarketDeploymentContext is MarketInitParams {
     }
 
     function deployMarketNoSociabilisation(IERC20Metadata collat) public returns (MarketNoSociabilization) {
-        ParamsInitConvexFxnLPMarket memory initP = cvxFxnLPMaps[address(collat)];
-
-        assertTrue(address(initP.marketInit.collat) != address(0), "No init params for LP");
-        assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
-
+        MarketInitSimplified memory marketInit = noSociabilizationMaps[address(collat)];
         vm.startPrank(owner);
 
         MarketNoSociabilization marketNoSoc = MarketNoSociabilization(
-            marketCreator.createNoSociabilizationMarket(getMarketInit(initP.marketInit, collat), getBaseIRParams(), getBaseRCParams())
+            marketCreator.createNoSociabilizationMarket(getMarketInit(marketInit, collat), getBaseIRParams(), getBaseRCParams())
         );
 
-        verifyParams_and_dealCollat(initP.marketInit.collat);
+        verifyParams_and_dealCollat(marketInit.collat);
 
         vm.stopPrank();
 

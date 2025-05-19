@@ -33,6 +33,7 @@ contract MarketInitParams is WStableContext {
     constructor() {
         initConvexCurveParams();
         initConvexFxnParams();
+        initMarketNoSociabilization();
     }
 
     function initConvexCurveParams() public {
