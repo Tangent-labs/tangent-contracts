@@ -90,6 +90,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
     error CantIncreaseTimePermaLock();
     error AlreadyMaxLock();
     error KickDelayIsNotPassed();
+    error CantMerge2SamePosition();
 
     error HarvesterFeeToHigh();
     error NothingToClaim();
@@ -291,6 +292,7 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
         uint256 tokenIdB,
         bool isClaimAsSgUSD
     ) external nonReentrant onlyTokenOwner(tokenIdA) onlyTokenOwner(tokenIdB) updateReward(tokenIdA) updateReward(tokenIdB) {
+        require(tokenIdA != tokenIdB, CantMerge2SamePosition());
         (uint48 endLockA, uint208 amountA) = _getLock(tokenIdA);
         (uint48 endLockB, uint208 amountB) = _getLock(tokenIdB);
 
@@ -335,32 +337,40 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
         IERC20 _tgUSD = tgUSD;
         IERC4626 _sgUSD = sgUSD;
 
-        // Iterates through all of the vaults
+        // Iterates through all positions ID
         for (uint256 positionIndex; positionIndex < positionsLen; ) {
             uint256 positionId = positionIds[positionIndex];
+            // Verify that msg.sender owns all the positions
             require(ownerOf(positionId) == msg.sender, NotTokenOwner());
 
+            // Checkpoints rewards for the current position
             _updateReward(positionId);
 
-            // If the rewards returned by the gUSD is an empty array,
+            // Used to determine if there is something to claim on the current position
             bool isClaimable;
 
+            // Now we iterate though all reward tokens
             for (uint256 rewardIndex; rewardIndex < rewardTokenLen; ) {
                 IERC20 _rewardToken = rewardTokens[rewardIndex];
+                // Fetch reward amount to claim for the current position
                 uint256 reward = rewards[positionId][_rewardToken];
 
+                // If there is something to claim
                 if (reward > 0) {
+                    // Updates the isClaimable flag
                     isClaimable = true;
+                    // Remove rewards because it's getting claimed
                     rewards[positionId][_rewardToken] = 0;
-
-                    emit RewardPaid(positionId, _rewardToken, reward);
+                    // Increments the global reward array
                     tokenAmount[rewardIndex].amount += reward;
+                    emit RewardPaid(positionId, _rewardToken, reward);
                 }
 
                 unchecked {
                     ++rewardIndex;
                 }
             }
+            // Revert if there is nothing to claim on a position input
             require(isClaimable, NothingToClaim());
 
             unchecked {
@@ -368,12 +378,13 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
             }
         }
 
-        // Iterate through tokenList
+        // Iterate through the final TokenAmount list
         for (uint256 rewardIndex; rewardIndex < tokenAmount.length; ) {
             IERC20 token = tokenAmount[rewardIndex].token;
             uint256 amount = tokenAmount[rewardIndex].amount;
 
             if (amount != 0) {
+                // User is able to claim tgUSD directly in sgUSD
                 if (token == _tgUSD && isClaimAsSgUSD) {
                     _sgUSD.deposit(amount, msg.sender);
                 } else {

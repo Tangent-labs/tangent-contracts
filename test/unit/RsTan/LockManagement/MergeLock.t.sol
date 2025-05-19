@@ -62,4 +62,11 @@ contract MergeLock is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(RsTan.LockExpired.selector));
         rsTan.merge(3, 1, false);
     }
+
+    function test_merge_fails_tokenA_is_tokenB() external {
+        vm.startPrank(usr1);
+        (uint48 endLock2, uint208 amount2Before) = rsTan.locks(2);
+        vm.expectRevert(abi.encodeWithSelector(RsTan.CantMerge2SamePosition.selector));
+        rsTan.merge(2, 2, false);
+    }
 }

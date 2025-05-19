@@ -34,6 +34,10 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     event Leverage(address indexed account, uint256 stakedAmount, uint256 collatBought, uint256 borrowedAmount);
     event ZapLeverage(address indexed account, uint256 stakedAmount, uint256 collatZapDeposit, uint256 collatLeverage, uint256 borrowedAmount, IERC20 tokenIn, uint256 amountIn);
 
+    event Liquidate(address indexed account, uint256 repaidAmount, uint256 fee, uint256 collateralLiquidated, address liquidator);
+    event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
+    event LiquidateBadDebt(address indexed account, uint256 newBadDebt, uint256 collateralSeized);
+
     error NotRewardAccumulator();
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -205,7 +209,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         // Can liquidate only if the health ratio is below 1
         require(_healthRatio(userDebt_, collatBalance) < 1 ether, NotLiquidablePosition());
 
-        _liquidate(
+        (uint256 collatLiquidated, uint256 debtRepaid, uint256 fee) = _liquidate(
             LiquidateCall({
                 account: account,
                 collatToLiquidate: collatToLiquidate,
@@ -219,6 +223,8 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
             }),
             liquidationCall
         );
+
+        emit Liquidate(account, debtRepaid, fee, collatLiquidated, liquidationCall.router);
     }
 
     //TODO Verify require on maxLTV post self liquidate
@@ -231,7 +237,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     ) external nonReentrant updateRewards(msg.sender) {
         (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(msg.sender);
 
-        _selfLiquidate(
+        uint256 debtRepaid = _selfLiquidate(
             SelfLiquidateCall({
                 collatAmountToLiquidate: collatAmountToLiquidate,
                 tgUSDToRepay: tgUSDToRepay,
@@ -245,6 +251,8 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
             }),
             routerCall
         );
+
+        emit SelfLiquidate(msg.sender, debtRepaid, collatAmountToLiquidate, routerCall.router);
     }
 
     function liquidateBadDebt(address account) external nonReentrant updateRewards(account) {
@@ -255,6 +263,8 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         require(_positionValue(collatBalance) < userDebt_, PositionWithoutBadDebt());
 
         _liquidateBadDebt(account, collatBalance, totalCollateral, _userDebtShares, totalDebtShares, userDebt_);
+
+        emit LiquidateBadDebt(account, userDebt_, collatBalance);
     }
 
     function leverage(

@@ -12,7 +12,7 @@
 //     IERC20 constant ETH_NAKED = IERC20(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE);
 
 //     function setUp() public {
-//         market = deployConvexCurveLPMarket(collatToken);
+//         market = deployConvexCurveLPMarket(collatToken, true);
 //         hZapDeposit = new HZapDepositConvexCrvLP(usr1, market, zapper);
 //     }
 

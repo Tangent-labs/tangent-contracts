@@ -13,8 +13,8 @@ contract HarvestChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market2;
 
     function setUp() public {
-        market1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
-        market2 = deployConvexCurveLPMarket(AddrCurveStableLP.WETH_pxETH);
+        market1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+        market2 = deployConvexCurveLPMarket(AddrCurveStableLP.WETH_pxETH, true);
     }
 
     // LIST

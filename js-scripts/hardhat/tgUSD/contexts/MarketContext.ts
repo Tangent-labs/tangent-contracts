@@ -1,11 +1,12 @@
 import {ethers} from "hardhat";
-import {ContractTransactionReceipt, Interface, InterfaceAbi, LogDescription, MaxUint256} from "ethers";
+import {AddressLike, ContractTransactionReceipt, Interface, InterfaceAbi, LogDescription, MaxUint256} from "ethers";
 import {ConvexCrvLPMarket, ConvexFxnLPMarket} from "../../../../typechain-types";
 import {BaseContext} from "./BaseContext";
 import {OracleContext} from "./OracleContext";
-import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "../config/market";
+import {HEC_CONFIG_IR_PARAMS, HEC_CONFIG_RC_PARAMS, LEC_CONFIG_IR_PARAMS, LEC_CONFIG_RC_PARAMS, STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN} from "../config/market";
 
 import * as MarketCreator from "../../../../artifacts/src/tgUSD/Utilities/MarketCreator.sol/MarketCreator.json";
+import {MarketInitStruct} from "../../../../typechain-types/src/tgUSD/Market/MarketNoSociabilization";
 
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;
@@ -14,44 +15,34 @@ export class MarketContext {
     convexCrvMarkets: {[key: string]: ConvexCrvLPMarket} = {};
     convexFxnMarkets: {[key: string]: ConvexFxnLPMarket} = {};
 
+    marketInit(staticConfig: any, oracle: AddressLike): MarketInitStruct {
+        return {
+            collatToken: staticConfig.collatToken,
+            collatOracle: oracle,
+            maxLTV: staticConfig.maxLTV,
+            maxMarketDebt: staticConfig.maxMarketDebt,
+            liquidationThreshold: staticConfig.liquidationThreshold,
+            liquidationFee: 1_000,
+            minimumLoan: staticConfig.minimumLoan,
+        };
+    }
+
     async deployConvexCrvMarkets(keys: ConvexCrvMarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key];
 
             const receipt = await (
-                await baseContext.marketCreator.connect(baseContext.owner).createConvexCrvMarket(
-                    {
-                        collatToken: staticConfig.collatToken,
-                        collatOracle: oracleContext.oracles[staticConfig.collatName],
-                        maxLTV: staticConfig.maxLTV,
-                        maxMarketDebt: staticConfig.maxMarketDebt,
-                        liquidationThreshold: staticConfig.liquidationThreshold,
-                        minimumLoan: staticConfig.minimumLoan,
-                    },
-                    staticConfig.cvxRewardToken,
-                    staticConfig.pid,
-                    1_000,
-                    {
-                        isHEC: true,
-                        rMin: 4_000,
-                        rMax: 400_000,
-                        pMin: 980_000,
-                        pMax: 995_000,
-                        pInf: 990_000,
-                        a1: 2_000,
-                        a2: 2_000,
-                        k: 250,
-                    },
-                    {
-                        harvestFeePercentage: 1_000,
-                        startCutPercentage: 50_000,
-                        endCutPercentage: 100_000,
-                        stepAmount: 4,
-                        startCutPrice: 1_000_000n,
-                        endCutPrice: 995_000n,
-                    }
-                )
+                await baseContext.marketCreator
+                    .connect(baseContext.owner)
+                    .createConvexCrvMarket(
+                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName]),
+                        staticConfig.cvxRewardToken,
+                        staticConfig.pid,
+                        1_000,
+                        HEC_CONFIG_IR_PARAMS,
+                        HEC_CONFIG_RC_PARAMS
+                    )
             ).wait();
 
             await this.parseCreateMarketLogs(key, receipt!);
@@ -64,37 +55,15 @@ export class MarketContext {
             const staticConfig = STATIC_CONFIG_CONVEX_FXN[key];
 
             const receipt = await (
-                await baseContext.marketCreator.connect(baseContext.owner).createConvexFxnMarket(
-                    {
-                        collatToken: staticConfig.collatToken,
-                        collatOracle: oracleContext.oracles[staticConfig.collatName],
-                        maxLTV: staticConfig.maxLTV,
-                        maxMarketDebt: staticConfig.maxMarketDebt,
-                        liquidationThreshold: staticConfig.liquidationThreshold,
-                        minimumLoan: staticConfig.minimumLoan,
-                    },
-                    staticConfig.pid,
-                    1_000,
-                    {
-                        isHEC: false,
-                        rMin: 4_000,
-                        rMax: 400_000,
-                        pMin: 980_000,
-                        pMax: 1_000_000,
-                        pInf: 997_500,
-                        a1: 2_000,
-                        a2: 2_750,
-                        k: 250,
-                    },
-                    {
-                        harvestFeePercentage: 1_000,
-                        startCutPercentage: 0,
-                        endCutPercentage: 0,
-                        stepAmount: 1,
-                        startCutPrice: 0,
-                        endCutPrice: 0,
-                    }
-                )
+                await baseContext.marketCreator
+                    .connect(baseContext.owner)
+                    .createConvexFxnMarket(
+                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName]),
+                        staticConfig.pid,
+                        1_000,
+                        LEC_CONFIG_IR_PARAMS,
+                        LEC_CONFIG_RC_PARAMS
+                    )
             ).wait();
 
             await this.parseCreateMarketLogs(key, receipt!);

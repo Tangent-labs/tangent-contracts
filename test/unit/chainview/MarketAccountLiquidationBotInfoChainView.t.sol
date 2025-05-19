@@ -10,8 +10,8 @@ contract MarketAccountLiquidationBotInfoChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market2;
 
     function setUp() public {
-        market1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
-        market2 = deployConvexCurveLPMarket(AddrCurveStableLP.WETH_frxETH);
+        market1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+        market2 = deployConvexCurveLPMarket(AddrCurveStableLP.WETH_frxETH, true);
     }
 
     // LIST

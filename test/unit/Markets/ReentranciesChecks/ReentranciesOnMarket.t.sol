@@ -15,7 +15,7 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
     bytes ZapCallErrorReentrancy;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken);
+        market = deployConvexCurveLPMarket(collatToken, true);
 
         ZapCallErrorReentrancy = abi.encodeWithSelector(ZappingProxy.ZapCallError.selector, abi.encodeWithSelector(ReentrancyGuardTransient.ReentrancyGuardReentrantCall.selector));
 

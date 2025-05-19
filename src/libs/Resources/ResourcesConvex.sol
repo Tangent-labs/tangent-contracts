@@ -23,6 +23,9 @@ library AddrCvxRewardTokens {
     ICvxRewardToken constant USDT_crvUSD_LP = ICvxRewardToken(0xD1DdB0a0815fD28932fBb194C84003683AF8a824);
     ICvxRewardToken constant WETH_frxETH_LP = ICvxRewardToken(0xFafDE12dC476C4913e29F47B4747860C148c5E4f);
     ICvxRewardToken constant WETH_pxETH_LP = ICvxRewardToken(0x3B793E505A3C7dbCb718Fe871De8eBEf7854e74b);
+    ICvxRewardToken constant ETH_stETH_LP = ICvxRewardToken(0x0A760466E1B4621579a82a39CB56Dda2F4E70f03);
+    ICvxRewardToken constant CVX_ETH_LP = ICvxRewardToken(0xb1Fb0BA0676A1fFA83882c7F4805408bA232C1fA);
+    ICvxRewardToken constant scrvUSD_sDOLA_LP = ICvxRewardToken(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
 }
 
 library AddrCvxVaultTokens {
@@ -43,6 +46,10 @@ library PidCvxCrvBooster {
     uint256 constant USDC_crvUSD_LP = 182;
     uint256 constant WETH_frxETH_LP = 219;
     uint256 constant WETH_pxETH_LP = 271;
+    uint256 constant ETH_stETH_LP = 25;
+    uint256 constant CVX_ETH_LP = 64;
+    uint256 constant scrvUSD_sDOLA_LP = 400;
+    uint256 constant sUSDS_USDT_LP = 400;
 }
 
 library PidCvxFxnBooster {

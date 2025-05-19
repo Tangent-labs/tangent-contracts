@@ -8,7 +8,7 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
     address[] cryptoSwaps;
 
     function setUp() external {
-        // TRI POOL
+        // // TRI POOL
         cryptoSwaps.push(address(AddrCryptoSwapLP.USDT_WBTC_ETH));
         cryptoSwaps.push(address(AddrCryptoSwapLP.USDC_WBTC_ETH));
         cryptoSwaps.push(address(AddrCryptoSwapLP.crvUSD_ETH_CRV));
@@ -16,24 +16,27 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
 
         // DUO POOL
         cryptoSwaps.push(address(AddrCryptoSwapLP.USR_RLP));
-        cryptoSwaps.push(address(AddrCryptoSwapLP.CVX_ETH));
+        cryptoSwaps.push(address(AddrCryptoSwapLP.CVX_ETH_POOL));
     }
     /// WARNING THIS IS ONLY USED FOR TESTING PURPOSE
     /// THIS METHOD CAN BE MANIPULATED IN PROD
-    function approximateLPValue(ICurveTriCryptoSwap lp) public view returns (uint256) {
-        uint256 totalSupp;
+    function approximateLPValue(ICurveTriCryptoSwap pool) public view returns (uint256, IERC20) {
+        IERC20Metadata lpToken = getLpToken(pool);
+        uint256 totalSupply = lpToken.totalSupply();
 
-        (, bytes memory totalSupplyBytes) = address(lp).staticcall(abi.encodeWithSelector(bytes4(keccak256("totalSupply()"))));
+        return ((approximateTotalLPValue(pool) * 1e18) / totalSupply, lpToken);
+    }
+
+    function getLpToken(ICurveTriCryptoSwap pool) public view returns (IERC20Metadata) {
+        (, bytes memory totalSupplyBytes) = address(pool).staticcall(abi.encodeWithSelector(bytes4(keccak256("totalSupply()"))));
 
         // For the LP that are not merged with the token
         if (totalSupplyBytes.length == 0) {
-            (, bytes memory lpTokenBytes) = address(lp).staticcall(abi.encodeWithSelector(bytes4(keccak256("token()"))));
-            totalSupp = IERC20Metadata(abi.decode(lpTokenBytes, (address))).totalSupply();
+            (, bytes memory lpTokenBytes) = address(pool).staticcall(abi.encodeWithSelector(bytes4(keccak256("token()"))));
+            return IERC20Metadata(abi.decode(lpTokenBytes, (address)));
         } else {
-            totalSupp = abi.decode(totalSupplyBytes, (uint256));
+            return pool;
         }
-
-        return (approximateTotalLPValue(lp) * 1e18) / totalSupp;
     }
 
     function approximateTotalLPValue(ICurveTriCryptoSwap lp) public view returns (uint256) {
@@ -60,11 +63,13 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
         HLPManipulator lpManipulator = new HLPManipulator(usr1);
 
         for (uint256 i = 0; i < cryptoSwaps.length; i++) {
-            ICurveTriCryptoSwap lp = ICurveTriCryptoSwap(cryptoSwaps[i]);
-            uint256 oracleValueBeforeSwap = oracles[lp].latestAnswer();
-            uint256 totalLPValue = approximateTotalLPValue(lp);
+            ICurveTriCryptoSwap pool = ICurveTriCryptoSwap(cryptoSwaps[i]);
+            IERC20Metadata lpToken = getLpToken(pool);
 
-            IERC20Metadata coin1 = IERC20Metadata(lp.coins(1));
+            uint256 oracleValueBeforeSwap = oracles[lpToken].latestAnswer();
+            uint256 totalLPValue = approximateTotalLPValue(pool);
+
+            IERC20Metadata coin1 = IERC20Metadata(pool.coins(1));
             IPriceOracle oracle = oracles[coin1];
             uint256 price = oracle.latestAnswer() * 10 ** (18 - oracle.decimals());
 
@@ -72,11 +77,11 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
             uint256 amountCoin1ToSellWei = (totalLPValue * 10 ** 18) / price;
             uint256 amountCoin1ToSell = amountCoin1ToSellWei / 10 ** (18 - coin1.decimals());
 
-            lpManipulator.dumTriCryptoSwapPool(lp, 1, 0, amountCoin1ToSell);
+            lpManipulator.dumTriCryptoSwapPool(pool, 1, 0, amountCoin1ToSell);
             // This is normal because the sell of the token generated swap fee reported to lpPrice.
-            assertLt(oracleValueBeforeSwap, oracles[lp].latestAnswer(), "Oracle price is always bigger as swap occured in the LP");
+            assertLt(oracleValueBeforeSwap, oracles[lpToken].latestAnswer(), "Oracle price is always bigger as swap occured in the LP");
 
-            uint256 oracleValueAfterSwap = oracles[lp].latestAnswer();
+            uint256 oracleValueAfterSwap = oracles[lpToken].latestAnswer();
 
             // This shouldnt change it more than 1.5%
             assertApproxEqRel(oracleValueBeforeSwap, oracleValueAfterSwap, 30e15);
@@ -93,8 +98,9 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
     function test_atomic_verification() external view {
         for (uint256 i = 0; i < cryptoSwaps.length; i++) {
             ICurveTriCryptoSwap lp = ICurveTriCryptoSwap(cryptoSwaps[i]);
-            uint256 approx = approximateLPValue(lp);
-            assertApproxEqRel(approx, oracles[lp].latestAnswer(), 7e15); // 0.7% maximum
+            (uint256 approx, IERC20 lpToken) = approximateLPValue(lp);
+
+            assertApproxEqRel(approx, oracles[lpToken].latestAnswer(), 7e15); // 0.7% maximum
         }
     }
 }

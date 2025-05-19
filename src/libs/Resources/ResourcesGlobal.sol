@@ -44,6 +44,7 @@ library AddrClassicERC20 {
     IERC20Metadata constant WETH = IERC20Metadata(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
     IERC20Metadata constant frxETH = IERC20Metadata(0x5E8422345238F34275888049021821E8E08CAa1f);
     IERC20Metadata constant pxETH = IERC20Metadata(0x04C154b66CB340F3Ae24111CC767e0184Ed00Cc6);
+    IERC20Metadata constant stETH = IERC20Metadata(0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
 
     // BTC
     IERC20Metadata constant WBTC = IERC20Metadata(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599);
@@ -81,6 +82,8 @@ library AddrChainlinkOracle {
     // ETH
     IAggregatorV3 constant ETH = IAggregatorV3(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
     IAggregatorV3 constant ezETH = IAggregatorV3(0x636A000262F6aA9e1F094ABF0aD8f645C44f641C);
+    IAggregatorV3 constant stETH = IAggregatorV3(0xCfE54B5cD566aB89272946F602D76Ea879CAb4a8);
+
     IAggregatorV3 constant CRV = IAggregatorV3(0xCd627aA160A6fA45Eb793D19Ef54f5062F20f33f);
 
     // BTC

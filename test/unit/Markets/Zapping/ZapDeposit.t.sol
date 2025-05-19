@@ -10,7 +10,7 @@ contract ZapDeposit is MarketDeploymentContext {
     IERC20Metadata public collatToken = AddrCurveStableLP.USDC_crvUSD;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken);
+        market = deployConvexCurveLPMarket(collatToken, true);
     }
 
     function test_zap_deposit_with_ERC20() external {

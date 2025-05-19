@@ -27,4 +27,6 @@ interface ICollateral {
     function rewardAccumulator() external view returns (IRewardAccumulator);
 
     function getBalanceAndTotalCollateral(address account) external view returns (uint256, uint256);
+
+    function maxBorrowable(address account) external view returns (uint256);
 }

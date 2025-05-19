@@ -45,13 +45,18 @@ contract HDepositConvexCrvLP is HMarketBase {
 
         verifyLostERC20(collatToken, sender, lpDeposited, "Collat is deposited by sender");
         if (isStaked) {
-            uint256 collatMarketBalance = collatToken.balanceOf(address(marketCrvLP));
-            if (socFeePending != 0) {
-                verifyLostERC20(collatToken, address(marketCrvLP), collatMarketBalance, "Collat in pending is staked by the marketCrvLP");
+            // Connected to Convex
+            if (marketCrvLP.pid() != 0) {
+                uint256 collatMarketBalance = collatToken.balanceOf(address(marketCrvLP));
+                if (socFeePending != 0) {
+                    verifyLostERC20(collatToken, address(marketCrvLP), collatMarketBalance, "Collat in pending is staked by the marketCrvLP");
+                } else {
+                    verifyBalERC20NotChanging(collatToken, address(marketCrvLP), "There were no collat on the marketCrvLP waiting to be staked");
+                }
+                verifyReceiveERC20(marketCrvLP.cvxRewardToken(), address(marketCrvLP), collatMarketBalance + lpDeposited, "Collat is received by the staking contract");
             } else {
-                verifyBalERC20NotChanging(collatToken, address(marketCrvLP), "There were no collat on the marketCrvLP waiting to be staked");
+                verifyReceiveERC20(collatToken, address(marketCrvLP), lpDeposited, "Collat is fully received by the marketCrvLP");
             }
-            verifyReceiveERC20(marketCrvLP.cvxRewardToken(), address(marketCrvLP), collatMarketBalance + lpDeposited, "Collat is received by the staking contract");
         } else {
             feeToTake = (lpDeposited * socFeePercentage) / 100_000;
             verifyReceiveERC20(collatToken, address(marketCrvLP), lpDeposited, "Collat is received by the marketCrvLP");

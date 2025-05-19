@@ -16,7 +16,7 @@ contract RepayReverts is MarketDeploymentContext {
     uint256 maxMarketDebt;
     function setUp() public {
         collatToken = AddrCurveStableLP.WETH_frxETH;
-        market = deployConvexCurveLPMarket(collatToken);
+        market = deployConvexCurveLPMarket(collatToken, true);
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         minimumLoan = market.minimumLoan();
         maxMarketDebt = market.maxMarketDebt();

@@ -2,14 +2,14 @@
 pragma solidity ^0.8.24;
 
 import {BalancesAllowances, OutputBalanceAllowances, InputBalancesAllowances} from "../BalancesAllowances.sol";
-import {ERC20Infos, IERC20Metadata, ERC20StaticInfos} from "../ERC20Infos.sol";
+import {ERC20Infos, IERC20Metadata, ERC20StaticInfos, IERC20} from "../ERC20Infos.sol";
 
 import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
 import {IDebtIR} from "../../interfaces/internals/tgUSD/IDebtIR.sol";
-import {IIRCalculator} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
+import {IIRCalculator, IRParams} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
 import {ISociabilization} from "../../interfaces/internals/tgUSD/ISociabilization.sol";
-import {IRewardAccumulator} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
+import {IRewardAccumulator, RCParams, Reward} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 
 contract GetMarketDetails is BalancesAllowances, ERC20Infos {
     struct CollateralInfos {
@@ -36,10 +36,17 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         uint256 maxMarketDebt;
         uint256 minimumLoan;
         uint256 liquidationThreshold;
+        IRParams irParams;
+        RCParams rcParams;
     }
     struct Sociabilization {
         uint256 socFeePercentage;
         uint256 socFeePending;
+    }
+
+    struct MarketRewards {
+        ERC20StaticInfos erc20Info;
+        Reward streamingData;
     }
     struct MarketRow {
         address marketAddress;
@@ -48,7 +55,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         MarketConstants constants;
         Sociabilization sociabilization;
         OutputBalanceAllowances[] obas;
-        ERC20StaticInfos[] rewardTokens;
+        MarketRewards[] rewardData;
     }
 
     function getMarketDetails(address account, address market) public returns (MarketRow memory) {
@@ -60,7 +67,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                 constants: _getMarketConstants(market),
                 sociabilization: _getSociabilization(market),
                 obas: _getBalancesAllowances(account, market),
-                rewardTokens: _getRewardTokens(market)
+                rewardData: _getRewardData(market)
             });
     }
 
@@ -111,7 +118,9 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                 maxLTV: marketCollateral.maxLTV(),
                 maxMarketDebt: marketDebt.maxMarketDebt(),
                 minimumLoan: marketDebt.minimumLoan(),
-                liquidationThreshold: marketCollateral.liquidationThreshold()
+                liquidationThreshold: marketCollateral.liquidationThreshold(),
+                irParams: _getIRParams(market),
+                rcParams: _getRCParams(market)
             });
     }
 
@@ -139,7 +148,25 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         return getBalancesAllowances(account, ibas);
     }
 
-    function _getRewardTokens(address market) internal view returns (ERC20StaticInfos[] memory) {
-        return getERC20StaticInfos(ICollateral(market).rewardAccumulator().getRewardTokens(market));
+    function _getRewardData(address market) internal view returns (MarketRewards[] memory) {
+        IRewardAccumulator _rewardAccumulator = ICollateral(market).rewardAccumulator();
+        IERC20[] memory rewardTokens = _rewardAccumulator.getRewardTokens(market);
+
+        MarketRewards[] memory mRewards = new MarketRewards[](rewardTokens.length);
+
+        for (uint256 i; i < rewardTokens.length; i++) {
+            IERC20 token = rewardTokens[i];
+            mRewards[i] = MarketRewards({erc20Info: getERC20StaticInfos(token), streamingData: _rewardAccumulator.getRewardData(market, token)});
+        }
+
+        return mRewards;
+    }
+
+    function _getIRParams(address market) internal view returns (IRParams memory) {
+        return IDebtIR(market).irCalculator().getIRParams(address(market));
+    }
+
+    function _getRCParams(address market) internal view returns (RCParams memory) {
+        return ICollateral(market).rewardAccumulator().getRCParams(address(market));
     }
 }

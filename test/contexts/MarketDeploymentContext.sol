@@ -6,7 +6,7 @@ import "./MarketInitParams.sol";
 import "../../src/interfaces/internals/tgUSD/IMarketCore.sol";
 import "../../src/interfaces/internals/tgUSD/IIRCalculator.sol";
 contract MarketDeploymentContext is MarketInitParams {
-    function deployConvexCurveLPMarket(IERC20Metadata collat) public returns (ConvexCrvLPMarket) {
+    function deployConvexCurveLPMarket(IERC20Metadata collat, bool isConvexLinked) public returns (ConvexCrvLPMarket) {
         ParamsInitConvexCurveLPMarket memory initP = cvxCurveLPMaps[address(collat)];
 
         assertTrue(address(initP.marketInit.collat) != address(0), "No init params for LP");
@@ -16,14 +16,7 @@ contract MarketDeploymentContext is MarketInitParams {
 
         ConvexCrvLPMarket convexMarket = ConvexCrvLPMarket(
             marketCreator.createConvexCrvMarket(
-                MarketInit({
-                    collatToken: initP.marketInit.collat,
-                    collatOracle: oracles[collat],
-                    maxLTV: initP.marketInit.maxLTV,
-                    maxMarketDebt: initP.marketInit.maxMarketDebt,
-                    liquidationThreshold: initP.marketInit.liquidationThreshold,
-                    minimumLoan: initP.marketInit.minimumLoan
-                }),
+                getMarketInit(initP.marketInit, collat),
                 initP.cvxRewardToken,
                 initP.pid,
                 initP.socFeePercentage,
@@ -36,10 +29,12 @@ contract MarketDeploymentContext is MarketInitParams {
 
         verifyParams_and_dealCollat(initP.marketInit.collat);
 
-        IERC20[] memory curveConvexRewards = new IERC20[](2);
-        curveConvexRewards[0] = AddrClassicERC20.CRV;
-        curveConvexRewards[1] = AddrClassicERC20.CVX;
-        rewardAccumulator.addNewRewards(address(convexMarket), curveConvexRewards);
+        if (isConvexLinked) {
+            IERC20[] memory curveConvexRewards = new IERC20[](2);
+            curveConvexRewards[0] = AddrClassicERC20.CRV;
+            curveConvexRewards[1] = AddrClassicERC20.CVX;
+            rewardAccumulator.addNewRewards(address(convexMarket), curveConvexRewards);
+        }
 
         vm.stopPrank();
 
@@ -57,20 +52,7 @@ contract MarketDeploymentContext is MarketInitParams {
         vm.startPrank(owner);
 
         ConvexFxnLPMarket convexMarket = ConvexFxnLPMarket(
-            marketCreator.createConvexFxnMarket(
-                MarketInit({
-                    collatToken: initP.marketInit.collat,
-                    collatOracle: oracles[collat],
-                    maxLTV: initP.marketInit.maxLTV,
-                    maxMarketDebt: initP.marketInit.maxMarketDebt,
-                    liquidationThreshold: initP.marketInit.liquidationThreshold,
-                    minimumLoan: initP.marketInit.minimumLoan
-                }),
-                initP.pid,
-                initP.socFeePercentage,
-                getBaseIRParams(),
-                getBaseRCParams()
-            )
+            marketCreator.createConvexFxnMarket(getMarketInit(initP.marketInit, collat), initP.pid, initP.socFeePercentage, getBaseIRParams(), getBaseRCParams())
         );
 
         verifyParams_and_dealCollat(initP.marketInit.collat);
@@ -96,18 +78,7 @@ contract MarketDeploymentContext is MarketInitParams {
         vm.startPrank(owner);
 
         MarketNoSociabilization marketNoSoc = MarketNoSociabilization(
-            marketCreator.createNoSociabilizationMarket(
-                MarketInit({
-                    collatToken: initP.marketInit.collat,
-                    collatOracle: oracles[collat],
-                    maxLTV: initP.marketInit.maxLTV,
-                    maxMarketDebt: initP.marketInit.maxMarketDebt,
-                    liquidationThreshold: initP.marketInit.liquidationThreshold,
-                    minimumLoan: initP.marketInit.minimumLoan
-                }),
-                getBaseIRParams(),
-                getBaseRCParams()
-            )
+            marketCreator.createNoSociabilizationMarket(getMarketInit(initP.marketInit, collat), getBaseIRParams(), getBaseRCParams())
         );
 
         verifyParams_and_dealCollat(initP.marketInit.collat);
@@ -131,6 +102,19 @@ contract MarketDeploymentContext is MarketInitParams {
         assertTrue(address(oracles[collat]) != address(0), "Oracle not setup");
 
         giveCollateralToUsers(collat);
+    }
+
+    function getMarketInit(MarketInitSimplified memory init, IERC20 collat) public view returns (MarketInit memory) {
+        return
+            MarketInit({
+                collatToken: init.collat,
+                collatOracle: oracles[collat],
+                maxLTV: init.maxLTV,
+                maxMarketDebt: init.maxMarketDebt,
+                liquidationThreshold: init.liquidationThreshold,
+                liquidationFee: init.liquidationFee,
+                minimumLoan: init.minimumLoan
+            });
     }
 
     function getBaseIRParams() public pure returns (IRParams memory) {

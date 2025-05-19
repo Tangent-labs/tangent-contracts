@@ -51,8 +51,10 @@ contract Labeliser is Test {
 
     function labeliseNewConvexCrvMarket(address collat, string calldata collatSymbol, address convexMarket, address cvxRewardToken) external {
         vm.label(collat, collatSymbol);
+        if (address(cvxRewardToken) != address(0)) {
+            vm.label(cvxRewardToken, string.concat("CvxRewardToken ", collatSymbol));
+        }
         vm.label(convexMarket, string.concat("Market CvxCrv ", collatSymbol));
-        vm.label(cvxRewardToken, string.concat("CvxRewardToken ", collatSymbol));
     }
 
     function labeliseNewConvexFxnMarket(address collat, string calldata collatSymbol, address convexMarket, address stakingProxyVault) external {

@@ -20,12 +20,12 @@ contract OracleTriPoolStable is OracleBase {
     }
     OracleTriPoolStruct public params;
 
-    constructor(ICurveStableSwapNG _lp, IPriceOracle _coin0Oracle, IPriceOracle _coin1Oracle, IPriceOracle _coin2Oracle) {
+    constructor(address _lp, IPriceOracle _coin0Oracle, IPriceOracle _coin1Oracle, IPriceOracle _coin2Oracle) {
         params = OracleTriPoolStruct({
             coin0Oracle: _coin0Oracle,
             coin1Oracle: _coin1Oracle,
             coin2Oracle: _coin2Oracle,
-            lp: _lp,
+            lp: ICurveStableSwapNG(_lp),
             coin0OracleDecimals: uint96(_coin0Oracle.decimals()),
             coin1OracleDecimals: uint96(_coin1Oracle.decimals()),
             coin2OracleDecimals: uint96(_coin2Oracle.decimals())

@@ -49,6 +49,7 @@ struct MarketInit {
     IPriceOracle collatOracle;
     uint256 maxLTV;
     uint256 liquidationThreshold;
+    uint256 liquidationFee;
     uint256 maxMarketDebt;
     uint256 minimumLoan;
 }

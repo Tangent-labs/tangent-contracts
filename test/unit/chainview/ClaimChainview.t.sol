@@ -12,7 +12,7 @@ contract ClaimChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
+        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
     }
 
     // LIST

@@ -121,14 +121,15 @@ contract ZapLeverage is MarketDeploymentContext {
         skip(60 days);
 
         vm.startPrank(usr1);
+        uint256 uDebt = market.userDebt(usr4);
 
-        deal(address(tgUSD), address(mockRouter), market.userDebt(usr4) + 100 ether);
+        deal(address(tgUSD), address(mockRouter), uDebt + (market.liquidationFee() * uDebt) / 100_000);
 
         market.liquidate(
             usr4,
             market.collateralBalances(usr4),
             0,
-            encoder.encodeSwapToMockRouter(address(mockRouter), collatToken, totalCollat, tgUSD, usr1, market.userDebt(usr4) + 100 ether)
+            encoder.encodeSwapToMockRouter(address(mockRouter), collatToken, totalCollat, tgUSD, usr1, uDebt + (market.liquidationFee() * uDebt) / 100_000)
         );
 
         assertEq(market.collateralBalances(usr4), 0);

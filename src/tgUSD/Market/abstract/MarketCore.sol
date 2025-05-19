@@ -35,9 +35,6 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
     error NotLiquidablePosition();
     error PositionWithoutBadDebt();
 
-    event Liquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
-    event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
-
     constructor() {
         isInitialized = true;
     }
@@ -63,6 +60,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         maxLTV = _marketInit.maxLTV;
         liquidationThreshold = _marketInit.liquidationThreshold;
+        liquidationFee = _marketInit.liquidationFee;
         maxMarketDebt = _marketInit.maxMarketDebt;
         minimumLoan = _marketInit.minimumLoan;
 
@@ -251,7 +249,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
                             LIQUIDATION
                                                     ------ */
 
-    function _selfLiquidate(SelfLiquidateCall memory selfLiquidateCall, ZapStruct calldata routerCall) internal {
+    function _selfLiquidate(SelfLiquidateCall memory selfLiquidateCall, ZapStruct calldata routerCall) internal returns (uint256) {
         require(selfLiquidateCall.collatAmountToLiquidate != 0, ZeroCollatAmount());
         uint256 newCollatBalance = selfLiquidateCall._collateralBalance - selfLiquidateCall.collatAmountToLiquidate;
         uint256 debtSharesToRemove;
@@ -283,10 +281,10 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         _postLiquidate(selfLiquidateCall.collatAmountToLiquidate, tgUSDToRepay, selfLiquidateCall.minTgUSDOut, routerCall);
 
-        emit SelfLiquidate(msg.sender, tgUSDToRepay, selfLiquidateCall.collatAmountToLiquidate, routerCall.router);
+        return tgUSDToRepay;
     }
 
-    function _liquidate(LiquidateCall memory liquidateCall, ZapStruct calldata routerCall) internal {
+    function _liquidate(LiquidateCall memory liquidateCall, ZapStruct calldata routerCall) internal returns (uint256, uint256, uint256) {
         uint256 collatAmountToLiquidate = liquidateCall.collatToLiquidate;
         require(liquidateCall.collatToLiquidate != 0, ZeroCollatAmount());
 
@@ -319,12 +317,18 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             liquidateCall._totalDebtShares - debtSharesToRemove
         );
 
-        _postLiquidate(collatAmountToLiquidate, tgUSDToRepay, liquidateCall.minTgUSDOut, routerCall);
+        uint256 fee = (tgUSDToRepay * liquidationFee) / 100_000;
 
-        emit Liquidate(liquidateCall.account, tgUSDToRepay, collatAmountToLiquidate, routerCall.router);
+        _postLiquidate(collatAmountToLiquidate, tgUSDToRepay + fee, liquidateCall.minTgUSDOut, routerCall);
+
+        if (fee != 0) {
+            tgUSD.mint(controlTower.feeTreasury(), fee);
+        }
+
+        return (collatAmountToLiquidate, tgUSDToRepay, fee);
     }
 
-    function _postLiquidate(uint256 collatAmountToLiquidate, uint256 tgUSDToRepay, uint256 minTgUSDOut, ZapStruct calldata routerCall) internal {
+    function _postLiquidate(uint256 collatAmountToLiquidate, uint256 tgUSDToBurn, uint256 minTgUSDOut, ZapStruct calldata routerCall) internal {
         IZappingProxy _zappingProxy = zappingProxy;
         // Withdraw the collateral from the underlying protocol if needed and
         // Transfer it to the caller when there is no liquidator passed in parameter
@@ -339,7 +343,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Burns tgUSD from the sender.
         // The debt has to be on the caller of the transaction.
         // In case a liquidator is passed in parameter, it needs to send it back to the sender of the tx.
-        tgUSD.burnFrom(msg.sender, tgUSDToRepay);
+        tgUSD.burnFrom(msg.sender, tgUSDToBurn);
     }
 
     function _liquidateBadDebt(

@@ -52,6 +52,8 @@ contract RageQuit is MarketDeploymentContext {
         uint256 delta = endLockTime - block.timestamp;
         uint256 penalty = (delta * amount) / rsTan.LOCK_DURATION();
 
+        assertNotEq(penalty, 0);
+
         verifyLostERC20(tan, address(rsTan), amount, "All Tan of the positions are removed from the lock");
         verifyReceiveERC20(tan, feeTreasury, penalty, "Penalty received by FeeTreasury");
         verifyReceiveERC20(tan, usr1, amount - penalty, "The rest is claimed by the user");

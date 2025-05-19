@@ -22,6 +22,8 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
     /// @notice Id of the Curve pool on Convex
     uint256 public pid;
 
+    error MarketNotLinkedToConvex();
+
     function initialize(
         GlobalMarketInitParams memory _marketConstants,
         MarketInit memory _marketInit,
@@ -36,11 +38,20 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
         require(_socFeePercentage <= 2_000, SocFeeTooHigh());
         socFeePercentage = _socFeePercentage;
 
-        // Convex Crv
-        // Allows CVX_BOOSTER to transfer LP from the market contract
-        collatToken.approve(address(CVX_BOOSTER), MAX_UINT);
-        cvxRewardToken = _cvxRewardToken;
+        if (address(_cvxRewardToken) != address(0)) {
+            // Convex Crv
+            // Allows CVX_BOOSTER to transfer LP from the market contract
+            collatToken.approve(address(CVX_BOOSTER), MAX_UINT);
+            cvxRewardToken = _cvxRewardToken;
+            pid = _pid;
+        }
+    }
+
+    function setConvexStaking(ICvxRewardToken _cvxRewardToken, uint256 _pid) external onlyOwner {
+        require(address(_cvxRewardToken) != address(0));
+        require(_pid != 0);
         pid = _pid;
+        cvxRewardToken = _cvxRewardToken;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -48,25 +59,38 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _depositSociabilization(uint256 lpDeposited, bool isStaked) internal override returns (uint256) {
+        uint256 stakedAmount = lpDeposited;
         require(lpDeposited != 0, ZeroCollatAmount());
-        uint256 stakedAmount = _sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR);
-        require(stakedAmount != 0, ZeroAmountDepositedAfterSociabilization());
+        // When there are no Convex contract because no inflation yet
+        if (pid != 0) {
+            stakedAmount = _sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR);
+            require(stakedAmount != 0, ZeroAmountDepositedAfterSociabilization());
+        }
+
         return stakedAmount;
     }
 
     function _postDeposit(IERC20 _collatToken, bool isStaked) internal override {
-        if (isStaked) {
-            CVX_BOOSTER.deposit(pid, _collatToken.balanceOf(address(this)), true);
+        uint256 _pid = pid;
+
+        // When pid = 0 / Means the Market is not yet linked to Convex
+        if (isStaked && _pid != 0) {
+            CVX_BOOSTER.deposit(_pid, _collatToken.balanceOf(address(this)), true);
         }
     }
 
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {
-        uint256 lpAvailable = collatToken.balanceOf(address(this)) - socFeePending;
+        ICvxRewardToken _cvxRewardToken = cvxRewardToken;
 
-        // Verify that all there are enough LlamaLend LP on the contract
-        if (lpAvailable < lpToWithdraw) {
-            // If not enough are on the contract, we need to withdraw the difference from Convex
-            cvxRewardToken.withdrawAndUnwrap(lpToWithdraw - lpAvailable, false);
+        // If the LP is linked to Convex
+        if (address(_cvxRewardToken) != address(0)) {
+            uint256 lpAvailable = collatToken.balanceOf(address(this)) - socFeePending;
+
+            // Verify that all there are enough LlamaLend LP on the contract
+            if (lpAvailable < lpToWithdraw) {
+                // If not enough are on the contract, we need to withdraw the difference from Convex
+                _cvxRewardToken.withdrawAndUnwrap(lpToWithdraw - lpAvailable, false);
+            }
         }
 
         collatToken.transfer(to, lpToWithdraw);
@@ -79,16 +103,20 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
      */
     function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
         require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
-        // Claim rewards on behalf
-        cvxRewardToken.getReward();
+
+        ICvxRewardToken _cvxRewardToken = cvxRewardToken;
+
+        if (address(_cvxRewardToken) != address(0)) {
+            // Claim rewards on behalf
+            cvxRewardToken.getReward();
+        }
 
         return _claimUnderlyingRewards(_rewardTokens);
     }
 
     //TODO Seems strange to me, enters maybe in collision with sociabilization pending fees.
     function stakeAll(address receiver) external nonReentrant {
-        IERC20 _collatToken = collatToken;
-        _collatToken.transfer(receiver, socFeePending);
-        CVX_BOOSTER.deposit(pid, _collatToken.balanceOf(address(this)), true);
+        uint256 amountToStake = _stakeAll(receiver, collatToken);
+        CVX_BOOSTER.deposit(pid, amountToStake, true);
     }
 }

@@ -8,7 +8,7 @@ import "hardhat-contract-sizer";
 
 import * as dotenv from "dotenv";
 dotenv.config();
-const forkBlock = 22374642;
+const forkBlock = 22481702;
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",
@@ -37,7 +37,7 @@ const config: HardhatUserConfig = {
                 settings: {
                     optimizer: {
                         enabled: true,
-                        runs: 250,
+                        runs: 1_000_000,
                     },
                 },
             },
@@ -46,7 +46,7 @@ const config: HardhatUserConfig = {
                 settings: {
                     optimizer: {
                         enabled: true,
-                        runs: 250,
+                        runs: 1_000_000,
                     },
                     evmVersion: "cancun",
                 },

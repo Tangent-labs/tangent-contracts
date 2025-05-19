@@ -48,7 +48,7 @@ contract IRCalculator is IIRCalculator, Ownable {
     error CallerNotOwnerOrMarketCreator(address caller);
     error NotAMarket(address market);
 
-    event MintableInterests(address market, uint256 amount);
+    event CheckpointIR(address indexed market, uint256 irAmount, uint256 newIndex);
 
     constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle, ITgUSD _tgUSD) Ownable(_owner) {
         controlTower = _controlTower;
@@ -98,6 +98,10 @@ contract IRCalculator is IIRCalculator, Ownable {
      */
     function computeIRForMarket(address market) public returns (uint256) {
         return _computeIR(tgUSDOracle.price_w(), irParams[market]);
+    }
+
+    function getIRParams(address market) external view returns (IRParams memory) {
+        return irParams[market];
     }
 
     /**
@@ -197,10 +201,10 @@ contract IRCalculator is IIRCalculator, Ownable {
         uint256 interests = (IDebtIR(market).totalDebtShares() * (newIndex - oldIndex)) / RAY;
         if (interests != 0) {
             mintableInterests += interests;
-            emit MintableInterests(market, interests);
         }
 
         debtIndexes[market] = newIndex;
+        emit CheckpointIR(market, interests, newIndex);
 
         return newIndex;
     }
@@ -232,8 +236,8 @@ contract IRCalculator is IIRCalculator, Ownable {
 
             if (interests != 0) {
                 _mintableInterests += interests;
-                emit MintableInterests(market, interests);
             }
+            emit CheckpointIR(market, interests, newIndex);
 
             debtIndexes[market] = newIndex;
 
@@ -246,8 +250,9 @@ contract IRCalculator is IIRCalculator, Ownable {
     }
 
     function mintIR() external {
-        tgUSD.mintIR(mintableInterests);
+        uint256 _mintableInterests = mintableInterests;
         delete mintableInterests;
+        tgUSD.mintIR(_mintableInterests);
     }
 
     // newIndex = oldIndex * exp(ir * timeRatio)

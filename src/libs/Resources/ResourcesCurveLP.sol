@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import "../../interfaces/externals/Curve/ICurveStable.sol";
 import "../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../interfaces/externals/Curve/ICurveStableSwapFactoryNG.sol";
+import "../../interfaces/externals/Curve/ICurveTriStable.sol";
 
 import "../../interfaces/externals/Curve/ICurveTriCryptoSwap.sol";
 import "../../interfaces/externals/Curve/ICurveCryptoSwap.sol";
@@ -17,7 +19,9 @@ library AddrCurveStableLP {
     ICurveStableSwapNG constant GHO_fxUSD = ICurveStableSwapNG(0x74345504Eaea3D9408fC69Ae7EB2d14095643c5b);
     ICurveStableSwapNG constant USDC_fxUSD = ICurveStableSwapNG(0x5018BE882DccE5E3F2f3B0913AE2096B9b3fB61f);
 
-    ICurveStableSwapNG constant TRI_USD_LP = ICurveStableSwapNG(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
+    ICurveTriStable constant TRI_USD_POOL = ICurveTriStable(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
+    IERC20Metadata constant TRI_USD_LP = IERC20Metadata(0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490);
+
     ICurveStableSwapNG constant WETH_frxETH = ICurveStableSwapNG(0x9c3B46C0Ceb5B9e304FCd6D88Fc50f7DD24B31Bc);
     ICurveStableSwapNG constant WETH_pxETH = ICurveStableSwapNG(0xC8Eb2Cf2f792F77AF0Cd9e203305a585E588179D);
 
@@ -26,7 +30,12 @@ library AddrCurveStableLP {
 
     ICurveStableSwapNG constant USR_USDC = ICurveStableSwapNG(0x3eE841F47947FEFbE510366E4bbb49e145484195);
 
-    IERC20Metadata constant TRI_USD_TOKEN = IERC20Metadata(0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490);
+    ICurveStableSwapNG constant sDAI_sUSDe = ICurveStableSwapNG(0x167478921b907422F8E88B43C4Af2B8BEa278d3A);
+    ICurveStableSwapNG constant scrvUSD_sDOLA = ICurveStableSwapNG(0x76A962BA6770068bCF454D34dDE17175611e6637);
+    ICurveStableSwapNG constant sUSDS_USDT = ICurveStableSwapNG(0x00836Fe54625BE242BcFA286207795405ca4fD10);
+
+    ICurveStable constant ETH_stETH_POOL = ICurveStable(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
+    IERC20Metadata constant ETH_stETH_LP = IERC20Metadata(0x06325440D014e39736583c165C2963BA99fAf14E);
 }
 
 library AddrCryptoSwapLP {
@@ -37,6 +46,8 @@ library AddrCryptoSwapLP {
     ICurveTriCryptoSwap constant GHO_cbBTC_ETH = ICurveTriCryptoSwap(0x8a4f252812dFF2A8636E4F7EB249d8FC2E3bd77f);
 
     // DUO
-    ICurveTriCryptoSwap constant USR_RLP = ICurveTriCryptoSwap(0xC907ba505C2E1cbc4658c395d4a2c7E6d2c32656);
-    ICurveCryptoSwap constant CVX_ETH = ICurveCryptoSwap(0xB576491F1E6e5E62f1d8F26062Ee822B40B0E0d4);
+    ICurveCryptoSwap constant USR_RLP = ICurveCryptoSwap(0xC907ba505C2E1cbc4658c395d4a2c7E6d2c32656);
+
+    ICurveCryptoSwap constant CVX_ETH_POOL = ICurveCryptoSwap(0xB576491F1E6e5E62f1d8F26062Ee822B40B0E0d4);
+    IERC20Metadata constant CVX_ETH_LP = IERC20Metadata(0x3A283D9c08E8b55966afb64C515f5143cf907611);
 }

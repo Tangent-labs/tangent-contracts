@@ -13,8 +13,8 @@ contract DebtInvariant is MarketDeploymentContext {
 
     BorrowInvariantHandler public borrowInvariantHandler;
     function setUp() public {
-        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD));
-        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD));
+        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true));
+        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, true));
         markets.push(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD));
 
         MarketExternalActions[] memory marketsMemory = new MarketExternalActions[](markets.length);

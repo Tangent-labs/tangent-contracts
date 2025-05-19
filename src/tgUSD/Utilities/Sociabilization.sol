@@ -2,6 +2,7 @@
 pragma solidity ^0.8.22;
 
 import "../Utilities/abstract/LightOwnable.sol";
+
 abstract contract Sociabilization is LightOwnable {
     /// @notice Percentage of the sociabilization fee in base 100_000.
     uint256 public socFeePercentage;
@@ -21,12 +22,18 @@ abstract contract Sociabilization is LightOwnable {
      * @param denominator    Percentage basis.
      */
     function _sociabilizationProcess(uint256 amountDeposited, bool isStake, uint256 denominator) internal returns (uint256) {
+        uint256 _socFeePending = socFeePending;
         if (isStake) {
-            amountDeposited += socFeePending;
-            delete socFeePending;
-        } else {
+            // Save gas by not updating pending fee if it's 0
+            if (_socFeePending != 0) {
+                amountDeposited += _socFeePending;
+                delete socFeePending;
+            }
+        }
+        // User prefers to save gas
+        else {
             uint256 feeTaken = (amountDeposited * socFeePercentage) / denominator;
-            socFeePending += feeTaken;
+            socFeePending = feeTaken + _socFeePending;
             amountDeposited -= feeTaken;
         }
 

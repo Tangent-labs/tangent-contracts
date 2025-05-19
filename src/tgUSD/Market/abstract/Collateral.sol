@@ -24,6 +24,8 @@ abstract contract Collateral is DebtIR, ICollateral {
     uint256 public maxLTV;
     /// @notice Liquidation threshold of the market in %.
     uint256 public liquidationThreshold;
+    /// @notice Liquidation fee taken in tgUSD.
+    uint256 public liquidationFee;
 
     /// @notice Total amount of collateral on the market
     uint256 public totalCollateral;
@@ -72,6 +74,17 @@ abstract contract Collateral is DebtIR, ICollateral {
         // Can't be less than the maxLTV
         require(_liquidationThreshold > maxLTV, NewLiquidationThresholdTooLow());
         liquidationThreshold = _liquidationThreshold;
+    }
+
+    /**
+     *  @notice Updates the liquidation fee of the market
+     *  @dev    Function callable only by the DAO
+     *  @param _liquidationFee New liquidation fee
+     */
+    function setLiquidationFee(uint256 _liquidationFee) external onlyOwner {
+        // Can't be more than 15%
+        require(_liquidationFee < 15_000, NewLiquidationThresholdTooHigh());
+        liquidationFee = _liquidationFee;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

@@ -137,21 +137,20 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      */
     function _updateReward(address market, address account, uint256 collateralBalance, uint256 totalCollateral) internal {
         uint256 rewardLength = rewardTokens[market].length;
-        if (rewardLength != 0) {
-            for (uint256 i; i < rewardLength; ) {
-                IERC20 token = rewardTokens[market][i];
 
-                rewardData[market][token].rewardPerTokenStored = _rewardPerToken(market, token, totalCollateral);
-                rewardData[market][token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[market][token].periodFinish);
+        for (uint256 i; i < rewardLength; ) {
+            IERC20 token = rewardTokens[market][i];
 
-                if (account != address(0)) {
-                    rewards[market][account][token] = _earned(market, account, token, collateralBalance, totalCollateral);
-                    userRewardPerTokenPaid[market][account][token] = rewardData[market][token].rewardPerTokenStored;
-                }
+            rewardData[market][token].rewardPerTokenStored = _rewardPerToken(market, token, totalCollateral);
+            rewardData[market][token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[market][token].periodFinish);
 
-                unchecked {
-                    ++i;
-                }
+            if (account != address(0)) {
+                rewards[market][account][token] = _earned(market, account, token, collateralBalance, totalCollateral);
+                userRewardPerTokenPaid[market][account][token] = rewardData[market][token].rewardPerTokenStored;
+            }
+
+            unchecked {
+                ++i;
             }
         }
     }

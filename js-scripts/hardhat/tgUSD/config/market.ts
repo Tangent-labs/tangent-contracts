@@ -1,5 +1,49 @@
 import {commonERC20, ConvexCrvPools, ConvexFxnPools} from "defi-resources";
 import {parseEther} from "ethers";
+import {IRParamsStruct, RCParamsStruct} from "../../../../typechain-types/src/chainview/tgUSD/GetMarketDetails";
+
+// HEC
+export const HEC_CONFIG_IR_PARAMS: IRParamsStruct = {
+    isHEC: true,
+    rMin: 4_000,
+    rMax: 400_000,
+    pMin: 980_000,
+    pMax: 995_000,
+    pInf: 990_000,
+    a1: 2_000,
+    a2: 2_000,
+    k: 250,
+};
+
+export const HEC_CONFIG_RC_PARAMS: RCParamsStruct = {
+    harvestFeePercentage: 1_000,
+    startCutPercentage: 50_000,
+    endCutPercentage: 100_000,
+    stepAmount: 4,
+    startCutPrice: 1_000_000,
+    endCutPrice: 995_000,
+};
+// LEC
+export const LEC_CONFIG_IR_PARAMS: IRParamsStruct = {
+    isHEC: false,
+    rMin: 4_000,
+    rMax: 400_000,
+    pMin: 980_000,
+    pMax: 1_000_000,
+    pInf: 997_500,
+    a1: 2_000,
+    a2: 2_750,
+    k: 250,
+};
+
+export const LEC_CONFIG_RC_PARAMS: RCParamsStruct = {
+    harvestFeePercentage: 1_000,
+    startCutPercentage: 0,
+    endCutPercentage: 0,
+    stepAmount: 1,
+    startCutPrice: 0,
+    endCutPrice: 0,
+};
 
 export const STATIC_CONFIG_CONVEX_CURVE = {
     // STABLES

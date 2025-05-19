@@ -55,7 +55,7 @@ export class BaseContext extends MainSetup {
 
     async deployContracts1() {
         this.owner = this.users[0];
-        this.feeTreso = this.users[1];
+        this.feeTreso = this.users[4];
 
         this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
         await this.controlTower.waitForDeployment();

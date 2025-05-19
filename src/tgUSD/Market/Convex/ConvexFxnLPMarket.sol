@@ -74,9 +74,7 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
 
     //TODO Seems strange to me, enters maybe in collision with sociabilization pending fees.
     function stakeAll(address receiver) external nonReentrant {
-        // Claim rewards on behalf
-        IERC20 _collatToken = collatToken;
-        _collatToken.transfer(receiver, socFeePending);
-        stakingProxyVault.deposit(_collatToken.balanceOf(address(this)), true);
+        uint256 amountToStake = _stakeAll(receiver, collatToken);
+        stakingProxyVault.deposit(amountToStake, true);
     }
 }

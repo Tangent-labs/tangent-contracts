@@ -38,6 +38,7 @@ interface IIRCalculator {
     function initializeMarket(address market, IRParams calldata _irParam) external;
 
     function simulateIR(uint256 tgUSDPrice, IRParams memory irParam) external view returns (uint256);
+
     function computeIRForMarket(address market) external returns (uint256);
 
     function checkpointIR(address market) external returns (uint256);
@@ -51,4 +52,6 @@ interface IIRCalculator {
     function indexDelta(address market) external view returns (uint256);
 
     function mintableInterests() external view returns (uint256);
+
+    function getIRParams(address market) external view returns (IRParams memory);
 }

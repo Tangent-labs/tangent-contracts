@@ -24,7 +24,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
 
         lpTgUSD_USDC = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
-        market = deployConvexCurveLPMarket(collatToken);
+        market = deployConvexCurveLPMarket(collatToken, true);
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
 

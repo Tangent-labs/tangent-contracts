@@ -16,7 +16,7 @@
 
 //     function setUp() public {
 //         collatToken = AddrCurveStableLP.USDC_crvUSD;
-//         market = deployConvexCurveLPMarket(collatToken);
+//         market = deployConvexCurveLPMarket(collatToken, true);
 //         hDeposit = new HDepositConvexCrvLP(usr1, market);
 
 //         hDeposit.depositAndBorrow(initialDeposit, initialDebt, true, usr1);

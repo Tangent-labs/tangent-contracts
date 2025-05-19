@@ -36,11 +36,11 @@ contract OracleDuoPoolStable is OracleBase {
      * @param _coin0Oracle Address of the oracle for the first coin
      * @param _coin1Oracle Address of the oracle for the second coin
      */
-    constructor(ICurveStableSwapNG _lp, IPriceOracle _coin0Oracle, IPriceOracle _coin1Oracle) {
+    constructor(address _lp, IPriceOracle _coin0Oracle, IPriceOracle _coin1Oracle) {
         params = OracleDuoPoolStruct({
             coin0Oracle: _coin0Oracle,
             coin1Oracle: _coin1Oracle,
-            lp: _lp,
+            lp: ICurveStableSwapNG(_lp),
             coin0OracleDecimals: uint16(_coin0Oracle.decimals()),
             coin1OracleDecimals: uint16(_coin1Oracle.decimals())
         });
