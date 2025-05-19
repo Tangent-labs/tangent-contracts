@@ -253,8 +253,9 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
         uint256 kickIncentivization = (_kick.percentage * amount) / 100_000;
         address tokenOwner = ownerOf(tokenId);
 
-        _burn(tokenId);
+        totalSupplyRsTan -= amount;
         delete locks[tokenId];
+        _burn(tokenId);
 
         _claimSimple(tokenId, tokenOwner, false);
         IERC20 _tan = tan;

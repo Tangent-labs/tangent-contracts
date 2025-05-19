@@ -97,7 +97,6 @@ contract LeverageMaxUI {
                 _otherStableIndex = 0;
                 otherCoin = _coin0;
             }
-
             uint256 valueTgUSD = (lp.balances(_tgUSDIndex) * tgUSDPrice) / 1e18;
             uint256 valueOtherStable = (lp.balances(_otherStableIndex) *
                 10 ** (18 - otherCoin.decimals()) *

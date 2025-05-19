@@ -170,7 +170,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         // console.logBytes(bytecode);
 
         // Encodez les arguments pour le constructeur
-        bytes memory constructorArgs = abi.encode("Tangent StableCoin", "tgUSD", controlTower);
+        bytes memory constructorArgs = abi.encode(owner, "Tangent StableCoin", "tgUSD", controlTower);
 
         // Concaténez le bytecode et les arguments
         return abi.encodePacked(bytecode, constructorArgs);
