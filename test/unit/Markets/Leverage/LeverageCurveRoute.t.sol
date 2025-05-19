@@ -12,7 +12,7 @@ contract LeverageCurveRoute is MarketDeploymentContext {
     HLPManipulator hLpManipulator;
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        market = deployConvexCurveLPMarket(collatToken);
+        market = deployConvexCurveLPMarket(collatToken, true);
     }
 
     function test_leverage_on_curve_route() external {

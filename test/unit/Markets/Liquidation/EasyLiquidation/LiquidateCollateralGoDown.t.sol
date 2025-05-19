@@ -64,9 +64,13 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         assertEq(rewardRate, rewardPerTokenStored, "RewardPerTokenStored should be 0 before processRewards");
         skip(200);
 
-        deal(address(tgUSD), usr1, market.userDebt(usr1));
+        uint256 userDebt = market.userDebt(usr1);
+        uint256 liquidationFee = (userDebt * market.liquidationFee()) / 100_000;
+        deal(address(tgUSD), usr1, userDebt + liquidationFee);
 
-        verifyLostERC20(tgUSD, usr1, market.userDebt(usr1), "tgUSD burnt from sender");
+        verifyLostERC20(tgUSD, usr1, userDebt + liquidationFee, "tgUSD burnt from sender");
+        verifyReceiveERC20(tgUSD, feeTreasury, liquidationFee, "tgUSD fee are minted on the treasury");
+
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "tgUSD burnt from sender");
 
         // Liquidation passes after EMA of price_oralce passed
@@ -158,10 +162,17 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         skip(200);
 
         vm.startPrank(usr1);
-        deal(address(tgUSD), usr1, market.userDebt(usr1));
 
-        verifyLostERC20(tgUSD, usr1, 4_000 ether, "tgUSD burnt from sender");
+        uint256 userDebt = market.userDebt(usr1);
+        uint256 liquidationFee = (userDebt * market.liquidationFee()) / 100_000;
+
+        deal(address(tgUSD), usr1, userDebt + liquidationFee);
+
+        verifyLostERC20(tgUSD, usr1, (userDebt + liquidationFee) / 2, "tgUSD burnt from sender");
+        verifyReceiveERC20(tgUSD, feeTreasury, liquidationFee / 2, "tgUSD received by the treasuryFee");
+
         verifyReceiveERC20(collatToken, usr1, 5_000 ether, "Collat sent to liquidator");
+
         // Liquidation passes after EMA of price_oralce passed
         market.liquidate(usr1, 5_000 ether, 0, ZapStruct({router: address(0), routerCall: ""}));
 
@@ -174,13 +185,20 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         assertEq(ir, 0);
 
         uint256 collatToLiquidate = 100;
-        verifyLostERC20(tgUSD, usr1, 80, "tgUSD burnt from sender");
+        verifyLostERC20(tgUSD, usr1, 81, "tgUSD burnt from sender");
+        verifyReceiveERC20(tgUSD, feeTreasury, 1, "tgUSD received by the treasuryFee");
+
         verifyReceiveERC20(collatToken, usr1, collatToLiquidate, "Collat sent to liquidator");
 
         market.liquidate(usr1, collatToLiquidate, 0, ZapStruct({router: address(0), routerCall: ""}));
         assertERC20Tracking();
 
-        verifyLostERC20(tgUSD, usr1, market.userDebt(usr1), "tgUSD burnt from sender");
+        userDebt = market.userDebt(usr1);
+        liquidationFee = (userDebt * market.liquidationFee()) / 100_000;
+
+        verifyLostERC20(tgUSD, usr1, userDebt + liquidationFee, "tgUSD burnt from sender");
+        verifyReceiveERC20(tgUSD, feeTreasury, liquidationFee, "tgUSD received by the treasuryFee");
+
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "Collat sent to liquidator");
         // Liquidation passes after EMA of price_oralce passed
         market.liquidate(usr1, market.collateralBalances(usr1), 0, ZapStruct({router: address(0), routerCall: ""}));

@@ -27,7 +27,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         lpTgUSD_USDC = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
         lpTgUSD_wfrxUSD = lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD");
 
-        market = deployConvexCurveLPMarket(collatToken);
+        market = deployConvexCurveLPMarket(collatToken, true);
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);

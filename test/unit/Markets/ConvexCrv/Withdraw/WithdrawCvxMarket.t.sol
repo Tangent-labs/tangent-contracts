@@ -19,7 +19,7 @@ contract WithdrawCvxMarket is MarketDeploymentContext {
     uint256 minimumLoan;
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        market = deployConvexCurveLPMarket(collatToken);
+        market = deployConvexCurveLPMarket(collatToken, true);
 
         hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
         hDeposit = new HDepositConvexCrvLP(usr1, market);

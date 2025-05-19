@@ -26,7 +26,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
     function setUp() public {
         collatToken = AddrCurveStableLP.WETH_frxETH;
-        market = deployConvexCurveLPMarket(collatToken);
+        market = deployConvexCurveLPMarket(collatToken, true);
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);

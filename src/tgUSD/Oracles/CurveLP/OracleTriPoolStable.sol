@@ -32,23 +32,11 @@ contract OracleTriPoolStable is OracleBase {
         });
     }
 
-    function min(uint256 a, uint256 b, uint256 c) internal pure returns (uint256) {
-        // b is smaller than a
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
         if (a > b) {
-            // c is smaller than b
-            if (b > c) {
-                return c;
-            }
             return b;
         }
-        // a is smaller than b
-        else {
-            // c is smaller than a
-            if (a > c) {
-                return c;
-            }
-            return a;
-        }
+        return a;
     }
 
     function latestAnswer() external view override returns (uint256) {
@@ -57,6 +45,6 @@ contract OracleTriPoolStable is OracleBase {
         uint256 answer1 = _coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals);
         uint256 answer2 = _coinPrice(_params.coin2Oracle, _params.coin2OracleDecimals);
 
-        return (_params.lp.get_virtual_price() * min(answer0, answer1, answer2)) / 10 ** 18;
+        return (_params.lp.get_virtual_price() * min(answer0, min(answer1, answer2))) / 10 ** 18;
     }
 }

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../Utilities/abstract/LightOwnable.sol";
 
 abstract contract Sociabilization is LightOwnable {
@@ -12,7 +13,7 @@ abstract contract Sociabilization is LightOwnable {
 
     error ZeroAmountDepositedAfterSociabilization();
     error SocFeeTooHigh();
-
+    error NothingToStake();
     /**
      * @notice Computes deposited amount regarding isStake status.
      *         Increments or decrements the pending sociabilization fee.
@@ -38,6 +39,19 @@ abstract contract Sociabilization is LightOwnable {
         }
 
         return amountDeposited;
+    }
+
+    function _stakeAll(address receiver, IERC20 _collatToken) internal returns (uint256) {
+        uint256 _balance = _collatToken.balanceOf(address(this));
+        require(_balance != 0, NothingToStake());
+        uint256 _socFeePending = socFeePending;
+        if (_socFeePending != 0) {
+            _collatToken.transfer(receiver, _socFeePending);
+            _balance -= _socFeePending;
+            delete socFeePending;
+        }
+
+        return _balance;
     }
 
     /**

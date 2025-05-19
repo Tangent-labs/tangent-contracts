@@ -21,7 +21,7 @@ contract ProcessRewardsAndClaimCvxMarket is MarketDeploymentContext {
 
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        market = deployConvexCurveLPMarket(collatToken);
+        market = deployConvexCurveLPMarket(collatToken, true);
         market2 = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
         hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
         hRewards2 = new HProcessRewards(usr1, market2, rewardAccumulator);

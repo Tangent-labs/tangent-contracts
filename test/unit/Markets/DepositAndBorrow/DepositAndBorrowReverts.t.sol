@@ -15,7 +15,7 @@ contract DepositAndBorrowReverts is MarketDeploymentContext {
     uint256 maxMarketDebt;
     function setUp() public {
         collatToken = AddrCurveStableLP.WETH_pxETH;
-        market = deployConvexCurveLPMarket(collatToken);
+        market = deployConvexCurveLPMarket(collatToken, true);
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);

@@ -5,12 +5,8 @@ import "forge-std/console.sol";
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ITgUSD, IERC20} from "../../src/interfaces/internals/tgUSD/ITgUSD.sol";
-import {Test} from "forge-std/Test.sol";
 
-import {StdCheats} from "forge-std/StdCheats.sol";
-import {StdUtils} from "forge-std/StdUtils.sol";
-
-contract MockRouter is StdCheats, StdUtils, Test {
+contract MockRouter {
     using SafeERC20 for IERC20;
     address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 

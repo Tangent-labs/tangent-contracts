@@ -25,7 +25,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         lpTgUSD_USDC = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
         lpTgUSD_wfrxUSD = lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD");
 
-        market_crvUSD_USDC = deployConvexCurveLPMarket(collatToken);
+        market_crvUSD_USDC = deployConvexCurveLPMarket(collatToken, true);
         market_fxUSD_USDC = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
 
         hDeposit_crvUSD_USDC = new HDepositConvexCrvLP(usr1, market_crvUSD_USDC);
@@ -61,10 +61,16 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
         hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 0, 1, 20_000 ether);
 
-        // Prevent the next call to fail
+        // Force the totalSupply of tgUSD howver it would fail because we inflated artifiially tgUSD total supply in dumpCrvPool
         vm.store(address(tgUSD), bytes32(uint256(2)), bytes32(uint256(100_000 ether)));
 
+        vm.prank(usr1);
+        // In case of User 2 needs a bit more tgUSD for liquidation
+        tgUSD.transfer(usr2, 1_000 ether);
+
         vm.startPrank(usr2);
+
+        tgUSD.approve(address(market_crvUSD_USDC), MAX_UINT);
 
         // Liquidation passes after IR increased the user debt over the liquidation threshold
 
@@ -82,7 +88,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         market_crvUSD_USDC.liquidate(
             usr1,
             collatDeposited,
-            5_000 ether,
+            5_200 ether,
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
                 routerCall: encoder.encodeLiquidateCallForCurveLP(
@@ -92,7 +98,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
                         ),
                         swapParams,
                         market_crvUSD_USDC.collateralBalances(usr1),
-                        5_000 ether,
+                        5_200 ether,
                         usr2
                     )
                 )
@@ -134,7 +140,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 0, 1, 20_000 ether);
 
         // Prevent the next call to fail
-        vm.store(address(tgUSD), bytes32(uint256(2)), bytes32(uint256(100_000 ether)));
+        // vm.store(address(tgUSD), bytes32(uint256(2)), bytes32(uint256(100_000 ether)));
 
         vm.startPrank(usr2);
 
