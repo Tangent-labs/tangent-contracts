@@ -73,6 +73,10 @@ contract OraclesContext is TgUSDDeployContext {
         pegKeeperRegulator = IPegKeeperRegulator(deployCode("PegKeeperRegulator", abi.encode(tgUSD, tgUSDOracle, feeTreasury, owner, owner)));
         pegKeeperTgUSD_USDC = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 20000, pegKeeperRegulator, owner)));
         pegKeeperTgUSD_frxUSD = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD"), 20000, pegKeeperRegulator, owner)));
+
+        controlTower.togglePegKeeper(address(pegKeeperTgUSD_USDC));
+        controlTower.togglePegKeeper(address(pegKeeperTgUSD_frxUSD));
+
         address[] memory pairs = new address[](2);
         pairs[0] = address(pegKeeperTgUSD_USDC);
         pairs[1] = address(pegKeeperTgUSD_frxUSD);

@@ -10,13 +10,13 @@ import "forge-std/console.sol";
 contract ControlTower is Ownable, IControlTower {
     address public feeTreasury;
 
-    mapping(address => bool) public isZapper;
-
     mapping(address => bool) public isMarket;
 
     mapping(address => bool) public isMarketCreator;
 
     mapping(address => bool) public isIRCalculator;
+
+    mapping(address => bool) public isPegKeeper;
 
     error NotIRProducer(address irProducer);
 
@@ -27,11 +27,6 @@ contract ControlTower is Ownable, IControlTower {
     }
 
     error ContractNotMarket(address market);
-
-    function getFeeTreasuryAndVerifyContractsAreMarkets(address[] calldata _markets) external view returns (address) {
-        _isContractsMarkets(_markets);
-        return feeTreasury;
-    }
 
     function isContractsMarkets(address[] calldata _markets) external view {
         _isContractsMarkets(_markets);
@@ -72,12 +67,12 @@ contract ControlTower is Ownable, IControlTower {
         isMarket[_market] = !isMarket[_market];
     }
 
-    function toggleZapper(address zapper) external onlyOwner {
-        isZapper[zapper] = !isZapper[zapper];
-    }
-
     function toggleMarketCreator(address marketCreator) external onlyOwner {
         isMarketCreator[marketCreator] = !isMarketCreator[marketCreator];
+    }
+
+    function togglePegKeeper(address pegKeeper) external onlyOwner {
+        isPegKeeper[pegKeeper] = !isPegKeeper[pegKeeper];
     }
 
     function toggleIRCalculator(address irCalculator) external onlyOwner {

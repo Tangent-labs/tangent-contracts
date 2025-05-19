@@ -6,12 +6,14 @@ contract wDOLA is MarketDeploymentContext {
     IERC20 stable = AddrClassicERC20.DOLA;
     IERC4626 saving = AddrERC4626.sDOLA;
 
-    function test_mint() external {
-        vm.startPrank(usr1);
+    function test_mint_wDOLA_with_DOLA() external {
         uint256 amountIn = 10_000 ether;
+
+        // Mint with usr1 with DOLA
+        vm.startPrank(usr1);
         deal(address(stable), usr1, amountIn);
         stable.approve(address(wDOLA), MAX_UINT);
-        vm.startSnapshotGas("WStable", "Mint wDOLA");
+        vm.startSnapshotGas("WStable", "Mint wDOLA with DOLA");
         wDOLA.mint(amountIn, usr1, false);
         vm.stopSnapshotGas();
         vm.stopPrank();
@@ -19,6 +21,7 @@ contract wDOLA is MarketDeploymentContext {
         assertEq(stable.balanceOf(usr1), 0);
         assertEq(wDOLA.balanceOf(usr1), amountIn);
 
+        // Mint with usr2 with DOLA
         vm.startPrank(usr2);
         deal(address(stable), usr2, amountIn);
         stable.approve(address(wDOLA), MAX_UINT);
@@ -29,7 +32,61 @@ contract wDOLA is MarketDeploymentContext {
         assertEq(wDOLA.balanceOf(usr2), amountIn);
     }
 
-    function test_burn() external {
+    function test_deposit_DOLA_to_wDOLA_with_deposit() external {
+        uint256 amountIn = 10_000 ether;
+        deal(address(stable), usr1, amountIn);
+        deal(address(stable), usr2, amountIn);
+        // Mint with usr1 with DOLA
+        vm.startPrank(usr1);
+        stable.approve(address(wDOLA), MAX_UINT);
+
+        verifyLostERC20(stable, usr1, amountIn, "User 1 deposit and so, lost his DOLA");
+        verifyReceiveERC20(wDOLA, usr1, amountIn, "User 1 receives the same amount of wDOLA");
+
+        vm.startSnapshotGas("WStable", "Deposit DOLA to wDOLA");
+        wDOLA.deposit(amountIn, usr1);
+
+        vm.stopSnapshotGas();
+        assertERC20Tracking();
+
+        assertEq(stable.balanceOf(usr1), 0);
+        assertEq(wDOLA.balanceOf(usr1), amountIn);
+
+        vm.stopPrank();
+
+        // Mint with usr2 with DOLA and put usr1 as receiver
+        vm.startPrank(usr2);
+        stable.approve(address(wDOLA), MAX_UINT);
+
+        verifyLostERC20(stable, usr2, amountIn, "User 2 deposit and so, lost his DOLA");
+        verifyReceiveERC20(wDOLA, usr1, amountIn, "User 1 receives wDOLA because he is in receiver");
+
+        wDOLA.deposit(amountIn, usr1);
+        assertEq(stable.balanceOf(usr2), 0);
+        assertEq(wDOLA.balanceOf(usr2), 0);
+        assertEq(wDOLA.balanceOf(usr1), 2 * amountIn);
+        vm.stopPrank();
+    }
+
+    function test_mint_wDOLA_with_sDOLA() external {
+        uint256 amountIn = 10_000 ether;
+
+        // Mint with usr1 with DOLA
+
+        uint256 expectedWDola = saving.previewDeposit(amountIn);
+        vm.startPrank(usr1);
+        deal(address(saving), usr1, amountIn);
+        saving.approve(address(wDOLA), MAX_UINT);
+        vm.startSnapshotGas("WStable", "Mint wDOLA with sDOLA");
+        wDOLA.mint(amountIn, usr1, true);
+        vm.stopSnapshotGas();
+        vm.stopPrank();
+
+        assertEq(saving.balanceOf(usr1), 0);
+        assertEq(wDOLA.balanceOf(usr1), expectedWDola);
+    }
+
+    function test_burn_wDOLA() external {
         vm.startPrank(usr1);
         uint256 amountIn = 10_000 ether;
         deal(address(stable), usr1, amountIn);
@@ -44,7 +101,7 @@ contract wDOLA is MarketDeploymentContext {
         vm.stopPrank();
 
         vm.startPrank(usr1);
-        vm.startSnapshotGas("WStable", "Burn wDOLA");
+        vm.startSnapshotGas("WStable", "Burn wDOLA to DOLA");
         wDOLA.burn(amountIn, usr1, false);
         vm.stopSnapshotGas();
         vm.stopPrank();
@@ -52,12 +109,16 @@ contract wDOLA is MarketDeploymentContext {
         assertEq(wDOLA.balanceOf(usr1), 0);
         assertEq(stable.balanceOf(usr1), amountIn);
 
+        uint256 expectedSavingOut = saving.previewWithdraw(amountIn);
         vm.startPrank(usr2);
-        wDOLA.burn(amountIn, usr2, false);
+        vm.startSnapshotGas("WStable", "Burn wDOLA to sDOLA");
+        wDOLA.burn(amountIn, usr2, true);
+        vm.stopSnapshotGas();
+
         vm.stopPrank();
 
         assertEq(wDOLA.balanceOf(usr2), 0);
-        assertEq(stable.balanceOf(usr2), amountIn);
+        assertEq(saving.balanceOf(usr2), expectedSavingOut);
     }
 
     function test_claimRewards_wDOLA() external {
