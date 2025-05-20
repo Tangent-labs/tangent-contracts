@@ -1,5 +1,5 @@
 import {ethers} from "hardhat";
-import {curveLp, PRICE_FEEDS} from "defi-resources";
+import {curveLp, PRICE_FEEDS, PendlePools, commonERC20} from "defi-resources";
 import {IAggregatorStablePriceV3, IPriceOracle} from "../../../../typechain-types";
 import {BaseContext} from "./BaseContext";
 import {LpDeployContext} from "./LPDeployContext";
@@ -25,6 +25,11 @@ export class OracleContext {
         // BTC
         {key: "BTC", oracleName: "BTC_USD"},
         {key: "cbBTC", oracleName: "cbBTC_USD"},
+    ];
+
+    oracleERC4626Params = [
+        {erc4626: "sUSDe", underlyingOracle: "USDe"},
+        {erc4626: "wstUSR", underlyingOracle: "USR"},
     ];
 
     oracleCoinFromCurveLPParams = [
@@ -59,6 +64,11 @@ export class OracleContext {
         {key: "CVX_ETH", lp: "CRV_DUO_ETH_CVX", coin0Oracle: "ETH"},
         {key: "USR_RLP", lp: "CRV_DUO_USR_RLP", coin0Oracle: "USR"},
     ];
+
+    oraclePendlePTParams = [
+        {key: "sUSDe_31_07_25", underlyingOracle: "sUSDe"},
+        {key: "wstUSR_25_07_25", underlyingOracle: "wstUSR"},
+    ];
     async fetchChainlinkOracle() {
         for (let index = 0; index < this.chainlinkOracleParams.length; index++) {
             const item = this.chainlinkOracleParams[index];
@@ -72,6 +82,15 @@ export class OracleContext {
         for (let index = 0; index < this.oracleCoinFromCurveLPParams.length; index++) {
             const item = this.oracleCoinFromCurveLPParams[index];
             this.oracles[item.key] = (await OracleCoinFromCurveLPFactory.deploy(curveLp[item.lp], this.oracles[item.coin0Oracle], item.isReversed)) as unknown as IPriceOracle;
+        }
+    }
+
+    async deployOracleCoinERC4626() {
+        const OracleERC4626Factory = await ethers.getContractFactory("OracleERC4626");
+
+        for (let index = 0; index < this.oracleERC4626Params.length; index++) {
+            const item = this.oracleERC4626Params[index];
+            this.oracles[item.erc4626] = (await OracleERC4626Factory.deploy(commonERC20[item.erc4626], this.oracles[item.underlyingOracle])) as unknown as IPriceOracle;
         }
     }
 
@@ -94,11 +113,22 @@ export class OracleContext {
         }
     }
 
+    async deployOraclePendlePT() {
+        const OraclePendlePTFactory = await ethers.getContractFactory("OraclePendlePT");
+
+        for (let index = 0; index < this.oraclePendlePTParams.length; index++) {
+            const item = this.oraclePendlePTParams[index];
+            this.oracles[item.key] = (await OraclePendlePTFactory.deploy(PendlePools[item.key].MARKET, this.oracles[item.underlyingOracle])) as unknown as IPriceOracle;
+        }
+    }
+
     async deployAndSetupOracles(baseContext: BaseContext, lpDeployContext: LpDeployContext) {
         await this.fetchChainlinkOracle();
         await this.deployOracleCoinFromCurveLP();
         await this.deployOracleDuoPoolStable();
         await this.deployOracleCryptoSwap();
+        await this.deployOracleCoinERC4626();
+        await this.deployOraclePendlePT();
 
         this.tgUSDOracle = (await (
             await ethers.getContractFactory("AggregatorStablePriceV3")

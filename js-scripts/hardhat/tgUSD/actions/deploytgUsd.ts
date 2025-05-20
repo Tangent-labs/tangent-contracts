@@ -1,6 +1,6 @@
 import {curveLp} from "defi-resources";
 import {BaseContext} from "../contexts/BaseContext";
-import {MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys} from "../contexts/MarketContext";
+import {MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys, PendlePTMarketsKeys} from "../contexts/MarketContext";
 import {OracleContext} from "../contexts/OracleContext";
 import {LpDeployContext} from "../contexts/LPDeployContext";
 import {WStablesContext} from "../contexts/WStableContext";
@@ -23,8 +23,10 @@ export async function deploytgUsd(userCount: number = 5) {
     await wStableContext.deployWStables(baseContext);
     // Create tgUSD LP
     await lpDeployContext.deployAllTgUSDLps(baseContext, wStableContext);
+
     // Setup and create all oracles
     await oracleContext.deployAndSetupOracles(baseContext, lpDeployContext);
+
     // Deploy other contracts that needed oracles and LP
     await baseContext.deployContracts2(oracleContext.tgUSDOracle, lpDeployContext);
 
@@ -55,10 +57,17 @@ export async function deploytgUsd(userCount: number = 5) {
         "CVX_ETH",
     ];
     const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD"];
+
+    const pendlePTMarkets: PendlePTMarketsKeys[] = ["sUSDe_31_07_25", "wstUSR_25_07_25"];
     // Deploy Convex CRV markets
     await marketContext.deployConvexCrvMarkets(convexCrvMarkets, baseContext, oracleContext);
+
     // Deploy Convex FXN markets
     await marketContext.deployConvexFxnMarkets(convexFxnMarkets, baseContext, oracleContext);
+
+    // Deploy Pendle PT markets
+    await marketContext.deployPendlePTMarkets(pendlePTMarkets, baseContext, oracleContext);
+
     // Approve LPs with test users
     await baseContext.approveCurveLP(await lpDeployContext.stableLp["tgUSD-USDC"].getAddress());
     await baseContext.approveCurveLP(curveLp.crvUSD_USDC);

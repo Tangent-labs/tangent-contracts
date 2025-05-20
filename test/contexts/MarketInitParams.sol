@@ -142,6 +142,21 @@ contract MarketInitParams is WStableContext {
             socFeePercentage: 1_000
         });
 
+        // Convex Curve - TriCrypto USDC
+        cvxCurveLPMaps[address(AddrCryptoSwapLP.USDC_WBTC_ETH)] = ParamsInitConvexCurveLPMarket({
+            marketInit: MarketInitSimplified({
+                collat: AddrCryptoSwapLP.USDC_WBTC_ETH,
+                maxLTV: 85_000,
+                liquidationThreshold: 93_000,
+                liquidationFee: 2_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether
+            }),
+            cvxRewardToken: AddrCvxRewardTokens.USDC_WBTC_WETH,
+            pid: PidCvxCrvBooster.USDC_WBTC_WETH,
+            socFeePercentage: 0
+        });
+
         /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
             LP without CRV inflation that are not yet on Convex
           =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */

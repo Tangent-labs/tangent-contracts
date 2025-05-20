@@ -60,7 +60,7 @@ export class BaseContext extends MainSetup {
         this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
         await this.controlTower.waitForDeployment();
 
-        this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy("Tangent USD", "tgUSD", this.controlTower);
+        this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy(this.owner, "Tangent USD", "tgUSD", this.controlTower);
         await this.tgUSD.waitForDeployment();
 
         this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy();

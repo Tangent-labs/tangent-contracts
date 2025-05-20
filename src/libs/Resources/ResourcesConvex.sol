@@ -26,6 +26,7 @@ library AddrCvxRewardTokens {
     ICvxRewardToken constant ETH_stETH_LP = ICvxRewardToken(0x0A760466E1B4621579a82a39CB56Dda2F4E70f03);
     ICvxRewardToken constant CVX_ETH_LP = ICvxRewardToken(0xb1Fb0BA0676A1fFA83882c7F4805408bA232C1fA);
     ICvxRewardToken constant scrvUSD_sDOLA_LP = ICvxRewardToken(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
+    ICvxRewardToken constant USDC_WBTC_WETH = ICvxRewardToken(0x57f4cf13b325Ad101CfE9AD3a84d3B2302AA96c8);
 }
 
 library AddrCvxVaultTokens {
@@ -49,7 +50,7 @@ library PidCvxCrvBooster {
     uint256 constant ETH_stETH_LP = 25;
     uint256 constant CVX_ETH_LP = 64;
     uint256 constant scrvUSD_sDOLA_LP = 400;
-    uint256 constant sUSDS_USDT_LP = 400;
+    uint256 constant USDC_WBTC_WETH = 189;
 }
 
 library PidCvxFxnBooster {

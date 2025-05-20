@@ -1,18 +1,18 @@
-import {commonERC20, ConvexCrvPools, ConvexFxnPools} from "defi-resources";
+import {commonERC20, ConvexCrvPools, ConvexFxnPools, PendlePools} from "defi-resources";
 import {parseEther} from "ethers";
 import {IRParamsStruct, RCParamsStruct} from "../../../../typechain-types/src/chainview/tgUSD/GetMarketDetails";
 
 // HEC
 export const HEC_CONFIG_IR_PARAMS: IRParamsStruct = {
     isHEC: true,
-    rMin: 4_000,
-    rMax: 400_000,
+    rMin: 0,
+    rMax: 160_000,
     pMin: 980_000,
+    pInf: 992_500,
     pMax: 995_000,
-    pInf: 990_000,
-    a1: 2_000,
-    a2: 2_000,
-    k: 250,
+    a1: 1_500,
+    a2: 1_500,
+    k: 300,
 };
 
 export const HEC_CONFIG_RC_PARAMS: RCParamsStruct = {
@@ -26,19 +26,19 @@ export const HEC_CONFIG_RC_PARAMS: RCParamsStruct = {
 // LEC
 export const LEC_CONFIG_IR_PARAMS: IRParamsStruct = {
     isHEC: false,
-    rMin: 4_000,
-    rMax: 400_000,
+    rMin: 2_500,
+    rMax: 160_000,
     pMin: 980_000,
     pMax: 1_000_000,
     pInf: 997_500,
-    a1: 2_000,
+    a1: 1_900,
     a2: 2_750,
-    k: 250,
+    k: 300,
 };
 
 export const LEC_CONFIG_RC_PARAMS: RCParamsStruct = {
     harvestFeePercentage: 1_000,
-    startCutPercentage: 0,
+    startCutPercentage: 5_000,
     endCutPercentage: 0,
     stepAmount: 1,
     startCutPrice: 0,
@@ -219,5 +219,26 @@ export const STATIC_CONFIG_CONVEX_FXN = {
         minimumLoan: parseEther("3000"),
         rewards: [commonERC20.FXN, commonERC20.CRV, commonERC20.CVX],
         pid: ConvexFxnPools.USDC_fxUSD.pid,
+    },
+};
+
+export const STATIC_CONFIG_PT_PENDLE = {
+    sUSDe_31_07_25: {
+        collatName: "sUSDe_31_07_25",
+        collatToken: PendlePools.sUSDe_31_07_25.PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [],
+    },
+    wstUSR_25_07_25: {
+        collatName: "wstUSR_25_07_25",
+        collatToken: PendlePools.wstUSR_25_07_25.PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [],
     },
 };
