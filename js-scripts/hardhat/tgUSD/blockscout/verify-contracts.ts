@@ -47,7 +47,7 @@ export async function verifyContracts() {
 
     // Lock
     const rsTan = "RsTan";
-    await forceAbi(client, addresses.lock.rsTan, rsTan, false, (await artifacts.readArtifact(rsTan)).abi);
+    await forceAbi(client, addresses.tokens.rsTan, rsTan, false, (await artifacts.readArtifact(rsTan)).abi);
     // Oracles
     const Oracle_USDC = "Oracle USDC";
     await forceAbi(client, addresses.oracles.USDC, Oracle_USDC, false, (await artifacts.readArtifact("IAggregatorV3")).abi);
@@ -86,6 +86,15 @@ export async function verifyContracts() {
     for (const marketObject of Object.values(addresses.markets)) {
         if (marketObject.marketType === "Convex_FXN") {
             await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Convex_FXN", false, abiMarketConvexFxn);
+        }
+    }
+
+    const abiNoSociabilization = (await artifacts.readArtifact("MarketNoSociabilization")).abi;
+
+    // Markets Pendle PT
+    for (const marketObject of Object.values(addresses.markets)) {
+        if (marketObject.marketType === "Pendle_PT") {
+            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Pendle_PT", false, abiNoSociabilization);
         }
     }
 
