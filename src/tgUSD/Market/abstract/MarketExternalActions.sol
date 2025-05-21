@@ -124,9 +124,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  tgUSDToRepay   Amount of debt to repay. This amount will be burnt
      */
     function repayAndWithdraw(uint256 withdrawAmount, uint256 tgUSDToRepay) external nonReentrant updateRewards(msg.sender) {
-        tgUSD.burnFrom(msg.sender, tgUSDToRepay);
+        uint256 tgUSDToBurn = _repayAndWithdraw(withdrawAmount, tgUSDToRepay);
 
-        _withdrawAndRepay(withdrawAmount, tgUSDToRepay);
+        tgUSD.burnFrom(msg.sender, tgUSDToBurn);
         _transferCollateralWithdraw(msg.sender, withdrawAmount);
 
         emit RepayAndWithdraw(msg.sender, withdrawAmount, tgUSDToRepay);
@@ -140,7 +140,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function zapRepayAndWithdraw(uint256 withdrawAmount, ZapStructDeposit calldata zapCall) external nonReentrant updateRewards(msg.sender) {
         uint256 tgUSDToRepay = _zapDeposit(zapCall, tgUSD, msg.sender);
 
-        uint256 tgUSDToBurn = _withdrawAndRepay(withdrawAmount, tgUSDToRepay);
+        uint256 tgUSDToBurn = _repayAndWithdraw(withdrawAmount, tgUSDToRepay);
 
         tgUSD.burnFrom(msg.sender, tgUSDToBurn);
 

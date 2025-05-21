@@ -475,7 +475,9 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
                 if (index != 0) {
                     processables[index - 1].amountForFees += rewardCutAmount;
                     processables[index - 1].amountForHarvester += harvesterAmount;
-                } else {
+                }
+                // First time the token is iterated
+                else {
                     processables[actualErc20Index++] = ProcessableRewards({rewardToken: rewardToken, amountForFees: rewardCutAmount, amountForHarvester: harvesterAmount});
                     _tStoreUintForAddress(address(rewardToken), actualErc20Index);
                 }

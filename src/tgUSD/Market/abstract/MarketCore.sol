@@ -229,7 +229,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         return (tgUSDToRepay, newUserDebtShares, totalDebtShares - sharesToRemove);
     }
 
-    function _withdrawAndRepay(uint256 amountToWithdraw, uint256 tgUSDToRepay) internal returns (uint256) {
+    function _repayAndWithdraw(uint256 amountToWithdraw, uint256 tgUSDToRepay) internal returns (uint256) {
         // Call _repay function in order to checkpoint the total debt, computes new User debt and burn corresponding amount of tgUSD.
         (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(msg.sender, tgUSDToRepay);
 
