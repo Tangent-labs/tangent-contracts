@@ -26,19 +26,20 @@ contract ControlTower is Ownable, IControlTower {
         feeTreasury = _feeTreasury;
     }
 
-    error ContractNotMarket(address market);
-
-    function isContractsMarkets(address[] calldata _markets) external view {
-        _isContractsMarkets(_markets);
+    function isContractsMarkets(address[] calldata _markets) external view returns (bool) {
+        return _isContractsMarkets(_markets);
     }
 
-    function _isContractsMarkets(address[] calldata _markets) internal view {
+    function _isContractsMarkets(address[] calldata _markets) internal view returns (bool) {
         for (uint256 i; i < _markets.length; ) {
-            require(isMarket[_markets[i]], ContractNotMarket(_markets[i]));
+            if (!isMarket[_markets[i]]) {
+                return false;
+            }
             unchecked {
                 ++i;
             }
         }
+        return true;
     }
 
     /**

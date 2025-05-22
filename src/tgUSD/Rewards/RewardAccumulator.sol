@@ -3,7 +3,7 @@ pragma solidity ^0.8.22;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 import {ICollateral} from "../../interfaces/internals/tgUSD/ICollateral.sol";
 import {IRewardAccumulator, RCParams, Reward, TokenAmount} from "../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {IAggregatorStablePriceV3} from "../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
@@ -12,7 +12,7 @@ import {IMarketExternalActions} from "../../interfaces/internals/tgUSD/IMarketEx
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
 import "forge-std/console.sol";
 
-contract RewardAccumulator is IRewardAccumulator, Ownable {
+contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     using SafeERC20 for IERC20;
 
     uint256 public constant DENOMINATOR = 100_000;
@@ -55,11 +55,17 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     error NotAMarketRewards();
     error CantAddCollatTokenAsReward();
 
-    error HarvesterFeeToHigh();
+    error HarvesterFeeTooHigh();
     error NothingToProcess();
     error RewardAlreadyAdded(IERC20 erc20);
 
-    error CallerNotOwnerOrMarketCreator(address caller);
+    error CallerNotMarketCreator(address caller);
+
+    error StartCutPriceTooHigh();
+    error StartCutPercentageBiggerThanEnd();
+    error StartCutPriceSmallerThanEnd();
+    error EndCutPercentageBiggerThan100();
+    error StartCutPercentageBiggerThan100();
 
     modifier updateReward(address market, address account) {
         (uint256 collateralBalance, uint256 totalCollateral) = ICollateral(market).getBalanceAndTotalCollateral(account);
@@ -67,19 +73,26 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         _;
     }
 
-    //TODO Add check for params
     modifier verifyRCParams(RCParams calldata _rcParam) {
-        require(_rcParam.startCutPrice <= 1e18);
-        if (_rcParam.stepAmount == 2) {
-            require(_rcParam.startCutPercentage < _rcParam.endCutPercentage);
-            require(_rcParam.startCutPrice > _rcParam.endCutPrice);
+        require(_rcParam.harvestFeePercentage <= 2_000, HarvesterFeeTooHigh());
+        require(_rcParam.startCutPrice <= 1e18, StartCutPriceTooHigh());
+        require(DENOMINATOR >= _rcParam.endCutPercentage, EndCutPercentageBiggerThan100());
+        require(DENOMINATOR >= _rcParam.startCutPercentage, StartCutPercentageBiggerThan100());
+
+        if (_rcParam.stepAmount != 0) {
+            require(_rcParam.startCutPercentage < _rcParam.endCutPercentage, StartCutPercentageBiggerThanEnd());
+            if (_rcParam.stepAmount != 1) {
+                require(_rcParam.startCutPrice > _rcParam.endCutPrice, StartCutPriceSmallerThanEnd());
+            }
         }
         _;
     }
 
-    constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle) Ownable(_owner) {
+    constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle) {
         controlTower = _controlTower;
         tgUSDOracle = _tgUSDOracle;
+
+        _transferOwnership(_owner);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -186,7 +199,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
         // Reverts if one of the market passed in parameter is not one.
         // It protects us agains a malicious user input.
-        controlTower.isContractsMarkets(markets);
+        require(controlTower.isContractsMarkets(markets), NotAMarketRewards());
         // We save this length on his own variable, to not miss with the assembly manipulations
         uint256 marketsLen = markets.length;
         TokenAmount[] memory totals = new TokenAmount[](rewardLength);
@@ -226,12 +239,10 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
         require(rewardLength == actualErc20Index, IncorrectRewardLength(rewardLength, actualErc20Index));
 
         // Iterate through tokenList
-        bool isSomethingToClaim;
         for (uint256 i; i < totals.length; ) {
             IERC20 token = totals[i].token;
             uint256 amount = totals[i].amount;
             if (amount != 0) {
-                isSomethingToClaim = true;
                 token.safeTransfer(msg.sender, amount);
             }
             // Erase transient for the token
@@ -241,7 +252,6 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
                 ++i;
             }
         }
-        require(isSomethingToClaim, NoRewardToMultiClaim());
     }
 
     /**
@@ -371,7 +381,7 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
      * @param _harvestFeePercentage Percentage fee of the rewards streamed to borrowers.
      */
     function setHarvesterFeePercentage(address market, uint16 _harvestFeePercentage) external onlyOwner {
-        require(_harvestFeePercentage <= 2_000, HarvesterFeeToHigh());
+        require(_harvestFeePercentage <= 2_000, HarvesterFeeTooHigh());
         rcParams[market].harvestFeePercentage = _harvestFeePercentage;
     }
 
@@ -445,14 +455,14 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     function processMultiRewards(address[] calldata markets, address harvestFeeReceiver, uint256 rewardLength) external {
         // Reverts if one of the market passed in parameter is not one.
         // It protects us agains a malicious user input.
-        controlTower.isContractsMarkets(markets);
+        require(controlTower.isContractsMarkets(markets), NotAMarketRewards());
 
         uint256 tgUSDPrice = tgUSDOracle.price_w();
 
         ProcessableRewards[] memory processables = new ProcessableRewards[](rewardLength);
         uint256 actualErc20Index;
 
-        for (uint256 i = 0; i < markets.length; ) {
+        for (uint256 i; i < markets.length; ) {
             address market = markets[i];
             _updateReward(market, address(0), 0, ICollateral(market).totalCollateral());
             TokenAmount[] memory rewardAmounts = IMarketExternalActions(market).claimUnderlyingRewards(rewardTokens[market]);
@@ -558,13 +568,12 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function initializeMarket(address market, RCParams calldata _rcParams) external verifyRCParams(_rcParams) {
-        require(controlTower.isMarketCreator(msg.sender), CallerNotOwnerOrMarketCreator(msg.sender));
+        require(controlTower.isMarketCreator(msg.sender), CallerNotMarketCreator(msg.sender));
         lastRewardCuts[market] = _calculateRC(tgUSDOracle.price_w(), _rcParams);
         rcParams[market] = _rcParams;
     }
 
     function updateRCParams(address market, RCParams calldata _rcParam) external verifyRCParams(_rcParam) onlyOwner {
-        require(controlTower.isMarket(market), NotAMarketRewards());
         processRewards(market, controlTower.feeTreasury());
         rcParams[market] = _rcParam;
     }
@@ -594,11 +603,11 @@ contract RewardAccumulator is IRewardAccumulator, Ownable {
     function _calculateRC(uint256 tgUSDPrice, RCParams memory _rcParams) internal pure returns (uint256) {
         uint256 stepAmount = _rcParams.stepAmount;
         // Cut percentage is always constant
-        if (stepAmount == 1) {
+        if (stepAmount == 0) {
             return _rcParams.startCutPercentage;
         }
         // Cut percentage either startCutPercentage or endCutPercetange
-        else if (stepAmount == 2) {
+        else if (stepAmount == 1) {
             if (tgUSDPrice >= uint256(_rcParams.startCutPrice) * 1e12) {
                 return _rcParams.startCutPercentage;
             } else {

@@ -1,8 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
+import "../../handler/Curve/HLPManipulator.sol";
 
 contract ProcessMultiRewards is MarketDeploymentContext {
+    HLPManipulator public lpManipulator;
+
     IERC20Metadata public collatToken1 = AddrPTPendle.eUSDe_29_05_25;
     MarketNoSociabilization public market1;
 
@@ -21,8 +24,14 @@ contract ProcessMultiRewards is MarketDeploymentContext {
     MarketExternalActions[] markets;
 
     uint256[3] distributedAmounts = [uint256(10_000 ether), uint256(2_000 ether), uint256(1_000 ether)];
+    uint256[3] processableAmountsExpected;
 
     function setUp() public {
+        // Depeg USG
+        lpManipulator = new HLPManipulator(usr2);
+        lpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 1, 0, 470_000 ether);
+
+        // Deploy several markets
         market1 = deployMarketNoSociabilisation(collatToken1);
         market2 = deployConvexCurveLPMarket(collatToken2, true);
         market3 = deployConvexCurveLPMarket(collatToken3, true);
@@ -53,38 +62,56 @@ contract ProcessMultiRewards is MarketDeploymentContext {
                 deal(address(token), address(market), distributedAmounts[j]);
             }
         }
+
+        // Skip 1 day to change USG oracle price
+        skip(1 days);
+
+        // Claim the residual rewards on Convex to be able to determine exactly the amount distributed
+        market2.cvxRewardToken().getReward(address(market2), true);
+        market3.cvxRewardToken().getReward(address(market3), true);
+        market4.stakingProxyVault().getReward();
+
+        processableAmountsExpected = [
+            AddrClassicERC20.CRV.balanceOf(address(market2)) + AddrClassicERC20.CRV.balanceOf(address(market3)) + AddrClassicERC20.CRV.balanceOf(address(market4)),
+            AddrClassicERC20.CVX.balanceOf(address(market2)) + AddrClassicERC20.CVX.balanceOf(address(market3)) + AddrClassicERC20.CVX.balanceOf(address(market4)),
+            AddrClassicERC20.FXN.balanceOf(address(market4))
+        ];
     }
 
-    //
     function test_process_reward_multiple() external {
         vm.startPrank(usr1);
 
-        uint256 totalCrvClaimed = 3 * distributedAmounts[0];
-        uint256 totalCvxClaimed = 3 * distributedAmounts[1];
-        uint256 totalFxnClaimed = distributedAmounts[2];
-
         uint256 harversterFeePercentage = (rewardAccumulator.getRCParams(address(market1))).harvestFeePercentage;
 
-        uint256 harvestFeeCRV = ((totalCrvClaimed * harversterFeePercentage) / 100_000);
-        uint256 harvestFeeCVX = ((totalCvxClaimed * harversterFeePercentage) / 100_000);
-        uint256 harvestFeeFXN = ((totalFxnClaimed * harversterFeePercentage) / 100_000);
+        uint256[3] memory processedR;
 
-        verifyReceiveERC20(AddrClassicERC20.CRV, address(rewardAccumulator), totalCrvClaimed - harvestFeeCRV);
-        verifyReceiveERC20(AddrClassicERC20.CVX, address(rewardAccumulator), totalCvxClaimed - harvestFeeCVX);
-        verifyReceiveERC20(AddrClassicERC20.FXN, address(rewardAccumulator), totalFxnClaimed - harvestFeeFXN);
+        for (uint256 i = 0; i < processableAmountsExpected.length; i++) {
+            uint256 expectedProcessable = processableAmountsExpected[i];
+            uint256 harvesterFee = (expectedProcessable * harversterFeePercentage) / 100_000;
+            IERC20 rewardToken = rewardAccumulator.rewardTokens(address(market4), i);
+            processedR[i] = expectedProcessable - harvesterFee;
 
-        verifyReceiveERC20(AddrClassicERC20.CRV, usr2, harvestFeeCRV);
-        verifyReceiveERC20(AddrClassicERC20.CVX, usr2, harvestFeeCVX);
-        verifyReceiveERC20(AddrClassicERC20.FXN, usr2, harvestFeeFXN);
-
-        rewardAccumulator.processMultiRewards(Array.memoryAddress([address(market1), address(market2), address(market3), address(market4), address(market5)]), usr2, 3);
+            verifyReceiveDeltaAbsERC20(rewardToken, address(rewardAccumulator), expectedProcessable - harvesterFee, 1);
+            verifyReceiveDeltaAbsERC20(rewardToken, usr2, harvesterFee, 1);
+        }
 
         uint256 lastRewardCutPercentage = rewardAccumulator.lastRewardCuts(address(market1));
 
-        assertEq(((totalCrvClaimed - harvestFeeCRV) * lastRewardCutPercentage) / 100_000, rewardAccumulator.cutFeeForToken(AddrClassicERC20.CRV));
-        assertEq(((totalCvxClaimed - harvestFeeCVX) * lastRewardCutPercentage) / 100_000, rewardAccumulator.cutFeeForToken(AddrClassicERC20.CVX));
-        assertEq(((totalFxnClaimed - harvestFeeFXN) * lastRewardCutPercentage) / 100_000, rewardAccumulator.cutFeeForToken(AddrClassicERC20.FXN));
+        rewardAccumulator.processMultiRewards(Array.memoryAddress([address(market1), address(market2), address(market3), address(market4), address(market5)]), usr2, 3);
+
+        assertLt(lastRewardCutPercentage, rewardAccumulator.lastRewardCuts(address(market1)));
+
+        for (uint256 i; i < processedR.length; i++) {
+            IERC20 rewardToken = rewardAccumulator.rewardTokens(address(market4), i);
+            assertApproxEqAbs((processedR[i] * lastRewardCutPercentage) / 100_000, rewardAccumulator.cutFeeForToken(rewardToken), 1);
+        }
 
         assertERC20Tracking();
+    }
+
+    function test_processMultiRewards_fails_if_one_market_in_params_is_not_a_market() external {
+        address[] memory _markets = Array.memoryAddress([address(market1), address(market2), address(market3), address(usr2), address(market5)]);
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NotAMarketRewards.selector));
+        rewardAccumulator.processMultiRewards(_markets, usr2, 3);
     }
 }

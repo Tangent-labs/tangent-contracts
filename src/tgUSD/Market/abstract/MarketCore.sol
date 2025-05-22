@@ -317,7 +317,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             liquidateCall._totalDebtShares - debtSharesToRemove
         );
 
-        uint256 fee = (tgUSDToRepay * liquidationFee) / 100_000;
+        uint256 fee = (tgUSDToRepay * liquidationFee) / DENOMINATOR;
 
         _postLiquidate(collatAmountToLiquidate, tgUSDToRepay + fee, liquidateCall.minTgUSDOut, routerCall);
 
@@ -332,7 +332,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         IZappingProxy _zappingProxy = zappingProxy;
         // Withdraw the collateral from the underlying protocol if needed and
         // Transfer it to the caller when there is no liquidator passed in parameter
-        // If a liquidator is passed, we send the collateral to the liquidator
+        // If a liquidator is passed, we send the collateral to the Zapping Proxy that will handle the sell of the collateral.
         _transferCollateralWithdraw(routerCall.router != address(0) ? address(_zappingProxy) : msg.sender, collatAmountToLiquidate);
         // When liquidator is not zero, it allows to the LiquidatorProxy to receive the collateral.
         // Then, if needed, liquidator will allow the custom Liquidator to sell the collateral for tgUSD in the same transaction.

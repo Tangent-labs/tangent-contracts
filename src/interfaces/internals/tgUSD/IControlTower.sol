@@ -10,7 +10,7 @@ interface IControlTower {
 
     function isMarketCreator(address marketCreator) external view returns (bool);
 
-    function isContractsMarkets(address[] calldata _markets) external view;
+    function isContractsMarkets(address[] calldata _markets) external view returns (bool);
 
     function isPegKeeper(address pegKeeper) external view returns (bool);
 

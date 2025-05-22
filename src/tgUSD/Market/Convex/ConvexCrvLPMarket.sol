@@ -35,8 +35,7 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
         _initializationCommon(_marketConstants, _marketInit);
 
         // Sociabilization
-        require(_socFeePercentage <= 2_000, SocFeeTooHigh());
-        socFeePercentage = _socFeePercentage;
+        _initializeSociabilization(_socFeePercentage);
 
         if (address(_cvxRewardToken) != address(0)) {
             // Convex Crv

@@ -14,6 +14,11 @@ abstract contract Sociabilization is LightOwnable {
     error ZeroAmountDepositedAfterSociabilization();
     error SocFeeTooHigh();
     error NothingToStake();
+
+    function _initializeSociabilization(uint256 _socFeePercentage) internal {
+        require(_socFeePercentage <= 2_000, SocFeeTooHigh());
+        socFeePercentage = _socFeePercentage;
+    }
     /**
      * @notice Computes deposited amount regarding isStake status.
      *         Increments or decrements the pending sociabilization fee.

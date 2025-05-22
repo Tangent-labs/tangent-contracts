@@ -40,7 +40,7 @@ export const LEC_CONFIG_RC_PARAMS: RCParamsStruct = {
     harvestFeePercentage: 1_000,
     startCutPercentage: 5_000,
     endCutPercentage: 0,
-    stepAmount: 1,
+    stepAmount: 0,
     startCutPrice: 0,
     endCutPrice: 0,
 };

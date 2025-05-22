@@ -19,8 +19,7 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
         _initializationCommon(_marketConstants, _marketInit);
 
         // Sociabilization
-        require(_socFeePercentage <= 2_000, SocFeeTooHigh());
-        socFeePercentage = _socFeePercentage;
+        _initializeSociabilization(_socFeePercentage);
 
         // Convex FXN
         address vaultAddress = CVX_BOOSTER.createVault(_pid);

@@ -46,7 +46,7 @@ contract IRCalculator is IIRCalculator, Ownable {
 
     error IRStartPriceLtOne();
     error CallerNotOwnerOrMarketCreator(address caller);
-    error NotAMarket(address market);
+    error NotAMarket();
 
     event CheckpointIR(address indexed market, uint256 irAmount, uint256 newIndex);
 
@@ -54,11 +54,6 @@ contract IRCalculator is IIRCalculator, Ownable {
         controlTower = _controlTower;
         tgUSDOracle = _tgUSDOracle;
         tgUSD = _tgUSD;
-    }
-
-    modifier onlyMarket(address market) {
-        require(controlTower.isMarket(market), NotAMarket(market));
-        _;
     }
 
     //TODO Add check for params
@@ -189,7 +184,9 @@ contract IRCalculator is IIRCalculator, Ownable {
         return _checkpointIR(market);
     }
 
-    function _checkpointIR(address market) internal onlyMarket(market) returns (uint256) {
+    function _checkpointIR(address market) internal returns (uint256) {
+        require(controlTower.isMarket(market), NotAMarket());
+
         IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
 
         irCheckpoints[market] = IRCheckpoint({ir: _computeIR(tgUSDOracle.price_w(), irParams[market]), timestamp: uint40(block.timestamp)});
@@ -218,7 +215,7 @@ contract IRCalculator is IIRCalculator, Ownable {
      *                    - Interest Generated = 2M * 5% = 100 000
      */
     function checkpointIRMulti(address[] calldata markets) external {
-        controlTower.isContractsMarkets(markets);
+        require(controlTower.isContractsMarkets(markets), NotAMarket());
 
         uint256 newTgUSDPrice = tgUSDOracle.price_w();
 

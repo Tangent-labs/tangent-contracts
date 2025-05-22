@@ -37,15 +37,15 @@ contract RewardCutFormulaComputation is MarketDeploymentContext {
     }
 
     function test_rewardCut_with_one_step() external view {
-        uint256 rcCalculated = rewardAccumulator.simulateRC(993500000000000000, RCParams(0, uint16(1), uint32(12_000), uint32(100_000), uint80(996_000), uint80(991_000)));
+        uint256 rcCalculated = rewardAccumulator.simulateRC(993500000000000000, RCParams(0, uint16(0), uint32(12_000), uint32(100_000), uint80(996_000), uint80(991_000)));
         assertEq(rcCalculated, 12_000);
     }
 
     function test_rewardCut_with_two_steps() external view {
-        uint256 rcCalculated = rewardAccumulator.simulateRC(996000000000000000, RCParams(0, uint16(2), uint32(12_000), uint32(50_000), uint80(996_000), uint80(991_000)));
+        uint256 rcCalculated = rewardAccumulator.simulateRC(996000000000000000, RCParams(0, uint16(1), uint32(12_000), uint32(50_000), uint80(996_000), uint80(991_000)));
         assertEq(rcCalculated, 12_000);
 
-        rcCalculated = rewardAccumulator.simulateRC(995000000000000000, RCParams(0, uint16(2), uint32(12_000), uint32(50_000), uint80(996_000), uint80(991_000)));
+        rcCalculated = rewardAccumulator.simulateRC(995000000000000000, RCParams(0, uint16(1), uint32(12_000), uint32(50_000), uint80(996_000), uint80(991_000)));
         assertEq(rcCalculated, 50_000);
     }
 }
