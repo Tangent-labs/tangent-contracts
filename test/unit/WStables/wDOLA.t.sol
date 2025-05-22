@@ -73,7 +73,7 @@ contract wDOLA is MarketDeploymentContext {
 
         // Mint with usr1 with DOLA
 
-        uint256 expectedWDola = saving.previewDeposit(amountIn);
+        uint256 expectedWDola = saving.previewMint(amountIn);
         vm.startPrank(usr1);
         deal(address(saving), usr1, amountIn);
         saving.approve(address(wDOLA), MAX_UINT);
@@ -128,13 +128,13 @@ contract wDOLA is MarketDeploymentContext {
         stable.approve(address(wDOLA), MAX_UINT);
         wDOLA.mint(amountIn, usr1, false);
 
-        uint256 pps = saving.previewDeposit(1e18);
+        uint256 pps = saving.previewMint(1e18);
 
         deal(address(stable), address(saving), stable.balanceOf(address(saving)) + 100_000 ether);
         // saving.syncRewardsAndDistribution();
         skip(1 weeks);
 
-        assertLt(saving.previewDeposit(1e18), pps);
+        assertLt(pps, saving.previewMint(1e18));
 
         vm.stopPrank();
 

@@ -49,7 +49,7 @@ contract WStable is ERC20, LightOwnable {
 
         if (isSaving) {
             IERC4626 _savingAccount = savingAccount;
-            amountToMint = _savingAccount.previewDeposit(amountIn);
+            amountToMint = _savingAccount.previewMint(amountIn);
             _savingAccount.transferFrom(msg.sender, address(this), amountIn);
         } else {
             stable.transferFrom(msg.sender, address(this), amountIn);

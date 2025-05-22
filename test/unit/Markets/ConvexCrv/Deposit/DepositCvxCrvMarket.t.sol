@@ -13,6 +13,9 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
     HProcessRewards public hRewards;
     HDepositConvexCrvLP public hDeposit;
     HBorrow public hBorrow;
+
+    uint256 amountIn = 100 ether;
+
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
         market = deployConvexCurveLPMarket(collatToken, true);
@@ -22,7 +25,6 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
         hBorrow = new HBorrow(usr1, market);
     }
 
-    //
     function test_deposit_stake() external {
         verifyReceiveERC20(market.cvxRewardToken(), address(market), 100 ether, "Verify that market receives Cvx Reward tokens");
         verifyBalERC20NotChanging(collatToken, address(market), "Verify that as staking, no LP are received by the MarketCore");
@@ -51,10 +53,6 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
     }
 
     function test_deposit_no_stake() external {
-        uint256 amountIn = 100 ether;
-
-        collatToken.approve(address(market), MAX_UINT);
-
         uint256 feeToTake = (amountIn * market.socFeePercentage()) / 100_000;
         uint256 amountStaked = amountIn - feeToTake;
 
@@ -66,6 +64,8 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
         vm.startSnapshotGas("Deposit", "First deposit ever on the market and no stake");
         hDeposit.deposit(usr1, amountIn, false);
         vm.stopSnapshotGas("Deposit", "First deposit ever on the market and no stake");
+
+        assertERC20Tracking();
 
         skip(100);
 
@@ -86,8 +86,6 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
     }
 
     function test_deposit_no_stake_then_stake() external {
-        uint256 amountIn = 100 ether;
-
         vm.startPrank(usr1);
 
         hDeposit.deposit(usr1, amountIn, true);
@@ -100,6 +98,7 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
         verifyLostERC20(collatToken, usr1, amountIn, "Verify that user sent its LP");
 
         hDeposit.deposit(usr1, amountIn, false);
+        assertERC20Tracking();
 
         assertEq(market.totalCollateral(), amountStaked + amountIn, "Total collateral is not right");
         assertEq(market.collateralBalances(usr1), amountStaked + amountIn, "Collateral deposited must be equal to collateralBalances");
@@ -119,5 +118,26 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
         vm.startSnapshotGas("Deposit", "Second user deposit, stakes and takes pendingFees");
         hDeposit.deposit(usr1, amountIn, true);
         vm.stopSnapshotGas("Deposit", "Second user deposit, stakes and takes pendingFees");
+    }
+
+    function test_deposit_no_stake_and_stake_all() external {
+        uint256 feeToTake = (amountIn * market.socFeePercentage()) / 100_000;
+        uint256 amountStaked = amountIn - feeToTake;
+
+        verifyBalERC20NotChanging(market.cvxRewardToken(), address(market), "Verify that as not staking, no Cvx rewards are received");
+        verifyReceiveERC20(collatToken, address(market), amountIn, "Verify that market receives Cvx Reward tokens");
+        verifyLostERC20(collatToken, usr1, amountIn, "Verify that user sent its LP");
+
+        hDeposit.deposit(usr1, amountIn, false);
+        assertERC20Tracking();
+
+        vm.startPrank(usr3);
+
+        verifyReceiveERC20(market.cvxRewardToken(), address(market), amountStaked, "Verify that market receives Cvx Reward tokens");
+        verifyReceiveERC20(collatToken, address(usr2), feeToTake, "User2 and not user3 receives pending soc fee");
+        verifyLostERC20(collatToken, address(market), amountIn, "Verify that user sent its LP");
+
+        market.stakeAll(usr2);
+        assertERC20Tracking();
     }
 }

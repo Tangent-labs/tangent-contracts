@@ -74,7 +74,7 @@ contract wUSR is MarketDeploymentContext {
 
         // Mint with usr1 with USR
 
-        uint256 expectedwUSR = saving.previewDeposit(amountIn);
+        uint256 expectedwUSR = saving.previewMint(amountIn);
         vm.startPrank(usr1);
         deal(address(saving), usr1, amountIn);
         saving.approve(address(wUSR), MAX_UINT);
@@ -182,13 +182,13 @@ contract wUSR is MarketDeploymentContext {
         stable.approve(address(wUSR), MAX_UINT);
         wUSR.mint(amountIn, usr1, false);
 
-        uint256 pps = saving.previewDeposit(1e18);
+        uint256 pps = saving.previewMint(1e18);
 
         // Simulate a reward distribution ( increase the index )
         stable.transfer(address(stUSR), amountToDistribute - amountIn);
         skip(1 weeks);
 
-        assertLt(saving.previewDeposit(1e18), pps);
+        assertLt(pps, saving.previewMint(1e18));
 
         vm.stopPrank();
 

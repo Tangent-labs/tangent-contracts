@@ -67,12 +67,6 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     error EndCutPercentageBiggerThan100();
     error StartCutPercentageBiggerThan100();
 
-    modifier updateReward(address market, address account) {
-        (uint256 collateralBalance, uint256 totalCollateral) = ICollateral(market).getBalanceAndTotalCollateral(account);
-        _updateReward(market, account, collateralBalance, totalCollateral);
-        _;
-    }
-
     modifier verifyRCParams(RCParams calldata _rcParam) {
         require(_rcParam.harvestFeePercentage <= 2_000, HarvesterFeeTooHigh());
         require(_rcParam.startCutPrice <= 1e18, StartCutPriceTooHigh());
@@ -259,7 +253,10 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      * @param market  Market address to claim rewards from
      * @param account Address to claim rewards for
      */
-    function _claimRewards(address market, address account) internal updateReward(market, account) returns (TokenAmount[] memory) {
+    function _claimRewards(address market, address account) internal returns (TokenAmount[] memory) {
+        (uint256 collateralBalance, uint256 totalCollateral) = ICollateral(market).getBalanceAndTotalCollateral(account);
+        _updateReward(market, account, collateralBalance, totalCollateral);
+
         uint256 rewardTokensLength = rewardTokens[market].length;
         TokenAmount[] memory tokenAmounts = new TokenAmount[](rewardTokensLength);
         uint256 counter;
