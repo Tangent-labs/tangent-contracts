@@ -21,8 +21,8 @@ contract PegKeeperTest is MarketDeploymentContext {
         uint256 priceOracle = lpDeploymentContext.tgUSDLPs("tgUSD-USDC").price_oracle(0);
         uint256 priceOracle2 = lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD").price_oracle(0);
         vm.startPrank(owner);
-        tgUSD.mintPegKeeper(2_000_000 ether, address(pegKeeperTgUSD_USDC));
-        tgUSD.mintPegKeeper(2_000_000 ether, address(pegKeeperTgUSD_frxUSD));
+        tgUSD.mintPegKeeper(address(pegKeeperTgUSD_USDC), 2_000_000 ether);
+        tgUSD.mintPegKeeper(address(pegKeeperTgUSD_frxUSD), 2_000_000 ether);
         vm.stopPrank();
 
         pegKeeperTgUSD_USDC.update(owner);

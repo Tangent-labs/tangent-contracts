@@ -16,8 +16,13 @@ contract TgUSD is ERC20, ITgUSD, LightOwnable {
     error OnlyIRCalculator();
     error MintOnlyOnPegKeeper();
 
-    constructor(address _owner, string memory _name, string memory _symbol, IControlTower _controlTower) ERC20(_name, _symbol) {
-        owner = _owner;
+    /**
+     * @notice Constructor of tgUSD
+     * @param _dao           Address of the DAO that becomes the owner of the contract
+     * @param _controlTower Address of the control tower
+     */
+    constructor(address _dao, IControlTower _controlTower) ERC20("Tangent USD", "tgUSD") {
+        owner = _dao;
         controlTower = _controlTower;
     }
 
@@ -26,25 +31,53 @@ contract TgUSD is ERC20, ITgUSD, LightOwnable {
         _;
     }
 
+    /**
+     * @notice Markets call this function to mint tgUSD when users borrow.
+     * @dev    Only callable by a market
+     * @param to     Receiver of the tgUSD
+     * @param amount Amount of tgUSD borrowed to mint
+     */
     function mint(address to, uint256 amount) external onlyMarketCaller {
         _mint(to, amount);
     }
 
+    /**
+     * @notice IRCalculator call this function to mint tgUSD inflated through interests.
+     * @dev    Only callable by an IRCalculator
+     * @param amount Amount of tgUSD borrowed to mint to the Fee Treasury
+     */
     function mintIR(uint256 amount) external {
-        IControlTower _controlTower = controlTower;
-        require(_controlTower.isIRCalculator(msg.sender), OnlyIRCalculator());
-        _mint(_controlTower.feeTreasury(), amount);
+        (address _feeTreasury, bool isIRCalculator) = controlTower.getFeeTreasuryAndIsIRCalculator(msg.sender);
+        require(isIRCalculator, OnlyIRCalculator());
+        _mint(_feeTreasury, amount);
     }
 
-    function mintPegKeeper(uint256 amount, address pegKeeper) external onlyOwner {
+    /**
+     * @notice Mints tgUSD on a pegKeeper.
+     * @dev    Only callable by the DAO.
+     * @param pegKeeper PegKeeper address to mint tgUSD on
+     * @param amount    Amount of tgUSD to mint on the pegKeeper
+     */
+    function mintPegKeeper(address pegKeeper, uint256 amount) external onlyOwner {
         require(controlTower.isPegKeeper(pegKeeper), MintOnlyOnPegKeeper());
         _mint(pegKeeper, amount);
     }
 
+    /**
+     * @notice Markets call this function to burn tgUSD when users repay their loans.
+     * @dev    Only callable by the DAO
+     * @param from      Address to burn the tgUSD from
+     * @param amount    Amount of tgUSD to burn from the address
+     */
     function burnFrom(address from, uint256 amount) external onlyMarketCaller {
         _burn(from, amount);
     }
 
+    /**
+     * @notice Burns tgUSD of the caller
+     * @dev    Callable by anyone that have tgUSD.
+     * @param amount Amount of tgUSD to burn from the caller
+     */
     function burn(uint256 amount) external {
         _burn(msg.sender, amount);
     }

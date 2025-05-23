@@ -42,6 +42,9 @@ contract ControlTower is Ownable, IControlTower {
         return true;
     }
 
+    function getFeeTreasuryAndIsIRCalculator(address irCalculator) external view returns (address, bool) {
+        return (feeTreasury, isIRCalculator[irCalculator]);
+    }
     /**
      *  @notice Toggle booleans linked to a list of address to flag them as market or no.
      *  @dev    Callable only by the owner.

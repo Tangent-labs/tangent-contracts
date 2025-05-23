@@ -4,16 +4,22 @@ import {ERC20, ERC20Capped} from "@openzeppelin/contracts/token/ERC20/extensions
 
 import "forge-std/console.sol";
 /// @notice
-contract Tan is ERC20Capped {
+contract Tan is ERC20 {
     error ZeroAmount();
-    constructor() ERC20Capped(10_000_000 ether) ERC20("Tangent Token", "TAN") {}
 
-    //TODO See how to do the mint
-    function mint(address to, uint256 amountIn) external {
-        require(amountIn != 0, ZeroAmount());
-        _mint(to, amountIn);
+    /**
+     * @notice All tokens are minted at launch on the DAO.
+     *         The DAO creates the liquidity and dispatch TAN to the airdrop.
+     * @param dao address receiving the totality of the supply at launch.
+     */
+    constructor(address dao) ERC20("Tangent Token", "TAN") {
+        _mint(dao, 10_000_000 ether);
     }
 
+    /**
+     * @notice Burn TAN tokens from the caller
+     * @param amount Amount of TAN to burn
+     */
     function burn(uint256 amount) external {
         require(amount != 0, ZeroAmount());
         _burn(msg.sender, amount);

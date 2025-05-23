@@ -19,4 +19,6 @@ interface IControlTower {
     function feeTreasury() external view returns (address);
 
     function toggleMarket(address market) external;
+
+    function getFeeTreasuryAndIsIRCalculator(address irCalculator) external view returns (address, bool);
 }
