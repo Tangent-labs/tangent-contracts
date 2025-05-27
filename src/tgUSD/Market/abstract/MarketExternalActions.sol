@@ -95,7 +95,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  isStaked       Amount of collateral to deposit
      * @param  zapCall        Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
      */
-    function zapDepositAndBorrow(uint256 debtBorrow, bool isStaked, ZapStructDeposit calldata zapCall) external nonReentrant updateRewards(msg.sender) {
+    function zapDepositAndBorrow(uint256 debtBorrow, bool isStaked, ZapStructDeposit calldata zapCall) external payable nonReentrant updateRewards(msg.sender) {
         IERC20 _collatToken = collatToken;
         uint256 collatReceived = _zapDeposit(zapCall, _collatToken, address(this));
 
@@ -137,7 +137,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  withdrawAmount Amount of collateral to withdraw
      * @param  zapCall        Zap details
      */
-    function zapRepayAndWithdraw(uint256 withdrawAmount, ZapStructDeposit calldata zapCall) external nonReentrant updateRewards(msg.sender) {
+    function zapRepayAndWithdraw(uint256 withdrawAmount, ZapStructDeposit calldata zapCall) external payable nonReentrant updateRewards(msg.sender) {
         uint256 tgUSDToRepay = _zapDeposit(zapCall, tgUSD, msg.sender);
 
         uint256 tgUSDToBurn = _repayAndWithdraw(withdrawAmount, tgUSDToRepay);

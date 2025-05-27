@@ -60,7 +60,7 @@ export class BaseContext extends MainSetup {
         this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
         await this.controlTower.waitForDeployment();
 
-        this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy(this.owner, "Tangent USD", "tgUSD", this.controlTower);
+        this.tgUSD = await (await ethers.getContractFactory("TgUSD")).deploy(this.owner, this.controlTower);
         await this.tgUSD.waitForDeployment();
 
         this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy();
@@ -68,14 +68,8 @@ export class BaseContext extends MainSetup {
 
         await this.deploySgUSD();
 
-        this.tan = await (await ethers.getContractFactory("Tan")).deploy();
+        this.tan = await (await ethers.getContractFactory("Tan")).deploy(this.owner);
         await this.tan.waitForDeployment();
-
-        await this.tan.mint(this.users[0], parseEther("100000"));
-        await this.tan.mint(this.users[1], parseEther("100000"));
-        await this.tan.mint(this.users[2], parseEther("100000"));
-        await this.tan.mint(this.users[3], parseEther("100000"));
-        await this.tan.mint(this.users[4], parseEther("100000"));
 
         this.rsTan = await (await ethers.getContractFactory("RsTan")).deploy(this.owner, this.controlTower, this.tan, this.tgUSD, this.sgUSD, this.zappingProxy);
         await this.rsTan.waitForDeployment();

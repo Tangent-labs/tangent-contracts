@@ -45,7 +45,7 @@ contract IRCalculator is IIRCalculator, Ownable {
     mapping(address => uint256) public debtIndexes;
 
     error IRStartPriceLtOne();
-    error CallerNotOwnerOrMarketCreator(address caller);
+    error CallerNotMarketCreator();
     error NotAMarket();
 
     event CheckpointIR(address indexed market, uint256 irAmount, uint256 newIndex);
@@ -71,7 +71,7 @@ contract IRCalculator is IIRCalculator, Ownable {
     }
 
     function initializeMarket(address market, IRParams calldata _irParams) external verifyIRParams(_irParams) {
-        require(controlTower.isMarketCreator(msg.sender), CallerNotOwnerOrMarketCreator(msg.sender));
+        require(controlTower.isMarketCreator(msg.sender), CallerNotMarketCreator());
         debtIndexes[market] = RAY;
         irParams[market] = _irParams;
 
@@ -97,6 +97,10 @@ contract IRCalculator is IIRCalculator, Ownable {
 
     function getIRParams(address market) external view returns (IRParams memory) {
         return irParams[market];
+    }
+
+    function getIRCheckpoint(address market) external view returns (IRCheckpoint memory) {
+        return irCheckpoints[market];
     }
 
     /**
@@ -242,7 +246,6 @@ contract IRCalculator is IIRCalculator, Ownable {
                 ++i;
             }
         }
-
         mintableInterests += _mintableInterests;
     }
 
