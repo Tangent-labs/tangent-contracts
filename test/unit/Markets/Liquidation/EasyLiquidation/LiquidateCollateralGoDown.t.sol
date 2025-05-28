@@ -82,12 +82,13 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         assertEq(rewardRate, 0, "Reward rate should be 0 before processRewards");
         assertEq(rewardRate, rewardPerTokenStored, "RewardPerTokenStored should be 0 before processRewards");
 
+        uint256 pendingInterests = irCalculator.mintableInterests();
         assertEq(market.userDebt(usr1), 0);
-        assertEq(market.totalDebt(), tgUSDBorrowed * 2, "Total debt wrong");
+        assertEq(market.totalDebt(), tgUSDBorrowed * 2 + ((pendingInterests * 2) / 3), "Total debt wrong");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
-        assertEq(ir, 0);
+        assertEq(ir, uint256(irCalculator.getIRParams(address(market)).rMin) * 1e13);
 
         skip(1 days);
 
@@ -164,12 +165,13 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         vm.startPrank(usr1);
 
         uint256 userDebt = market.userDebt(usr1);
-        uint256 liquidationFee = (userDebt * market.liquidationFee()) / 100_000;
+        uint256 debtToRepay = userDebt / 2;
+        uint256 liquidationFee = (debtToRepay * market.liquidationFee()) / 100_000;
 
-        deal(address(tgUSD), usr1, userDebt + liquidationFee);
+        deal(address(tgUSD), usr1, 2 * userDebt);
 
-        verifyLostERC20(tgUSD, usr1, (userDebt + liquidationFee) / 2, "tgUSD burnt from sender");
-        verifyReceiveERC20(tgUSD, feeTreasury, liquidationFee / 2, "tgUSD received by the treasuryFee");
+        verifyLostERC20(tgUSD, usr1, (debtToRepay + liquidationFee), "tgUSD burnt from sender");
+        verifyReceiveERC20(tgUSD, feeTreasury, liquidationFee, "tgUSD received by the treasuryFee");
 
         verifyReceiveERC20(collatToken, usr1, 5_000 ether, "Collat sent to liquidator");
 
@@ -177,12 +179,13 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         market.liquidate(usr1, 5_000 ether, 0, ZapStruct({router: address(0), routerCall: ""}));
 
         assertERC20Tracking();
-        assertEq(market.userDebt(usr1), 4_000 ether);
-        assertEq(market.totalDebt(), tgUSDBorrowed * 2 + 4_000 ether);
+
+        assertEq(market.userDebt(usr1), userDebt - debtToRepay);
+        assertEq(market.totalDebt(), market.userDebt(usr1) + market.userDebt(usr2) + market.userDebt(usr3), "Total Debt");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
-        assertEq(ir, 0);
+        assertEq(ir, uint256(irCalculator.getIRParams(address(market)).rMin) * 1e13, "IR is at the minimum");
 
         uint256 collatToLiquidate = 100;
         verifyLostERC20(tgUSD, usr1, 81, "tgUSD burnt from sender");

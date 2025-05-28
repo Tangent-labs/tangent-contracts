@@ -70,13 +70,17 @@ contract ZapLeverage is MarketDeploymentContext {
             })
         );
 
+        uint256 index = irCalculator.debtIndexes(address(market));
+
+        uint256 shares = (tgUSDToFlashMint * RAY) / index;
+
         uint256 expectedStaked = (totalCollat * (100_000 - market.socFeePercentage())) / 100_000;
         assertEq(market.collateralBalances(usr4), expectedStaked);
         assertEq(market.totalCollateral(), expectedStaked);
         assertEq(market.socFeePending(), totalCollat - expectedStaked);
 
-        assertEq(market.userDebt(usr4), tgUSDToFlashMint - 1);
-        assertEq(market.totalDebt(), tgUSDToFlashMint - 1);
+        assertEq(market.userDebt(usr4), (shares * index) / RAY);
+        assertEq(market.totalDebt(), (shares * index) / RAY);
 
         assertERC20Tracking();
     }
@@ -108,13 +112,15 @@ contract ZapLeverage is MarketDeploymentContext {
                 zap: encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, usdtIn, collatToken, address(market), collatReceivedFromZap)
             })
         );
+        uint256 index = irCalculator.debtIndexes(address(market));
+        uint256 shares = (tgUSDToFlashMint * RAY) / index;
 
         assertEq(market.collateralBalances(usr4), totalCollat);
         assertEq(market.totalCollateral(), totalCollat);
         assertEq(market.socFeePending(), 0);
 
-        assertEq(market.userDebt(usr4), tgUSDToFlashMint - 1);
-        assertEq(market.totalDebt(), tgUSDToFlashMint - 1);
+        assertEq(market.userDebt(usr4), (shares * index) / RAY);
+        assertEq(market.totalDebt(), (shares * index) / RAY);
 
         assertERC20Tracking();
 

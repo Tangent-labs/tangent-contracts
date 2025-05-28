@@ -83,11 +83,13 @@ contract LeverageMock is MarketDeploymentContext {
         assertEq(market.totalCollateral(), expectedStaked);
         assertEq(market.socFeePending(), totalCollat - expectedStaked);
 
-        assertEq(market.userDebt(usr3), tgUSDToFlashMint - 1);
-        assertEq(market.totalDebt(), tgUSDToFlashMint - 1);
+        uint256 shares = (tgUSDToFlashMint * RAY) / index;
 
-        assertEq(market.userDebtShares(usr3), (tgUSDToFlashMint * RAY) / index);
-        assertEq(market.totalDebtShares(), (tgUSDToFlashMint * RAY) / index);
+        assertEq(market.userDebt(usr3), (shares * index) / RAY);
+        assertEq(market.totalDebt(), (shares * index) / RAY);
+
+        assertEq(market.userDebtShares(usr3), shares);
+        assertEq(market.totalDebtShares(), shares);
 
         assertERC20Tracking();
     }
@@ -137,11 +139,11 @@ contract LeverageMock is MarketDeploymentContext {
 
         market.leverage(
             0,
-            20_000 ether,
+            15_000 ether,
             0,
             true,
             // Simulate zap call with a transfer to the market
-            ZapStruct({router: address(collatToken), routerCall: abi.encodeWithSelector(bytes4(keccak256("transfer(address,uint256)")), address(market), 19_000 ether)})
+            ZapStruct({router: address(collatToken), routerCall: abi.encodeWithSelector(bytes4(keccak256("transfer(address,uint256)")), address(market), 14_000 ether)})
         );
     }
 
