@@ -61,4 +61,10 @@ contract ACRewardAccumulator is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NotAMarketRewards.selector));
         rewardAccumulator.updateRCParams(usr1, params);
     }
+
+    function test_updateRewards_fails_as_the_market_is_not_a_market() external {
+        vm.startPrank(usr1);
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NotAMarketRewards.selector));
+        rewardAccumulator.updateRewards(usr1, 100, 100);
+    }
 }

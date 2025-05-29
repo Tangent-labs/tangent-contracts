@@ -44,65 +44,65 @@ export class LpDeployContext {
             "0"
         );
 
-        const tgUSD_wcrvUSD = "tgUSD-wcrvUSD";
-        const tgCrvUSD = "tgCrvUSD";
-        this.stableLp[tgUSD_wcrvUSD] = await this.deployStableLP(
-            baseContext,
-            tgUSD_wcrvUSD,
-            tgCrvUSD,
-            [wStableContext.wStable.wcrvUSD, baseContext.tgUSD],
-            [amount, amount],
-            "5000",
-            "100000000",
-            "0",
-            "866",
-            "0"
-        );
+        // const tgUSD_wcrvUSD = "tgUSD-wcrvUSD";
+        // const tgCrvUSD = "tgCrvUSD";
+        // this.stableLp[tgUSD_wcrvUSD] = await this.deployStableLP(
+        //     baseContext,
+        //     tgUSD_wcrvUSD,
+        //     tgCrvUSD,
+        //     [wStableContext.wStable.wcrvUSD, baseContext.tgUSD],
+        //     [amount, amount],
+        //     "5000",
+        //     "100000000",
+        //     "0",
+        //     "866",
+        //     "0"
+        // );
 
-        const tgUSD_wUSDe = "tgUSD-wUSDe";
-        const tgUSDe = "tgUSDe";
-        this.stableLp[tgUSD_wUSDe] = await this.deployStableLP(
-            baseContext,
-            tgUSD_wUSDe,
-            tgUSDe,
-            [wStableContext.wStable.wUSDe, baseContext.tgUSD],
-            [amount, amount],
-            "5000",
-            "100000000",
-            "0",
-            "866",
-            "0"
-        );
+        // const tgUSD_wUSDe = "tgUSD-wUSDe";
+        // const tgUSDe = "tgUSDe";
+        // this.stableLp[tgUSD_wUSDe] = await this.deployStableLP(
+        //     baseContext,
+        //     tgUSD_wUSDe,
+        //     tgUSDe,
+        //     [wStableContext.wStable.wUSDe, baseContext.tgUSD],
+        //     [amount, amount],
+        //     "5000",
+        //     "100000000",
+        //     "0",
+        //     "866",
+        //     "0"
+        // );
 
-        const tgUSD_wDOLA = "tgUSD-wDOLA";
-        const tgDOLA = "tgDOLA";
-        this.stableLp[tgUSD_wDOLA] = await this.deployStableLP(
-            baseContext,
-            tgUSD_wDOLA,
-            tgDOLA,
-            [wStableContext.wStable.wDOLA, baseContext.tgUSD],
-            [amount, amount],
-            "5000",
-            "100000000",
-            "0",
-            "866",
-            "0"
-        );
+        // const tgUSD_wDOLA = "tgUSD-wDOLA";
+        // const tgDOLA = "tgDOLA";
+        // this.stableLp[tgUSD_wDOLA] = await this.deployStableLP(
+        //     baseContext,
+        //     tgUSD_wDOLA,
+        //     tgDOLA,
+        //     [wStableContext.wStable.wDOLA, baseContext.tgUSD],
+        //     [amount, amount],
+        //     "5000",
+        //     "100000000",
+        //     "0",
+        //     "866",
+        //     "0"
+        // );
 
-        const tgUSD_wUSR = "tgUSD-wUSR";
-        const tgUSR = "tgUSR";
-        this.stableLp[tgUSD_wUSR] = await this.deployStableLP(
-            baseContext,
-            tgUSD_wUSR,
-            tgUSR,
-            [wStableContext.wStable.wUSR, baseContext.tgUSD],
-            [amount, amount],
-            "5000",
-            "100000000",
-            "0",
-            "866",
-            "0"
-        );
+        // const tgUSD_wUSR = "tgUSD-wUSR";
+        // const tgUSR = "tgUSR";
+        // this.stableLp[tgUSD_wUSR] = await this.deployStableLP(
+        //     baseContext,
+        //     tgUSD_wUSR,
+        //     tgUSR,
+        //     [wStableContext.wStable.wUSR, baseContext.tgUSD],
+        //     [amount, amount],
+        //     "5000",
+        //     "100000000",
+        //     "0",
+        //     "866",
+        //     "0"
+        // );
     }
 
     async deployStableLP(

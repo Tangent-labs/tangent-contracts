@@ -4,7 +4,7 @@ import {commonERC20, curveLp} from "defi-resources";
 
 import {MainSetup} from "../../Main.setup";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {AddressLike, MaxUint256, parseEther, ZeroAddress} from "ethers";
+import {AddressLike, MaxUint256, parseEther} from "ethers";
 import {
     ControlTower,
     ConvexCrvLPMarket,
@@ -141,6 +141,7 @@ export class BaseContext extends MainSetup {
         await this.pegKeeperTgUSD_wfrxUSD.waitForDeployment();
 
         await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperTgUSD_USDC]);
+        await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperTgUSD_wfrxUSD]);
 
         await this.controlTower.connect(this.owner).toggleMarketCreator(this.marketCreator);
     }

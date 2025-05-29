@@ -193,7 +193,7 @@ contract wUSR is MarketDeploymentContext {
         vm.stopPrank();
 
         verifyReceiveERC20(
-            stable,
+            wUSR,
             feeTreasury,
             saving.maxWithdraw(address(wUSR)) - wUSR.totalSupply(),
             "Fee Treasury must receive the delta between total withdrawable from saving and totalSupply of tgStable"

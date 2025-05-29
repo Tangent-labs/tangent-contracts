@@ -139,7 +139,7 @@ contract wDOLA is MarketDeploymentContext {
         vm.stopPrank();
 
         verifyReceiveERC20(
-            stable,
+            wDOLA,
             feeTreasury,
             saving.maxWithdraw(address(wDOLA)) - wDOLA.totalSupply(),
             "Fee Treasury must receive the delta between total withdrawable from saving and totalSupply of tgStable"

@@ -139,5 +139,8 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
 
         market.stakeAll(usr2);
         assertERC20Tracking();
+
+        vm.expectRevert(abi.encodeWithSelector(Sociabilization.NothingToStake.selector));
+        market.stakeAll(usr2);
     }
 }

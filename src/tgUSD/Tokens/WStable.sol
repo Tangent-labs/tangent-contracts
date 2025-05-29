@@ -113,7 +113,7 @@ contract WStable is ERC20, LightOwnable {
         uint256 dueAmount = totalSupply();
         require(totalStableStaked > dueAmount, NoRewardsToClaim());
 
-        // We withdraw the amount missing from the saving account
-        _savingAccount.withdraw(totalStableStaked - dueAmount, controlTower.feeTreasury(), address(this));
+        // The delta between the total supply of wStable and the total amount withdrawable from savings is the amount of fee that we are taking
+        _mint(controlTower.feeTreasury(), totalStableStaked - dueAmount);
     }
 }
