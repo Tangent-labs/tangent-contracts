@@ -121,7 +121,7 @@ contract ProcessSimpleRewards is MarketDeploymentContext {
             verifyReceiveERC20(rewardToken, usr2, harvesterFee);
         }
 
-        rewardAccumulator.processMultiRewards(Array.memoryAddress([address(market)]), usr2, 3);
+        rewardAccumulator.processRewards(address(market), usr2);
 
         assertEq(0, rewardAccumulator.lastRewardCuts(address(market)));
 
