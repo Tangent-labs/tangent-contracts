@@ -5,9 +5,11 @@ import "../../../contexts/MarketDeploymentContext.sol";
 contract AddNewRewardRewardAcc is MarketDeploymentContext {
     IERC20Metadata public collatToken = AddrCryptoSwapLP.USDC_WBTC_ETH;
     ConvexCrvLPMarket public market;
+    RCParams public rcParam;
 
     function setUp() public {
         market = deployConvexCurveLPMarket(collatToken, true);
+        rcParam = rewardAccumulator.getRCParams(address(market));
     }
 
     function test_addNewRewards_success() external {
@@ -24,8 +26,9 @@ contract AddNewRewardRewardAcc is MarketDeploymentContext {
         assertEq(address(tokens[3]), address(AddrClassicERC20.USDT));
     }
 
+    uint256[] processed;
     uint256[] totalProcessed;
-
+    uint256[] alreadyStreamed;
     function test_addNewRewards_after_creation() external {
         uint256 amountStaked = 100 ether;
         uint256 borrowed = 20_000 ether;
@@ -46,14 +49,26 @@ contract AddNewRewardRewardAcc is MarketDeploymentContext {
             IERC20 token = rewardAccumulator.rewardTokens(address(market), i);
             deal(address(token), address(market), distributed);
         }
-
+        // At this moment only the rewards distributed just before are streaming
         rewardAccumulator.processRewards(address(market), usr1);
 
-        totalProcessed.push(AddrClassicERC20.CRV.balanceOf(address(rewardAccumulator)) - rewardAccumulator.cutFeeForToken(AddrClassicERC20.CRV));
-        totalProcessed.push(AddrClassicERC20.CVX.balanceOf(address(rewardAccumulator)) - rewardAccumulator.cutFeeForToken(AddrClassicERC20.CVX));
-        totalProcessed.push(AddrClassicERC20.DOLA.balanceOf(address(rewardAccumulator)) - rewardAccumulator.cutFeeForToken(AddrClassicERC20.DOLA));
-
         skip(3.5 days);
+
+        // Claim the rewards from Convex before the process on our side to determine exactly how much is distributed
+        vm.startPrank(address(market));
+        market.cvxRewardToken().getReward();
+
+        processed.push(AddrClassicERC20.CRV.balanceOf(address(market)));
+        processed.push(AddrClassicERC20.CVX.balanceOf(address(market)));
+        processed.push(distributed);
+
+        totalProcessed.push(distributed + AddrClassicERC20.CRV.balanceOf(address(market)));
+        totalProcessed.push(distributed + AddrClassicERC20.CVX.balanceOf(address(market)));
+        totalProcessed.push(distributed);
+
+        alreadyStreamed.push(distributed + AddrClassicERC20.CRV.balanceOf(address(market)) / 2);
+        alreadyStreamed.push(distributed + AddrClassicERC20.CVX.balanceOf(address(market)) / 2);
+        alreadyStreamed.push(distributed / 2);
 
         vm.startPrank(owner);
         IERC20[] memory tokensToAdd = new IERC20[](1);
@@ -63,25 +78,80 @@ contract AddNewRewardRewardAcc is MarketDeploymentContext {
 
         deal(address(AddrClassicERC20.DOLA), address(market), distributed);
 
-        rewardAccumulator.processRewards(address(market), usr1);
+        uint256 rewardCutPercentage = rewardAccumulator.lastRewardCuts(address(market));
 
+        for (uint256 i; i < 3; i++) {
+            uint256 harvesterRewards = (processed[i] * rcParam.harvestFeePercentage) / 100_000;
+            IERC20 token = rewardAccumulator.rewardTokens(address(market), i);
+
+            verifyReceiveERC20(token, usr4, harvesterRewards);
+            verifyReceiveERC20(token, address(rewardAccumulator), processed[i] - harvesterRewards);
+            verifyLostERC20(token, address(market), processed[i]);
+        }
+        rewardAccumulator.processRewards(address(market), usr4);
+
+        assertERC20Tracking();
+
+        for (uint256 i; i < 3; i++) {
+            uint256 rewardProcessed = totalProcessed[i];
+
+            uint256 harvesterRewards = (rewardProcessed * rcParam.harvestFeePercentage) / 100_000;
+
+            uint256 rewardPostHarvest = rewardProcessed - harvesterRewards;
+
+            uint256 rewardCut = (rewardPostHarvest * rewardCutPercentage) / 100_000;
+
+            IERC20 token = rewardAccumulator.rewardTokens(address(market), i);
+
+            assertEq(rewardCut, rewardAccumulator.cutFeeForToken(token));
+
+            verifyReceiveDeltaRelERC20(token, usr1, (2 * (rewardPostHarvest - rewardCut)) / 3, 1e10);
+            verifyReceiveDeltaRelERC20(token, usr2, (rewardPostHarvest - rewardCut) / 3, 1e10);
+        }
         vm.stopPrank();
 
-        skip(3.5 days);
+        skip(7 days);
 
-        // Claim USR1
-
-        verifyReceiveERC20(AddrClassicERC20.CRV, usr1, 100 ether);
-        verifyReceiveERC20(AddrClassicERC20.CVX, usr1, 100 ether);
-        verifyReceiveERC20(AddrClassicERC20.DOLA, usr1, 100 ether);
+        // Claim User1 => Supposed to have fully the first distribution (only CRV and CVX) and the half of the second one ( all rewards )
 
         vm.prank(usr1);
         rewardAccumulator.claimSimple(address(market));
 
-        assertERC20Tracking();
-
         // Claim USR2
         vm.prank(usr2);
         rewardAccumulator.claimSimple(address(market));
+
+        assertERC20Tracking();
+
+        for (uint256 i; i < 3; i++) {
+            IERC20 token = rewardAccumulator.rewardTokens(address(market), i);
+            Reward memory rData = rewardAccumulator.getRewardData(address(market), token);
+
+            assertEq(rewardAccumulator.lastTimeRewardApplicable(address(market), token), block.timestamp);
+            assertEq(rewardAccumulator.rewardPerToken(address(market), token), rData.rewardPerTokenStored);
+            assertEq(rewardAccumulator.getRewardForDuration(address(market), token), rData.rewardRate * 7 days);
+
+            assertApproxEqAbs(0, token.balanceOf(address(rewardAccumulator)) - rewardAccumulator.cutFeeForToken(token), 1e6);
+        }
+    }
+
+    function test_addNewRewards_fails_when_collateral_is_added() external {
+        vm.startPrank(owner);
+        IERC20[] memory tokensToAdd = new IERC20[](2);
+        tokensToAdd[0] = AddrClassicERC20.DOLA;
+        tokensToAdd[1] = collatToken;
+
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.CantAddCollatTokenAsReward.selector));
+        rewardAccumulator.addNewRewards(address(market), tokensToAdd);
+    }
+
+    function test_addNewRewards_fails_when_the_reward_is_already_added() external {
+        vm.startPrank(owner);
+        IERC20[] memory tokensToAdd = new IERC20[](2);
+        tokensToAdd[0] = AddrClassicERC20.DOLA;
+        tokensToAdd[1] = AddrClassicERC20.CRV;
+
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.RewardAlreadyAdded.selector, address(AddrClassicERC20.CRV)));
+        rewardAccumulator.addNewRewards(address(market), tokensToAdd);
     }
 }
