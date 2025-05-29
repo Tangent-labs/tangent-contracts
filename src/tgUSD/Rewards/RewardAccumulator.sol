@@ -79,7 +79,6 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
                 require(_rcParam.startCutPrice > _rcParam.endCutPrice, StartCutPriceSmallerThanEnd());
             }
         }
-        _;
     }
 
     constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle) {
@@ -564,15 +563,15 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
                        REWARD CUT
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function initializeMarket(address market, RCParams calldata _rcParams) external {
-        _verifyRCParams(_rcParams);
+    function initializeMarket(address market, RCParams calldata _rcParam) external {
+        _verifyRCParams(_rcParam);
         require(controlTower.isMarketCreator(msg.sender), CallerNotMarketCreator(msg.sender));
-        lastRewardCuts[market] = _calculateRC(tgUSDOracle.price_w(), _rcParams);
-        rcParams[market] = _rcParams;
+        lastRewardCuts[market] = _calculateRC(tgUSDOracle.price_w(), _rcParam);
+        rcParams[market] = _rcParam;
     }
 
     function updateRCParams(address market, RCParams calldata _rcParam) external onlyOwner {
-        _verifyRCParams(_rcParams);
+        _verifyRCParams(_rcParam);
         processRewards(market, controlTower.feeTreasury());
         rcParams[market] = _rcParam;
     }
