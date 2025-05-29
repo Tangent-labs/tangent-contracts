@@ -67,7 +67,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     error EndCutPercentageBiggerThan100();
     error StartCutPercentageBiggerThan100();
 
-    modifier verifyRCParams(RCParams calldata _rcParam) {
+    function _verifyRCParams(RCParams calldata _rcParam) internal {
         require(_rcParam.harvestFeePercentage <= 2_000, HarvesterFeeTooHigh());
         require(_rcParam.startCutPrice <= 1e18, StartCutPriceTooHigh());
         require(DENOMINATOR >= _rcParam.endCutPercentage, EndCutPercentageBiggerThan100());
@@ -564,13 +564,15 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
                        REWARD CUT
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function initializeMarket(address market, RCParams calldata _rcParams) external verifyRCParams(_rcParams) {
+    function initializeMarket(address market, RCParams calldata _rcParams) external {
+        _verifyRCParams(_rcParams);
         require(controlTower.isMarketCreator(msg.sender), CallerNotMarketCreator(msg.sender));
         lastRewardCuts[market] = _calculateRC(tgUSDOracle.price_w(), _rcParams);
         rcParams[market] = _rcParams;
     }
 
-    function updateRCParams(address market, RCParams calldata _rcParam) external verifyRCParams(_rcParam) onlyOwner {
+    function updateRCParams(address market, RCParams calldata _rcParam) external onlyOwner {
+        _verifyRCParams(_rcParams);
         processRewards(market, controlTower.feeTreasury());
         rcParams[market] = _rcParam;
     }
