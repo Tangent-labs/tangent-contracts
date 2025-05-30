@@ -166,7 +166,7 @@ contract wUSR is MarketDeploymentContext {
         wUSR.claimRewards();
     }
 
-    function test_convert_views() external {
+    function test_convert_views() external view {
         uint256 amount = 100;
         assertEq(wUSR.convertToAssets(amount), amount);
         assertEq(wUSR.convertToShares(amount), amount);
