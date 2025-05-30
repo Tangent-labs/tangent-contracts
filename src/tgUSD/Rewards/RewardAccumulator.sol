@@ -572,8 +572,8 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
 
     function updateRCParams(address market, RCParams calldata _rcParam) external onlyOwner {
         _verifyRCParams(_rcParam);
-        processRewards(market, controlTower.feeTreasury());
         rcParams[market] = _rcParam;
+        processRewards(market, controlTower.feeTreasury());
     }
 
     /**
