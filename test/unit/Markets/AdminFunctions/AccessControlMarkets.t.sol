@@ -2,53 +2,80 @@
 pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
 contract AccessControlMarkets is MarketDeploymentContext {
-    ConvexCrvLPMarket market;
+    ConvexCrvLPMarket marketCrv;
+    ConvexFxnLPMarket marketFxn;
+    MarketNoSociabilization marketNoSoc;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+        marketCrv = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+        marketFxn = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
+        marketNoSoc = deployMarketNoSociabilisation(AddrPTPendle.sUSDe_31_07_25);
+
         vm.startPrank(usr1);
     }
     function test_setCollatOracle_fails_as_not_owner() external {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        market.setCollatOracle(IPriceOracle(usr2));
+        marketCrv.setCollatOracle(IPriceOracle(usr2));
     }
 
     function test_setMaxLTV_fails_as_not_owner() external {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        market.setMaxLTV(100);
+        marketCrv.setMaxLTV(100);
     }
 
     function test_setLiquidationThreshold_fails_as_not_owner() external {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        market.setLiquidationThreshold(100);
+        marketCrv.setLiquidationThreshold(100);
     }
 
     function test_setLiquidationFee_fails_as_not_owner() external {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        market.setLiquidationFee(100);
+        marketCrv.setLiquidationFee(100);
     }
 
     function test_setMaxMarketDebt_fails_as_not_owner() external {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        market.setMaxMarketDebt(100);
+        marketCrv.setMaxMarketDebt(100);
     }
 
     function test_setMinimumLoan_fails_as_not_owner() external {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        market.setMinimumLoan(100);
+        marketCrv.setMinimumLoan(100);
     }
 
     function test_setSocFee_fails_as_not_owner() external {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        market.setSocFeePercentage(100);
+        marketCrv.setSocFeePercentage(100);
     }
 
     function test_initialize_alreadyInit_market() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.AlreadyInitialized.selector));
-
         GlobalMarketInitParams memory _marketConstants = GlobalMarketInitParams(address(0), tgUSD, controlTower, irCalculator, rewardAccumulator, zappingProxy);
         MarketInit memory _marketInit = MarketInit(AddrClassicERC20.CRV, IPriceOracle(address(0)), 0, 0, 0, 0, 0);
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.AlreadyInitialized.selector));
+        marketCrv.initialize(_marketConstants, _marketInit, ICvxRewardToken(address(0)), 0, 0);
+    }
 
-        market.initialize(_marketConstants, _marketInit, ICvxRewardToken(address(0)), 0, 0);
+    function test_claimUnderlyingRewards_on_ConvexCrvMarket_fails_when_caller_not_rewardAccumulator() external {
+        IERC20[] memory rTokens = new IERC20[](1);
+        rTokens[0] = AddrClassicERC20.CRV;
+
+        vm.expectRevert(abi.encodeWithSelector(MarketExternalActions.NotRewardAccumulator.selector));
+        marketCrv.claimUnderlyingRewards(rTokens);
+    }
+
+    function test_claimUnderlyingRewards_on_ConvexFxnvMarket_fails_when_caller_not_rewardAccumulator() external {
+        IERC20[] memory rTokens = new IERC20[](1);
+        rTokens[0] = AddrClassicERC20.CRV;
+
+        vm.expectRevert(abi.encodeWithSelector(MarketExternalActions.NotRewardAccumulator.selector));
+        marketFxn.claimUnderlyingRewards(rTokens);
+    }
+
+    function test_claimUnderlyingRewards_on_MarketNoSoc_fails_when_caller_not_rewardAccumulator() external {
+        IERC20[] memory rTokens = new IERC20[](1);
+        rTokens[0] = AddrClassicERC20.CRV;
+
+        vm.expectRevert(abi.encodeWithSelector(MarketExternalActions.NotRewardAccumulator.selector));
+        marketNoSoc.claimUnderlyingRewards(rTokens);
     }
 }
