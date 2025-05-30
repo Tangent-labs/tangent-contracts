@@ -37,6 +37,6 @@ contract OraclePendlePT is OracleBase {
             return underlyingPrice;
         }
 
-        return (oracle.getPtToAssetRate(address(_params.pendleMarket), 30) * underlyingPrice) / 1e18;
+        return (oracle.getPtToSyRate(address(_params.pendleMarket), 30) * underlyingPrice) / 1e18;
     }
 }

@@ -33,10 +33,11 @@ contract OraclePendleLP is OracleBase {
         OraclePendlePTStruct memory _params = params;
         uint256 underlyingPrice = _coinPrice(_params.underlyingOracle, _params.underlyingOracleDecimals);
 
-        if (_params.pendleMarket.isExpired()) {
-            return underlyingPrice;
-        }
+        //TODO We need to find what to do after expiration
+        // if (_params.pendleMarket.isExpired()) {
+        //     return underlyingPrice;
+        // }
 
-        return (oracle.getLpToAssetRate(address(_params.pendleMarket), 30) * underlyingPrice) / 1e18;
+        return (oracle.getLpToSyRate(address(_params.pendleMarket), 30) * underlyingPrice) / 1e18;
     }
 }

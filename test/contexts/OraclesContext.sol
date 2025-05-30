@@ -63,6 +63,7 @@ contract OraclesContext is TgUSDDeployContext {
         setupCurveStableLPOracles();
         setupCurveTriCryptoSwapLPOracles();
         setupPendlePTTokens();
+        setupPendleLPTokens();
     }
 
     function setupTgUSDOracle() public {
@@ -310,5 +311,19 @@ contract OraclesContext is TgUSDDeployContext {
         // Oracle PT eBTC 26_06_25
         oracles[AddrPTPendle.eBTC_26_06_25] = new OraclePendlePT(AddrMarketPendle.eBTC_26_06_25, oracles[AddrClassicERC20.eBTC]);
         vm.label(address(oracles[AddrPTPendle.eBTC_26_06_25]), "Oracle PT eBTC 26_06_25");
+    }
+
+    function setupPendleLPTokens() internal {
+        // Oracle LP sUSDE 31_07_25
+        oracles[AddrMarketPendle.sUSDe_31_07_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrClassicERC20.USDe]);
+        vm.label(address(oracles[AddrMarketPendle.sUSDe_31_07_25]), "Oracle LP sUSDe 31_07_25");
+
+        // Oracle LP eUSDE 29_05_25
+        oracles[AddrMarketPendle.eUSDe_29_05_25] = new OraclePendlePT(AddrMarketPendle.eUSDe_29_05_25, oracles[AddrClassicERC20.USDe]);
+        vm.label(address(oracles[AddrMarketPendle.eUSDe_29_05_25]), "Oracle LP eUSDe 29_05_25");
+
+        // Oracle LP eBTC 26_06_25
+        oracles[AddrMarketPendle.eBTC_26_06_25] = new OraclePendlePT(AddrMarketPendle.eBTC_26_06_25, oracles[AddrClassicERC20.eBTC]);
+        vm.label(address(oracles[AddrMarketPendle.eBTC_26_06_25]), "Oracle LP eBTC 26_06_25");
     }
 }
