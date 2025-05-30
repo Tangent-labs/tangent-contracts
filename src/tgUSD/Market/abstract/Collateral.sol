@@ -33,11 +33,15 @@ abstract contract Collateral is DebtIR, ICollateral {
     /// @notice Amount of collateral deposited by a user.
     mapping(address => uint256) public collateralBalances;
 
-    error NewLiquidationThresholdTooHigh();
-    error NewLiquidationThresholdTooLow();
+    error MaxLTVLowerThanLiquidationThreshold();
 
-    error NewMaxLTVTooHigh();
-    error NewMaxLTVTooLow();
+    error LiquidationThresholdTooHigh();
+    error LiquidationThresholdTooLow();
+
+    error LiquidationFeeTooHigh();
+
+    error MaxLTVTooHigh();
+    error MaxLTVTooLow();
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     OWNER ACTIONS 
@@ -59,7 +63,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      */
     function setMaxLTV(uint256 _maxLTV) external onlyOwner {
         // Can't be less than the liquidation threshold
-        require(_maxLTV < liquidationThreshold, NewLiquidationThresholdTooHigh());
+        require(_maxLTV < liquidationThreshold, MaxLTVLowerThanLiquidationThreshold());
         maxLTV = _maxLTV;
     }
 
@@ -70,9 +74,9 @@ abstract contract Collateral is DebtIR, ICollateral {
      */
     function setLiquidationThreshold(uint256 _liquidationThreshold) external onlyOwner {
         // Can't be more than 100%
-        require(_liquidationThreshold < DENOMINATOR, NewLiquidationThresholdTooHigh());
+        require(_liquidationThreshold < DENOMINATOR, LiquidationThresholdTooHigh());
         // Can't be less than the maxLTV
-        require(_liquidationThreshold > maxLTV, NewLiquidationThresholdTooLow());
+        require(_liquidationThreshold > maxLTV, LiquidationThresholdTooLow());
         liquidationThreshold = _liquidationThreshold;
     }
 
@@ -83,7 +87,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      */
     function setLiquidationFee(uint256 _liquidationFee) external onlyOwner {
         // Can't be more than 15%
-        require(_liquidationFee < 15_000, NewLiquidationThresholdTooHigh());
+        require(_liquidationFee < 15_000, LiquidationFeeTooHigh());
         liquidationFee = _liquidationFee;
     }
 

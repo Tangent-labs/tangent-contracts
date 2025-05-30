@@ -40,7 +40,7 @@ contract AccessControlMarkets is MarketDeploymentContext {
 
     function test_setSocFee_fails_as_not_owner() external {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        market.setSociabilizationFee(100);
+        market.setSocFeePercentage(100);
     }
 
     function test_initialize_alreadyInit_market() external {

@@ -64,8 +64,8 @@ abstract contract Sociabilization is LightOwnable {
      * @dev    Only the contract owner can call this function
      * @param _socFeePercentage New sociabilization fee on a 100_000 basis
      */
-    function setSociabilizationFee(uint256 _socFeePercentage) external onlyOwner {
-        require(_socFeePercentage < 2_000, SocFeeTooHigh());
+    function setSocFeePercentage(uint256 _socFeePercentage) external onlyOwner {
+        require(_socFeePercentage <= 2_000, SocFeeTooHigh());
         // Claim rewards on behalf
         socFeePercentage = _socFeePercentage;
     }
