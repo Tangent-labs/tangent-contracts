@@ -126,6 +126,18 @@ contract ClaimMultipleLock is MarketDeploymentContext {
         vm.startPrank(owner);
         rsTan.addNewReward(AddrClassicERC20.CRV);
 
+        {
+            IERC20[] memory tokens = rsTan.getRewardTokens();
+            assertEq(address(tokens[0]), address(tgUSD));
+            assertEq(address(tokens[1]), address(AddrClassicERC20.CRV));
+
+            rsTan.rewardPerToken(tgUSD);
+            rsTan.rewardPerToken(AddrClassicERC20.CRV);
+
+            assertEq(block.timestamp, rsTan.lastTimeRewardApplicable(tgUSD));
+            assertEq(block.timestamp, rsTan.lastTimeRewardApplicable(AddrClassicERC20.CRV));
+        }
+
         TokenAmount[] memory tokenAmounts = new TokenAmount[](2);
         tokenAmounts[0] = TokenAmount({token: AddrClassicERC20.CRV, amount: amount3ToDistribute});
         tokenAmounts[1] = TokenAmount({token: tgUSD, amount: tgUSDToDistribute});

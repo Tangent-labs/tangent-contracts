@@ -17,4 +17,10 @@ contract TanTest is MarketDeploymentContext {
         tan.burn(amountToBurn);
         assertERC20Tracking();
     }
+
+    function test_burn__fails_with_0() external {
+        vm.startPrank(owner);
+        vm.expectRevert(abi.encodeWithSelector(Tan.ZeroAmount.selector));
+        tan.burn(0);
+    }
 }
