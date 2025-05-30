@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 
 contract TanTest is MarketDeploymentContext {
-    function test_TAN_init() external {
+    function test_TAN_init() external view {
         assertEq(tan.totalSupply(), 10_000_000 ether);
         assertEq(tan.balanceOf(owner), 10_000_000 ether);
     }

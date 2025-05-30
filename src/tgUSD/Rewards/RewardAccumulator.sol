@@ -67,7 +67,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     error EndCutPercentageBiggerThan100();
     error StartCutPercentageBiggerThan100();
 
-    function _verifyRCParams(RCParams calldata _rcParam) internal view {
+    function _verifyRCParams(RCParams calldata _rcParam) internal pure {
         require(_rcParam.harvestFeePercentage <= 2_000, HarvesterFeeTooHigh());
         require(_rcParam.startCutPrice <= 1e18, StartCutPriceTooHigh());
         require(DENOMINATOR >= _rcParam.endCutPercentage, EndCutPercentageBiggerThan100());

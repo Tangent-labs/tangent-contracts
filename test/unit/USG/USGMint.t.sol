@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 
 contract USGMint is MarketDeploymentContext {
-    function test_USG_init() external {
+    function test_USG_init() external view {
         assertEq(tgUSD.owner(), owner);
         assertEq(address(tgUSD.controlTower()), address(controlTower));
     }
