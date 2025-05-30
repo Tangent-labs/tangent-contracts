@@ -103,7 +103,7 @@ contract BorrowCvxMarket is MarketDeploymentContext {
         repayAmount = bound(repayAmount, 1, maxRepayPartialAmount);
 
         vm.startPrank(owner);
-        controlTower.toggleMarkets(Array.memoryAddress([owner]));
+        controlTower.toggleMarket(owner);
         tgUSD.mint(usr1, repayAmount);
         vm.stopPrank();
 

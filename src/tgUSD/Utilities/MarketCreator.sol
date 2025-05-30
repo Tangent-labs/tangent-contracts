@@ -11,7 +11,7 @@
  */
 pragma solidity ^0.8.0;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
 import {GlobalMarketInitParams, MarketInit, IRewardAccumulator, IERC20Metadata} from "../../interfaces/internals/tgUSD/IMarketCore.sol";
@@ -25,7 +25,7 @@ import {IZappingProxy} from "../../interfaces/internals/tgUSD/IZappingProxy.sol"
 import {ITgUSD} from "../../interfaces/internals/tgUSD/ITgUSD.sol";
 /// @title MarketCreator
 /// @notice Convergence's factory to deploy clone of contracts
-contract MarketCreator is Ownable {
+contract MarketCreator is LightOwnable {
     using Clones for address;
 
     /// @notice Control tower
@@ -70,7 +70,7 @@ contract MarketCreator is Ownable {
         address _marketConvexCrv,
         address _marketConvexFxn,
         address _marketNoSociabilization
-    ) Ownable(_owner) {
+    ) {
         controlTower = _controlTower;
         tgUSD = _tgUSD;
         irCalculator = _irCalculator;
@@ -79,12 +79,13 @@ contract MarketCreator is Ownable {
         marketConvexCrv = _marketConvexCrv;
         marketConvexFxn = _marketConvexFxn;
         marketNoSociabilization = _marketNoSociabilization;
+        _transferOwnership(_owner);
     }
 
     function _getGlobalParams() internal view returns (GlobalMarketInitParams memory) {
         return
             GlobalMarketInitParams({
-                _owner: owner(),
+                _owner: owner,
                 _tgUSD: tgUSD,
                 _controlTower: controlTower,
                 _irCalculator: irCalculator,

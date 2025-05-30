@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 
 import {IRParams, IIRCalculator, IRCheckpoint} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
 import {IControlTower} from "../../interfaces/internals/tgUSD/IControlTower.sol";
@@ -16,7 +16,7 @@ import "forge-std/console.sol";
 ///@notice Contract allowing to compute the interest rate and reward cut of a tgUSD market
 // TODO Put a cap on tgUSD price to prevent overflow on IR computation
 // TODO Comments are bad
-contract IRCalculator is IIRCalculator, Ownable {
+contract IRCalculator is IIRCalculator, LightOwnable {
     uint256 public constant DENOMINATOR = 100_000;
 
     uint256 constant RAY = 1e27;
@@ -50,10 +50,11 @@ contract IRCalculator is IIRCalculator, Ownable {
 
     event CheckpointIR(address indexed market, uint256 irAmount, uint256 newIndex);
 
-    constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle, ITgUSD _tgUSD) Ownable(_owner) {
+    constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle, ITgUSD _tgUSD) {
         controlTower = _controlTower;
         tgUSDOracle = _tgUSDOracle;
         tgUSD = _tgUSD;
+        _transferOwnership(_owner);
     }
 
     //TODO Add check for params
