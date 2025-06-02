@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../../../../contexts/MarketDeploymentContext.sol";
-import "../../../../../utils/ERC20BalanceChanges.sol";
+import "../../../../contexts/MarketDeploymentContext.sol";
+import "../../../../utils/ERC20BalanceChanges.sol";
 
-import "../../../../../handler/Curve/HLPManipulator.sol";
-import "../../../../../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
-import "../../../../../handler/Features/BorrowRepay/HBorrow.sol";
-import "../../../../../handler/Features/HProcessRewards.sol";
+import "../../../../handler/Curve/HLPManipulator.sol";
+import "../../../../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
+import "../../../../handler/Features/BorrowRepay/HBorrow.sol";
+import "../../../../handler/Features/HProcessRewards.sol";
 
 contract LiquidateCollateralGoDown is MarketDeploymentContext {
     ConvexFxnLPMarket public market;
@@ -158,6 +158,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(usr1, collatDeposited, 0, ZapStruct({router: address(0), routerCall: ""}));
+
         vm.stopPrank();
 
         skip(200);
@@ -174,6 +175,10 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         verifyReceiveERC20(tgUSD, feeTreasury, liquidationFee, "tgUSD received by the treasuryFee");
 
         verifyReceiveERC20(collatToken, usr1, 5_000 ether, "Collat sent to liquidator");
+
+        // Liquidation doesn't pass because 0 collat is passed in param
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
+        market.liquidate(usr1, 0, 0, ZapStruct({router: address(0), routerCall: ""}));
 
         // Liquidation passes after EMA of price_oralce passed
         market.liquidate(usr1, 5_000 ether, 0, ZapStruct({router: address(0), routerCall: ""}));
@@ -203,8 +208,14 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         verifyReceiveERC20(tgUSD, feeTreasury, liquidationFee, "tgUSD received by the treasuryFee");
 
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "Collat sent to liquidator");
-        // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, market.collateralBalances(usr1), 0, ZapStruct({router: address(0), routerCall: ""}));
+
+        // Try to liquidate and leave a loan with less than the minimumLoan
+
+        uint256 collatBalances = market.collateralBalances(usr1);
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooLow.selector));
+        market.liquidate(usr1, collatBalances - 1 ether, 0, ZapStruct({router: address(0), routerCall: ""}));
+
+        market.liquidate(usr1, collatBalances, 0, ZapStruct({router: address(0), routerCall: ""}));
         assertERC20Tracking();
 
         vm.stopPrank();

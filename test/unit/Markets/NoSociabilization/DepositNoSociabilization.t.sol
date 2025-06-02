@@ -18,7 +18,7 @@ contract DepositNoSociabilization is MarketDeploymentContext {
     }
 
     //
-    function test_deposit_and_borrow_stake() external {
+    function test_deposit_and_borrow_stake_have_no_impact() external {
         vm.startPrank(usr1);
 
         verifyLostERC20(collatToken, usr1, collatDeposited1);
@@ -29,7 +29,7 @@ contract DepositNoSociabilization is MarketDeploymentContext {
         assertERC20Tracking();
     }
 
-    function test_deposit_and_borrow_witout_stake_then_withdraw() external {
+    function test_deposit_and_borrow_without_stake_then_withdraw_has_no_impact_on_staked_amount() external {
         vm.startPrank(usr1);
 
         // Deposit
@@ -47,5 +47,12 @@ contract DepositNoSociabilization is MarketDeploymentContext {
         market.repayAndWithdraw(collatDeposited1, borrowedAmount1);
 
         assertERC20Tracking();
+    }
+
+    function test_deposit_fails_with_0() external {
+        vm.startPrank(usr1);
+
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
+        market.deposit(usr1, 0, true);
     }
 }
