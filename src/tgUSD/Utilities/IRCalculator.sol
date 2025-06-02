@@ -47,6 +47,14 @@ contract IRCalculator is IIRCalculator, LightOwnable {
     error IRStartPriceLtOne();
     error CallerNotMarketCreator();
     error NotAMarket();
+    error A1TooBig();
+    error A2TooBig();
+    error KTooBig();
+    error RMaxTooBig();
+    error RMinBiggerThanRMax();
+    error PMinBiggerThanPInf();
+    error PInfBiggerThanPMax();
+    error PMaxBiggerThanOneDollar();
 
     event CheckpointIR(address indexed market, uint256 irAmount, uint256 newIndex);
 
@@ -57,10 +65,15 @@ contract IRCalculator is IIRCalculator, LightOwnable {
         _transferOwnership(_owner);
     }
 
-    //TODO Add check for params
-    modifier verifyIRParams(IRParams calldata _irParam) {
-        // require(_irParam.irStartPrice <= ONE_ETHER, IRStartPriceLtOne());
-        _;
+    function _verifyIRParams(IRParams calldata _irParam) internal pure {
+        require(_irParam.a1 <= 20_000, A1TooBig());
+        require(_irParam.a2 <= 20_000, A2TooBig());
+        require(_irParam.k <= 20_000, KTooBig());
+        require(_irParam.rMax <= 400_000, RMaxTooBig());
+        require(_irParam.rMin <= _irParam.rMax, RMinBiggerThanRMax());
+        require(_irParam.pMin <= _irParam.pInf, PMinBiggerThanPInf());
+        require(_irParam.pInf <= _irParam.pMax, PInfBiggerThanPMax());
+        require(_irParam.pMax <= 1_000_000, PMaxBiggerThanOneDollar());
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -71,7 +84,8 @@ contract IRCalculator is IIRCalculator, LightOwnable {
         tgUSDOracle = _tgUSDOracle;
     }
 
-    function initializeMarket(address market, IRParams calldata _irParams) external verifyIRParams(_irParams) {
+    function initializeMarket(address market, IRParams calldata _irParams) external {
+        _verifyIRParams(_irParams);
         require(controlTower.isMarketCreator(msg.sender), CallerNotMarketCreator());
         debtIndexes[market] = RAY;
         irParams[market] = _irParams;
@@ -79,9 +93,10 @@ contract IRCalculator is IIRCalculator, LightOwnable {
         irCheckpoints[market] = IRCheckpoint({ir: _computeIR(tgUSDOracle.price_w(), _irParams), timestamp: uint40(block.timestamp)});
     }
 
-    function updateIRParams(address market, IRParams calldata _irParam) external verifyIRParams(_irParam) onlyOwner {
-        _checkpointIR(market);
+    function updateIRParams(address market, IRParams calldata _irParam) external onlyOwner {
+        _verifyIRParams(_irParams);
         irParams[market] = _irParam;
+        _checkpointIR(market);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
