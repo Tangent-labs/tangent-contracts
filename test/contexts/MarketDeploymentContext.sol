@@ -14,8 +14,8 @@ contract MarketDeploymentContext is MarketInitParams {
         ConvexCrvLPMarket convexMarket = ConvexCrvLPMarket(
             marketCreator.createConvexCrvMarket(
                 getMarketInit(initP.marketInit, collat),
-                initP.cvxRewardToken,
-                initP.pid,
+                isConvexLinked ? initP.cvxRewardToken : ICvxRewardToken(address(0)),
+                isConvexLinked ? initP.pid : 0,
                 initP.socFeePercentage,
                 getBaseIRParamsHEC(),
                 getBaseRCParams()

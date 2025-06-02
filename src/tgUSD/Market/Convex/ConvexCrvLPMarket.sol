@@ -37,10 +37,11 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
         // Sociabilization
         _initializeSociabilization(_socFeePercentage);
 
+        // Convex Crv
+        // Allows CVX_BOOSTER to transfer LP from the market contract
+        collatToken.approve(address(CVX_BOOSTER), MAX_UINT);
+
         if (address(_cvxRewardToken) != address(0)) {
-            // Convex Crv
-            // Allows CVX_BOOSTER to transfer LP from the market contract
-            collatToken.approve(address(CVX_BOOSTER), MAX_UINT);
             cvxRewardToken = _cvxRewardToken;
             pid = _pid;
         }

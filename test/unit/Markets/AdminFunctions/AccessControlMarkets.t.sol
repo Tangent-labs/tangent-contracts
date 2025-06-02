@@ -3,11 +3,13 @@ pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
 contract AccessControlMarkets is MarketDeploymentContext {
     ConvexCrvLPMarket marketCrv;
+    ConvexCrvLPMarket marketCrvWithoutConvex;
     ConvexFxnLPMarket marketFxn;
     MarketNoSociabilization marketNoSoc;
 
     function setUp() public {
         marketCrv = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+        marketCrvWithoutConvex = deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, false);
         marketFxn = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
         marketNoSoc = deployMarketNoSociabilisation(AddrPTPendle.sUSDe_31_07_25);
 
@@ -46,6 +48,11 @@ contract AccessControlMarkets is MarketDeploymentContext {
     function test_setSocFee_fails_as_not_owner() external {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
         marketCrv.setSocFeePercentage(100);
+    }
+
+    function test_setCvxRewardToken_fails_as_not_owner() external {
+        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
+        marketCrvWithoutConvex.setConvexStaking(AddrCvxRewardTokens.USDT_crvUSD_LP, PidCvxCrvBooster.USDT_crvUSD_LP);
     }
 
     function test_initialize_alreadyInit_market() external {
