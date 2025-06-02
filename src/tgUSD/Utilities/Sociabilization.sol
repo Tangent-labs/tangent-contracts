@@ -3,6 +3,7 @@ pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../Utilities/abstract/LightOwnable.sol";
+import "forge-std/console.sol";
 
 abstract contract Sociabilization is LightOwnable {
     /// @notice Percentage of the sociabilization fee in base 100_000.
@@ -11,7 +12,6 @@ abstract contract Sociabilization is LightOwnable {
     /// @notice Pending sociabilization fee to be claimed by the next staker.
     uint256 public socFeePending;
 
-    error ZeroAmountDepositedAfterSociabilization();
     error SocFeeTooHigh();
     error NothingToStake();
 

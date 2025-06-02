@@ -19,20 +19,20 @@ contract ZappingProxy is IZappingProxy {
     error ZapCallError(bytes);
     error MinAmountOutNotReached();
     error TokenInOutMustBeDifferent();
-    error TokenInMustNotBeZero();
-    error TokenInMustBeZero();
+    error TokenInMustNotBeETH();
+    error TokenInMustBeETH();
 
     function zapProxy(IERC20 tokenIn, IERC20 tokenOut, uint256 minAmountOut, address receiver, ZapStruct calldata zap) external payable returns (uint256) {
         address router = zap.router;
         require(tokenIn != tokenOut, TokenInOutMustBeDifferent());
         if (msg.value == 0) {
             // TokenIn must be different from chain coin if no ETH is sent
-            require(address(tokenIn) != CHAIN_COIN, TokenInMustNotBeZero());
+            require(address(tokenIn) != CHAIN_COIN, TokenInMustNotBeETH());
             if (tokenIn.allowance(address(this), router) != MAX_UINT) {
                 tokenIn.forceApprove(router, MAX_UINT);
             }
         } else {
-            require(address(tokenIn) == CHAIN_COIN, TokenInMustBeZero());
+            require(address(tokenIn) == CHAIN_COIN, TokenInMustBeETH());
         }
 
         uint256 bal = tokenOut.balanceOf(receiver);

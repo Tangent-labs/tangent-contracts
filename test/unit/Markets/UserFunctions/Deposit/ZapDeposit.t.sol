@@ -167,4 +167,18 @@ contract ZapDeposit is MarketDeploymentContext {
             })
         );
     }
+
+    function test_zapDeposit_fails_with_tokenIn_0xEeeeEeEEEEE_and_msgValue_0() external {
+        vm.expectRevert(abi.encodeWithSelector(ZappingUtil.InvalidZapValue.selector));
+        market.zapDeposit{value: 10 ether}(
+            usr1,
+            false,
+            ZapStructDeposit({
+                tokenIn: AddrClassicERC20.CRV,
+                amountIn: 1,
+                minAmountOut: 0,
+                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(bytes4(keccak256("deposit(address,uint256,bool)")), usr1, 1_000 ether, false)})
+            })
+        );
+    }
 }

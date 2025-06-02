@@ -63,7 +63,6 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
         // When there are no Convex contract because no inflation yet
         if (pid != 0) {
             stakedAmount = _sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR);
-            require(stakedAmount != 0, ZeroAmountDepositedAfterSociabilization());
         }
 
         return stakedAmount;
