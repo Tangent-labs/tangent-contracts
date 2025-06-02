@@ -23,6 +23,8 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
     uint256 public pid;
 
     error MarketNotLinkedToConvex();
+    error CvxRewardTokenNull();
+    error PidNull();
 
     function initialize(
         GlobalMarketInitParams memory _marketConstants,
@@ -48,8 +50,8 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
     }
 
     function setConvexStaking(ICvxRewardToken _cvxRewardToken, uint256 _pid) external onlyOwner {
-        require(address(_cvxRewardToken) != address(0));
-        require(_pid != 0);
+        require(address(_cvxRewardToken) != address(0), CvxRewardTokenNull());
+        require(_pid != 0, PidNull());
         pid = _pid;
         cvxRewardToken = _cvxRewardToken;
     }

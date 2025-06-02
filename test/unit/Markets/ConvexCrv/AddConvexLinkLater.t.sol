@@ -20,22 +20,63 @@ contract AddConvexLinkLater is MarketDeploymentContext {
         assertEq(address(0), address(market.cvxRewardToken()));
         assertEq(0, market.pid());
 
+        deal(address(collatToken), usr1, 4 * amountIn);
+        deal(address(collatToken), usr2, 4 * amountIn);
+
         vm.startPrank(usr1);
         collatToken.approve(address(market), MAX_UINT);
-        deal(address(collatToken), usr1, amountIn);
-        market.deposit(usr1, amountIn, false);
+        market.deposit(usr1, amountIn, true);
         vm.stopPrank();
 
         vm.startPrank(usr2);
         collatToken.approve(address(market), MAX_UINT);
-        deal(address(collatToken), usr2, amountIn);
-        market.deposit(usr2, amountIn, true);
+        market.deposit(usr2, amountIn, false);
         vm.stopPrank();
 
-        vm.prank(owner);
+        assertEq(0, market.socFeePending());
+
+        vm.startPrank(owner);
         market.setConvexStaking(AddrCvxRewardTokens.USDC_crvUSD_LP, PidCvxCrvBooster.USDC_crvUSD_LP);
 
         assertEq(address(AddrCvxRewardTokens.USDC_crvUSD_LP), address(market.cvxRewardToken()));
         assertEq(PidCvxCrvBooster.USDC_crvUSD_LP, market.pid());
+
+        vm.expectRevert(abi.encodeWithSelector(ConvexCrvLPMarket.CvxRewardTokenNull.selector, usr1));
+        market.setConvexStaking(ICvxRewardToken(address(0)), 12);
+
+        vm.expectRevert(abi.encodeWithSelector(ConvexCrvLPMarket.PidNull.selector, usr1));
+        market.setConvexStaking(AddrCvxRewardTokens.USDC_crvUSD_LP, 0);
+        IERC20[] memory rewards = new IERC20[](2);
+        rewards[0] = AddrClassicERC20.CRV;
+        rewards[1] = AddrClassicERC20.CVX;
+
+        vm.stopPrank();
+
+        vm.startPrank(usr1);
+        market.deposit(usr1, amountIn, true);
+        vm.stopPrank();
+
+        vm.startPrank(usr2);
+        market.deposit(usr2, amountIn, false);
+        vm.stopPrank();
+
+        assertEq((amountIn * market.socFeePercentage()) / 100_000, market.socFeePending());
+
+        vm.prank(owner);
+        rewardAccumulator.addNewRewards(address(market), rewards);
+
+        market.stakeAll(usr1);
+
+        skip(7 days);
+
+        rewardAccumulator.processRewards(address(market), usr1);
+
+        skip(7 days);
+
+        vm.prank(usr1);
+        rewardAccumulator.claimSimple(address(market));
+
+        vm.prank(usr2);
+        rewardAccumulator.claimSimple(address(market));
     }
 }
