@@ -20,7 +20,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
     ERC20BalanceChanges public balanceChanges;
 
-    uint256 collatDeposited = 20 ether;
+    uint256 collatDeposited = 6 ether;
     uint256 tgUSDBorrowed = 13_000 ether;
     uint256 badDebtToRepay = 7_000 ether;
 
@@ -31,6 +31,8 @@ contract BadDebtLiquidation is MarketDeploymentContext {
         hDeposit = new HDepositConvexCrvLP(usr1, market);
         hBorrow = new HBorrow(usr1, market);
         hLpManipulator = new HLPManipulator(usr1);
+
+        skip(1 hours);
 
         hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, true);
     }
@@ -50,7 +52,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
         assertGt(market.positionValue(usr1), market.userDebt(usr1), "Position value is still bigger than the debt");
 
         // Dump a lot of FRXETH in the LP to depeg FRXETH
-        hLpManipulator.dumpCrvPool(AddrCurveStableLP.WETH_frxETH, 1, 0, 1_400 ether);
+        hLpManipulator.dumpCrvPool(AddrCurveStableLP.WETH_frxETH, 1, 0, 2_400 ether);
 
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionWithoutBadDebt.selector));
@@ -77,10 +79,10 @@ contract BadDebtLiquidation is MarketDeploymentContext {
         irCalculator.checkpointIR(address(market));
         vm.stopPrank();
 
-        hDeposit.setMsgSender(usr2);
         hLpManipulator.dumpCrvPool(AddrCurveStableLP.WETH_frxETH, 0, 1, 1_400 ether);
 
         skip(1 days);
+        hDeposit.setMsgSender(usr2);
         hDeposit.depositAndBorrow(10 ether, tgUSDBorrowed, true);
 
         verifyLostERC20(tgUSD, usr2, badDebtToRepay, "Verify that the usr2 loose the tgUSD");

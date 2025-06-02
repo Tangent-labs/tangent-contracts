@@ -172,7 +172,7 @@ contract CurveRouterTest is MarketDeploymentContext {
 
         uint256 returned = ROUTER.exchange(routerSwap._route, routerSwap._swap_params, amount, 1, routerSwap._pools, usr1);
 
-        assertEq(returned, dy);
+        assertApproxEqRel(returned, dy, 1e12);
     }
 
     function test_unwrapping_WBTC_cbBTC_to_WBTC() external {

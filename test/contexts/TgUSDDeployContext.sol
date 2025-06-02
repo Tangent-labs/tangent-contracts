@@ -89,7 +89,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     constructor() {
         // baseFork = vm.createSelectFork("base", 24379193);
-        mainnetFork = vm.createSelectFork("mainnet", 22346661);
+        mainnetFork = vm.createSelectFork("mainnet", 22596525);
 
         vm.startPrank(owner);
 

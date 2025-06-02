@@ -14,7 +14,7 @@ contract CheckpointMulti is MarketDeploymentContext {
     IRCalculationFFI public irCalculationFFI;
 
     uint256 depositedAmount = 10_000 ether;
-    uint256 borrowedAmount = 8_000 ether;
+    uint256 borrowedAmount = 7_000 ether;
     uint256 tgUSDPrice;
     uint256 timestamp;
     function setUp() public {

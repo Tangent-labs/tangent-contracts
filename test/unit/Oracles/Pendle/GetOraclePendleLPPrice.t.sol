@@ -16,7 +16,16 @@ contract GetOraclePendleLPPrice is MarketDeploymentContext {
             IERC20Metadata lp = pendleLPs[i];
             uint256 oracleValue = oracles[lp].latestAnswer();
 
-            console.log(oracleValue);
+            console.log(pendleLPs[i].symbol(), oracleValue);
+        }
+
+        skip(1000);
+
+        for (uint256 i = 0; i < pendleLPs.length; i++) {
+            IERC20Metadata lp = pendleLPs[i];
+            uint256 oracleValue = oracles[lp].latestAnswer();
+
+            console.log(pendleLPs[i].symbol(), oracleValue);
         }
     }
 }
