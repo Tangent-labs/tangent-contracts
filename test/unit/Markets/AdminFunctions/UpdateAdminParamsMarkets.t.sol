@@ -20,7 +20,7 @@ contract UpdateAdminParamsMarkets is MarketDeploymentContext {
     }
 
     function test_setMaxLTV_fails_when_higher_than_liquidationThreshold() external {
-        vm.expectRevert(abi.encodeWithSelector(Collateral.MaxLTVLowerThanLiquidationThreshold.selector));
+        vm.expectRevert(abi.encodeWithSelector(Collateral.MaxLTVBiggerThanLiquidationThreshold.selector));
         market.setMaxLTV(98_000);
     }
 

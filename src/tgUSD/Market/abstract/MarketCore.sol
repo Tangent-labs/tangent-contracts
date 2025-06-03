@@ -58,7 +58,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         collatToken = _marketInit.collatToken;
         collatOracle = _marketInit.collatOracle;
 
-        require(_marketInit.maxLTV < _marketInit.liquidationThreshold, MaxLTVLowerThanLiquidationThreshold());
+        require(_marketInit.maxLTV < _marketInit.liquidationThreshold, MaxLTVBiggerThanLiquidationThreshold());
 
         // Can't be more than 100%
         require(_marketInit.liquidationThreshold < DENOMINATOR, LiquidationThresholdTooHigh());

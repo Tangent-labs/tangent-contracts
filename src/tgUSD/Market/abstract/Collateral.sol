@@ -33,7 +33,7 @@ abstract contract Collateral is DebtIR, ICollateral {
     /// @notice Amount of collateral deposited by a user.
     mapping(address => uint256) public collateralBalances;
 
-    error MaxLTVLowerThanLiquidationThreshold();
+    error MaxLTVBiggerThanLiquidationThreshold();
 
     error LiquidationThresholdTooHigh();
     error LiquidationThresholdTooLow();
@@ -63,7 +63,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      */
     function setMaxLTV(uint256 _maxLTV) external onlyOwner {
         // Can't be less than the liquidation threshold
-        require(_maxLTV < liquidationThreshold, MaxLTVLowerThanLiquidationThreshold());
+        require(_maxLTV < liquidationThreshold, MaxLTVBiggerThanLiquidationThreshold());
         maxLTV = _maxLTV;
     }
 
