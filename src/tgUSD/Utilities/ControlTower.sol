@@ -27,7 +27,7 @@ contract ControlTower is LightOwnable, IControlTower {
         _transferOwnership(_owner);
     }
 
-    function isContractsMarkets(address[] calldata _markets) external view returns (bool) {
+    function areContractsMarkets(address[] calldata _markets) external view returns (bool) {
         uint256 len = _markets.length;
         for (uint256 i; i < len; ) {
             if (!isMarket[_markets[i]]) {

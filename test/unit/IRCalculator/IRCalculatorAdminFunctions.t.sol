@@ -15,8 +15,14 @@ contract IRCalculatorAdminFunctions is MarketDeploymentContext {
 
     function test_updateIRParams_success() external {
         vm.startPrank(owner);
-        irCalculator.updateIRParams(address(market), IRParams(false, 5_000, 100_000, 0, 0, 0, 0, 0, 0));
 
         IRCheckpoint memory irCheck = irCalculator.getIRCheckpoint(address(market));
+        assertEq(irCheck.ir, 0);
+
+        irCalculator.updateIRParams(address(market), IRParams(false, 5_000, 100_000, 0, 0, 0, 0, 0, 0));
+
+        irCheck = irCalculator.getIRCheckpoint(address(market));
+
+        assertEq(irCheck.ir, 5e16);
     }
 }

@@ -19,14 +19,14 @@ contract ViewsControlTower is MarketDeploymentContext {
         assertFalse(isIRCalc);
     }
 
-    function test_isContractsMarkets() external {
+    function test_areContractsMarkets() external {
         address market1 = address(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true));
         address market2 = address(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD));
         address market3 = address(deployMarketNoSociabilisation(AddrPTPendle.sUSDe_31_07_25));
 
-        assertTrue(controlTower.isContractsMarkets(Array.memoryAddress([market1, market2, market3])));
-        assertFalse(controlTower.isContractsMarkets(Array.memoryAddress([market1, address(0), market3])));
-        assertFalse(controlTower.isContractsMarkets(Array.memoryAddress([market1, market3, address(0)])));
-        assertFalse(controlTower.isContractsMarkets(Array.memoryAddress([address(0), market3, market1])));
+        assertTrue(controlTower.areContractsMarkets(Array.memoryAddress([market1, market2, market3])));
+        assertFalse(controlTower.areContractsMarkets(Array.memoryAddress([market1, address(0), market3])));
+        assertFalse(controlTower.areContractsMarkets(Array.memoryAddress([market1, market3, address(0)])));
+        assertFalse(controlTower.areContractsMarkets(Array.memoryAddress([address(0), market3, market1])));
     }
 }

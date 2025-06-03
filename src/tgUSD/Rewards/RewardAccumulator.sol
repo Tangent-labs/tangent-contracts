@@ -201,7 +201,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
         // Reverts if one of the market passed in parameter is not one.
         // It protects us agains a malicious user input.
-        require(controlTower.isContractsMarkets(markets), NotAMarketRewards());
+        require(controlTower.areContractsMarkets(markets), NotAMarketRewards());
         // We save this length on his own variable, to not miss with the assembly manipulations
         uint256 marketsLen = markets.length;
         TokenAmount[] memory totals = new TokenAmount[](rewardLength);
@@ -460,7 +460,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     function processMultiRewards(address[] calldata markets, address harvestFeeReceiver, uint256 rewardLength) external {
         // Reverts if one of the market passed in parameter is not one.
         // It protects us agains a malicious user input.
-        require(controlTower.isContractsMarkets(markets), NotAMarketRewards());
+        require(controlTower.areContractsMarkets(markets), NotAMarketRewards());
 
         uint256 tgUSDPrice = tgUSDOracle.price_w();
 

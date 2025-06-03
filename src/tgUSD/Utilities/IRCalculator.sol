@@ -34,6 +34,7 @@ contract IRCalculator is IIRCalculator, LightOwnable {
 
     ITgUSD public tgUSD;
 
+    /// @notice Interests from loan are accumulated in this value on each _checkpointIR.
     uint256 public mintableInterests;
 
     /// @notice Gives the parameter of the market
@@ -94,7 +95,7 @@ contract IRCalculator is IIRCalculator, LightOwnable {
     }
 
     function updateIRParams(address market, IRParams calldata _irParam) external onlyOwner {
-        _verifyIRParams(_irParams);
+        _verifyIRParams(_irParam);
         irParams[market] = _irParam;
         _checkpointIR(market);
     }
@@ -235,16 +236,17 @@ contract IRCalculator is IIRCalculator, LightOwnable {
      *                    - Interest Generated = 2M * 5% = 100 000
      */
     function checkpointIRMulti(address[] calldata markets) external {
-        require(controlTower.isContractsMarkets(markets), NotAMarket());
+        require(controlTower.areContractsMarkets(markets), NotAMarket());
 
         uint256 newTgUSDPrice = tgUSDOracle.price_w();
+        uint40 ts = uint40(block.timestamp);
 
         uint256 _mintableInterests;
         for (uint256 i; i < markets.length; ) {
             address market = markets[i];
             IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
 
-            irCheckpoints[market] = IRCheckpoint({ir: _computeIR(newTgUSDPrice, irParams[market]), timestamp: uint40(block.timestamp)});
+            irCheckpoints[market] = IRCheckpoint({ir: _computeIR(newTgUSDPrice, irParams[market]), timestamp: ts});
 
             uint256 oldIndex = debtIndexes[market];
             uint256 newIndex = _computeNewDebtIndex(oldIndex, _irCheckpoint);
