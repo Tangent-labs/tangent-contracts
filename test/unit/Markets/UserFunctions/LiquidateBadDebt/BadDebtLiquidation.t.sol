@@ -43,7 +43,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
         // Liquidation doesn't pass because there is no bad debt
         vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionWithoutBadDebt.selector));
-        market.liquidateBadDebt(usr1);
+        market.seizeCollateral(usr1);
     }
 
     function test_liquidateBadDebt_a_position_in_bad_debt() external {
@@ -56,7 +56,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.PositionWithoutBadDebt.selector));
-        market.liquidateBadDebt(usr1);
+        market.seizeCollateral(usr1);
 
         skip(30 days);
 
@@ -66,7 +66,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
         uint256 debtToRepay = market.userDebt(usr1);
         // Liquidation passes
-        market.liquidateBadDebt(usr1);
+        market.seizeCollateral(usr1);
         assertERC20Tracking();
 
         assertEq(market.totalCollateral(), 0, "No more collateral on the market");

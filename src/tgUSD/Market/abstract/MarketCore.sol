@@ -191,7 +191,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
                             REPAY
                                                     ------ */
 
-    function _repay(address account, uint256 tgUSDToRepay) internal returns (uint256, uint256, uint256) {
+    function _repay(address account, uint256 tgUSDToRepay) internal returns (uint256, uint256, uint256, uint256) {
         // Cannot repay 0 debt
         require(tgUSDToRepay != 0, ZeroDebtAmount());
 
@@ -207,6 +207,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         uint256 newUserDebtShares;
         uint256 sharesToRemove;
+        uint256 newUserDebt;
 
         // Repay all case
         // When IR != 0, debt of the user is increasing every block.
@@ -223,7 +224,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Partial repay case
         else {
             // Retrieve the real debt of the user
-            uint256 newUserDebt = oldUserDebt - tgUSDToRepay;
+            newUserDebt = oldUserDebt - tgUSDToRepay;
 
             sharesToRemove = (tgUSDToRepay * RAY) / newDebtIndex;
 
@@ -233,17 +234,16 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             require(newUserDebt >= minimumLoan, UserDebtTooLow());
         }
 
-        return (tgUSDToRepay, newUserDebtShares, totalDebtShares - sharesToRemove);
+        return (tgUSDToRepay, newUserDebtShares, totalDebtShares - sharesToRemove, newUserDebt);
     }
 
     function _repayAndWithdraw(uint256 amountToWithdraw, uint256 tgUSDToRepay) internal returns (uint256) {
         // Call _repay function in order to checkpoint the total debt, computes new User debt and burn corresponding amount of tgUSD.
-        (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(msg.sender, tgUSDToRepay);
+        (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares, uint256 newUserDebt) = _repay(msg.sender, tgUSDToRepay);
 
-        //TODO Problem with the _getBalanceAfterWithdrawAndCheckMaxBorrowable
         _updateCollatAndDebts(
             msg.sender,
-            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, newUserDebtShares),
+            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, newUserDebt),
             totalCollateral - amountToWithdraw,
             newUserDebtShares,
             newTotalDebtShares
@@ -256,8 +256,16 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
                             LIQUIDATION
                                                     ------ */
 
+    function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256) {
+        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
+        uint256 userDebtShares_ = userDebtShares[account];
+        return (newDebtIndex, collateralBalances[account], userDebtShares_, _userDebt(userDebtShares_, newDebtIndex));
+    }
+
     function _selfLiquidate(SelfLiquidateCall memory selfLiquidateCall, ZapStruct calldata routerCall) internal returns (uint256) {
+        // Need to some collateral
         require(selfLiquidateCall.collatAmountToLiquidate != 0, ZeroCollatAmount());
+        // Computes the new collat balance
         uint256 newCollatBalance = selfLiquidateCall._collateralBalance - selfLiquidateCall.collatAmountToLiquidate;
         uint256 debtSharesToRemove;
         uint256 tgUSDToRepay = selfLiquidateCall.tgUSDToRepay;
@@ -353,7 +361,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         tgUSD.burnFrom(msg.sender, tgUSDToBurn);
     }
 
-    function _liquidateBadDebt(
+    function _seizeCollateral(
         address account,
         uint256 _collateralBalance,
         uint256 _totalCollateral,
@@ -369,7 +377,6 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         badDebt += _accountDebt;
 
         // The collateral is sent to the DAO to decide what to do with it
-        //TODO Check who is the receiver of the collateral
         _transferCollateralWithdraw(controlTower.feeTreasury(), _collateralBalance);
     }
 
@@ -416,7 +423,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         address _rewardAccumulator = address(rewardAccumulator);
 
         uint256 counter;
-        //TODO Test here with some 0
+
         for (uint256 i; i < rewardLen; ) {
             IERC20 rewardToken = _rewardTokens[i];
             uint256 balance = rewardToken.balanceOf(address(this));

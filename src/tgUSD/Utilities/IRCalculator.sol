@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
+import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
+
 import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 
 import {IRParams, IIRCalculator, IRCheckpoint} from "../../interfaces/internals/tgUSD/IIRCalculator.sol";
@@ -16,7 +18,7 @@ import "forge-std/console.sol";
 ///@notice Contract allowing to compute the interest rate and reward cut of a tgUSD market
 // TODO Put a cap on tgUSD price to prevent overflow on IR computation
 // TODO Comments are bad
-contract IRCalculator is IIRCalculator, LightOwnable {
+contract IRCalculator is IIRCalculator, LightOwnable, ReentrancyGuardTransient {
     uint256 public constant DENOMINATOR = 100_000;
 
     uint256 constant RAY = 1e27;
@@ -85,7 +87,7 @@ contract IRCalculator is IIRCalculator, LightOwnable {
         tgUSDOracle = _tgUSDOracle;
     }
 
-    function initializeMarket(address market, IRParams calldata _irParams) external {
+    function initializeMarket(address market, IRParams calldata _irParams) external nonReentrant {
         _verifyIRParams(_irParams);
         require(controlTower.isMarketCreator(msg.sender), CallerNotMarketCreator());
         debtIndexes[market] = RAY;
@@ -94,10 +96,90 @@ contract IRCalculator is IIRCalculator, LightOwnable {
         irCheckpoints[market] = IRCheckpoint({ir: _computeIR(tgUSDOracle.price_w(), _irParams), timestamp: uint40(block.timestamp)});
     }
 
-    function updateIRParams(address market, IRParams calldata _irParam) external onlyOwner {
+    function updateIRParams(address market, IRParams calldata _irParam) external nonReentrant onlyOwner {
         _verifyIRParams(_irParam);
         irParams[market] = _irParam;
         _checkpointIR(market);
+    }
+
+    /**
+     *  @notice Computes and returns the new debt index regarding interests generated allowing to readjust the total debt of the market
+     *          If some interests are generated, it increments the value in tgUSD to be able to mint them later.
+     *  @dev    Example :
+     *                    - On a market with 2M debt with 10% interests on 6 month
+     *                    - IndexIncrease = 0.1 * 6 month / 1 year = 5%
+     *                    - Interest Generated = 2M * 5% = 100 000
+     */
+    function checkpointIR(address market) external nonReentrant returns (uint256) {
+        return _checkpointIR(market);
+    }
+
+    function _checkpointIR(address market) internal returns (uint256) {
+        require(controlTower.isMarket(market), NotAMarket());
+
+        IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
+
+        irCheckpoints[market] = IRCheckpoint({ir: _computeIR(tgUSDOracle.price_w(), irParams[market]), timestamp: uint40(block.timestamp)});
+
+        uint256 oldIndex = debtIndexes[market];
+
+        uint256 newIndex = _computeNewDebtIndex(oldIndex, _irCheckpoint);
+
+        uint256 interests = (IDebtIR(market).totalDebtShares() * (newIndex - oldIndex)) / RAY;
+        if (interests != 0) {
+            mintableInterests += interests;
+        }
+
+        debtIndexes[market] = newIndex;
+        emit CheckpointIR(market, interests, newIndex);
+
+        return newIndex;
+    }
+
+    /**
+     *  @notice Computes and returns the new debt index regarding interests generated allowing to readjust the total debt of the market
+     *          If some interests are generated, it increments the value in tgUSD to be able to mint them later.
+     *  @dev    Example :
+     *                    - On a market with 2M debt with 10% interests on 6 month
+     *                    - IndexIncrease = 0.1 * 6 month / 1 year = 5%
+     *                    - Interest Generated = 2M * 5% = 100 000
+     */
+    function checkpointIRMulti(address[] calldata markets) external nonReentrant {
+        require(controlTower.areContractsMarkets(markets), NotAMarket());
+
+        uint256 newTgUSDPrice = tgUSDOracle.price_w();
+        uint40 ts = uint40(block.timestamp);
+
+        uint256 _mintableInterests;
+        for (uint256 i; i < markets.length; ) {
+            address market = markets[i];
+            IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
+
+            irCheckpoints[market] = IRCheckpoint({ir: _computeIR(newTgUSDPrice, irParams[market]), timestamp: ts});
+
+            uint256 oldIndex = debtIndexes[market];
+            uint256 newIndex = _computeNewDebtIndex(oldIndex, _irCheckpoint);
+
+            uint256 interests = (IDebtIR(market).totalDebtShares() * (newIndex - oldIndex)) / RAY;
+
+            if (interests != 0) {
+                _mintableInterests += interests;
+            }
+            emit CheckpointIR(market, interests, newIndex);
+
+            debtIndexes[market] = newIndex;
+
+            unchecked {
+                ++i;
+            }
+        }
+        mintableInterests += _mintableInterests;
+    }
+
+    function mintIR() external nonReentrant {
+        uint256 _mintableInterests = mintableInterests;
+        delete mintableInterests;
+        tgUSD.mintIR(_mintableInterests);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -193,86 +275,6 @@ contract IRCalculator is IIRCalculator, LightOwnable {
         return _computeNewDebtIndex(oldIndex, irCheckpoints[market]) - oldIndex;
     }
 
-    /**
-     *  @notice Computes and returns the new debt index regarding interests generated allowing to readjust the total debt of the market
-     *          If some interests are generated, it increments the value in tgUSD to be able to mint them later.
-     *  @dev    Example :
-     *                    - On a market with 2M debt with 10% interests on 6 month
-     *                    - IndexIncrease = 0.1 * 6 month / 1 year = 5%
-     *                    - Interest Generated = 2M * 5% = 100 000
-     */
-    function checkpointIR(address market) external returns (uint256) {
-        return _checkpointIR(market);
-    }
-
-    function _checkpointIR(address market) internal returns (uint256) {
-        require(controlTower.isMarket(market), NotAMarket());
-
-        IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
-
-        irCheckpoints[market] = IRCheckpoint({ir: _computeIR(tgUSDOracle.price_w(), irParams[market]), timestamp: uint40(block.timestamp)});
-
-        uint256 oldIndex = debtIndexes[market];
-
-        uint256 newIndex = _computeNewDebtIndex(oldIndex, _irCheckpoint);
-
-        uint256 interests = (IDebtIR(market).totalDebtShares() * (newIndex - oldIndex)) / RAY;
-        if (interests != 0) {
-            mintableInterests += interests;
-        }
-
-        debtIndexes[market] = newIndex;
-        emit CheckpointIR(market, interests, newIndex);
-
-        return newIndex;
-    }
-
-    /**
-     *  @notice Computes and returns the new debt index regarding interests generated allowing to readjust the total debt of the market
-     *          If some interests are generated, it increments the value in tgUSD to be able to mint them later.
-     *  @dev    Example :
-     *                    - On a market with 2M debt with 10% interests on 6 month
-     *                    - IndexIncrease = 0.1 * 6 month / 1 year = 5%
-     *                    - Interest Generated = 2M * 5% = 100 000
-     */
-    function checkpointIRMulti(address[] calldata markets) external {
-        require(controlTower.areContractsMarkets(markets), NotAMarket());
-
-        uint256 newTgUSDPrice = tgUSDOracle.price_w();
-        uint40 ts = uint40(block.timestamp);
-
-        uint256 _mintableInterests;
-        for (uint256 i; i < markets.length; ) {
-            address market = markets[i];
-            IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
-
-            irCheckpoints[market] = IRCheckpoint({ir: _computeIR(newTgUSDPrice, irParams[market]), timestamp: ts});
-
-            uint256 oldIndex = debtIndexes[market];
-            uint256 newIndex = _computeNewDebtIndex(oldIndex, _irCheckpoint);
-
-            uint256 interests = (IDebtIR(market).totalDebtShares() * (newIndex - oldIndex)) / RAY;
-
-            if (interests != 0) {
-                _mintableInterests += interests;
-            }
-            emit CheckpointIR(market, interests, newIndex);
-
-            debtIndexes[market] = newIndex;
-
-            unchecked {
-                ++i;
-            }
-        }
-        mintableInterests += _mintableInterests;
-    }
-
-    function mintIR() external {
-        uint256 _mintableInterests = mintableInterests;
-        delete mintableInterests;
-        tgUSD.mintIR(_mintableInterests);
-    }
-
     // newIndex = oldIndex * exp(ir * timeRatio)
     function _computeNewDebtIndex(uint256 oldIndex, IRCheckpoint memory _checkpoint) internal view returns (uint256) {
         uint256 timeDelta = block.timestamp - _checkpoint.timestamp;
@@ -290,7 +292,7 @@ contract IRCalculator is IIRCalculator, LightOwnable {
         return (ABDKMath64x64.mulu(ABDKMath64x64.exp(expContent), RAY) * oldIndex) / RAY;
     }
 
-    function _pow(int128 a, int128 b) internal pure returns (int128) {
+    function _pow(int128 a, int128 b) private pure returns (int128) {
         return ABDKMath64x64.exp_2(ABDKMath64x64.mul(ABDKMath64x64.log_2(a), b));
     }
 }

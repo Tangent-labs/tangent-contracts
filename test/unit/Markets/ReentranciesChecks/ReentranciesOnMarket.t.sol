@@ -256,7 +256,7 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.CRV,
                 amountIn: amountIn,
                 minAmountOut: amountOut,
-                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(MarketExternalActions.liquidateBadDebt.selector, usr1)})
+                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(MarketExternalActions.seizeCollateral.selector, usr1)})
             })
         );
     }

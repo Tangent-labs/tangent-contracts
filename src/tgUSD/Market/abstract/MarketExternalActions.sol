@@ -36,7 +36,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
 
     event Liquidate(address indexed account, uint256 repaidAmount, uint256 fee, uint256 collateralLiquidated, address liquidator);
     event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator);
-    event LiquidateBadDebt(address indexed account, uint256 newBadDebt, uint256 collateralSeized);
+    event SeizeCollateral(address indexed account, uint256 newBadDebt, uint256 collateralSeized);
 
     error NotRewardAccumulator();
 
@@ -167,7 +167,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  tgUSDToRepay   Amount of tgUSD to repay
      */
     function repay(address account, uint256 tgUSDToRepay) external nonReentrant {
-        (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(account, tgUSDToRepay);
+        (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares, ) = _repay(account, tgUSDToRepay);
 
         tgUSD.burnFrom(msg.sender, tgUSDToBurn);
 
@@ -184,7 +184,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function zapRepay(address account, ZapStructDeposit calldata zapCall) external payable nonReentrant {
         uint256 tgUSDToRepay = _zapDeposit(zapCall, tgUSD, msg.sender);
 
-        (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares) = _repay(account, tgUSDToRepay);
+        (uint256 tgUSDToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares, ) = _repay(account, tgUSDToRepay);
 
         tgUSD.burnFrom(msg.sender, tgUSDToBurn);
 
@@ -197,13 +197,16 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
                        LIQUIDATE 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256) {
-        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
-        uint256 userDebtShares_ = userDebtShares[account];
-        return (newDebtIndex, collateralBalances[account], userDebtShares_, _userDebt(userDebtShares_, newDebtIndex));
-    }
-
-    //TODO Verify require on HR
+    /**
+     * @notice Liquidate a position that have an health ratio < 1.
+     * @dev    Two liquidation modes are possibles : 
+     *           - Buy tgUSD with a flashloan, repay the debt, get the collateral and do whatever you want with it.
+                 - Selling the collateral for tgUSD directly through ZappingProxy by providing a route then repay the debt and keep the difference in tgUSD
+     * @param  account             Account of the position to liquidate
+     * @param  collatToLiquidate   Amount of collateral to liquidate from the position.
+     * @param  minTgUSDOut         Minimum amount of tgUSD to receive on the sell of the collateral. 
+     * @param  liquidationCall     Contract and data allowing to sell the collateral for tgUSD.
+     */
     function liquidate(address account, uint256 collatToLiquidate, uint256 minTgUSDOut, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(account) {
         (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
         // Can liquidate only if the health ratio is below 1
@@ -227,13 +230,19 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         emit Liquidate(account, debtRepaid, fee, collatLiquidated, liquidationCall.router);
     }
 
-    //TODO Verify require on maxLTV post self liquidate
-
+    /**
+     * @notice Liquidate a part or the full collateral of the position of the caller.
+     * @dev
+     * @param  collatAmountToLiquidate   Amount of collateral to liquidate from the position.
+     * @param  tgUSDToRepay              Amount of debt to repay in tgUSD after the selling of the position.
+     * @param  minTgUSDOut               Minimum amount of tgUSD to receive on the sell of the collateral.
+     * @param  liquidationCall           Contract and data allowing to sell the collateral for tgUSD.
+     */
     function selfLiquidate(
         uint256 collatAmountToLiquidate,
         uint256 tgUSDToRepay,
         uint256 minTgUSDOut,
-        ZapStruct calldata routerCall
+        ZapStruct calldata liquidationCall
     ) external nonReentrant updateRewards(msg.sender) {
         (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(msg.sender);
 
@@ -249,30 +258,44 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
                 _totalDebtShares: totalDebtShares,
                 userDebt: userDebt_
             }),
-            routerCall
+            liquidationCall
         );
 
-        emit SelfLiquidate(msg.sender, debtRepaid, collatAmountToLiquidate, routerCall.router);
+        emit SelfLiquidate(msg.sender, debtRepaid, collatAmountToLiquidate, liquidationCall.router);
     }
 
-    function liquidateBadDebt(address account) external nonReentrant updateRewards(account) {
+    /**
+     * @notice Seize the collateral of a position where collateral value is less than the user debt.
+     * @dev    Collateral is sent to dao for management and bad debt of the market is incremented with the user debt.
+     * @param  account  Account of the position to seize collateral
+     */
+    function seizeCollateral(address account) external nonReentrant updateRewards(account) {
         // Checkpoint IR
         (, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
 
         // Can liquidate bad debt only if the value of the collateral is below the debt
         require(_positionValue(collatBalance) < userDebt_, PositionWithoutBadDebt());
 
-        _liquidateBadDebt(account, collatBalance, totalCollateral, _userDebtShares, totalDebtShares, userDebt_);
+        _seizeCollateral(account, collatBalance, totalCollateral, _userDebtShares, totalDebtShares, userDebt_);
 
-        emit LiquidateBadDebt(account, userDebt_, collatBalance);
+        emit SeizeCollateral(account, userDebt_, collatBalance);
     }
 
+    /**
+     * @notice Leverage the collateral amount of a position. Mint tgUSD that are fully sold for collateral on the fly.
+     * @dev    The route and liquidator contract must be specified and setup properlly.
+     * @param  collatToDeposit    Amount of collateral to deposit, can be 0
+     * @param  tgUSDToFlashMint   Amount of tgUSD to mint that is sold for collateral, will be incremented to userDebt.
+     * @param  minCollatAmountOut Slippage, minimum amount of collatAmount to receive from the selling of tgUSD.
+     * @param  isStaked           For markets with sociabilization mecanism prior to costly staking. When false, tx will be cheaper but a fee is taken on the collateral amount deposited.
+     * @param  leverageCall       Contract and data allowing to sell the tgUSD for collateral.
+     */
     function leverage(
         uint256 collatToDeposit,
         uint256 tgUSDToFlashMint,
         uint256 minCollatAmountOut,
         bool isStaked,
-        ZapStruct calldata dumpTgUSDCall
+        ZapStruct calldata leverageCall
     ) external nonReentrant updateRewards(msg.sender) {
         _preLeverage();
 
@@ -282,23 +305,32 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
             _collatToken.transferFrom(msg.sender, address(this), collatToDeposit);
         }
 
-        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, tgUSDToFlashMint, minCollatAmountOut, isStaked, dumpTgUSDCall);
+        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, tgUSDToFlashMint, minCollatAmountOut, isStaked, leverageCall);
 
         emit Leverage(msg.sender, stakedAmount, collatBought, tgUSDToFlashMint);
     }
 
+    /**
+     * @notice Leverage the collateral amount of a position. Mint tgUSD that are fully sold for collateral on the fly.
+     * @dev    The route and liquidator contract must be specified and setup properlly.
+     * @param  tgUSDToFlashMint   Amount of tgUSD to mint that is sold for collateral, will be incremented to userDebt.
+     * @param  minCollatAmountOut Slippage, minimum amount of collatAmount to receive from the selling of tgUSD.
+     * @param  isStaked           For markets with sociabilization mecanism prior to costly staking. When false, tx will be cheaper but a fee is taken on the collateral amount deposited.
+     * @param  leverageCall       Contract and data allowing to sell the tgUSD for collateral.
+     * @param  zapDepositCall     Contract and data allowing to sell the zapToken for collateral.
+     */
     function zapLeverage(
         uint256 tgUSDToFlashMint,
         uint256 minCollatAmountOut,
         bool isStaked,
-        ZapStruct calldata dumpTgUSDCall,
+        ZapStruct calldata leverageCall,
         ZapStructDeposit calldata zapDepositCall
     ) external payable nonReentrant updateRewards(msg.sender) {
         _preLeverage();
         IERC20 _collatToken = collatToken;
         uint256 collatToDeposit = _zapDeposit(zapDepositCall, _collatToken, address(this));
 
-        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, tgUSDToFlashMint, minCollatAmountOut, isStaked, dumpTgUSDCall);
+        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, tgUSDToFlashMint, minCollatAmountOut, isStaked, leverageCall);
 
         emit ZapLeverage(msg.sender, stakedAmount, collatToDeposit, collatBought, tgUSDToFlashMint, zapDepositCall.tokenIn, zapDepositCall.amountIn);
     }
