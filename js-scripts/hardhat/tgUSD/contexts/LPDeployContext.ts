@@ -22,8 +22,8 @@ export class LpDeployContext {
             tgUSDC,
             [baseContext.coins.USDC, baseContext.tgUSD],
             [amount, amount],
-            "5000",
-            "100000000",
+            "500",
+            "1000000",
             "0",
             "866",
             "0"
@@ -37,8 +37,8 @@ export class LpDeployContext {
             tgFrxUSD,
             [wStableContext.wStable.wfrxUSD, baseContext.tgUSD],
             [amount, amount],
-            "5000",
-            "100000000",
+            "500",
+            "1000000",
             "0",
             "866",
             "0"

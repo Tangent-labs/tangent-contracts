@@ -104,6 +104,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
     }
 
     function _deposit(address _for, uint256 amountDeposited) internal {
+        require(!isDepositPaused, DepositPaused());
         // Verify that newDebt is over the minimum loan
         irCalculator.checkpointIR(address(this));
 
@@ -179,6 +180,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
     }
 
     function _depositAndBorrow(address borrower, uint256 amountDeposited, uint256 tgUSDToBorrow, bool isLeverage) internal {
+        require(!isDepositPaused, DepositPaused());
         // Collat amount after the deposit
         uint256 newCollatAmount = collateralBalances[borrower] + amountDeposited;
 
@@ -386,7 +388,6 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
     function _preLeverage() internal view {
         require(!isDepositPaused, DepositPaused());
-        require(!isBorrowPaused, BorrowPaused());
         require(!isLeveragePaused, LeveragePaused());
     }
 
