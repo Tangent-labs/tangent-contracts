@@ -8,7 +8,7 @@ import "hardhat-contract-sizer";
 
 import * as dotenv from "dotenv";
 dotenv.config();
-const forkBlock = 22594998;
+const forkBlock = 22623829;
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",

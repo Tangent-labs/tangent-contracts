@@ -85,13 +85,12 @@ contract IRCalculator is IIRCalculator, LightOwnable {
         tgUSDOracle = _tgUSDOracle;
     }
 
-    function initializeMarket(address market, IRParams calldata _irParams) external {
-        _verifyIRParams(_irParams);
+    function initializeMarket(address market, IRParams calldata _irParam) external {
+        _verifyIRParams(_irParam);
         require(controlTower.isMarketCreator(msg.sender), CallerNotMarketCreator());
         debtIndexes[market] = RAY;
-        irParams[market] = _irParams;
-
-        irCheckpoints[market] = IRCheckpoint({ir: _computeIR(tgUSDOracle.price_w(), _irParams), timestamp: uint40(block.timestamp)});
+        irParams[market] = _irParam;
+        irCheckpoints[market] = IRCheckpoint({ir: _computeIR(tgUSDOracle.price_w(), _irParam), timestamp: uint40(block.timestamp)});
     }
 
     function updateIRParams(address market, IRParams calldata _irParam) external onlyOwner {

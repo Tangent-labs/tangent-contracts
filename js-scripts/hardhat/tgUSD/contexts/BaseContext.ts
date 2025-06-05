@@ -140,9 +140,10 @@ export class BaseContext extends MainSetup {
         ).deploy(lpDeployContext.stableLp["tgUSD-wfrxUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
         await this.pegKeeperTgUSD_wfrxUSD.waitForDeployment();
 
-        await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperTgUSD_USDC]);
-        await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperTgUSD_wfrxUSD]);
+        await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperTgUSD_USDC, this.pegKeeperTgUSD_wfrxUSD]);
 
+        await this.controlTower.connect(this.owner).togglePegKeeper(this.pegKeeperTgUSD_USDC);
+        await this.controlTower.connect(this.owner).togglePegKeeper(this.pegKeeperTgUSD_wfrxUSD);
         await this.controlTower.connect(this.owner).toggleMarketCreator(this.marketCreator);
     }
 
