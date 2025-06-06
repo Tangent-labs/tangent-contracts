@@ -28,7 +28,9 @@ import "../mocks/MockRouter.sol";
 import "../../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
 import "../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
 import "../../src/tgUSD/Market/MarketNoSociabilization.sol";
+import "../../src/tgUSD/Market/abstract/MarketCore.sol";
 import "../../src/tgUSD/Market/abstract/DebtIR.sol";
+
 import "../utils/AssertERC20.sol";
 import "../utils/LowLevel.sol";
 import "../utils/EnsoUtils.sol";
@@ -87,7 +89,7 @@ contract TgUSDDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     constructor() {
         // baseFork = vm.createSelectFork("base", 24379193);
-        mainnetFork = vm.createSelectFork("mainnet", 22346661);
+        mainnetFork = vm.createSelectFork("mainnet", 22596525);
 
         vm.startPrank(owner);
 

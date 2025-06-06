@@ -62,7 +62,7 @@ contract RewardsLock is MarketDeploymentContext {
         rsTan.claimSimple(1, false);
 
         vm.prank(usr2);
-        rsTan.claimSimple(2, false);
+        rsTan.claimSimple(2, true);
 
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(RsTan.NothingToClaim.selector));

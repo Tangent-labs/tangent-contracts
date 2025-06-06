@@ -61,4 +61,28 @@ contract ACRewardAccumulator is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NotAMarketRewards.selector));
         rewardAccumulator.updateRCParams(usr1, params);
     }
+
+    function test_updateRewards_fails_as_the_market_is_not_a_market() external {
+        vm.startPrank(usr1);
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NotAMarketRewards.selector));
+        rewardAccumulator.updateRewards(usr1, 100, 100);
+    }
+
+    function test_transferOwnership_fails_as_not_owner() external {
+        vm.startPrank(usr1);
+        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
+        rewardAccumulator.transferOwnership(usr1);
+    }
+
+    function test_transferOwnership_fails_to_zero() external {
+        vm.startPrank(owner);
+        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableInvalidOwner.selector, address(0)));
+        rewardAccumulator.transferOwnership(address(0));
+    }
+    function test_transferOwnership_sucess() external {
+        vm.startPrank(owner);
+        rewardAccumulator.transferOwnership(usr1);
+
+        assertEq(usr1, rewardAccumulator.owner());
+    }
 }

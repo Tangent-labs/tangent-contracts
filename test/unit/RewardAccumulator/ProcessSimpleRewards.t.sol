@@ -78,4 +78,54 @@ contract ProcessSimpleRewards is MarketDeploymentContext {
 
         assertERC20Tracking();
     }
+
+    function test_process_reward_without_reward_cut() external {
+        vm.stopPrank();
+        vm.prank(owner);
+
+        rewardAccumulator.updateRCParams(
+            address(market),
+            RCParams({harvestFeePercentage: 0, stepAmount: 0, startCutPercentage: 0, endCutPercentage: 0, startCutPrice: 0, endCutPrice: 0})
+        );
+
+        console.log("basta");
+        // Deposit rewards on the market contract,ready to be processed
+        IERC20[] memory rewardTokens = rewardAccumulator.getRewardTokens(address(market));
+        for (uint256 j; j < rewardTokens.length; j++) {
+            IERC20 token = rewardTokens[j];
+            deal(address(token), address(market), distributedAmounts[j]);
+        }
+
+        skip(7 days);
+
+        // Claim the residual rewards on Convex to be able to determine exactly the amount distributed
+        market.stakingProxyVault().getReward();
+
+        for (uint256 i; i < rewardTokens.length; i++) {
+            IERC20 token = rewardTokens[i];
+            distributedAmounts[i] = token.balanceOf(address(market));
+        }
+
+        vm.startPrank(usr1);
+
+        uint256 harversterFeePercentage = (rewardAccumulator.getRCParams(address(market))).harvestFeePercentage;
+
+        uint256[3] memory processedR;
+
+        for (uint256 i = 0; i < processableAmountsExpected.length; i++) {
+            uint256 expectedProcessable = distributedAmounts[i];
+            uint256 harvesterFee = (expectedProcessable * harversterFeePercentage) / 100_000;
+            IERC20 rewardToken = rewardAccumulator.rewardTokens(address(market), i);
+            processedR[i] = expectedProcessable - harvesterFee;
+
+            verifyReceiveERC20(rewardToken, address(rewardAccumulator), expectedProcessable - harvesterFee);
+            verifyReceiveERC20(rewardToken, usr2, harvesterFee);
+        }
+
+        rewardAccumulator.processRewards(address(market), usr2);
+
+        assertEq(0, rewardAccumulator.lastRewardCuts(address(market)));
+
+        assertERC20Tracking();
+    }
 }

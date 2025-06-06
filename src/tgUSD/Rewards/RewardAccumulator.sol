@@ -67,19 +67,27 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     error EndCutPercentageBiggerThan100();
     error StartCutPercentageBiggerThan100();
 
-    modifier verifyRCParams(RCParams calldata _rcParam) {
+    function _verifyRCParams(RCParams calldata _rcParam) internal pure {
+        // Harvest Fee <= 2%
         require(_rcParam.harvestFeePercentage <= 2_000, HarvesterFeeTooHigh());
+        // Start of the cut must be <= 1$
         require(_rcParam.startCutPrice <= 1e18, StartCutPriceTooHigh());
+        // Maximum reward cut cannot be more than 100%
         require(DENOMINATOR >= _rcParam.endCutPercentage, EndCutPercentageBiggerThan100());
+        // Minimum reward cut cannot be more than 100%
         require(DENOMINATOR >= _rcParam.startCutPercentage, StartCutPercentageBiggerThan100());
 
+        // When there is at least 1 step
         if (_rcParam.stepAmount != 0) {
+            // Minimum reward cut should be < Maximum reward cut
             require(_rcParam.startCutPercentage < _rcParam.endCutPercentage, StartCutPercentageBiggerThanEnd());
+
+            // When there are 2 steps and more
             if (_rcParam.stepAmount != 1) {
+                // Price where the cut starts must be > start when the cut is the highest
                 require(_rcParam.startCutPrice > _rcParam.endCutPrice, StartCutPriceSmallerThanEnd());
             }
         }
-        _;
     }
 
     constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _tgUSDOracle) {
@@ -193,7 +201,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
         // Reverts if one of the market passed in parameter is not one.
         // It protects us agains a malicious user input.
-        require(controlTower.isContractsMarkets(markets), NotAMarketRewards());
+        require(controlTower.areContractsMarkets(markets), NotAMarketRewards());
         // We save this length on his own variable, to not miss with the assembly manipulations
         uint256 marketsLen = markets.length;
         TokenAmount[] memory totals = new TokenAmount[](rewardLength);
@@ -452,7 +460,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     function processMultiRewards(address[] calldata markets, address harvestFeeReceiver, uint256 rewardLength) external {
         // Reverts if one of the market passed in parameter is not one.
         // It protects us agains a malicious user input.
-        require(controlTower.isContractsMarkets(markets), NotAMarketRewards());
+        require(controlTower.areContractsMarkets(markets), NotAMarketRewards());
 
         uint256 tgUSDPrice = tgUSDOracle.price_w();
 
@@ -564,15 +572,17 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
                        REWARD CUT
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function initializeMarket(address market, RCParams calldata _rcParams) external verifyRCParams(_rcParams) {
+    function initializeMarket(address market, RCParams calldata _rcParam) external {
+        _verifyRCParams(_rcParam);
         require(controlTower.isMarketCreator(msg.sender), CallerNotMarketCreator(msg.sender));
-        lastRewardCuts[market] = _calculateRC(tgUSDOracle.price_w(), _rcParams);
-        rcParams[market] = _rcParams;
+        lastRewardCuts[market] = _calculateRC(tgUSDOracle.price_w(), _rcParam);
+        rcParams[market] = _rcParam;
     }
 
-    function updateRCParams(address market, RCParams calldata _rcParam) external verifyRCParams(_rcParam) onlyOwner {
-        processRewards(market, controlTower.feeTreasury());
+    function updateRCParams(address market, RCParams calldata _rcParam) external onlyOwner {
+        _verifyRCParams(_rcParam);
         rcParams[market] = _rcParam;
+        processRewards(market, controlTower.feeTreasury());
     }
 
     /**

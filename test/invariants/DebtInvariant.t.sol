@@ -63,7 +63,7 @@ contract DebtInvariant is MarketDeploymentContext {
         }
     }
 
-    function afterInvariant() public {
+    function afterInvariant() public view {
         for (uint256 i; i < markets.length; i++) {
             MarketExternalActions market = markets[i];
             for (uint256 j; j < users.length; j++) {}

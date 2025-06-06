@@ -14,10 +14,10 @@ contract MarketDeploymentContext is MarketInitParams {
         ConvexCrvLPMarket convexMarket = ConvexCrvLPMarket(
             marketCreator.createConvexCrvMarket(
                 getMarketInit(initP.marketInit, collat),
-                initP.cvxRewardToken,
-                initP.pid,
+                isConvexLinked ? initP.cvxRewardToken : ICvxRewardToken(address(0)),
+                isConvexLinked ? initP.pid : 0,
                 initP.socFeePercentage,
-                getBaseIRParams(),
+                getBaseIRParamsHEC(),
                 getBaseRCParams()
             )
         );
@@ -46,7 +46,7 @@ contract MarketDeploymentContext is MarketInitParams {
         vm.startPrank(owner);
 
         ConvexFxnLPMarket convexMarket = ConvexFxnLPMarket(
-            marketCreator.createConvexFxnMarket(getMarketInit(initP.marketInit, collat), initP.pid, initP.socFeePercentage, getBaseIRParams(), getBaseRCParams())
+            marketCreator.createConvexFxnMarket(getMarketInit(initP.marketInit, collat), initP.pid, initP.socFeePercentage, getBaseIRParamsLEC(), getBaseRCParams())
         );
 
         verifyParams_and_dealCollat(initP.marketInit.collat);
@@ -68,7 +68,7 @@ contract MarketDeploymentContext is MarketInitParams {
         vm.startPrank(owner);
 
         MarketNoSociabilization marketNoSoc = MarketNoSociabilization(
-            marketCreator.createNoSociabilizationMarket(getMarketInit(marketInit, collat), getBaseIRParams(), getBaseRCParams())
+            marketCreator.createNoSociabilizationMarket(getMarketInit(marketInit, collat), getBaseIRParamsLEC(), getBaseRCParams())
         );
 
         verifyParams_and_dealCollat(marketInit.collat);
@@ -107,8 +107,12 @@ contract MarketDeploymentContext is MarketInitParams {
             });
     }
 
-    function getBaseIRParams() public pure returns (IRParams memory) {
+    function getBaseIRParamsHEC() public pure returns (IRParams memory) {
         return IRParams({isHEC: true, rMin: 4_000, rMax: 400_000, pMin: 980_000, pMax: 995_000, pInf: 990_000, a1: 2_000, a2: 2_000, k: 250});
+    }
+
+    function getBaseIRParamsLEC() public pure returns (IRParams memory) {
+        return IRParams({isHEC: false, rMin: 6_000, rMax: 400_000, pMin: 985_000, pMax: 995_000, pInf: 995_000, a1: 2_500, a2: 3_500, k: 250});
     }
 
     function getBaseRCParams() public pure returns (RCParams memory) {

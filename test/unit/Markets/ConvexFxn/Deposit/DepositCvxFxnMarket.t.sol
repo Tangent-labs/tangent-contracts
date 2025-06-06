@@ -93,4 +93,21 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
 
         assertEq(market.collateralBalances(usr1), 2 * amountInStaked - withdrawnAmount - market.socFeePending());
     }
+
+    function test_several_stake_then_stakeAll_then_withdraw_all() external {
+        hDeposit.depositAndBorrow(158_492 ether, 120_000 ether, false);
+        hDeposit.depositAndBorrow(158_492 ether, 120_000 ether, true);
+        hDeposit.depositAndBorrow(158_492 ether, 120_000 ether, false);
+
+        market.stakeAll(usr1);
+    }
+
+    function test_deposit_fails_when_0_collat_to_stake() external {
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
+        market.deposit(usr1, 0, false);
+
+        vm.startPrank(usr1);
+        deal(address(collatToken), usr1, 30);
+        collatToken.approve(address(market), MAX_UINT);
+    }
 }

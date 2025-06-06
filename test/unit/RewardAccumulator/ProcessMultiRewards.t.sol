@@ -114,4 +114,16 @@ contract ProcessMultiRewards is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NotAMarketRewards.selector));
         rewardAccumulator.processMultiRewards(_markets, usr2, 3);
     }
+
+    function test_processMultiRewards_fails_if_the_amount_of_erc20_passed_is_too_small() external {
+        address[] memory _markets = Array.memoryAddress([address(market1), address(market2), address(market3), address(market4), address(market5)]);
+        vm.expectRevert();
+        rewardAccumulator.processMultiRewards(_markets, usr2, 2);
+    }
+
+    function test_processMultiRewards_fails_if_the_amount_of_erc20_passed_is_too_big() external {
+        address[] memory _markets = Array.memoryAddress([address(market1), address(market2), address(market3), address(market4), address(market5)]);
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.IncorrectRewardLength.selector, 4, 3));
+        rewardAccumulator.processMultiRewards(_markets, usr2, 4);
+    }
 }

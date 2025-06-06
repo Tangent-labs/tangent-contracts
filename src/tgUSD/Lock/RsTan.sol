@@ -105,6 +105,15 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
     event RewardNotified(IERC20 indexed _token, uint256 _reward);
     event RewardPaid(uint256 indexed tokenId, IERC20 indexed _rewardToken, uint256 _reward);
 
+    /**
+     * @dev   Constructor of the contract
+     * @param _owner        Owner of RsTan
+     * @param _controlTower Keep controlTower for fetching the fee treasury
+     * @param _tan          Tan token that is locked
+     * @param _tgUSD        TgUSD token
+     * @param _sgUSD        SgUSD token
+     * @param _zappingProxy Zapping proxy contract used for zapping to TAN
+     */
     constructor(address _owner, IControlTower _controlTower, IERC20 _tan, IERC20 _tgUSD, IERC4626 _sgUSD, IZappingProxy _zappingProxy) ERC721("RsTan", "RsTan") {
         _transferOwnership(_owner);
 
@@ -114,16 +123,25 @@ contract RsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
         sgUSD = _sgUSD;
         zappingProxy = _zappingProxy;
 
+        // Allow sgUSD to spend tgUSD for zapping tgUSD to sgUSD
         _tgUSD.approve(address(_sgUSD), type(uint256).max);
 
         kick = KickParams({delay: uint128(ONE_WEEK), percentage: uint128(250)});
     }
 
+    /**
+     * @dev Modifier used to verify if tyhe caller is the owner of the position in parameter
+     * @param tokenId TokenId to verify the owner
+     */
     modifier onlyTokenOwner(uint256 tokenId) {
         require(ownerOf(tokenId) == msg.sender, NotTokenOwner());
         _;
     }
 
+    /**
+     * @dev Modifier used to verify if tyhe caller is the owner of the position in parameter
+     * @param tokenId TokenId to checkpoint the
+     */
     modifier updateReward(uint256 tokenId) {
         _updateReward(tokenId);
         _;

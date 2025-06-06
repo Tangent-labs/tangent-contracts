@@ -13,7 +13,7 @@
     "dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "deploy-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/deployTgUSD.ts --network localhost",
     "flatten-contracts": "npx ts-node js-scripts/utils/flattenContracts.ts",
-    "verify-contracts-blockscout": "npx ts-node js-scripts/hardhat/tgUSD/blockscout/verify-contracts.ts",
+    "verify-contracts-blockscout": "npx hardhat run js-scripts/hardhat/tgUSD/blockscout/verify-contracts.ts --network localhost",
     "distribute-rewards-rsTan": "npx hardhat run js-scripts/hardhat/tgUSD/actions/distributeRewardsRsTan.ts --network localhost",
     "distribute-rewards-markets": "npx hardhat run js-scripts/hardhat/tgUSD/actions/distributeRewardsMarkets.ts --network localhost",
     "deposit-markets-tgUSD": "npx hardhat run js-scripts/hardhat/tgUSD/scripts/deposit.ts --network localhost",
@@ -38,11 +38,12 @@
     "@nomiclabs/hardhat-vyper": "^3.0.8",
     "@types/pg": "^8.11.11",
     "chai": "4.3.7",
+    "decimal.js": "^10.5.0",
     "defi-resources": "https://github.com/Tangent-labs/defi-resources.git#main",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.4",
     "hardhat": "^2.22.17",
-    "decimal.js": "^10.5.0",
-    "hardhat-contract-sizer": "^2.10.0"
+    "hardhat-contract-sizer": "^2.10.0",
+    "pg": "^8.16.0"
   }
 }

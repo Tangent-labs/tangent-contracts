@@ -54,4 +54,6 @@ interface IIRCalculator {
     function mintableInterests() external view returns (uint256);
 
     function getIRParams(address market) external view returns (IRParams memory);
+
+    function getIRCheckpoint(address market) external view returns (IRCheckpoint memory);
 }

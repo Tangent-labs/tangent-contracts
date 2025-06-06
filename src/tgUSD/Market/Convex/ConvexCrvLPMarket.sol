@@ -23,6 +23,8 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
     uint256 public pid;
 
     error MarketNotLinkedToConvex();
+    error CvxRewardTokenNull();
+    error PidNull();
 
     function initialize(
         GlobalMarketInitParams memory _marketConstants,
@@ -37,18 +39,19 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
         // Sociabilization
         _initializeSociabilization(_socFeePercentage);
 
+        // Convex Crv
+        // Allows CVX_BOOSTER to transfer LP from the market contract
+        collatToken.approve(address(CVX_BOOSTER), MAX_UINT);
+
         if (address(_cvxRewardToken) != address(0)) {
-            // Convex Crv
-            // Allows CVX_BOOSTER to transfer LP from the market contract
-            collatToken.approve(address(CVX_BOOSTER), MAX_UINT);
             cvxRewardToken = _cvxRewardToken;
             pid = _pid;
         }
     }
 
     function setConvexStaking(ICvxRewardToken _cvxRewardToken, uint256 _pid) external onlyOwner {
-        require(address(_cvxRewardToken) != address(0));
-        require(_pid != 0);
+        require(address(_cvxRewardToken) != address(0), CvxRewardTokenNull());
+        require(_pid != 0, PidNull());
         pid = _pid;
         cvxRewardToken = _cvxRewardToken;
     }
@@ -63,7 +66,6 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
         // When there are no Convex contract because no inflation yet
         if (pid != 0) {
             stakedAmount = _sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR);
-            require(stakedAmount != 0, ZeroAmountDepositedAfterSociabilization());
         }
 
         return stakedAmount;

@@ -61,15 +61,13 @@ contract WStable is ERC20, LightOwnable {
         _mint(receiver, amountToMint);
     }
 
-    function convertToAssets(uint256 shares) external pure returns (uint256) {
-        return shares;
-    }
-
-    function convertToShares(uint256 assets) external pure returns (uint256) {
-        return assets;
-    }
-
-    //TODO Doc and test
+    /**
+     *  @notice          Mints wStable for Stable. Uses the mint function.
+     *  @dev             This function has been created to match the ERC4626 and to be used in the Curve Router
+     *  @param amountIn    Amount of stable to exchange for WStable. Always at 1:1 ratio.
+     *  @param receiver  Receiver of the stable
+     *  @return          Amount of WStable to receive and of Stable to send.
+     */
     function deposit(uint256 amountIn, address receiver) external returns (uint256) {
         mint(amountIn, receiver, false);
         return amountIn;
@@ -94,7 +92,15 @@ contract WStable is ERC20, LightOwnable {
         // Burn tgStable from the sender
         _burn(msg.sender, amount);
     }
-    //TODO Doc and test
+
+    /**
+     *  @notice          Burns wStable for Stable. Uses the burn function
+     *  @dev             This function has been created to match the ERC4626 and to be used in the Curve Router
+     *  @param amount    Amount of WStable to burn in exchange of stable. Always at 1:1 ratio.
+     *  @param receiver  Receiver of the stable
+     *  @param owner     Param not used, keeped only to match the ERC4626 signature.
+     *  @return          Amount of WStable to burn and of Stable to receive.
+     */
     function redeem(uint256 amount, address receiver, address owner) external returns (uint256) {
         burn(amount, receiver, false);
         return amount;
@@ -113,7 +119,15 @@ contract WStable is ERC20, LightOwnable {
         uint256 dueAmount = totalSupply();
         require(totalStableStaked > dueAmount, NoRewardsToClaim());
 
-        // We withdraw the amount missing from the saving account
-        _savingAccount.withdraw(totalStableStaked - dueAmount, controlTower.feeTreasury(), address(this));
+        // The delta between the total supply of wStable and the total amount withdrawable from savings is the amount of fee that we are taking
+        _mint(controlTower.feeTreasury(), totalStableStaked - dueAmount);
+    }
+
+    function convertToAssets(uint256 shares) external pure returns (uint256) {
+        return shares;
+    }
+
+    function convertToShares(uint256 assets) external pure returns (uint256) {
+        return assets;
     }
 }

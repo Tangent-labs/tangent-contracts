@@ -8,7 +8,7 @@ import "hardhat-contract-sizer";
 
 import * as dotenv from "dotenv";
 dotenv.config();
-const forkBlock = 22481702;
+const forkBlock = 22623829;
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",
@@ -77,9 +77,14 @@ const config: HardhatUserConfig = {
                 blockNumber: forkBlock,
             },
         },
+        // tangent: {
+        //     chainId: 31337, // Chain ID should match the hardhat network's chainid
+        //     url: "https://io.convergence-finance.network:8545",
+        //     timeout: 100_000_000,
+        // },
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
-            url: "https://io.convergence-finance.network:8545",
+            url: "http://176.143.254.58:8545",
             timeout: 100_000_000,
         },
     },

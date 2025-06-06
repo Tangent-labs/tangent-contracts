@@ -11,20 +11,23 @@ contract GetOraclePTPrice is MarketDeploymentContext {
         pendlePTs.push(AddrPTPendle.eBTC_26_06_25);
     }
 
-    function test_determine_PT_price() external view {
+    function test_determine_PT_price() external {
+        for (uint256 i = 0; i < pendlePTs.length; i++) {
+            IERC20Metadata pt = pendlePTs[i];
+            uint256 oracleValue = oracles[pt].latestAnswer();
+
+            console.log(oracleValue);
+        }
+
+        skip(365 days);
+
         for (uint256 i = 0; i < pendlePTs.length; i++) {
             IERC20Metadata pt = pendlePTs[i];
             uint256 oracleValueBeforeSwap = oracles[pt].latestAnswer();
 
-            console.log(oracleValueBeforeSwap);
+            (, IPriceOracle underlyingOracle, uint96 decimals) = OraclePendlePT(address(oracles[pt])).params();
 
-            //TODO Verify these assert. The price of the Lp should for me change
-            // uint256 newApprox = approximateLPValue(lp);
-            // skip(80000);
-            // lp.price_oracle(0);
-            // lp.price_oracle(1);
-            // assertEq(oracleValueAfterSwap, oracles[lp].latestAnswer(), "After some time, oracle pricing should change");
-            // assertApproxEqRel(newApprox, oracles[lp].latestAnswer(), 3e15, "After some time the price should have change");
+            assertEq(underlyingOracle.latestAnswer() * 10 ** (18 - decimals), oracleValueBeforeSwap);
         }
     }
 }
