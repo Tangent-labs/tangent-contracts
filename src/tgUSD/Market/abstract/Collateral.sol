@@ -154,7 +154,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return balance User's collateral balance
      * @return total Total system collateral
      */
-    function getBalanceAndTotalCollateral(address account) external view returns (uint256 balance, uint256 total) {
+    function getBalanceAndTotalCollateral(address account) external view returns (uint256, uint256) {
         return (collateralBalances[account], totalCollateral);
     }
 

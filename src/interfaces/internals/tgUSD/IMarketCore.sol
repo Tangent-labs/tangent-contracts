@@ -11,7 +11,7 @@ import {IZappingProxy} from "./IZappingProxy.sol";
 import {IRewardAccumulator} from "./IRewardAccumulator.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
-struct LiquidateCall {
+struct LiquidateInput {
     address account;
     uint256 collatToLiquidate;
     uint256 minTgUSDOut;
@@ -23,7 +23,7 @@ struct LiquidateCall {
     uint256 userDebt;
 }
 
-struct SelfLiquidateCall {
+struct SelfLiquidateInput {
     uint256 collatAmountToLiquidate;
     uint256 tgUSDToRepay;
     uint256 minTgUSDOut;

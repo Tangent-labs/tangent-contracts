@@ -7,56 +7,62 @@ import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.s
 import {LightOwnable} from "../../Utilities/abstract/LightOwnable.sol";
 import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
 
-/// @notice
+/// @title DebtIR - Computes debts for a market
+/// @notice Abstract contract to track debt issuance and bad debt
+/// @dev Inherits access control (LightOwnable) and reentrancy protection
 abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
-    uint256 public constant RAY = 1e27; // Facteur de précision ray (1 * 10^27)
+    /// @notice Precision factor (10^27)
+    uint256 public constant RAY = 1e27;
 
-    /// @notice Computes the interest rate and the cut of rewards.
+    /// @notice Contract that calculates and updates interest rate and debt indexes
     IIRCalculator public irCalculator;
-    /// @notice tgUSD is the StableCoin to borrow against the collatToken.
+
+    /// @notice The tgUSD token contract
     ITgUSD public tgUSD;
 
-    /// @notice Maximum debt of the market
+    /// @notice Maximum allowable total debt in the market (in tgUSD units)
     uint256 public maxMarketDebt;
-    /// @notice Loan minimum in tgUSD. We need it higher on L1 to keep liquidations profitable for liquidators
+
+    /// @notice Minimum loan size allowed, used to ensure economic viability of liquidations (especially on L1)
     uint256 public minimumLoan;
-    /// @notice Bad debt amount in tgUSD of the market.
+
+    /// @notice Total amount of bad debt in the system (unrecoverable or defaulted loans)
     uint256 public badDebt;
 
-    /// @notice Last total debt of the market.
+    /// @notice Aggregate of all user debt shares
     uint256 public totalDebtShares;
-    /// @notice Debt in amount of tgUSD per user.
+
+    /// @notice Mapping of user addresses to their debt shares
     mapping(address => uint256) public userDebtShares;
 
-    error NotIRMinter();
+    /// @notice Error raised when attempting to repay more bad debt than exists
     error RepayMoreThanBadDebt();
-
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         OWNER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
-     *  @notice Updates the maximum debt in tgUSD of the market.
-     *  @dev    Function callable only by the DAO
-     *  @param  _maxMarketDebt New maximum debt of the market
+     * @notice Sets a new maximum market debt
+     * @dev Callable only by the DAO governance
+     * @param _maxMarketDebt The new maximum debt allowed in the system
      */
     function setMaxMarketDebt(uint256 _maxMarketDebt) external onlyOwner {
         maxMarketDebt = _maxMarketDebt;
     }
 
     /**
-     *  @notice Updates the value in tgUSD of the minimum loan that can be openned by a user.
-     *  @dev    Function callable only by the DAO
-     *  @param  _minimumLoan New minimum debt.
+     * @notice Sets the minimum loan size a user can borrow
+     * @dev Used to discourage small loans that are unprofitable to liquidate
+     * @param _minimumLoan The new minimum loan size in tgUSD
      */
     function setMinimumLoan(uint256 _minimumLoan) external onlyOwner {
         minimumLoan = _minimumLoan;
     }
 
     /**
-     *  @notice Repays an amount of tgUSD to cover some bad debt.
-     *  @dev    Callable by anyone
-     *  @param  amount Amount of tgUSD to burn to cover the bad debt
+     * @notice Allows anyone to repay bad debt by burning tgUSD
+     * @dev Burns `amount` of tgUSD from the sender, reducing the global bad debt
+     * @param amount The amount of tgUSD to repay from bad debt
      */
     function repayBadDebt(uint256 amount) external nonReentrant {
         uint256 _badDebt = badDebt;
@@ -70,56 +76,70 @@ abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
-     *  @notice  Updates the Total debt and the User debt
-     *  @dev     Called during all function modifying the debt of a user such as borrow and repay.
-     *  @param account           Address of the account to update
-     *  @param newTotalDebtShares      New total debt of the market
-     *
+     * @notice Updates debt shares for a user and the market total
+     * @dev Must be called whenever borrowing or repaying to sync the internal accounting
+     * @param account Address of the user
+     * @param newUserDebtShare New debt share for the user
+     * @param newTotalDebtShares New total market debt shares
      */
     function _updateDebts(address account, uint256 newUserDebtShare, uint256 newTotalDebtShares) internal {
-        // Recompute the new debt index of the user based on his new debt recomputed with interests and the new debtIndex
         userDebtShares[account] = newUserDebtShare;
-
-        // Update the totalDebt
         totalDebtShares = newTotalDebtShares;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        GLOBAL VIEWS
+                    INTERNAL VIEWS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-    /**
-     *  @notice  Returns the total debt of the market
-     *  @dev     Takes the last registered debt and applies it the IR accumulated since last checkpoint.
-     */
-    function totalDebt() public view returns (uint256) {
-        return _totalDebt(badDebt, totalDebtShares, irCalculator.newDebtIndex(address(this)));
-    }
 
+    /**
+     * @notice Internal pure helper to compute total debt
+     * @param _badDebt Current bad debt
+     * @param _totalDebtShares Current total shares
+     * @param newDebtIndex Current debt index (with interest)
+     * @return Calculated total debt
+     */
     function _totalDebt(uint256 _badDebt, uint256 _totalDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
         return _badDebt + (_totalDebtShares * newDebtIndex) / RAY;
     }
 
     /**
-     *  @notice  Returns IR generated since the last checkpoint
+     * @notice Internal helper to compute user's debt from shares and index
+     * @param _userDebtShares User's debt shares
+     * @param newDebtIndex Current debt index (with interest)
+     * @return User's actual tgUSD debt
      */
-    function pendingInterests() external view returns (uint256) {
-        return (totalDebtShares * irCalculator.indexDelta(address(this))) / RAY;
+    function _userDebt(uint256 _userDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
+        return (_userDebtShares * newDebtIndex) / RAY;
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        USERS VIEWS
+                        PUBLIC VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
-     *  @notice  Returns the debt of a position
-     *  @dev     Takes the last registered debt index of the position and applies it the IR accumulated since last checkpoint.
-     *  @param   account Address of the position to check the debt on
+     * @notice Returns the current total debt in tgUSD (including interest)
+     * @dev Applies the interest index to total debt shares and adds bad debt
+     * @return Total outstanding system debt in tgUSD
+     */
+    function totalDebt() public view returns (uint256) {
+        return _totalDebt(badDebt, totalDebtShares, irCalculator.newDebtIndex(address(this)));
+    }
+
+    /**
+     * @notice Returns the total debt of a user (including accrued interest)
+     * @dev Applies current debt index to user's stored shares
+     * @param account User address
+     * @return The total debt the user owes in tgUSD
      */
     function userDebt(address account) public view returns (uint256) {
         return _userDebt(userDebtShares[account], irCalculator.newDebtIndex(address(this)));
     }
 
-    function _userDebt(uint256 _userDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
-        return (_userDebtShares * newDebtIndex) / RAY;
+    /**
+     * @notice Calculates the interest accumulated since last checkpoint
+     * @return Interest amount in tgUSD accrued but not yet reflected in totalDebtShares
+     */
+    function pendingInterests() external view returns (uint256) {
+        return (totalDebtShares * irCalculator.indexDelta(address(this))) / RAY;
     }
 }
