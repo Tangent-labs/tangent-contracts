@@ -629,14 +629,13 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
             if (tgUSDPrice >= startCutPrice) {
                 return _rcParams.startCutPercentage;
             }
-            if (tgUSDPrice < endCutPrice) {
+            if (tgUSDPrice <= endCutPrice) {
                 return _rcParams.endCutPercentage;
             }
-            uint256 stepsBetween = stepAmount - 2;
-
-            //TODO What happens here if tgUSD > startCutPrice ?
-            uint256 actualStep = 1 + (startCutPrice - tgUSDPrice) / ((startCutPrice - endCutPrice) / stepsBetween);
-            return _rcParams.startCutPercentage + (actualStep * (_rcParams.endCutPercentage - _rcParams.startCutPercentage)) / stepsBetween;
+            // Compute the actual step regarding the current price of tgUSD
+            uint256 actualStep = 1 + ((stepAmount - 2) * (startCutPrice - tgUSDPrice)) / (startCutPrice - endCutPrice);
+            // Compute the percentage amount increased by one step and multiply it by the actual step to get the percentage amount to increment to the startPercentage.
+            return _rcParams.startCutPercentage + (actualStep * (_rcParams.endCutPercentage - _rcParams.startCutPercentage)) / (stepAmount - 1);
         }
     }
 }

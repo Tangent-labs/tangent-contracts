@@ -48,4 +48,27 @@ contract RewardCutFormulaComputation is MarketDeploymentContext {
         rcCalculated = rewardAccumulator.simulateRC(995000000000000000, RCParams(0, uint16(1), uint32(12_000), uint32(50_000), uint80(996_000), uint80(991_000)));
         assertEq(rcCalculated, 50_000);
     }
+
+    function test_business_rewardCut() external view {
+        RCParams memory rcPrm = RCParams(1_000, uint16(6), uint32(50_000), uint32(100_000), uint80(999_000), uint80(995_000));
+        assertEq(50_000, rewardAccumulator.simulateRC(1000000000000000000, rcPrm));
+        assertEq(50_000, rewardAccumulator.simulateRC(999950000000000000, rcPrm));
+        assertEq(50_000, rewardAccumulator.simulateRC(999900000000000000, rcPrm));
+        assertEq(60_000, rewardAccumulator.simulateRC(998900000000000000, rcPrm));
+        assertEq(60_000, rewardAccumulator.simulateRC(998100000000000000, rcPrm));
+        assertEq(70_000, rewardAccumulator.simulateRC(997500000000000000, rcPrm));
+        assertEq(70_000, rewardAccumulator.simulateRC(997100000000000000, rcPrm));
+        assertEq(80_000, rewardAccumulator.simulateRC(997000000000000000, rcPrm));
+        assertEq(80_000, rewardAccumulator.simulateRC(996500000000000000, rcPrm));
+        assertEq(90_000, rewardAccumulator.simulateRC(996000000000000000, rcPrm));
+        assertEq(90_000, rewardAccumulator.simulateRC(995700000000000000, rcPrm));
+        assertEq(100_000, rewardAccumulator.simulateRC(995000000000000000, rcPrm));
+        assertEq(100_000, rewardAccumulator.simulateRC(990000000000000000, rcPrm));
+
+        // // rcCalculated = rewardAccumulator.simulateRC(997800000000000000, RCParams(1_000, uint16(7), uint32(50_000), uint32(100_000), uint80(999_000), uint80(995_000)));
+        // // assertEq(rcCalculated, 70_000);
+
+        // rcCalculated = rewardAccumulator.simulateRC(997200000000000000, RCParams(1_000, uint16(6), uint32(50_000), uint32(100_000), uint80(999_000), uint80(995_000)));
+        // assertEq(rcCalculated, 70_000);
+    }
 }
