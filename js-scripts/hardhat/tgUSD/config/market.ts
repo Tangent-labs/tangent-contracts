@@ -19,10 +19,11 @@ export const HEC_CONFIG_RC_PARAMS: RCParamsStruct = {
     harvestFeePercentage: 1_000,
     startCutPercentage: 50_000,
     endCutPercentage: 100_000,
-    stepAmount: 4,
-    startCutPrice: 1_000_000,
+    stepAmount: 6,
+    startCutPrice: 999_000,
     endCutPrice: 995_000,
 };
+
 // LEC
 export const LEC_CONFIG_IR_PARAMS: IRParamsStruct = {
     isHEC: false,
@@ -40,7 +41,7 @@ export const LEC_CONFIG_RC_PARAMS: RCParamsStruct = {
     harvestFeePercentage: 1_000,
     startCutPercentage: 5_000,
     endCutPercentage: 0,
-    stepAmount: 0,
+    stepAmount: 1,
     startCutPrice: 0,
     endCutPrice: 0,
 };

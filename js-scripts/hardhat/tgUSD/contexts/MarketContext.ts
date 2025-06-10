@@ -15,6 +15,7 @@ import {
 
 import * as MarketCreator from "../../../../artifacts/src/tgUSD/Utilities/MarketCreator.sol/MarketCreator.json";
 import {MarketInitStruct} from "../../../../typechain-types/src/tgUSD/Market/MarketNoSociabilization";
+import {commonERC20} from "defi-resources";
 
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;
@@ -55,7 +56,8 @@ export class MarketContext {
                     )
             ).wait();
 
-            await this.parseCreateMarketLogs(key, receipt!);
+            const market = await this.parseCreateMarketLogs(key, receipt!);
+            await baseContext.rewardAccumulator.connect(baseContext.owner).addNewRewards(market, [commonERC20.CRV, commonERC20.CVX]);
         }
     }
 
@@ -75,8 +77,8 @@ export class MarketContext {
                         LEC_CONFIG_RC_PARAMS
                     )
             ).wait();
-
-            await this.parseCreateMarketLogs(key, receipt!);
+            const market = await this.parseCreateMarketLogs(key, receipt!);
+            await baseContext.rewardAccumulator.connect(baseContext.owner).addNewRewards(market, [commonERC20.CRV, commonERC20.FXN, commonERC20.CVX]);
         }
     }
 
@@ -98,38 +100,38 @@ export class MarketContext {
     async parseCreateMarketLogs(key: string, receipt: ContractTransactionReceipt) {
         const iface = new Interface(MarketCreator.abi);
 
+        let marketAddress = "";
         for (let index = 0; index < receipt!.logs.length; index++) {
             const log = receipt!.logs[index];
             const parsedLog = iface.parseLog(log)!;
-
-            if (STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys]) {
-                this.convexCrvMarkets[key] = (await this.getConvexCrvMarket(parsedLog))!;
-            } else if (STATIC_CONFIG_CONVEX_FXN[key as ConvexFxnMarketKeys]) {
-                this.convexFxnMarkets[key] = (await this.getConvexFxnMarket(parsedLog))!;
-            } else if (STATIC_CONFIG_PT_PENDLE[key as PendlePTMarketsKeys]) {
-                this.pendlePTMarkets[key] = (await this.getNoSocMarket(parsedLog))!;
+            if (parsedLog?.name && ["MarketConvexCrvCreated", "MarketConvexFxnCreated", "MarketNoSociabilizationCreated"].includes(parsedLog.name)) {
+                if (STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys]) {
+                    const market = await this.getConvexCrvMarket(parsedLog);
+                    this.convexCrvMarkets[key] = market;
+                    marketAddress = await market.getAddress();
+                } else if (STATIC_CONFIG_CONVEX_FXN[key as ConvexFxnMarketKeys]) {
+                    const market = await this.getConvexFxnMarket(parsedLog);
+                    this.convexFxnMarkets[key] = market;
+                    marketAddress = await market.getAddress();
+                } else if (STATIC_CONFIG_PT_PENDLE[key as PendlePTMarketsKeys]) {
+                    const market = await this.getNoSocMarket(parsedLog);
+                    this.pendlePTMarkets[key] = market;
+                    marketAddress = await market.getAddress();
+                }
             }
         }
+        return marketAddress;
     }
 
     async getConvexCrvMarket(parsedLog: LogDescription) {
-        if (parsedLog?.name && parsedLog.name === "MarketConvexCrvCreated") {
-            const market = await ethers.getContractAt("ConvexCrvLPMarket", parsedLog.args.proxy);
-            return market;
-        }
+        return await ethers.getContractAt("ConvexCrvLPMarket", parsedLog.args.proxy);
     }
 
     async getConvexFxnMarket(parsedLog: LogDescription) {
-        if (parsedLog?.name && parsedLog.name === "MarketConvexFxnCreated") {
-            const market = await ethers.getContractAt("ConvexFxnLPMarket", parsedLog.args.proxy);
-            return market;
-        }
+        return await ethers.getContractAt("ConvexFxnLPMarket", parsedLog.args.proxy);
     }
 
     async getNoSocMarket(parsedLog: LogDescription) {
-        if (parsedLog?.name && parsedLog.name === "MarketNoSociabilizationCreated") {
-            const market = await ethers.getContractAt("MarketNoSociabilization", parsedLog.args.proxy);
-            return market;
-        }
+        return await ethers.getContractAt("MarketNoSociabilization", parsedLog.args.proxy);
     }
 }
