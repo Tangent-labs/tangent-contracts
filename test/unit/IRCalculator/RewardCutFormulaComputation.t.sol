@@ -17,8 +17,20 @@ contract RewardCutFormulaComputation is MarketDeploymentContext {
     uint256 constant _100_PERCENT = 100_000;
 
     function test_rewardCut_step_greater_than_3_in_a_step() external view {
-        uint256 rcCalculated = rewardAccumulator.simulateRC(994000000000000000, RCParams(0, uint16(5), uint32(50_000), uint32(100_000), uint80(996_000), uint80(991_000)));
-        assertEq(rcCalculated, 83_333);
+        RCParams memory rcPrm = RCParams(0, uint16(5), uint32(50_000), uint32(100_000), uint80(996_000), uint80(991_000));
+
+        assertEq(rewardAccumulator.simulateRC(997000000000000000, rcPrm), 50_000);
+        assertEq(rewardAccumulator.simulateRC(996500000000000000, rcPrm), 50_000);
+        assertEq(rewardAccumulator.simulateRC(996250000000000000, rcPrm), 50_000);
+        assertEq(rewardAccumulator.simulateRC(996000000000000000, rcPrm), 50_000);
+        assertEq(rewardAccumulator.simulateRC(995500000000000000, rcPrm), 62_500);
+        assertEq(rewardAccumulator.simulateRC(995000000000000000, rcPrm), 62_500);
+        assertEq(rewardAccumulator.simulateRC(994000000000000000, rcPrm), 75_000);
+        assertEq(rewardAccumulator.simulateRC(993000000000000000, rcPrm), 75_000);
+        assertEq(rewardAccumulator.simulateRC(992000000000000000, rcPrm), 87_500);
+        assertEq(rewardAccumulator.simulateRC(991500000000000000, rcPrm), 87_500);
+        assertEq(rewardAccumulator.simulateRC(991000000000000000, rcPrm), 100_000);
+        assertEq(rewardAccumulator.simulateRC(990900000000000000, rcPrm), 100_000);
     }
 
     function test_rewardCut_price_under_endCutPrice() external view {
@@ -33,19 +45,19 @@ contract RewardCutFormulaComputation is MarketDeploymentContext {
 
     function test_rewardCut_price_with_big_steps() external view {
         uint256 rcCalculated = rewardAccumulator.simulateRC(993500000000000000, RCParams(0, uint16(100), uint32(50_000), uint32(100_000), uint80(996_000), uint80(991_000)));
-        assertEq(rcCalculated, 75510);
+        assertEq(rcCalculated, 75252);
     }
 
     function test_rewardCut_with_one_step() external view {
-        uint256 rcCalculated = rewardAccumulator.simulateRC(993500000000000000, RCParams(0, uint16(0), uint32(12_000), uint32(100_000), uint80(996_000), uint80(991_000)));
+        uint256 rcCalculated = rewardAccumulator.simulateRC(993500000000000000, RCParams(0, uint16(1), uint32(12_000), uint32(100_000), uint80(996_000), uint80(991_000)));
         assertEq(rcCalculated, 12_000);
     }
 
     function test_rewardCut_with_two_steps() external view {
-        uint256 rcCalculated = rewardAccumulator.simulateRC(996000000000000000, RCParams(0, uint16(1), uint32(12_000), uint32(50_000), uint80(996_000), uint80(991_000)));
+        uint256 rcCalculated = rewardAccumulator.simulateRC(996000000000000000, RCParams(0, uint16(2), uint32(12_000), uint32(50_000), uint80(996_000), uint80(991_000)));
         assertEq(rcCalculated, 12_000);
 
-        rcCalculated = rewardAccumulator.simulateRC(995000000000000000, RCParams(0, uint16(1), uint32(12_000), uint32(50_000), uint80(996_000), uint80(991_000)));
+        rcCalculated = rewardAccumulator.simulateRC(995000000000000000, RCParams(0, uint16(2), uint32(12_000), uint32(50_000), uint80(996_000), uint80(991_000)));
         assertEq(rcCalculated, 50_000);
     }
 
@@ -64,11 +76,5 @@ contract RewardCutFormulaComputation is MarketDeploymentContext {
         assertEq(90_000, rewardAccumulator.simulateRC(995700000000000000, rcPrm));
         assertEq(100_000, rewardAccumulator.simulateRC(995000000000000000, rcPrm));
         assertEq(100_000, rewardAccumulator.simulateRC(990000000000000000, rcPrm));
-
-        // // rcCalculated = rewardAccumulator.simulateRC(997800000000000000, RCParams(1_000, uint16(7), uint32(50_000), uint32(100_000), uint80(999_000), uint80(995_000)));
-        // // assertEq(rcCalculated, 70_000);
-
-        // rcCalculated = rewardAccumulator.simulateRC(997200000000000000, RCParams(1_000, uint16(6), uint32(50_000), uint32(100_000), uint80(999_000), uint80(995_000)));
-        // assertEq(rcCalculated, 70_000);
     }
 }

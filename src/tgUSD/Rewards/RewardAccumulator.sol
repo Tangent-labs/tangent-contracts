@@ -61,6 +61,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
 
     error CallerNotMarketCreator(address caller);
 
+    error StepAmountZero();
     error StartCutPriceTooHigh();
     error StartCutPercentageBiggerThanEnd();
     error StartCutPriceSmallerThanEnd();
@@ -68,6 +69,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     error StartCutPercentageBiggerThan100();
 
     function _verifyRCParams(RCParams calldata _rcParam) internal pure {
+        require(_rcParam.stepAmount != 0, StepAmountZero());
         // Harvest Fee <= 2%
         require(_rcParam.harvestFeePercentage <= 2_000, HarvesterFeeTooHigh());
         // Start of the cut must be <= 1$
@@ -78,12 +80,12 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         require(DENOMINATOR >= _rcParam.startCutPercentage, StartCutPercentageBiggerThan100());
 
         // When there is at least 1 step
-        if (_rcParam.stepAmount != 0) {
+        if (_rcParam.stepAmount != 1) {
             // Minimum reward cut should be < Maximum reward cut
             require(_rcParam.startCutPercentage < _rcParam.endCutPercentage, StartCutPercentageBiggerThanEnd());
 
             // When there are 2 steps and more
-            if (_rcParam.stepAmount != 1) {
+            if (_rcParam.stepAmount != 2) {
                 // Price where the cut starts must be > start when the cut is the highest
                 require(_rcParam.startCutPrice > _rcParam.endCutPrice, StartCutPriceSmallerThanEnd());
             }
@@ -610,11 +612,11 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     function _calculateRC(uint256 tgUSDPrice, RCParams memory _rcParams) internal pure returns (uint256) {
         uint256 stepAmount = _rcParams.stepAmount;
         // Cut percentage is always constant
-        if (stepAmount == 0) {
+        if (stepAmount == 1) {
             return _rcParams.startCutPercentage;
         }
         // Cut percentage either startCutPercentage or endCutPercetange
-        else if (stepAmount == 1) {
+        else if (stepAmount == 2) {
             if (tgUSDPrice >= uint256(_rcParams.startCutPrice) * 1e12) {
                 return _rcParams.startCutPercentage;
             } else {
@@ -625,10 +627,11 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         else {
             uint256 startCutPrice = uint256(_rcParams.startCutPrice) * 1e12;
             uint256 endCutPrice = uint256(_rcParams.endCutPrice) * 1e12;
-            // When tgUSDPrice is above the startCutPrice
+            // When the current price of tgUSD is over the start cut price, the minimum Reward cut is applied
             if (tgUSDPrice >= startCutPrice) {
                 return _rcParams.startCutPercentage;
             }
+            // When the current price of tgUSD is lower than the end cut price, the maximum Reward cut is applied
             if (tgUSDPrice <= endCutPrice) {
                 return _rcParams.endCutPercentage;
             }

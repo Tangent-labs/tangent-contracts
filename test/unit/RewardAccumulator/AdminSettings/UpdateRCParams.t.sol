@@ -10,7 +10,7 @@ contract UpdateRCParams is MarketDeploymentContext {
         market = deployConvexCurveLPMarket(collatToken, true);
     }
 
-    RCParams params = RCParams({harvestFeePercentage: 0, stepAmount: 0, startCutPercentage: 0, endCutPercentage: 0, startCutPrice: 0, endCutPrice: 0});
+    RCParams params = RCParams({harvestFeePercentage: 0, stepAmount: 1, startCutPercentage: 0, endCutPercentage: 0, startCutPrice: 0, endCutPrice: 0});
 
     function test_updateRCParams_success() external {
         vm.startPrank(owner);
@@ -18,11 +18,18 @@ contract UpdateRCParams is MarketDeploymentContext {
 
         RCParams memory _params = rewardAccumulator.getRCParams(address(market));
         assertEq(_params.harvestFeePercentage, 0);
-        assertEq(_params.stepAmount, 0);
+        assertEq(_params.stepAmount, 1);
         assertEq(_params.startCutPercentage, 0);
         assertEq(_params.endCutPercentage, 0);
         assertEq(_params.startCutPrice, 0);
         assertEq(_params.endCutPrice, 0);
+    }
+
+    function test_updateRCParams_fails_stepAmountZero() external {
+        vm.startPrank(owner);
+        params.stepAmount = 0;
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.StepAmountZero.selector));
+        rewardAccumulator.updateRCParams(address(market), params);
     }
 
     function test_updateRCParams_fails_harvestFeeTooHigh() external {
@@ -58,7 +65,7 @@ contract UpdateRCParams is MarketDeploymentContext {
 
     function test_updateRCParams_fails_startCutPerc_bigger_than_endPercentage() external {
         vm.startPrank(owner);
-        params.stepAmount = 1;
+        params.stepAmount = 2;
 
         params.startCutPercentage = 100_000;
         params.endCutPercentage = 99_000;

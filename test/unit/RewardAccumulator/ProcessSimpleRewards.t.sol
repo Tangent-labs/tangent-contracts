@@ -85,10 +85,9 @@ contract ProcessSimpleRewards is MarketDeploymentContext {
 
         rewardAccumulator.updateRCParams(
             address(market),
-            RCParams({harvestFeePercentage: 0, stepAmount: 0, startCutPercentage: 0, endCutPercentage: 0, startCutPrice: 0, endCutPrice: 0})
+            RCParams({harvestFeePercentage: 0, stepAmount: 1, startCutPercentage: 0, endCutPercentage: 0, startCutPrice: 0, endCutPrice: 0})
         );
 
-        console.log("basta");
         // Deposit rewards on the market contract,ready to be processed
         IERC20[] memory rewardTokens = rewardAccumulator.getRewardTokens(address(market));
         for (uint256 j; j < rewardTokens.length; j++) {

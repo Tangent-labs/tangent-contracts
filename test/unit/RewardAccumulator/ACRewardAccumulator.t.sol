@@ -42,7 +42,7 @@ contract ACRewardAccumulator is MarketDeploymentContext {
         rewardAccumulator.processMultiRewards(markets, usr1, 2);
     }
 
-    RCParams params = RCParams({harvestFeePercentage: 0, stepAmount: 0, startCutPercentage: 0, endCutPercentage: 0, startCutPrice: 0, endCutPrice: 0});
+    RCParams params = RCParams({harvestFeePercentage: 0, stepAmount: 1, startCutPercentage: 0, endCutPercentage: 0, startCutPrice: 0, endCutPrice: 0});
 
     function test_initializeMarket_fails_as_not_a_market_creator() external {
         vm.startPrank(usr1);
