@@ -41,33 +41,33 @@ export class OracleContext {
 
     oracleDuoPoolStableParams = [
         // USD
-        {key: "crvUSD_USDC", lp: "crvUSD_USDC", coin0Oracle: "USDC", coin1Oracle: "crvUSD"},
-        {key: "crvUSD_USDT", lp: "crvUSD_USDT", coin0Oracle: "USDT", coin1Oracle: "crvUSD"},
-        {key: "USDC_fxUSD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", coin1Oracle: "fxUSD"},
-        {key: "USDC_USDT", lp: "CRV_DUO_USDC_USDT", coin0Oracle: "USDC", coin1Oracle: "USDT"},
-        {key: "frxUSD_USDe", lp: "CRV_DUO_frxUSD_USDe", coin0Oracle: "frxUSD", coin1Oracle: "USDe"},
+        {key: "crvUSD-USDC", lp: "crvUSD_USDC", coin0Oracle: "USDC", coin1Oracle: "crvUSD"},
+        {key: "crvUSD-USDT", lp: "crvUSD_USDT", coin0Oracle: "USDT", coin1Oracle: "crvUSD"},
+        {key: "USDC-fxUSD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", coin1Oracle: "fxUSD"},
+        {key: "USDC-USDT", lp: "CRV_DUO_USDC_USDT", coin0Oracle: "USDC", coin1Oracle: "USDT"},
+        {key: "frxUSD-USDe", lp: "CRV_DUO_frxUSD_USDe", coin0Oracle: "frxUSD", coin1Oracle: "USDe"},
         // ETH
-        {key: "frxETH_WETH", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", coin1Oracle: "frxETH"},
-        {key: "pxETH_WETH", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", coin1Oracle: "ETH"},
-        {key: "pxETH_stETH", lp: "CRV_LP_pxETH_stETH", coin0Oracle: "pxETH", coin1Oracle: "stETH"},
+        {key: "frxETH-WETH", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", coin1Oracle: "frxETH"},
+        {key: "pxETH-WETH", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", coin1Oracle: "ETH"},
+        {key: "pxETH-stETH", lp: "CRV_LP_pxETH_stETH", coin0Oracle: "pxETH", coin1Oracle: "stETH"},
         // BTC
-        {key: "cbBTC_WBTC", lp: "CRV_DUO_cbBTC_WBTC", coin0Oracle: "cbBTC", coin1Oracle: "BTC"},
+        {key: "cbBTC-WBTC", lp: "CRV_DUO_cbBTC_WBTC", coin0Oracle: "cbBTC", coin1Oracle: "BTC"},
     ];
 
     oracleCryptoSwapParams = [
         // TRI
-        {key: "USDT_WBTC_WETH", lp: "CRV_TRI_CRYPTO_USDT", coin0Oracle: "USDT"},
-        {key: "USDC_WBTC_WETH", lp: "CRV_TRI_CRYPTO_USDC", coin0Oracle: "USDC"},
-        {key: "crvUSD_ETH_CRV", lp: "CRV_TRI_CRYPTO_CRV", coin0Oracle: "crvUSD"},
-        {key: "GHO_cbBTC_WETH", lp: "CRV_TRI_GHO_cbBTC_ETH", coin0Oracle: "GHO"},
+        {key: "USDT-WBTC-WETH", lp: "CRV_TRI_CRYPTO_USDT", coin0Oracle: "USDT"},
+        {key: "USDC-WBTC-WETH", lp: "CRV_TRI_CRYPTO_USDC", coin0Oracle: "USDC"},
+        {key: "crvUSD-ETH-CRV", lp: "CRV_TRI_CRYPTO_CRV", coin0Oracle: "crvUSD"},
+        {key: "GHO-cbBTC-WETH", lp: "CRV_TRI_GHO_cbBTC_ETH", coin0Oracle: "GHO"},
         // DUO
-        {key: "CVX_ETH", lp: "CRV_DUO_ETH_CVX", coin0Oracle: "ETH"},
-        {key: "USR_RLP", lp: "CRV_DUO_USR_RLP", coin0Oracle: "USR"},
+        {key: "CVX-ETH", lp: "CRV_DUO_ETH_CVX", coin0Oracle: "ETH"},
+        {key: "USR-RLP", lp: "CRV_DUO_USR_RLP", coin0Oracle: "USR"},
     ];
 
     oraclePendlePTParams = [
-        {key: "sUSDe_31_07_25", underlyingOracle: "sUSDe"},
-        {key: "wstUSR_25_07_25", underlyingOracle: "wstUSR"},
+        {key: "sUSDe 07/31/25", underlyingOracle: "sUSDe"},
+        {key: "wstUSR 07/25/25", underlyingOracle: "wstUSR"},
     ];
     async fetchChainlinkOracle() {
         for (let index = 0; index < this.chainlinkOracleParams.length; index++) {
