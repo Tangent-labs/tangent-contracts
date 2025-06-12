@@ -25,6 +25,10 @@ export function TOKENS_TO_GIVE(mintedAmount: number) {
             amount: mintedAmount,
         },
         {
+            ...obj.pxETH,
+            amount: mintedAmount,
+        },
+        {
             ...obj.DOLA,
             amount: mintedAmount,
         },
@@ -58,6 +62,10 @@ export function TOKENS_TO_GIVE(mintedAmount: number) {
         },
         {
             ...obj.USDC_fxUSD,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.CVX_ETH,
             amount: mintedAmount,
         },
 

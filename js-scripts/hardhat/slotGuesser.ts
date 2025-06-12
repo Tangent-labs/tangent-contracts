@@ -44,7 +44,7 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
     return result;
 }
 
-getSlot([{address: "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf", isVyper: false}]).catch((error) => {
+getSlot([{address: "0x04C154b66CB340F3Ae24111CC767e0184Ed00Cc6", isVyper: false}]).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

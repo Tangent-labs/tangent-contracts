@@ -71,6 +71,9 @@ export async function deploytgUsd(userCount: number = 5) {
     // Approve LPs with test users
     await baseContext.approveCurveLP(await lpDeployContext.stableLp["tgUSD-USDC"].getAddress());
     await baseContext.approveCurveLP(curveLp.crvUSD_USDC);
+    await baseContext.approveCurveLP(curveLp.CRV_LP_USDC_fxUSD);
+    await baseContext.approveCurveLP(curveLp.CRV_LP_pxETH_WETH);
+    await baseContext.approveCurveLP(curveLp.CRV_DUO_ETH_CVX);
 
     return {baseContext, oracleContext, marketContext, lpDeployContext, wStableContext};
 }

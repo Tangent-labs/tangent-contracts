@@ -16,6 +16,8 @@ export async function verifyContracts() {
     });
     await client.connect();
 
+    const abiERC20 = (await artifacts.readArtifact("ERC20")).abi;
+
     const users = await ethers.getSigners();
     await nameAddress(client, await users[0].getAddress(), "Owner");
     await nameAddress(client, await users[1].getAddress(), "User 1");
@@ -24,12 +26,20 @@ export async function verifyContracts() {
     await nameAddress(client, await users[4].getAddress(), "Fee Treasury");
 
     await forceAbi(client, routers.CURVE_V1_2_ROUTER, "Curve Router", true, (await artifacts.readArtifact("ICurveRouter")).abi);
-    // Curve LP
+    // Curve LP StableSwap NG
+    const stableSwapNGAbi = (await artifacts.readArtifact("ICurveStableSwapNG")).abi;
 
-    await forceAbi(client, curveLp.crvUSD_USDC, "crvUSD/USDC", true, curveStableSwapNG.abi);
-    await forceAbi(client, curveLp.crvUSD_USDT, "crvUSD/USDT", true, curveStableSwapNG.abi);
-    await forceAbi(client, curveLp.CRV_LP_USDC_fxUSD, "USDC/fxUSD", true, curveStableSwapNG.abi);
-    await forceAbi(client, curveLp.CRV_DUO_frxETH_ETH, "frxETH/ETH", true, curveStableSwapNG.abi);
+    await forceAbi(client, curveLp.crvUSD_USDC, "crvUSD/USDC", true, stableSwapNGAbi);
+    await forceAbi(client, curveLp.crvUSD_USDT, "crvUSD/USDT", true, stableSwapNGAbi);
+    await forceAbi(client, curveLp.CRV_LP_USDC_fxUSD, "USDC/fxUSD", true, stableSwapNGAbi);
+    await forceAbi(client, curveLp.CRV_DUO_frxETH_ETH, "frxETH/ETH", true, stableSwapNGAbi);
+    await forceAbi(client, curveLp.CRV_DUO_pxETH_ETH, "pxETH/ETH", true, stableSwapNGAbi);
+    // CryptoSwap
+
+    await forceAbi(client, curveLp.CRV_DUO_ETH_CVX_TOKEN, "CVX/ETH Token", true, abiERC20);
+
+    const cryptoSwapAbi = (await artifacts.readArtifact("ICurveCryptoSwap")).abi;
+    await forceAbi(client, curveLp.CRV_DUO_ETH_CVX, "CVX/ETH LP", true, cryptoSwapAbi);
 
     // Utilities
     const controlTower = "ControlTower";
@@ -112,7 +122,7 @@ export async function verifyContracts() {
     }
 
     // Verify ERC20
-    const abiERC20 = (await artifacts.readArtifact("ERC20")).abi;
+
     const erc20Params = [
         {address: commonERC20.USR, name: "USR"},
         {address: commonERC20.USDe, name: "USDE"},
