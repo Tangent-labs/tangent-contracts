@@ -2,8 +2,8 @@ import {Client} from "pg";
 import * as addresses from "../../../../addresses.json";
 import * as curveStableSwapNG from "../../../../artifacts/src/interfaces/externals/Curve/ICurveStableSwapNG.sol/ICurveStableSwapNG.json";
 
-import {commonERC20, curveLp} from "defi-resources";
-import {forceAbi} from "./insertContractInDb";
+import {commonERC20, curveLp, routers} from "defi-resources";
+import {forceAbi, nameAddress} from "./insertContractInDb";
 import {artifacts, ethers} from "hardhat";
 
 export async function verifyContracts() {
@@ -16,6 +16,14 @@ export async function verifyContracts() {
     });
     await client.connect();
 
+    const users = await ethers.getSigners();
+    await nameAddress(client, await users[0].getAddress(), "Owner");
+    await nameAddress(client, await users[1].getAddress(), "User 1");
+    await nameAddress(client, await users[2].getAddress(), "User 2");
+    await nameAddress(client, await users[3].getAddress(), "User 3");
+    await nameAddress(client, await users[4].getAddress(), "Fee Treasury");
+
+    await forceAbi(client, routers.CURVE_V1_2_ROUTER, "Curve Router", true, (await artifacts.readArtifact("ICurveRouter")).abi);
     // Curve LP
 
     await forceAbi(client, curveLp.crvUSD_USDC, "crvUSD/USDC", true, curveStableSwapNG.abi);
@@ -49,29 +57,40 @@ export async function verifyContracts() {
     const rsTan = "RsTan";
     await forceAbi(client, addresses.tokens.rsTan, rsTan, false, (await artifacts.readArtifact(rsTan)).abi);
     // Oracles
-    const Oracle_USDC = "Oracle USDC";
-    await forceAbi(client, addresses.oracles.USDC, Oracle_USDC, false, (await artifacts.readArtifact("IAggregatorV3")).abi);
+    await forceAbi(client, addresses.oracles.USDC, "Oracle USDC", false, (await artifacts.readArtifact("IAggregatorV3")).abi);
 
-    const Oracle_USDT = "Oracle USDT";
-    await forceAbi(client, addresses.oracles.USDT, Oracle_USDT, false, (await artifacts.readArtifact("IAggregatorV3")).abi);
+    await forceAbi(client, addresses.oracles.USDT, "Oracle USDT", false, (await artifacts.readArtifact("IAggregatorV3")).abi);
 
-    const Oracle_fxUSD = "Oracle fxUSD";
-    await forceAbi(client, addresses.oracles.fxUSD, Oracle_fxUSD, false, (await artifacts.readArtifact("OracleCoinFromCurveLP")).abi);
+    const abiOracleCoinFromCurveLP = (await artifacts.readArtifact("OracleCoinFromCurveLP")).abi;
+    await forceAbi(client, addresses.oracles.fxUSD, "Oracle fxUSD", false, abiOracleCoinFromCurveLP);
+    await forceAbi(client, addresses.oracles.frxUSD, "Oracle frxUSD", false, abiOracleCoinFromCurveLP);
+    await forceAbi(client, addresses.oracles.frxETH, "Oracle frxETH", false, abiOracleCoinFromCurveLP);
+    await forceAbi(client, addresses.oracles.pxETH, "Oracle pxETH", false, abiOracleCoinFromCurveLP);
 
-    const Oracle_crvUSD_USDC = "Oracle crvUSD/USDC";
-    await forceAbi(client, addresses.oracles.crvUSD_USDC, Oracle_crvUSD_USDC, false, (await artifacts.readArtifact("OracleDuoPoolStable")).abi);
+    const abiOracleDuoPoolStable = (await artifacts.readArtifact("OracleDuoPoolStable")).abi;
+    await forceAbi(client, addresses.oracles["crvUSD-USDC"], "Oracle crvUSD/USDC", false, abiOracleDuoPoolStable);
+    await forceAbi(client, addresses.oracles["crvUSD-USDT"], "Oracle crvUSD/USDT", false, abiOracleDuoPoolStable);
+    await forceAbi(client, addresses.oracles["USDC-fxUSD"], "Oracle USDC/fxUSD", false, abiOracleDuoPoolStable);
+    await forceAbi(client, addresses.oracles["USDC-USDT"], "Oracle USDC/USDT", false, abiOracleDuoPoolStable);
+    await forceAbi(client, addresses.oracles["frxUSD-USDe"], "Oracle frxUSD/USDe", false, abiOracleDuoPoolStable);
+    await forceAbi(client, addresses.oracles["pxETH-WETH"], "Oracle pxETH/WETH", false, abiOracleDuoPoolStable);
+    await forceAbi(client, addresses.oracles["pxETH-stETH"], "Oracle pxETH/stETH", false, abiOracleDuoPoolStable);
+    await forceAbi(client, addresses.oracles["frxETH-WETH"], "Oracle frxETH/WETH", false, abiOracleDuoPoolStable);
+    await forceAbi(client, addresses.oracles["cbBTC-WBTC"], "Oracle cbBTC/WBTC", false, abiOracleDuoPoolStable);
 
-    const Oracle_crvUSD_USDT = "Oracle crvUSD/USDT";
-    await forceAbi(client, addresses.oracles.crvUSD_USDT, Oracle_crvUSD_USDT, false, (await artifacts.readArtifact("OracleDuoPoolStable")).abi);
+    const abiOracleCryptoSwap = (await artifacts.readArtifact("OracleCryptoSwap")).abi;
+    await forceAbi(client, addresses.oracles["USDT-WBTC-WETH"], "Oracle USDC/WBTC/WETH", false, abiOracleCryptoSwap);
+    await forceAbi(client, addresses.oracles["USDC-WBTC-WETH"], "Oracle USDC/WBTC/WETH", false, abiOracleCryptoSwap);
+    await forceAbi(client, addresses.oracles["crvUSD-ETH-CRV"], "Oracle crvUSD/ETH/CRV", false, abiOracleCryptoSwap);
+    await forceAbi(client, addresses.oracles["GHO-cbBTC-WETH"], "Oracle GHO/cbBTC/WETH", false, abiOracleCryptoSwap);
+    await forceAbi(client, addresses.oracles["CVX-ETH"], "Oracle CVX/ETH", false, abiOracleCryptoSwap);
+    await forceAbi(client, addresses.oracles["USR-RLP"], "Oracle USR/RLP", false, abiOracleCryptoSwap);
 
-    const Oracle_USDC_fxUSD = "Oracle USDC/fxUSD";
-    await forceAbi(client, addresses.oracles.USDC_fxUSD, Oracle_USDC_fxUSD, false, (await artifacts.readArtifact("OracleDuoPoolStable")).abi);
+    const abiOraclePendlePT = (await artifacts.readArtifact("OraclePendlePT")).abi;
+    await forceAbi(client, addresses.oracles["sUSDe 07/31/25"], "Oracle sUSDe 07/31/25", false, abiOraclePendlePT);
+    await forceAbi(client, addresses.oracles["wstUSR 07/25/25"], "Oracle wstUSR 07/25/25", false, abiOraclePendlePT);
 
-    const Oracle_frxETH_WETH = "Oracle frxETH/WETH";
-    await forceAbi(client, addresses.oracles.frxETH_WETH, Oracle_frxETH_WETH, false, (await artifacts.readArtifact("OracleDuoPoolStable")).abi);
-
-    const OracleTgUSD = "Oracle tgUSD";
-    await forceAbi(client, addresses.oracles.tgUSD, OracleTgUSD, true, (await artifacts.readArtifact("AggregatorStablePriceV3")).abi);
+    await forceAbi(client, addresses.oracles.tgUSD, "Oracle tgUSD", true, (await artifacts.readArtifact("AggregatorStablePriceV3")).abi);
 
     // Verify ERC4626
     const abi4626 = (await artifacts.readArtifact("IERC4626")).abi;

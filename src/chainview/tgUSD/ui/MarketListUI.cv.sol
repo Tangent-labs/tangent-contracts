@@ -23,12 +23,18 @@ contract MarketListUI is GetMarketDetails {
 
     error MarketDetailsUIOutError(MarketDetailsUIOut output);
 
-    constructor(address account, IAggregatorStablePriceV3 tgUSDOracle, IERC20Metadata tgUSD, IYearnV3Vault sgUSD, address[] memory markets) {
+    constructor(address account, IAggregatorStablePriceV3 tgUSDOracle, IERC20Metadata tgUSD, IYearnV3Vault sgUSD, address[] memory markets, address[] memory pegKeepers) {
         MarketRow[] memory rows = new MarketRow[](markets.length);
         for (uint256 i; i < markets.length; i++) {
             rows[i] = getMarketDetails(account, markets[i]);
         }
-        uint256 tgUSDTotalSupply = tgUSD.totalSupply();
+        uint256 tgUSDOnPegKeeper;
+
+        for (uint256 i; i < pegKeepers.length; i++) {
+            tgUSDOnPegKeeper += tgUSD.balanceOf(pegKeepers[i]);
+        }
+
+        uint256 tgUSDTotalSupply = tgUSD.totalSupply() - tgUSDOnPegKeeper;
         uint256 tgUSDPrice = tgUSDOracle.price();
         revert MarketDetailsUIOutError(
             MarketDetailsUIOut({

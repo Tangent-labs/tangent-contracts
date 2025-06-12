@@ -20,7 +20,12 @@ contract MarketListChainview is MarketDeploymentContext {
         address[] memory markets = new address[](2);
         markets[0] = address(market1);
         markets[1] = address(market2);
-        try new MarketListUI(usr1, tgUSDOracle, tgUSD, sgUSD, markets) {} catch (bytes memory reason) {
+
+        address[] memory pegKeepers = new address[](2);
+        pegKeepers[0] = address(pegKeeperTgUSD_USDC);
+        pegKeepers[1] = address(pegKeeperTgUSD_frxUSD);
+
+        try new MarketListUI(usr1, tgUSDOracle, tgUSD, sgUSD, markets, pegKeepers) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }

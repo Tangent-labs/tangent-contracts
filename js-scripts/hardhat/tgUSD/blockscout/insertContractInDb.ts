@@ -1,5 +1,24 @@
 import {Client} from "pg";
 
+export async function nameAddress(client: Client, address: string, name: string) {
+    const now = new Date();
+    const slicedAddress = address.slice(2);
+    let encodedAddress = "\\x" + slicedAddress;
+
+    try {
+        await client.query("BEGIN");
+
+        await upsertAddresses(client, encodedAddress, slicedAddress, now, false);
+        await upsertAddressNames(client, encodedAddress, slicedAddress, name, now);
+
+        await client.query("COMMIT");
+        console.log("Contract alias added : ", name);
+    } catch (e) {
+        await client.query("ROLLBACK");
+        throw e;
+    }
+}
+
 export async function forceAbi(client: Client, address: string, name: string, isVyper: boolean, abi: any[]) {
     const now = new Date();
     const slicedAddress = address.slice(2);
@@ -10,7 +29,7 @@ export async function forceAbi(client: Client, address: string, name: string, is
     try {
         await client.query("BEGIN");
 
-        await upsertAddresses(client, encodedAddress, slicedAddress, now);
+        await upsertAddresses(client, encodedAddress, slicedAddress, now, true);
         await upsertSmartContracts(client, name, encodedAddress, slicedAddress, isVyper, now, stringifiedAbi);
         await upsertAddressNames(client, encodedAddress, slicedAddress, name, now);
 
@@ -46,7 +65,7 @@ async function upsertAddressNames(client: Client, encodedAddress: string, sliced
     }
 }
 
-async function upsertAddresses(client: Client, encodedAddress: string, slicedAddress: string, now: Date) {
+async function upsertAddresses(client: Client, encodedAddress: string, slicedAddress: string, now: Date, isContract: boolean) {
     const getAddressQuery = `SELECT hash FROM public.addresses WHERE UPPER(ENCODE(hash,'hex')) = $1;`;
     const getAddressParams = [slicedAddress.toUpperCase()];
 
@@ -58,12 +77,12 @@ async function upsertAddresses(client: Client, encodedAddress: string, slicedAdd
             0, // fetched coin balance
             0, // fetched_coin_balance_block_number
             encodedAddress, // address hash
-            0, // Contract code
+            isContract ? true : null, // Contract code
             now, // inserted at
             now, // updated at
             0, // Nonce
             0, // Decompiled
-            true, // verified
+            isContract ? true : null, // verified
             0, // gas used
             0, // tx count
             0, // token_transfers_count
@@ -72,10 +91,12 @@ async function upsertAddresses(client: Client, encodedAddress: string, slicedAdd
     }
     // We update
     else {
-        const updateAddressesQuery = `UPDATE public.addresses
+        if (isContract) {
+            const updateAddressesQuery = `UPDATE public.addresses
         SET contract_code='0', verified=true
         WHERE UPPER(ENCODE(hash, 'hex')) = $1;`;
-        res = await client.query(updateAddressesQuery, getAddressParams);
+            res = await client.query(updateAddressesQuery, getAddressParams);
+        }
     }
 }
 
