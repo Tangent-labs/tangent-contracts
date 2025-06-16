@@ -52,4 +52,5 @@ struct MarketInit {
     uint256 liquidationFee;
     uint256 maxMarketDebt;
     uint256 minimumLoan;
+    string name;
 }

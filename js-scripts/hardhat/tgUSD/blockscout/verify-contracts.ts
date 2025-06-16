@@ -33,7 +33,8 @@ export async function verifyContracts() {
     await forceAbi(client, curveLp.crvUSD_USDT, "crvUSD/USDT", true, stableSwapNGAbi);
     await forceAbi(client, curveLp.CRV_LP_USDC_fxUSD, "USDC/fxUSD", true, stableSwapNGAbi);
     await forceAbi(client, curveLp.CRV_DUO_frxETH_ETH, "frxETH/ETH", true, stableSwapNGAbi);
-    await forceAbi(client, curveLp.CRV_DUO_pxETH_ETH, "pxETH/ETH", true, stableSwapNGAbi);
+    await forceAbi(client, curveLp.CRV_LP_pxETH_WETH, "pxETH/ETH", true, stableSwapNGAbi);
+
     // CryptoSwap
 
     await forceAbi(client, curveLp.CRV_DUO_ETH_CVX_TOKEN, "CVX/ETH Token", true, abiERC20);
@@ -86,7 +87,9 @@ export async function verifyContracts() {
     await forceAbi(client, addresses.oracles["pxETH-WETH"], "Oracle pxETH/WETH", false, abiOracleDuoPoolStable);
     await forceAbi(client, addresses.oracles["pxETH-stETH"], "Oracle pxETH/stETH", false, abiOracleDuoPoolStable);
     await forceAbi(client, addresses.oracles["frxETH-WETH"], "Oracle frxETH/WETH", false, abiOracleDuoPoolStable);
+    console.log("YO");
     await forceAbi(client, addresses.oracles["cbBTC-WBTC"], "Oracle cbBTC/WBTC", false, abiOracleDuoPoolStable);
+    console.log("YI");
 
     const abiOracleCryptoSwap = (await artifacts.readArtifact("OracleCryptoSwap")).abi;
     await forceAbi(client, addresses.oracles["USDT-WBTC-WETH"], "Oracle USDC/WBTC/WETH", false, abiOracleCryptoSwap);

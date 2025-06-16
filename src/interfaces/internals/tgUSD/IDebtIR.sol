@@ -10,4 +10,5 @@ interface IDebtIR {
     function irCalculator() external view returns (IIRCalculator);
     function minimumLoan() external view returns (uint256);
     function totalDebtShares() external view returns (uint256);
+    function badDebt() external view returns (uint256);
 }

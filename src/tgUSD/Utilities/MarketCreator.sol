@@ -52,9 +52,9 @@ contract MarketCreator is LightOwnable {
     /// @notice
     address public marketNoSociabilization;
 
-    event MarketConvexCrvCreated(address proxy);
-    event MarketConvexFxnCreated(address proxy);
-    event MarketNoSociabilizationCreated(address proxy);
+    event MarketConvexCrvCreated(address proxy, string name);
+    event MarketConvexFxnCreated(address proxy, string name);
+    event MarketNoSociabilizationCreated(address proxy, string name);
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                             CONSTRUCTOR
@@ -109,7 +109,7 @@ contract MarketCreator is LightOwnable {
         irCalculator.initializeMarket(proxy, _irParams);
         rewardAccumulator.initializeMarket(proxy, _rcParams);
 
-        emit MarketConvexCrvCreated(proxy);
+        emit MarketConvexCrvCreated(proxy, _marketInit.name);
         return proxy;
     }
 
@@ -127,7 +127,7 @@ contract MarketCreator is LightOwnable {
         irCalculator.initializeMarket(proxy, _irParams);
         rewardAccumulator.initializeMarket(proxy, _rcParams);
 
-        emit MarketConvexFxnCreated(proxy);
+        emit MarketConvexFxnCreated(proxy, _marketInit.name);
         return proxy;
     }
 
@@ -139,7 +139,7 @@ contract MarketCreator is LightOwnable {
         irCalculator.initializeMarket(proxy, _irParams);
         rewardAccumulator.initializeMarket(proxy, _rcParams);
 
-        emit MarketNoSociabilizationCreated(proxy);
+        emit MarketNoSociabilizationCreated(proxy, _marketInit.name);
         return proxy;
     }
 }

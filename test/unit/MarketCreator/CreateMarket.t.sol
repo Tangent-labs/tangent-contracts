@@ -10,6 +10,7 @@ contract CreateMarket is MarketDeploymentContext {
 
     MarketInit public marketInit =
         MarketInit({
+            name: "",
             collatToken: IERC20Metadata(address(0)),
             collatOracle: IPriceOracle(address(0)),
             maxLTV: 0,

@@ -97,6 +97,7 @@ contract MarketDeploymentContext is MarketInitParams {
     function getMarketInit(MarketInitSimplified memory init, IERC20 collat) public view returns (MarketInit memory) {
         return
             MarketInit({
+                name: "",
                 collatToken: init.collat,
                 collatOracle: oracles[collat],
                 maxLTV: init.maxLTV,

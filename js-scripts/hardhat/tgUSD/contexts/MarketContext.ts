@@ -26,7 +26,7 @@ export class MarketContext {
     convexFxnMarkets: {[key: string]: ConvexFxnLPMarket} = {};
     pendlePTMarkets: {[key: string]: MarketNoSociabilization} = {};
 
-    marketInit(staticConfig: any, oracle: AddressLike): MarketInitStruct {
+    marketInit(staticConfig: any, oracle: AddressLike, name: string): MarketInitStruct {
         return {
             collatToken: staticConfig.collatToken,
             collatOracle: oracle,
@@ -35,6 +35,7 @@ export class MarketContext {
             liquidationThreshold: staticConfig.liquidationThreshold,
             liquidationFee: 1_000,
             minimumLoan: staticConfig.minimumLoan,
+            name: name,
         };
     }
 
@@ -47,7 +48,7 @@ export class MarketContext {
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
                     .createConvexCrvMarket(
-                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName]),
+                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], "Convex CRV - " + staticConfig.collatName),
                         staticConfig.cvxRewardToken,
                         staticConfig.pid,
                         1_000,
@@ -70,7 +71,7 @@ export class MarketContext {
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
                     .createConvexFxnMarket(
-                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName]),
+                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], "Convex FXN - " + staticConfig.collatName),
                         staticConfig.pid,
                         1_000,
                         LEC_CONFIG_IR_PARAMS,
@@ -90,7 +91,11 @@ export class MarketContext {
             const receipt = await (
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
-                    .createNoSociabilizationMarket(this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName]), LEC_CONFIG_IR_PARAMS, LEC_CONFIG_RC_PARAMS)
+                    .createNoSociabilizationMarket(
+                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], "PENDLE PT - " + staticConfig.collatName),
+                        LEC_CONFIG_IR_PARAMS,
+                        LEC_CONFIG_RC_PARAMS
+                    )
             ).wait();
 
             await this.parseCreateMarketLogs(key, receipt!);
