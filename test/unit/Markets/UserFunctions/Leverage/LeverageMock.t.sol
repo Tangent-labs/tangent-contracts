@@ -119,7 +119,7 @@ contract LeverageMock is MarketDeploymentContext {
             ZapStruct({router: address(collatToken), routerCall: abi.encodeWithSelector(bytes4(keccak256("transfer(address,uint256)")), address(market), collatReceived)})
         );
 
-        assertEq(IERC20(stakingProxy.gaugeAddress()).balanceOf(address(stakingProxy)), collatReceived + collatToDeposit, "Convex staking proxy received Fxn Gauge");
+        assertEq(IERC20(address(stakingProxy.gaugeAddress())).balanceOf(address(stakingProxy)), collatReceived + collatToDeposit, "Convex staking proxy received Fxn Gauge");
         assertEq(market.collateralBalances(usr1), collatToDeposit + collatReceived);
         assertEq(market.totalCollateral(), collatToDeposit + collatReceived);
         assertApproxEqAbs(market.userDebt(usr1), tgUSDToFlashMint, 5);

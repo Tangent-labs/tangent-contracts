@@ -11,4 +11,6 @@ interface IConvexCrvLPMarket {
         uint256 _pid,
         uint256 _socFeePercentage
     ) external;
+
+    function cvxRewardToken() external view returns (ICvxRewardToken);
 }

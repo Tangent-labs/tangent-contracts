@@ -1,6 +1,7 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+
+import "../FXN/ISharedLiquidityGauge.sol";
 interface IStakingProxyERC20 {
     function FEE_DENOMINATOR() external view returns (uint256);
     function deposit(uint256 _amount, bool _manage) external;
@@ -10,7 +11,7 @@ interface IStakingProxyERC20 {
     function feeRegistry() external view returns (address);
     function fxn() external view returns (address);
     function fxnMinter() external view returns (address);
-    function gaugeAddress() external view returns (address);
+    function gaugeAddress() external view returns (ISharedLiquidityGauge);
     function getReward() external;
     function getReward(bool _claim, address[] memory _tokenList) external;
     function getReward(bool _claim) external;
