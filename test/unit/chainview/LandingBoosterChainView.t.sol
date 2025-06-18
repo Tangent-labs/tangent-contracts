@@ -4,15 +4,28 @@ import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Features/BorrowRepay/HBorrow.sol";
 
-import "../../../src/chainview/boosters/LandingBooster.cv.sol";
+import {LandingBooster} from "../../../src/chainview/boosters/LandingBooster.cv.sol";
 
 contract LandingBoosterChainView is MarketDeploymentContext {
-    ConvexCrvLPMarket public market1;
-    ConvexCrvLPMarket public market2;
+    ConvexCrvLPMarket public market;
+
+    function setUp() public {
+        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+    }
 
     // LIST
     function test_LandingBoosterChainView_ui_returns() public {
         //  ,0x508f0e1b565b40aeb94671bed228083203330882,0x35e30bc815935bb5ec1743f772331864d780cc26,0xaf5b3f4a0b4dc334db7137e5584e0e971e5e4962
+
+        LandingBooster.LandingBoosterIn memory input = LandingBooster.LandingBoosterIn({
+            tgUSD: address(tgUSD),
+            tgUSDOracle: address(tgUSDOracle),
+            pegKeeperTgUSD_USDC: address(pegKeeperTgUSD_USDC),
+            pegKeeperTgUSD_frxUSD: address(pegKeeperTgUSD_frxUSD),
+            sgUSD: address(sgUSD),
+            rsTan: address(rsTan),
+            tanPool: address(0)
+        });
 
         address[] memory params = Array.memoryAddress(
             [
@@ -22,7 +35,7 @@ contract LandingBoosterChainView is MarketDeploymentContext {
                 0xAf5b3f4A0b4dc334dB7137E5584E0e971E5e4962
             ]
         );
-        try new LandingBooster(params) {} catch (bytes memory reason) {
+        try new LandingBooster(params, input) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }
