@@ -507,6 +507,8 @@ export const liquidationAssets: Record<string, string> = {
     "GHO/crvUSD": curveLp.CRV_DUO_GHO_crvUSD,
     "GHO/USDe": curveLp.CRV_DUO_GHO_USDe,
     "pxETH/stETH": curveLp.CRV_DUO_pxETH_stETH,
+    "frxETH/WETH": curveLp.CRV_LP_WETH_frxETH,
+    "pxETH/WETH": curveLp.CRV_LP_pxETH_WETH,
 };
 
 export type LiquidationAsset = keyof typeof liquidationAssets;
