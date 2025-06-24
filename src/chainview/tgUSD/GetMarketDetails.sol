@@ -94,7 +94,6 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         ICollateral marketCollateral = ICollateral(market);
         IDebtIR marketDebt = IDebtIR(market);
         IIRCalculator irCalculator = IIRCalculator(marketDebt.irCalculator());
-        (, uint216 ir) = irCalculator.irCheckpoints(market);
         IRewardAccumulator _rewardAccumulator = IRewardAccumulator(marketCollateral.rewardAccumulator());
 
         return
@@ -102,7 +101,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                 totalDebt: marketDebt.totalDebt(),
                 userDebt: marketDebt.userDebt(account),
                 healthRatio: marketCollateral.healthRatio(account),
-                currentBorrowRate: ir,
+                currentBorrowRate: irCalculator.getIRCheckpoint(market).ir,
                 futureBorrowRate: irCalculator.computeIRForMarket(market),
                 currentRewardCut: _rewardAccumulator.lastRewardCuts(market),
                 futureRewardCut: _rewardAccumulator.computeRCForMarket(market)
