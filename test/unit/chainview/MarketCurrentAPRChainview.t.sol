@@ -16,7 +16,7 @@ contract MarketCurrentAPRChainview is MarketDeploymentContext {
         marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true)), aprComputationType: 0}));
         marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexCurveLPMarket(AddrCurveStableLP.WETH_frxETH, true)), aprComputationType: 0}));
         marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD)), aprComputationType: 1}));
-        // marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, true)), aprComputationType: 0}));
+        marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, true)), aprComputationType: 0}));
 
         vm.startPrank(usr1);
 
@@ -40,7 +40,7 @@ contract MarketCurrentAPRChainview is MarketDeploymentContext {
     }
 
     function test_MarketCurrentAPR_Chainview() public {
-        try new MarketCurrentAPR(marketsInput, rewardAccumulator) {} catch (bytes memory reason) {
+        try new MarketCurrentAPR(marketsInput, rewardAccumulator, irCalculator) {} catch (bytes memory reason) {
             TVLAprs[] memory result = abi.decode(removeFirst4Bytes(reason), (TVLAprs[]));
 
             for (uint256 i; i < result.length; i++) {

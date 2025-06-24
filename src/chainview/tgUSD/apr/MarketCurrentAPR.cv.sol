@@ -8,6 +8,7 @@ import {IConvexFxnLPMarket, IStakingProxyERC20} from "../../../interfaces/intern
 
 import {IVirtualBalanceRewardPool} from "../../../interfaces/externals/Convex/IVirtualBalanceRewardPool.sol";
 import {ISharedLiquidityGauge} from "../../../interfaces/externals/FXN/ISharedLiquidityGauge.sol";
+import {IGaugeController} from "../../../interfaces/externals/FXN/IGaugeController.sol";
 
 import {IStashTokenWrapper} from "../../../interfaces/externals/Convex/IStashTokenWrapper.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
@@ -44,7 +45,9 @@ struct TVLStreamingData {
     uint256 totalSupplyUnderlying;
     StreamingData[] streamingData;
 }
-
+interface IDistributedToken {
+    function rate() external view returns (uint256);
+}
 contract MarketCurrentAPR {
     uint256 constant ONE_YEAR = 365 days;
     error MarketCurrentAPRError(TVLAprs[]);
@@ -104,7 +107,7 @@ contract MarketCurrentAPR {
         }
         // Convex FXN
         else if (aprType == 1) {
-            return _getProjectedAPRConvexFXN(market);
+            return _getProjectedAPRBlank();
         }
         // PENDLE PT
         else if (aprType == 2) {
@@ -134,40 +137,6 @@ contract MarketCurrentAPR {
 
         return TVLStreamingData({totalSupplyUnderlying: cvxRewardToken.totalSupply(), streamingData: streamData});
     }
-
-    function _getProjectedAPRConvexFXN(address market) internal view returns (TVLStreamingData memory) {
-        IConvexFxnLPMarket cvxFxnMarket = IConvexFxnLPMarket(market);
-        IStakingProxyERC20 stakingProxy = IStakingProxyERC20(cvxFxnMarket.stakingProxyVault());
-        ISharedLiquidityGauge fxnGauge = stakingProxy.gaugeAddress();
-        address[] memory rewardTokens = fxnGauge.getActiveRewardTokens();
-        StreamingData[] memory streamData = new StreamingData[](rewardTokens.length);
-        for (uint256 i; i < rewardTokens.length; i++) {
-            IERC20 rewardToken = IERC20(rewardTokens[i]);
-            (, uint80 rate, , uint40 finishAt) = fxnGauge.rewardData(address(rewardToken));
-            streamData[i] = StreamingData({token: rewardToken, amountPerYear: finishAt < block.timestamp ? 0 : rate * ONE_YEAR});
-        }
-        return TVLStreamingData({totalSupplyUnderlying: fxnGauge.totalSupply(), streamingData: streamData});
-    }
-
-    // function _getCrvAPRInfo(address gauge, address gaugeController, uint256 rate) internal view returns (GaugeAprInfo memory) {
-    //     uint256 stakeDaoWorkingBalance = _gaugeAsset.working_balances(address(0));
-    //     uint256 workingSupply = _gaugeAsset.working_supply();
-    //     uint256 stakeDaoTotalBalance = _gaugeAsset.balanceOf(address(0));
-
-    //     uint256 gaugeRelativeWeight = gaugeController.gauge_relative_weight(gauge, block.timestamp);
-
-    //     uint256 weeklyCrvAmount = gaugeRelativeWeight * rate;
-    //     uint256 weeklyCrvRewards = workingSupply == 0 ? 0 : (weeklyCrvAmount * stakeDaoWorkingBalance) / workingSupply;
-
-    //     return
-    //         GaugeAprInfo({
-    //             rateAdjusted: weeklyCrvRewards / 10 ** 18,
-    //             stakeDaoTotalBalance: stakeDaoTotalBalance,
-    //             stakeDaoWorkingBalance: stakeDaoWorkingBalance,
-    //             workingSupply: workingSupply,
-    //             curveGaugeTotalSupply: _gaugeAsset.totalSupply()
-    //         });
-    // }
 
     function _getProjectedAPRBlank() internal view returns (TVLStreamingData memory) {
         return TVLStreamingData({totalSupplyUnderlying: 0, streamingData: new StreamingData[](0)});
