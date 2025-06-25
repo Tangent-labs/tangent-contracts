@@ -14,7 +14,6 @@ import {IStashTokenWrapper} from "../../../interfaces/externals/Convex/IStashTok
 import {IRewardAccumulator} from "../../../interfaces/internals/tgUSD/IRewardAccumulator.sol";
 import {IDebtIR} from "../../../interfaces/internals/tgUSD/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/tgUSD/IIRCalculator.sol";
-import "hardhat/console.sol";
 
 struct MarketAPRInput {
     address marketAddress;
