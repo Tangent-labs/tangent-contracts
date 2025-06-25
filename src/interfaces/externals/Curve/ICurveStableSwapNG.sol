@@ -8,12 +8,14 @@ interface ICurveStableSwapNG is IERC20Metadata {
     function exchange_received(int128 i, int128 j, uint256 _dx, uint256 _min_dy) external returns (uint256);
     function exchange_received(int128 i, int128 j, uint256 _dx, uint256 _min_dy, address _receiver) external returns (uint256);
     function add_liquidity(uint256[] memory _amounts, uint256 _min_mint_amount) external returns (uint256);
+    function add_liquidity(uint256[2] memory _amounts, uint256 _min_mint_amount) external returns (uint256);
     function add_liquidity(uint256[] memory _amounts, uint256 _min_mint_amount, address _receiver) external returns (uint256);
     function remove_liquidity_one_coin(uint256 _burn_amount, int128 i, uint256 _min_received) external returns (uint256);
     function remove_liquidity_one_coin(uint256 _burn_amount, int128 i, uint256 _min_received, address _receiver) external returns (uint256);
     function remove_liquidity_imbalance(uint256[] memory _amounts, uint256 _max_burn_amount) external returns (uint256);
     function remove_liquidity_imbalance(uint256[] memory _amounts, uint256 _max_burn_amount, address _receiver) external returns (uint256);
 
+    function remove_liquidity(uint256 _burn_amount, uint256[] memory _min_amounts) external returns (uint256[] memory);
     function remove_liquidity(uint256 _burn_amount, uint256[2] memory _min_amounts) external returns (uint256[2] memory);
     function remove_liquidity(uint256 _burn_amount, uint256[2] memory _min_amounts, address _receiver) external returns (uint256[2] memory);
     function remove_liquidity(uint256 _burn_amount, uint256[2] memory _min_amounts, address _receiver, bool _claim_admin_fees) external returns (uint256[2] memory);
