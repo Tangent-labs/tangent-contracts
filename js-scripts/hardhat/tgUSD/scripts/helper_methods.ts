@@ -89,3 +89,21 @@ export const withdrawConvex = async (address: string, lp: ICurveStableSwapNG, us
     await lp.connect(user).approve(address, MaxUint256);
     await rewardsContract.connect(user).withdrawAndUnwrap(amount, true);
 };
+
+// LLAMMALEND
+
+export const depositLlamaLend = async (vaultAddress: string, tokenAddress: string, user: HardhatEthersSigner, tokenToGive: number, amountToDeposit: bigint) => {
+    const vault = await ethers.getContractAt("ILlamaVault", vaultAddress);
+    const erc20 = await ethers.getContractAt("ERC20", tokenAddress);
+
+    await giveTokensToAddresses([user], TOKENS_TO_GIVE(tokenToGive));
+
+    await erc20.connect(user).approve(vault, MaxUint256);
+    await vault.connect(user)["deposit(uint256)"](amountToDeposit);
+};
+
+export const withdrawLlamaLend = async (vaultAddress: string, user: HardhatEthersSigner, amountToWithdraw: bigint) => {
+    const vault = await ethers.getContractAt("ILlamaVault", vaultAddress);
+
+    await vault.connect(user)["withdraw(uint256)"](amountToWithdraw);
+};
