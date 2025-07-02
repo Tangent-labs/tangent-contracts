@@ -34,6 +34,22 @@ export const depositOnCurveStableLp = async (address: string, amountToGive: numb
     return lp;
 };
 
+export const removeLiquidityOnCurveStableLp = async (address: string, amount: bigint, user: HardhatEthersSigner) => {
+    const lp = await ethers.getContractAt("ICurveStableSwapNG", address);
+
+    try {
+        await lp.connect(user)["remove_liquidity(uint256,uint256[])"](amount, [0n, 0n]);
+    } catch (err) {
+        try {
+            await lp.connect(user)["remove_liquidity(uint256,uint256[2],address)"](amount, [0n, 0n], user);
+        } catch (signatureError) {
+            throw new Error(`Failed to remove liquidity with both signatures: ${signatureError}`);
+        }
+    }
+
+    return lp;
+};
+
 export const depositOnCurveGauge = async (address: string, lp: ICurveStableSwapNG, user: HardhatEthersSigner, amount: bigint) => {
     const gauge = await ethers.getContractAt("ISharedLiquidityGauge", address);
     await lp.connect(user).approve(gauge, MaxUint256);
@@ -47,20 +63,20 @@ export const withdrawOnCurveGauge = async (address: string, user: HardhatEthersS
 
 // STAKE
 
-export const depositOnStakeVault = async (lp: ICurveStableSwapNG, address: string, user: HardhatEthersSigner, amount: bigint) => {
+export const depositStakeDao = async (lp: ICurveStableSwapNG, address: string, user: HardhatEthersSigner, amount: bigint) => {
     const stakeVault = await ethers.getContractAt("IStakeDaoVault", address);
     await lp.connect(user).approve(stakeVault, MaxUint256);
     await stakeVault.connect(user).deposit(user, amount, false);
 };
 
-export const withdrawOnStakeVault = async (address: string, user: HardhatEthersSigner, amount: bigint) => {
+export const withdrawStakeDao = async (address: string, user: HardhatEthersSigner, amount: bigint) => {
     const stakeVault = await ethers.getContractAt("IStakeDaoVault", address);
     await stakeVault.connect(user).withdraw(amount);
 };
 
 // CONVEX
 
-export const depositOnConvexBooster = async (address: string, lp: ICurveStableSwapNG, user: HardhatEthersSigner, pid: number, amount: bigint) => {
+export const depositConvex = async (address: string, lp: ICurveStableSwapNG, user: HardhatEthersSigner, pid: number, amount: bigint) => {
     const booster = await ethers.getContractAt("ICvxBooster", address);
     await lp.connect(user).approve(address, MaxUint256);
     await booster.connect(user).deposit(pid, amount, true);
@@ -68,7 +84,7 @@ export const depositOnConvexBooster = async (address: string, lp: ICurveStableSw
 
 //
 
-export const withdrawOnConvexRewardsContract = async (address: string, lp: ICurveStableSwapNG, user: HardhatEthersSigner, amount: bigint) => {
+export const withdrawConvex = async (address: string, lp: ICurveStableSwapNG, user: HardhatEthersSigner, amount: bigint) => {
     const rewardsContract = await ethers.getContractAt("ICvxRewardToken", address);
     await lp.connect(user).approve(address, MaxUint256);
     await rewardsContract.connect(user).withdrawAndUnwrap(amount, true);
