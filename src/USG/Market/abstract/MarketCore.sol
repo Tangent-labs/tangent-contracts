@@ -116,6 +116,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
     function _deposit(address _for, uint256 amountDeposited, IERC20 _collatToken) internal {
         // Cannot deposit on a market with paused deposits
         require(!isDepositPaused, DepositPaused());
+        // Cannot deposit 0
+        require(amountDeposited != 0, ZeroCollatAmount());
         // Checkpoint the IR and indexes
         irCalculator.checkpointIR(address(this));
         // Increase collateral balance of the position and update total debt
@@ -232,6 +234,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      */
     function _depositAndBorrow(uint256 amountDeposited, uint256 USGToBorrow, IERC20 _collatToken, bool isLeverage) internal {
         require(!isDepositPaused, DepositPaused());
+        // Cannot deposit 0
+        require(amountDeposited != 0, ZeroCollatAmount());
         // Collat amount after the deposit
         uint256 newCollatAmount = collateralBalances[msg.sender] + amountDeposited;
 
@@ -537,6 +541,9 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         uint256 collatBought = _zappingProxy.zapProxy(_usg, collatToken, minCollatAmountOut, address(this), dumpUSGCall);
 
         uint256 stakedAmount = collatToDeposit + collatBought;
+
+        // Cannot deposit 0
+        require(stakedAmount != 0, ZeroCollatAmount());
 
         // Performs same modification as in depositAndBorrow
         _depositAndBorrow(stakedAmount, USGToFlashMint, _collatToken, true);

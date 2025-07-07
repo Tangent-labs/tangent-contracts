@@ -44,70 +44,9 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
 
         assertEq(market.healthRatio(usr1), MAX_UINT);
         assertEq(market.liquidationPrice(usr1), 0);
-        assertEq(market.socFeePending(), 0);
 
         vm.startSnapshotGas("Deposit", "Second user deposit and stake");
         hDeposit.deposit(usr1, 100 ether);
         vm.stopSnapshotGas();
-    }
-
-    function test_deposit_no_stake() external {
-        verifyBalERC20NotChanging(market.cvxRewardToken(), address(market), "Verify that as not staking, no Cvx rewards are received");
-
-        verifyReceiveERC20(collatToken, address(market), amountIn, "Verify that market receives Cvx Reward tokens");
-        verifyLostERC20(collatToken, usr1, amountIn, "Verify that user sent its LP");
-
-        vm.startSnapshotGas("Deposit", "First deposit ever on the market and no stake");
-        hDeposit.deposit(usr1, amountIn);
-        vm.stopSnapshotGas("Deposit", "First deposit ever on the market and no stake");
-
-        assertERC20Tracking();
-
-        skip(100);
-
-        assertEq(market.totalCollateral(), amountIn, "Total collateral is not right");
-        assertEq(market.collateralBalances(usr1), amountIn, "Collateral deposited must be equal to collateralBalances");
-
-        assertEq(market.userDebt(usr1), 0, "Position debt should be 0");
-        assertEq(market.userDebtShares(usr1), 0, "Position debt index should be 0");
-        assertEq(market.totalDebt(), 0, "Total debt should be 0");
-
-        assertEq(market.healthRatio(usr1), MAX_UINT);
-        assertEq(market.liquidationPrice(usr1), 0);
-
-        vm.startSnapshotGas("Deposit", "Second user deposit and no stake");
-        hDeposit.deposit(usr1, amountIn);
-        vm.stopSnapshotGas("Deposit", "Second user deposit and no stake");
-    }
-
-    function test_deposit_no_stake_then_stake() external {
-        vm.startPrank(usr1);
-
-        hDeposit.deposit(usr1, amountIn);
-
-        verifyBalERC20NotChanging(market.cvxRewardToken(), address(market), "Verify that as not staking, no Cvx rewards are received");
-        verifyReceiveERC20(collatToken, address(market), amountIn, "Verify that market receives Cvx Reward tokens");
-        verifyLostERC20(collatToken, usr1, amountIn, "Verify that user sent its LP");
-
-        hDeposit.deposit(usr1, amountIn);
-        assertERC20Tracking();
-
-        assertEq(market.totalCollateral(), amountIn + amountIn, "Total collateral is not right");
-        assertEq(market.collateralBalances(usr1), amountIn + amountIn, "Collateral deposited must be equal to collateralBalances");
-
-        assertEq(market.userDebt(usr1), 0, "Position debt should be 0");
-        assertEq(market.userDebtShares(usr1), 0, "Position debt index should be 0");
-        assertEq(market.totalDebt(), 0, "Total debt should be 0");
-
-        assertEq(market.healthRatio(usr1), MAX_UINT);
-        assertEq(market.liquidationPrice(usr1), 0);
-
-        /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                    DEPOSIT WITHOUT STAKE GET SOC FEES
-        =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-        vm.startSnapshotGas("Deposit", "Second user deposit, stakes and takes pendingFees");
-        hDeposit.deposit(usr1, amountIn);
-        vm.stopSnapshotGas("Deposit", "Second user deposit, stakes and takes pendingFees");
     }
 }

@@ -53,7 +53,6 @@ contract ZapLeverage is MarketDeploymentContext {
         verifyReceiveERC20(usg, address(mockRouter), USGToFlashMint, "USG are sent to the router");
 
         verifyLostERC20(ETH_NAKED, usr4, ethIn, "ETH token taken from usr1");
-        verifyReceiveERC20(collatToken, address(market), collatReceivedFromZap + collatReceivedFromLeverage, "Collat token received by the market");
 
         market.zapLeverage{value: ethIn}(
             USGToFlashMint,
@@ -73,9 +72,8 @@ contract ZapLeverage is MarketDeploymentContext {
 
         uint256 shares = (USGToFlashMint * RAY) / index;
 
-        assertEq(market.collateralBalances(usr4), expectedStaked);
-        assertEq(market.totalCollateral(), expectedStaked);
-        assertEq(market.socFeePending(), totalCollat - expectedStaked);
+        assertEq(market.collateralBalances(usr4), totalCollat);
+        assertEq(market.totalCollateral(), totalCollat);
 
         assertEq(market.userDebt(usr4), (shares * index) / RAY);
         assertEq(market.totalDebt(), (shares * index) / RAY);
@@ -114,7 +112,6 @@ contract ZapLeverage is MarketDeploymentContext {
 
         assertEq(market.collateralBalances(usr4), totalCollat);
         assertEq(market.totalCollateral(), totalCollat);
-        assertEq(market.socFeePending(), 0);
 
         assertEq(market.userDebt(usr4), (shares * index) / RAY);
         assertEq(market.totalDebt(), (shares * index) / RAY);
@@ -137,7 +134,6 @@ contract ZapLeverage is MarketDeploymentContext {
 
         assertEq(market.collateralBalances(usr4), 0);
         assertEq(market.totalCollateral(), 0);
-        assertEq(market.socFeePending(), 0);
 
         assertEq(market.userDebt(usr4), 0);
         assertEq(market.totalDebt(), 0);

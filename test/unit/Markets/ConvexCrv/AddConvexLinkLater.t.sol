@@ -33,8 +33,6 @@ contract AddConvexLinkLater is MarketDeploymentContext {
         market.deposit(usr2, amountIn);
         vm.stopPrank();
 
-        assertEq(0, market.socFeePending());
-
         vm.startPrank(owner);
         market.setConvexStaking(AddrCvxRewardTokens.USDC_crvUSD_LP, PidCvxCrvBooster.USDC_crvUSD_LP);
 
@@ -62,8 +60,6 @@ contract AddConvexLinkLater is MarketDeploymentContext {
 
         vm.prank(owner);
         rewardAccumulator.addNewRewards(address(market), rewards);
-
-        market.stakeAll(usr1);
 
         skip(7 days);
 

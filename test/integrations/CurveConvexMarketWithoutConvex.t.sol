@@ -41,7 +41,6 @@ contract CurveConvexMarketWithoutConvex is MarketDeploymentContext {
         assertEq(market.userDebt(usr1), borrowedAmount1, "Position debt should be equal to the borrowed amount");
         assertEq(market.userDebtShares(usr1), borrowedAmount1, "Position debt index should be 0");
         assertEq(market.totalDebt(), borrowedAmount1, "Total debt should be 0");
-        assertEq(market.socFeePending(), 0);
 
         hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1);
 

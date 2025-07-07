@@ -78,10 +78,6 @@ contract ZapDeposit is MarketDeploymentContext {
 
         assertERC20Tracking();
 
-        // Second deposit, without staking the collat token on Convex
-
-        verifyReceiveERC20(collatToken, address(market), amountOut, "Market receives the collat token");
-
         market.zapDeposit{value: amountIn}(
             usr1,
             ZapStructDeposit({
@@ -92,18 +88,14 @@ contract ZapDeposit is MarketDeploymentContext {
             })
         );
 
-        assertEq(market.cvxRewardToken().balanceOf(address(market)), amountOut, "AmountOut is staked by the market in Convex");
-        assertEq(market.collateralBalances(usr1), amountOut + collatAdded, "User collateral is equal to the amountOut + collatAdded");
-        assertEq(market.totalCollateral(), amountOut + collatAdded, "Total collateral is equal to the amountOut + collatAdded");
+        assertEq(market.cvxRewardToken().balanceOf(address(market)), 2 * amountOut, "AmountOut is staked by the market in Convex");
+        assertEq(market.collateralBalances(usr1), 2 * amountOut, "User collateral is equal to the amountOut + collatAdded");
+        assertEq(market.totalCollateral(), 2 * amountOut, "Total collateral is equal to the amountOut + collatAdded");
 
         assertERC20Tracking();
 
-        // Last deposit, with staking the collat token on Convex to get the fee
-
         vm.stopPrank();
         vm.startPrank(usr2);
-
-        verifyLostERC20(collatToken, address(market), amountOut, "Market receives the collat token");
 
         market.zapDeposit{value: amountIn}(
             usr2,
@@ -117,7 +109,7 @@ contract ZapDeposit is MarketDeploymentContext {
 
         assertEq(market.cvxRewardToken().balanceOf(address(market)), 3 * amountOut, "AmountOut is staked by the market in Convex");
         assertEq(market.collateralBalances(usr1), 2 * amountOut, "User collateral is equal to the amountOut + collatAdded");
-        assertEq(market.collateralBalances(usr2), 2 * amountOut, "1 amountOut + fee that are pending");
+        assertEq(market.collateralBalances(usr2), amountOut, "1 amountOut + fee that are pending");
         assertEq(market.totalCollateral(), 3 * amountOut, "Total collateral is equal to the amountOut + collatAdded");
 
         assertERC20Tracking();
@@ -152,7 +144,7 @@ contract ZapDeposit is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.CVX,
                 amountIn: 1,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(bytes4(keccak256("deposit(address,uint256,bool)")), usr1, 1_000 ether, false)})
+                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(bytes4(keccak256("deposit(address,uint256)")), usr1, 1_000 ether, false)})
             })
         );
     }

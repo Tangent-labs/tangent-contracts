@@ -49,16 +49,8 @@ contract HDepositConvexCrvLP is HMarketBase {
         }
     }
 
-    function _afterDepositCheck(
-        address _for,
-        uint256 lpDeposited,
-        uint256 totalCollateralBefore,
-        uint256 balanceCollateralBefore,
-        uint256 socFeePending,
-        uint256 feeToTake
-    ) internal view {
-        uint256 collatIncrease = lpDeposited + socFeePending;
-        assertEq(collatIncrease, marketCrvLP.totalCollateral() - totalCollateralBefore, "Total collateral is increased by taking into account the pending sociabilization fee");
-        assertEq(collatIncrease, marketCrvLP.collateralBalances(_for) - balanceCollateralBefore, "Collateral of the user is increased by taking into account pending soc fee");
+    function _afterDepositCheck(address _for, uint256 lpDeposited, uint256 totalCollateralBefore, uint256 balanceCollateralBefore) internal view {
+        assertEq(lpDeposited, marketCrvLP.totalCollateral() - totalCollateralBefore, "Total collateral is increased by taking into account the pending sociabilization fee");
+        assertEq(lpDeposited, marketCrvLP.collateralBalances(_for) - balanceCollateralBefore, "Collateral of the user is increased by taking into account pending soc fee");
     }
 }

@@ -45,11 +45,6 @@ contract AccessControlMarkets is MarketDeploymentContext {
         marketCrv.setMinimumLoan(100);
     }
 
-    function test_setSocFee_fails_as_not_owner() external {
-        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        marketCrv.setSocFeePercentage(100);
-    }
-
     function test_setCvxRewardToken_fails_as_not_owner() external {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
         marketCrvWithoutConvex.setConvexStaking(AddrCvxRewardTokens.USDT_crvUSD_LP, PidCvxCrvBooster.USDT_crvUSD_LP);
@@ -59,7 +54,7 @@ contract AccessControlMarkets is MarketDeploymentContext {
         GlobalMarketInitParams memory _marketConstants = GlobalMarketInitParams(address(0), usg, controlTower, irCalculator, rewardAccumulator, zappingProxy);
         MarketInit memory _marketInit = MarketInit(AddrClassicERC20.CRV, IPriceOracle(address(0)), 0, 0, 0, 0, 0, "");
         vm.expectRevert(abi.encodeWithSelector(MarketCore.AlreadyInitialized.selector));
-        marketCrv.initialize(_marketConstants, _marketInit, ICvxRewardToken(address(0)), 0, 0);
+        marketCrv.initialize(_marketConstants, _marketInit, ICvxRewardToken(address(0)), 0);
     }
 
     function test_claimUnderlyingRewards_on_ConvexCrvMarket_fails_when_caller_not_rewardAccumulator() external {

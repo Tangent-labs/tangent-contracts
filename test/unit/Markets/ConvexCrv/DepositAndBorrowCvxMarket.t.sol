@@ -40,7 +40,6 @@ contract DepositAndBorrowCvxMarket is MarketDeploymentContext {
         assertEq(market.userDebt(usr1), borrowedAmount1, "Position debt should be equal to the borrowed amount");
         assertEq(market.userDebtShares(usr1), borrowedAmount1, "Position debt index should be 0");
         assertEq(market.totalDebt(), borrowedAmount1, "Total debt should be 0");
-        assertEq(market.socFeePending(), 0);
 
         skip(15 days);
 
@@ -65,8 +64,6 @@ contract DepositAndBorrowCvxMarket is MarketDeploymentContext {
 
         // TODO See if it's possible to get closer
         assertApproxEqAbs(market.totalDebt(), market.userDebt(usr1) + market.userDebt(usr2), 1, "Total Debt equals sum of all debt");
-
-        assertEq(market.socFeePending(), 0);
 
         skip(1 days);
     }

@@ -65,7 +65,6 @@ contract LeverageMock is MarketDeploymentContext {
         verifyReceiveERC20(usg, address(mockRouter), USGToFlashMint, "USG are sent to the router");
 
         verifyLostERC20(collatToken, usr3, collatToDeposit, "Collat token taken from usr1");
-        verifyReceiveERC20(collatToken, address(market), collatToDeposit + collatReceived, "Collat token received by the market, removing soc Fee");
 
         market.leverage(
             collatToDeposit,
@@ -76,9 +75,8 @@ contract LeverageMock is MarketDeploymentContext {
         );
         uint256 index = irCalculator.debtIndexes(address(market));
 
-        assertEq(market.collateralBalances(usr3), expectedStaked);
-        assertEq(market.totalCollateral(), expectedStaked);
-        assertEq(market.socFeePending(), totalCollat - expectedStaked);
+        assertEq(market.collateralBalances(usr3), totalCollat);
+        assertEq(market.totalCollateral(), totalCollat);
 
         uint256 shares = (USGToFlashMint * RAY) / index;
 
@@ -172,7 +170,6 @@ contract LeverageMock is MarketDeploymentContext {
 
         assertEq(market.collateralBalances(usr1), collatToDeposit + collatReceived);
         assertEq(market.totalCollateral(), collatToDeposit + collatReceived);
-        assertEq(market.socFeePending(), 0);
 
         assertApproxEqAbs(market.userDebt(usr1), USGToFlashMint + initialBorrow, 5, "UserDebt");
         assertApproxEqAbs(market.totalDebt(), USGToFlashMint + initialBorrow, 5, "Total debt");
