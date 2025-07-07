@@ -34,7 +34,7 @@ contract CreateMarket is MarketDeploymentContext {
         marketCreator.createConvexFxnMarket(marketInit, 0, irParams, rcParams);
     }
 
-    function test_createNoSocMarket_fails_as_not_owner() external {
+    function test_createBasicERC20Market_fails_as_not_owner() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
         marketCreator.createBasicERC20Market(marketInit, irParams, rcParams);

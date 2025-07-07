@@ -52,7 +52,7 @@ contract OraclesContext is USGDeployContext {
             zappingProxy,
             convexCrvLPMarketImplem,
             convexFxnLPMarketImplem,
-            marketNoSociabilizationImplem
+            marketBasicERC20
         );
         controlTower.toggleMarketCreator(address(marketCreator));
         vm.label(address(marketCreator), "MarketCreator");

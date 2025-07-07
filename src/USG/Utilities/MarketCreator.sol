@@ -50,7 +50,7 @@ contract MarketCreator is LightOwnable {
     address public marketConvexFxn;
 
     /// @notice
-    address public marketNoSociabilization;
+    address public marketBasicERC20;
 
     event MarketConvexCrvCreated(address proxy, string name);
     event MarketConvexFxnCreated(address proxy, string name);
@@ -69,7 +69,7 @@ contract MarketCreator is LightOwnable {
         IZappingProxy _zappingProxy,
         address _marketConvexCrv,
         address _marketConvexFxn,
-        address _marketNoSociabilization
+        address _marketBasicERC20
     ) {
         controlTower = _controlTower;
         USG = _USG;
@@ -78,7 +78,7 @@ contract MarketCreator is LightOwnable {
         zappingProxy = _zappingProxy;
         marketConvexCrv = _marketConvexCrv;
         marketConvexFxn = _marketConvexFxn;
-        marketNoSociabilization = _marketNoSociabilization;
+        marketBasicERC20 = _marketBasicERC20;
         _transferOwnership(_owner);
     }
 
@@ -125,7 +125,7 @@ contract MarketCreator is LightOwnable {
     }
 
     function createBasicERC20Market(MarketInit memory _marketInit, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
-        address proxy = marketNoSociabilization.clone();
+        address proxy = marketBasicERC20.clone();
         IBasicERC20Market(proxy).initialize(_getGlobalParams(), _marketInit);
 
         controlTower.toggleMarket(proxy);

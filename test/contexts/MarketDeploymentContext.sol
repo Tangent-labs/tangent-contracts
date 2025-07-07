@@ -66,15 +66,13 @@ contract MarketDeploymentContext is MarketInitParams {
         MarketInitSimplified memory marketInit = basicERC20Maps[address(collat)];
         vm.startPrank(owner);
 
-        BasicERC20Market marketNoSoc = BasicERC20Market(marketCreator.createBasicERC20Market(getMarketInit(marketInit, collat), getBaseIRParamsLEC(), getBaseRCParams()));
+        BasicERC20Market marketBasicERC20 = BasicERC20Market(marketCreator.createBasicERC20Market(getMarketInit(marketInit, collat), getBaseIRParamsLEC(), getBaseRCParams()));
 
         verifyParams_and_dealCollat(marketInit.collat);
 
         vm.stopPrank();
 
-        // labeliser.labeliseNewConvexFxnMarket(address(collat), collat.symbol(), address(marketNoSoc), address(convexMarket.stakingProxyVault()));
-
-        return marketNoSoc;
+        return marketBasicERC20;
     }
 
     function giveCollateralToUsers(IERC20Metadata collat) public {

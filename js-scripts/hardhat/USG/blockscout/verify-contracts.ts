@@ -199,12 +199,12 @@ export async function verifyContracts() {
         }
     }
 
-    const abiNoSociabilization = (await artifacts.readArtifact("BasicERC20Market")).abi;
+    const abiBasicMarketERC20 = (await artifacts.readArtifact("BasicERC20Market")).abi;
 
     // Markets Pendle PT
     for (const marketObject of Object.values(addresses.markets)) {
         if (marketObject.marketType === "Pendle_PT") {
-            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Pendle_PT", false, abiNoSociabilization);
+            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Pendle_PT", false, abiBasicMarketERC20);
         }
     }
 

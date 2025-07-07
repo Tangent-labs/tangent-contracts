@@ -51,7 +51,6 @@ export class MarketContext {
                         this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], "Convex CRV - " + staticConfig.collatName),
                         staticConfig.cvxRewardToken,
                         staticConfig.pid,
-                        1_000,
                         HEC_CONFIG_IR_PARAMS,
                         HEC_CONFIG_RC_PARAMS
                     )
@@ -73,7 +72,6 @@ export class MarketContext {
                     .createConvexFxnMarket(
                         this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], "Convex FXN - " + staticConfig.collatName),
                         staticConfig.pid,
-                        1_000,
                         LEC_CONFIG_IR_PARAMS,
                         LEC_CONFIG_RC_PARAMS
                     )
@@ -119,7 +117,7 @@ export class MarketContext {
                     this.convexFxnMarkets[key] = market;
                     marketAddress = await market.getAddress();
                 } else if (STATIC_CONFIG_PT_PENDLE[key as PendlePTMarketsKeys]) {
-                    const market = await this.getNoSocMarket(parsedLog);
+                    const market = await this.getBasicERC20Market(parsedLog);
                     this.pendlePTMarkets[key] = market;
                     marketAddress = await market.getAddress();
                 }
@@ -136,7 +134,7 @@ export class MarketContext {
         return await ethers.getContractAt("ConvexFxnLPMarket", parsedLog.args.proxy);
     }
 
-    async getNoSocMarket(parsedLog: LogDescription) {
+    async getBasicERC20Market(parsedLog: LogDescription) {
         return await ethers.getContractAt("BasicERC20Market", parsedLog.args.proxy);
     }
 }

@@ -5,13 +5,13 @@ contract AccessControlMarkets is MarketDeploymentContext {
     ConvexCrvLPMarket marketCrv;
     ConvexCrvLPMarket marketCrvWithoutConvex;
     ConvexFxnLPMarket marketFxn;
-    BasicERC20Market marketNoSoc;
+    BasicERC20Market marketBasicERC20;
 
     function setUp() public {
         marketCrv = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
         marketCrvWithoutConvex = deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, false);
         marketFxn = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
-        marketNoSoc = deployBasicERC20Market(AddrPTPendle.sUSDe_31_07_25);
+        marketBasicERC20 = deployBasicERC20Market(AddrPTPendle.sUSDe_31_07_25);
 
         vm.startPrank(usr1);
     }
@@ -73,11 +73,11 @@ contract AccessControlMarkets is MarketDeploymentContext {
         marketFxn.claimUnderlyingRewards(rTokens);
     }
 
-    function test_claimUnderlyingRewards_on_MarketNoSoc_fails_when_caller_not_rewardAccumulator() external {
+    function test_claimUnderlyingRewards_on_BasicERC20Market_fails_when_caller_not_rewardAccumulator() external {
         IERC20[] memory rTokens = new IERC20[](1);
         rTokens[0] = AddrClassicERC20.CRV;
 
         vm.expectRevert(abi.encodeWithSelector(MarketExternalActions.NotRewardAccumulator.selector));
-        marketNoSoc.claimUnderlyingRewards(rTokens);
+        marketBasicERC20.claimUnderlyingRewards(rTokens);
     }
 }
