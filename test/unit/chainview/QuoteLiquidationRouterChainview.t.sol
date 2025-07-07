@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import "../../contexts/MarketDeploymentContext.sol";
 
-import {QuoteLiquidationRouter, CurveQuote} from "../../../src/chainview/usg/bot/QuoteLiquidationRouter.cv.sol";
+import {QuoteLiquidationRouter, CurveQuote} from "../../../src/chainview/USG/bot/QuoteLiquidationRouter.cv.sol";
 
 contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
     uint256 constant ZERO = 0;

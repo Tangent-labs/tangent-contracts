@@ -4,7 +4,7 @@ import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Features/BorrowRepay/HBorrow.sol";
 
-import "../../../src/chainview/usg/ui/MarketListUI.cv.sol";
+import "../../../src/chainview/USG/ui/MarketListUI.cv.sol";
 
 contract MarketListChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market1;

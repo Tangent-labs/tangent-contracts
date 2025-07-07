@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 
-import "../../../src/chainview/usg/ui/sUSGUI.cv.sol";
+import "../../../src/chainview/USG/ui/sUSGUI.cv.sol";
 
 contract sUSGChainview is MarketDeploymentContext {
     // LIST
