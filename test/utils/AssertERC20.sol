@@ -1,5 +1,5 @@
 import {Test} from "forge-std/Test.sol";
-import "forge-std/console.sol";
+
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 contract AssertERC20 is Test {

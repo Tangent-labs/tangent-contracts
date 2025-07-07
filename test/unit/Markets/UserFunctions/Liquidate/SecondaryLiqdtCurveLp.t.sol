@@ -18,12 +18,12 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
     HDepositConvexFxnLP public hDeposit_fxUSD_USDC;
 
     HLPManipulator public hLpManipulator;
-    ICurveStableSwapNG public lpTgUSD_USDC;
-    ICurveStableSwapNG public lpTgUSD_wfrxUSD;
+    ICurveStableSwapNG public lpUSG_USDC;
+    ICurveStableSwapNG public lpUSG_wfrxUSD;
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        lpTgUSD_USDC = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
-        lpTgUSD_wfrxUSD = lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD");
+        lpUSG_USDC = lpDeploymentContext.USGLPs("USG-USDC");
+        lpUSG_wfrxUSD = lpDeploymentContext.USGLPs("USG-wfrxUSD");
 
         market_crvUSD_USDC = deployConvexCurveLPMarket(collatToken, true);
         market_fxUSD_USDC = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
@@ -40,9 +40,9 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
         irCalculator.checkpointIR(address(market_crvUSD_USDC));
 
-        // Dumps tgUSD for USDC => Depegs tgUSD
-        hLpManipulator.dumpCrvPool(lpTgUSD_USDC, 1, 0, 400_000 ether);
-        hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 1, 0, 400_000 ether);
+        // Dumps USG for USDC => Depegs USG
+        hLpManipulator.dumpCrvPool(lpUSG_USDC, 1, 0, 400_000 ether);
+        hLpManipulator.dumpCrvPool(lpUSG_wfrxUSD, 1, 0, 400_000 ether);
 
         skip(800);
 
@@ -51,7 +51,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market_crvUSD_USDC));
 
-        assertGt(ir, 0.04 ether, "IR skyrockets as peg of tgUSD is low");
+        assertGt(ir, 0.04 ether, "IR skyrockets as peg of USG is low");
 
         // Skip time to be able to liquidate
         skip(50 days);
@@ -59,18 +59,18 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         assertLe(market_crvUSD_USDC.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
         assertGe(market_crvUSD_USDC.userDebt(usr1), (collatDeposited * 93) / 100, "Debt is getting over the 93% of the collateral");
 
-        hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 0, 1, 20_000 ether);
+        hLpManipulator.dumpCrvPool(lpUSG_wfrxUSD, 0, 1, 20_000 ether);
 
-        // Force the totalSupply of tgUSD howver it would fail because we inflated artifiially tgUSD total supply in dumpCrvPool
-        vm.store(address(tgUSD), bytes32(uint256(2)), bytes32(uint256(100_000 ether)));
+        // Force the totalSupply of USG howver it would fail because we inflated artifiially USG total supply in dumpCrvPool
+        vm.store(address(usg), bytes32(uint256(2)), bytes32(uint256(100_000 ether)));
 
         vm.prank(usr1);
-        // In case of User 2 needs a bit more tgUSD for liquidation
-        tgUSD.transfer(usr2, 1_000 ether);
+        // In case of User 2 needs a bit more USG for liquidation
+        usg.transfer(usr2, 1_000 ether);
 
         vm.startPrank(usr2);
 
-        tgUSD.approve(address(market_crvUSD_USDC), MAX_UINT);
+        usg.approve(address(market_crvUSD_USDC), MAX_UINT);
 
         // Liquidation passes after IR increased the user debt over the liquidation threshold
 
@@ -78,10 +78,10 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
         uint256[][] memory swapParams = new uint256[][](2);
         uint256[] memory unwrapLPToUSDC = Array.memoryUint256([zero, zero, uint256(6), uint256(10), uint256(2)]);
-        uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
+        uint256[] memory swapUsdcToUSG = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
 
         swapParams[0] = unwrapLPToUSDC;
-        swapParams[1] = swapUsdcToTgUSD;
+        swapParams[1] = swapUsdcToUSG;
 
         irCalculator.mintIR();
 
@@ -94,7 +94,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
                 routerCall: encoder.encodeLiquidateCallForCurveLP(
                     encoder.createCurveRouterStruct(
                         Array.memoryAddress(
-                            [address(AddrCurveStableLP.USDC_crvUSD), address(AddrCurveStableLP.USDC_crvUSD), address(AddrClassicERC20.USDC), address(lpTgUSD_USDC), address(tgUSD)]
+                            [address(AddrCurveStableLP.USDC_crvUSD), address(AddrCurveStableLP.USDC_crvUSD), address(AddrClassicERC20.USDC), address(lpUSG_USDC), address(usg)]
                         ),
                         swapParams,
                         market_crvUSD_USDC.collateralBalances(usr1),
@@ -118,9 +118,9 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
         irCalculator.checkpointIR(address(market_fxUSD_USDC));
 
-        // Dumps tgUSD for USDC => Depegs tgUSD
-        hLpManipulator.dumpCrvPool(lpTgUSD_USDC, 1, 0, 400_000 ether);
-        hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 1, 0, 400_000 ether);
+        // Dumps usg for USDC => Depegs usg
+        hLpManipulator.dumpCrvPool(lpUSG_USDC, 1, 0, 400_000 ether);
+        hLpManipulator.dumpCrvPool(lpUSG_wfrxUSD, 1, 0, 400_000 ether);
 
         skip(800);
 
@@ -129,7 +129,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market_fxUSD_USDC));
 
-        assertGt(ir, 0.04 ether, "IR skyrockets as peg of tgUSD is low");
+        assertGt(ir, 0.04 ether, "IR skyrockets as peg of usg is low");
 
         // Skip time to be able to liquidate
         skip(35 days);
@@ -137,14 +137,14 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         assertLe(market_fxUSD_USDC.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
         assertGe(market_fxUSD_USDC.userDebt(usr1), (collatDeposited * 93) / 100, "Debt is getting over the 93% of the collateral");
 
-        hLpManipulator.dumpCrvPool(lpTgUSD_wfrxUSD, 0, 1, 20_000 ether);
+        hLpManipulator.dumpCrvPool(lpUSG_wfrxUSD, 0, 1, 20_000 ether);
 
         // Prevent the next call to fail
-        // vm.store(address(tgUSD), bytes32(uint256(2)), bytes32(uint256(100_000 ether)));
+        // vm.store(address(usg), bytes32(uint256(2)), bytes32(uint256(100_000 ether)));
 
         vm.prank(usr1);
-        // In case of User 2 needs a bit more tgUSD for liquidation
-        tgUSD.transfer(usr2, 1_000 ether);
+        // In case of User 2 needs a bit more usg for liquidation
+        usg.transfer(usr2, 1_000 ether);
         vm.startPrank(usr2);
 
         // Liquidation passes after IR increased the user debt over the liquidation threshold
@@ -153,10 +153,10 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
         uint256[][] memory swapParams = new uint256[][](2);
         uint256[] memory unwrapLPToUSDC = Array.memoryUint256([uint256(1), zero, uint256(6), uint256(1), uint256(2)]);
-        uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(1), uint256(2)]);
+        uint256[] memory swapUsdcToUSG = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(1), uint256(2)]);
 
         swapParams[0] = unwrapLPToUSDC;
-        swapParams[1] = swapUsdcToTgUSD;
+        swapParams[1] = swapUsdcToUSG;
 
         irCalculator.mintIR();
 
@@ -171,7 +171,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
                 routerCall: encoder.encodeLiquidateCallForCurveLP(
                     encoder.createCurveRouterStruct(
                         Array.memoryAddress(
-                            [address(AddrCurveStableLP.USDC_fxUSD), address(AddrCurveStableLP.USDC_fxUSD), address(AddrClassicERC20.USDC), address(lpTgUSD_USDC), address(tgUSD)]
+                            [address(AddrCurveStableLP.USDC_fxUSD), address(AddrCurveStableLP.USDC_fxUSD), address(AddrClassicERC20.USDC), address(lpUSG_USDC), address(usg)]
                         ),
                         swapParams,
                         market_fxUSD_USDC.collateralBalances(usr1),

@@ -28,6 +28,7 @@ contract MarketInitParams is WStableContext {
         uint256 liquidationThreshold;
         uint256 liquidationFee;
         uint256 minimumLoan;
+        string name;
     }
 
     constructor() {
@@ -40,6 +41,7 @@ contract MarketInitParams is WStableContext {
         // Convex Curve - CRVUSD-USDC
         cvxCurveLPMaps[address(AddrCurveStableLP.USDC_crvUSD)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex CRV - crvUSD-USDC",
                 collat: AddrCurveStableLP.USDC_crvUSD,
                 maxLTV: 90_000,
                 liquidationThreshold: 93_000,
@@ -55,6 +57,7 @@ contract MarketInitParams is WStableContext {
         // Convex Curve - CRVUSD-USDT
         cvxCurveLPMaps[address(AddrCurveStableLP.USDT_crvUSD)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex CRV - crvUSD-USDT",
                 collat: AddrCurveStableLP.USDT_crvUSD,
                 maxLTV: 90_000,
                 liquidationThreshold: 93_000,
@@ -70,6 +73,7 @@ contract MarketInitParams is WStableContext {
         // Convex Curve - FRXETH-WETH
         cvxCurveLPMaps[address(AddrCurveStableLP.WETH_frxETH)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex CRV - frxETH-WETH",
                 collat: AddrCurveStableLP.WETH_frxETH,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
@@ -85,6 +89,7 @@ contract MarketInitParams is WStableContext {
         // Convex Curve - PXETH-WETH
         cvxCurveLPMaps[address(AddrCurveStableLP.WETH_pxETH)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex CRV - pxETH-WETH",
                 collat: AddrCurveStableLP.WETH_pxETH,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
@@ -100,6 +105,7 @@ contract MarketInitParams is WStableContext {
         // Convex Curve - ETH-stETH
         cvxCurveLPMaps[address(AddrCurveStableLP.ETH_stETH_LP)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex CRV - stETH-ETH",
                 collat: AddrCurveStableLP.ETH_stETH_LP,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
@@ -115,6 +121,7 @@ contract MarketInitParams is WStableContext {
         // Convex Curve - ETH-CVX
         cvxCurveLPMaps[address(AddrCryptoSwapLP.CVX_ETH_LP)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex CRV - CVX-ETH",
                 collat: AddrCryptoSwapLP.CVX_ETH_LP,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
@@ -130,6 +137,7 @@ contract MarketInitParams is WStableContext {
         // Convex Curve - scrvUSD/sDOLA
         cvxCurveLPMaps[address(AddrCurveStableLP.scrvUSD_sDOLA)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex CRV - scrvUSD-sDOLA",
                 collat: AddrCurveStableLP.scrvUSD_sDOLA,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
@@ -145,6 +153,7 @@ contract MarketInitParams is WStableContext {
         // Convex Curve - TriCrypto USDC
         cvxCurveLPMaps[address(AddrCryptoSwapLP.USDC_WBTC_ETH)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex CRV - USDC-WBTC-ETH",
                 collat: AddrCryptoSwapLP.USDC_WBTC_ETH,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
@@ -164,6 +173,7 @@ contract MarketInitParams is WStableContext {
         // Convex Curve - sDAI/sUSDe
         cvxCurveLPMaps[address(AddrCurveStableLP.sDAI_sUSDe)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex CRV - sDAI-sUSDe",
                 collat: AddrCurveStableLP.sDAI_sUSDe,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
@@ -179,6 +189,7 @@ contract MarketInitParams is WStableContext {
         // Convex Curve - sUSDS/USDT
         cvxCurveLPMaps[address(AddrCurveStableLP.sUSDS_USDT)] = ParamsInitConvexCurveLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex CRV - sUSDS-USDT",
                 collat: AddrCurveStableLP.sUSDS_USDT,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
@@ -196,6 +207,7 @@ contract MarketInitParams is WStableContext {
         // Convex FXN - USDC_FXUSD
         cvxFxnLPMaps[address(AddrCurveStableLP.USDC_fxUSD)] = ParamsInitConvexFxnLPMarket({
             marketInit: MarketInitSimplified({
+                name: "Convex FXN - fxUSD-USDC",
                 collat: AddrCurveStableLP.USDC_fxUSD,
                 maxLTV: 85_000,
                 liquidationThreshold: 93_000,
@@ -211,6 +223,7 @@ contract MarketInitParams is WStableContext {
     function initMarketNoSociabilization() public {
         // Pendle - eUSDe_29_05_25
         noSociabilizationMaps[address(AddrPTPendle.eUSDe_29_05_25)] = MarketInitSimplified({
+            name: "Pendle - eUSDe 05/29/25",
             collat: AddrPTPendle.eUSDe_29_05_25,
             maxLTV: 85_000,
             liquidationThreshold: 93_000,
@@ -221,6 +234,7 @@ contract MarketInitParams is WStableContext {
 
         // Pendle - sUSDe_31_07_25
         noSociabilizationMaps[address(AddrPTPendle.sUSDe_31_07_25)] = MarketInitSimplified({
+            name: "Pendle - sUSDe 07/31/25",
             collat: AddrPTPendle.sUSDe_31_07_25,
             maxLTV: 85_000,
             liquidationThreshold: 93_000,

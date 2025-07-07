@@ -1,52 +1,52 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "./TgUSDDeployContext.sol";
+import "./USGDeployContext.sol";
 
-import {OracleCoinFromCurveLP} from "../../src/tgUSD/Oracles/Token/OracleCoinFromCurveLP.sol";
-import {OracleERC4626} from "../../src/tgUSD/Oracles/Token/OracleERC4626.sol";
+import {OracleCoinFromCurveLP} from "../../src/USG/Oracles/Token/OracleCoinFromCurveLP.sol";
+import {OracleERC4626} from "../../src/USG/Oracles/Token/OracleERC4626.sol";
 
-import {OracleDuoPoolStable} from "../../src/tgUSD/Oracles/CurveLP/OracleDuoPoolStable.sol";
-import {OracleTriPoolStable} from "../../src/tgUSD/Oracles/CurveLP/OracleTriPoolStable.sol";
-import {OracleCryptoSwap} from "../../src/tgUSD/Oracles/CurveLP/OracleCryptoSwap.sol";
+import {OracleDuoPoolStable} from "../../src/USG/Oracles/CurveLP/OracleDuoPoolStable.sol";
+import {OracleTriPoolStable} from "../../src/USG/Oracles/CurveLP/OracleTriPoolStable.sol";
+import {OracleCryptoSwap} from "../../src/USG/Oracles/CurveLP/OracleCryptoSwap.sol";
 
-import {OraclePendlePT} from "../../src/tgUSD/Oracles/Pendle/OraclePendlePT.sol";
-import {OraclePendleLP} from "../../src/tgUSD/Oracles/Pendle/OraclePendleLP.sol";
+import {OraclePendlePT} from "../../src/USG/Oracles/Pendle/OraclePendlePT.sol";
+import {OraclePendleLP} from "../../src/USG/Oracles/Pendle/OraclePendleLP.sol";
 
-import {IRCalculator} from "../../src/tgUSD/Utilities/IRCalculator.sol";
+import {IRCalculator} from "../../src/USG/Utilities/IRCalculator.sol";
 import {IAggregatorStablePriceV3} from "../../src/interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 import {IPegKeeperRegulator} from "../../src/interfaces/externals/LlamaLend/IPegKeeperRegulator.sol";
 import {IPegKeeperV2} from "../../src/interfaces/externals/LlamaLend/IPegKeeperV2.sol";
 
-contract OraclesContext is TgUSDDeployContext {
+contract OraclesContext is USGDeployContext {
     IRCalculator public irCalculator;
     mapping(IERC20 => IPriceOracle) public oracles;
 
-    IAggregatorStablePriceV3 public tgUSDOracle;
+    IAggregatorStablePriceV3 public USGOracle;
 
     IPegKeeperRegulator public pegKeeperRegulator;
 
-    IPegKeeperV2 public pegKeeperTgUSD_USDC;
-    IPegKeeperV2 public pegKeeperTgUSD_frxUSD;
+    IPegKeeperV2 public pegKeeperUSG_USDC;
+    IPegKeeperV2 public pegKeeperUSG_frxUSD;
 
     constructor() {
         vm.startPrank(owner);
-        // Oracle tgUSD
+        // Oracle USG
 
-        tgUSDOracle = IAggregatorStablePriceV3(deployCode("AggregatorStablePriceV3", abi.encode(tgUSD, uint256(1000000000000000), owner)));
-        vm.label(address(tgUSDOracle), "Oracle tgUSD");
+        USGOracle = IAggregatorStablePriceV3(deployCode("AggregatorStablePriceV3", abi.encode(usg, uint256(1000000000000000), owner)));
+        vm.label(address(USGOracle), "Oracle USG");
 
-        irCalculator = new IRCalculator(owner, controlTower, tgUSDOracle, tgUSD);
+        irCalculator = new IRCalculator(owner, controlTower, USGOracle, usg);
         controlTower.toggleIRCalculator(address(irCalculator));
 
-        rewardAccumulator = new RewardAccumulator(owner, controlTower, tgUSDOracle);
+        rewardAccumulator = new RewardAccumulator(owner, controlTower, USGOracle);
 
         vm.label(address(rewardAccumulator), "RewardAccumulator");
 
         marketCreator = new MarketCreator(
             owner,
             controlTower,
-            tgUSD,
+            usg,
             irCalculator,
             rewardAccumulator,
             zappingProxy,
@@ -67,21 +67,21 @@ contract OraclesContext is TgUSDDeployContext {
         setupPendleLPTokens();
     }
 
-    function setupTgUSDOracle() public {
+    function setupUSGOracle() public {
         vm.startPrank(owner);
-        tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")));
-        tgUSDOracle.add_price_pair(address(lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD")));
+        USGOracle.add_price_pair(address(lpDeploymentContext.USGLPs("USG-USDC")));
+        USGOracle.add_price_pair(address(lpDeploymentContext.USGLPs("USG-wfrxUSD")));
 
-        pegKeeperRegulator = IPegKeeperRegulator(deployCode("PegKeeperRegulator", abi.encode(tgUSD, tgUSDOracle, feeTreasury, owner, owner)));
-        pegKeeperTgUSD_USDC = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 20000, pegKeeperRegulator, owner)));
-        pegKeeperTgUSD_frxUSD = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD"), 20000, pegKeeperRegulator, owner)));
+        pegKeeperRegulator = IPegKeeperRegulator(deployCode("PegKeeperRegulator", abi.encode(usg, USGOracle, feeTreasury, owner, owner)));
+        pegKeeperUSG_USDC = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.USGLPs("USG-USDC"), 20000, pegKeeperRegulator, owner)));
+        pegKeeperUSG_frxUSD = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.USGLPs("USG-wfrxUSD"), 20000, pegKeeperRegulator, owner)));
 
-        controlTower.togglePegKeeper(address(pegKeeperTgUSD_USDC));
-        controlTower.togglePegKeeper(address(pegKeeperTgUSD_frxUSD));
+        controlTower.togglePegKeeper(address(pegKeeperUSG_USDC));
+        controlTower.togglePegKeeper(address(pegKeeperUSG_frxUSD));
 
         address[] memory pairs = new address[](2);
-        pairs[0] = address(pegKeeperTgUSD_USDC);
-        pairs[1] = address(pegKeeperTgUSD_frxUSD);
+        pairs[0] = address(pegKeeperUSG_USDC);
+        pairs[1] = address(pegKeeperUSG_frxUSD);
 
         pegKeeperRegulator.add_peg_keepers(pairs);
         vm.stopPrank();

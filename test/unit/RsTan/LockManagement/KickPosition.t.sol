@@ -10,60 +10,60 @@ contract KickPosition is MarketDeploymentContext {
         // Create a Lock
         vm.startPrank(usr1);
         deal(address(tan), usr1, 3 * amountToLock);
-        tan.approve(address(rsTan), 3 * amountToLock);
-        rsTan.createLock(amountToLock, false);
+        tan.approve(address(vsTan), 3 * amountToLock);
+        vsTan.createLock(amountToLock, false);
         vm.stopPrank();
 
         skip(1);
 
         // Process the rewards
         vm.startPrank(owner);
-        tgUSD.approve(address(rsTan), MAX_UINT);
-        deal(address(tgUSD), address(owner), rewardAmount);
+        usg.approve(address(vsTan), MAX_UINT);
+        deal(address(usg), address(owner), rewardAmount);
         TokenAmount[] memory tokenAmounts = new TokenAmount[](1);
-        tokenAmounts[0] = TokenAmount({token: tgUSD, amount: rewardAmount});
-        rsTan.processRewards(tokenAmounts);
+        tokenAmounts[0] = TokenAmount({token: usg, amount: rewardAmount});
+        vsTan.processRewards(tokenAmounts);
         vm.stopPrank();
     }
 
     function test_kick_expired_position() external {
-        (uint128 delay, uint128 percentage) = rsTan.kick();
+        (uint128 delay, uint128 percentage) = vsTan.kick();
 
-        skip(rsTan.LOCK_DURATION() + delay);
+        skip(vsTan.LOCK_DURATION() + delay);
 
-        Reward memory lastReward = rsTan.getRewardData(tgUSD);
+        Reward memory lastReward = vsTan.getRewardData(usg);
 
         uint256 kickIncentivization = (percentage * amountToLock) / 100_000;
         // TAN fluxes
         verifyReceiveERC20(tan, usr1, amountToLock - kickIncentivization, "Locker received his tan back, minus the kick penality");
         verifyReceiveERC20(tan, usr2, kickIncentivization, "Kicker received the penality");
-        verifyLostERC20(tan, address(rsTan), amountToLock, "RsTan sends TAN to Locker and Kicker");
+        verifyLostERC20(tan, address(vsTan), amountToLock, "VsTan sends TAN to Locker and Kicker");
 
-        // tgUSD fluxes
-        verifyReceiveDeltaRelERC20(tgUSD, usr1, rewardAmount, 1e14, "Claims the rewards in tgUSD for the positionOwner");
-        verifyLostDeltaRelERC20(tgUSD, address(rsTan), rewardAmount, 1e14, "RsTan looses the tgUSD rewards");
+        // usg fluxes
+        verifyReceiveDeltaRelERC20(usg, usr1, rewardAmount, 1e14, "Claims the rewards in usg for the positionOwner");
+        verifyLostDeltaRelERC20(usg, address(vsTan), rewardAmount, 1e14, "VsTan looses the usg rewards");
 
         vm.startPrank(usr2);
-        rsTan.kickPosition(1, usr2);
+        vsTan.kickPosition(1, usr2);
 
         assertERC20Tracking();
 
         // Verify rewards are updated
-        assertGt(rsTan.getRewardData(tgUSD).lastUpdateTime, lastReward.lastUpdateTime, "Checkpoints the rewards");
-        assertEq(rsTan.rewards(1, tgUSD), 0, "Nothing to claim as it's already done in the kick");
+        assertGt(vsTan.getRewardData(usg).lastUpdateTime, lastReward.lastUpdateTime, "Checkpoints the rewards");
+        assertEq(vsTan.rewards(1, usg), 0, "Nothing to claim as it's already done in the kick");
 
-        Lock memory kickedLock = rsTan.getLock(1);
+        Lock memory kickedLock = vsTan.getLock(1);
         assertEq(kickedLock.endLockTime, 0, "Lock Deleted endLockTime");
         assertEq(kickedLock.amount, 0, "Lock Deleted amount");
 
-        assertEq(0, rsTan.balanceOf(usr1), "Usr1 doesn't have the NFT anymore");
-        assertEq(0, rsTan.totalSupply(), "NFT have been burnt reduces the totalSupply");
+        assertEq(0, vsTan.balanceOf(usr1), "Usr1 doesn't have the NFT anymore");
+        assertEq(0, vsTan.totalSupply(), "NFT have been burnt reduces the totalSupply");
     }
 
     function test_fails_kick_non_expired() external {
-        skip(rsTan.LOCK_DURATION());
+        skip(vsTan.LOCK_DURATION());
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.KickDelayIsNotPassed.selector));
-        rsTan.kickPosition(1, usr2);
+        vm.expectRevert(abi.encodeWithSelector(VsTan.KickDelayIsNotPassed.selector));
+        vsTan.kickPosition(1, usr2);
     }
 }

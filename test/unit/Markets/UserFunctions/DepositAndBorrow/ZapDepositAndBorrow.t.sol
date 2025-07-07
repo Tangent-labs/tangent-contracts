@@ -13,7 +13,7 @@ contract ZapDepositAndBorrow is MarketDeploymentContext {
     }
 
     function test_zap_depositAndBorrow_with_eth_and_stake() external {
-        uint256 tgUsdToBorrow = 533_333 ether;
+        uint256 USGToBorrow = 533_333 ether;
         uint256 amountIn = 600 ether;
         uint256 amountOut = 550 ether;
 
@@ -22,7 +22,7 @@ contract ZapDepositAndBorrow is MarketDeploymentContext {
         deal(address(collatToken), address(mockRouter), amountOut);
 
         market.zapDepositAndBorrow{value: amountIn}(
-            tgUsdToBorrow,
+            USGToBorrow,
             true,
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
@@ -34,7 +34,7 @@ contract ZapDepositAndBorrow is MarketDeploymentContext {
     }
 
     function test_zap_depositAndBorrow_with_erc20_and_stake_no_stake() external {
-        uint256 tgUsdToBorrow = 533_333 ether;
+        uint256 USGToBorrow = 533_333 ether;
         uint256 amountIn = 700_000 * 10 ** 6;
         uint256 amountOut = 550 ether;
 
@@ -44,7 +44,7 @@ contract ZapDepositAndBorrow is MarketDeploymentContext {
         AddrClassicERC20.USDC.approve(address(market), MAX_UINT);
 
         market.zapDepositAndBorrow(
-            tgUsdToBorrow,
+            USGToBorrow,
             false,
             ZapStructDeposit({
                 tokenIn: AddrClassicERC20.USDC,

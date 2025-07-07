@@ -15,7 +15,7 @@ contract ProcessSimpleRewards is MarketDeploymentContext {
     function setUp() public {
         // Depeg USG
         lpManipulator = new HLPManipulator(usr2);
-        lpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 1, 0, 470_000 ether);
+        lpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-USDC"), 1, 0, 470_000 ether);
 
         // Deploy several markets
         market = deployConvexFxnLPMarket(collatToken);

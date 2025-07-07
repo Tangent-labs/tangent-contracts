@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-import {IPriceOracle} from "../../internals/tgUSD/IPriceOracle.sol";
+import {IPriceOracle} from "../../internals/USG/IPriceOracle.sol";
 pragma solidity ^0.8.0;
 
 interface IAggregatorV3 is IPriceOracle {

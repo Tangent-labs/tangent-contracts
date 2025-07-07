@@ -12,7 +12,7 @@ There are 2 types of price given by the LP contract:
 
 `last_price` is the most accurate price in time, however it's not safe to use it as it's not resilient to flash liqudity attacks we have so to use `price_oracle`.
 
-There are 1M of tgUSD and 1M of USDC inside it.
+There are 1M of USG and 1M of USDC inside it.
 
 ### Scenario
 

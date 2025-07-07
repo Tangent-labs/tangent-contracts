@@ -1,6 +1,6 @@
 // // SPDX-License-Identifier: MIT
 // pragma solidity ^0.8.24;
-// import "../../../../src/tgUSD/Utilities/Zapper.sol";
+// import "../../../../src/USG/Utilities/Zapper.sol";
 // import "../../contexts/MarketDeploymentContext.sol";
 // import "../../handler/Features/ConvexCrv/HZapDepositConvexCrvLP.sol";
 
@@ -21,7 +21,7 @@
 //     // function test_zap_depositAndBorrow_with_eth_and_stake() external {
 //     //     uint256 amountIn = 3 ether;
 //     //     (uint256 quote, uint256 adjustedQuote) = ensoUtils.getQuote(ETH_NAKED, amountIn, collatToken, 10);
-//     //     uint256 tgUsdToBorrow = 3_000 ether;
+//     //     uint256 USGToBorrow = 3_000 ether;
 
 //     //     vm.startPrank(usr1);
 //     //     deal(usr1, amountIn * 2);
@@ -29,23 +29,23 @@
 //     //     zapper.zapDepositAndBorrow{value: amountIn}(
 //     //         Zapper.ZapMarket({market: address(market), tokenIn: ETH_NAKED, amountIn: amountIn, minAmountOut: adjustedQuote, _for: usr1}),
 //     //         ensoUtils.getZapCall(address(zapper), address(market), ETH_NAKED, amountIn, collatToken, adjustedQuote),
-//     //         tgUsdToBorrow,
+//     //         USGToBorrow,
 //     //         true
 //     //     );
 
 //     //     zapper.zapDepositAndBorrow{value: amountIn}(
 //     //         Zapper.ZapMarket({market: address(market), tokenIn: ETH_NAKED, amountIn: amountIn, minAmountOut: adjustedQuote, _for: usr1}),
 //     //         ensoUtils.getZapCall(address(zapper), address(market), ETH_NAKED, amountIn, collatToken, adjustedQuote),
-//     //         tgUsdToBorrow,
+//     //         USGToBorrow,
 //     //         true
 //     //     );
 //     //     vm.stopPrank();
 
-//     //     assertEq(market.userDebt(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
-//     //     assertEq(market.userDebtShares(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
+//     //     assertEq(market.userDebt(usr1), USGToBorrow * 2, "The user has borrowed the correct amount of USG");
+//     //     assertEq(market.userDebtShares(usr1), USGToBorrow * 2, "The user has borrowed the correct amount of USG");
 
 //     //     assertEq(market.debtIndex(), 1e18, "The debt index of the market is correct");
-//     //     assertEq(market.totalDebt(), tgUsdToBorrow * 2, "The market has the correct amount of debt");
+//     //     assertEq(market.totalDebt(), USGToBorrow * 2, "The market has the correct amount of debt");
 
 //     //     assertApproxEqRel(market.collateralBalances(usr1), amountIn * 2, 1e16, "The user has deposited the correct amount of collateral");
 //     //     assertApproxEqRel(market.totalCollateral(), amountIn * 2, 1e16, "The market has the correct amount of collateral");
@@ -54,7 +54,7 @@
 //     function test_zap_depositAndBorrow_with_erc20_and_stake_no_stake() external {
 //         uint256 amountIn = 10_000 ether;
 //         (uint256 quote, uint256 adjustedQuote) = ensoUtils.getQuote(AddrClassicERC20.crvUSD, amountIn, collatToken, 10);
-//         uint256 tgUsdToBorrow = 7_000 ether;
+//         uint256 USGToBorrow = 7_000 ether;
 
 //         vm.startPrank(usr1);
 //         deal(address(AddrClassicERC20.crvUSD), usr1, amountIn * 2);
@@ -63,23 +63,23 @@
 //         zapper.zapDepositAndBorrow(
 //             Zapper.ZapMarket({market: address(market), tokenIn: AddrClassicERC20.crvUSD, amountIn: amountIn, minAmountOut: adjustedQuote, _for: usr1}),
 //             ensoUtils.getZapCall(address(zapper), address(market), AddrClassicERC20.crvUSD, amountIn, collatToken, adjustedQuote),
-//             tgUsdToBorrow,
+//             USGToBorrow,
 //             false
 //         );
 
 //         zapper.zapDepositAndBorrow(
 //             Zapper.ZapMarket({market: address(market), tokenIn: AddrClassicERC20.crvUSD, amountIn: amountIn, minAmountOut: adjustedQuote, _for: usr1}),
 //             ensoUtils.getZapCall(address(zapper), address(market), AddrClassicERC20.crvUSD, amountIn, collatToken, adjustedQuote),
-//             tgUsdToBorrow,
+//             USGToBorrow,
 //             false
 //         );
 //         vm.stopPrank();
 
-//         assertEq(market.userDebt(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
-//         assertEq(market.userDebtShares(usr1), tgUsdToBorrow * 2, "The user has borrowed the correct amount of tgUSD");
+//         assertEq(market.userDebt(usr1), USGToBorrow * 2, "The user has borrowed the correct amount of USG");
+//         assertEq(market.userDebtShares(usr1), USGToBorrow * 2, "The user has borrowed the correct amount of USG");
 
 //         assertEq(irCalculator.debtIndexes(address(market)), RAY, "The debt index of the market is correct");
-//         assertEq(market.totalDebt(), tgUsdToBorrow * 2, "The market has the correct amount of debt");
+//         assertEq(market.totalDebt(), USGToBorrow * 2, "The market has the correct amount of debt");
 
 //         assertApproxEqRel(market.collateralBalances(usr1), quote * 2, 1e17, "The user has deposited the correct amount of collateral");
 //         assertApproxEqRel(market.totalCollateral(), quote * 2, 1e17, "The market has the correct amount of collateral");

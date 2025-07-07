@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import "../../contexts/MarketDeploymentContext.sol";
 
-import {QuoteLiquidationRouter, CurveQuote} from "../../../src/chainview/tgUSD/bot/QuoteLiquidationRouter.cv.sol";
+import {QuoteLiquidationRouter, CurveQuote} from "../../../src/chainview/USG/bot/QuoteLiquidationRouter.cv.sol";
 
 contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
     uint256 constant ZERO = 0;
@@ -14,8 +14,8 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
             address(AddrCurveStableLP.USDC_fxUSD),
             address(AddrCurveStableLP.USDC_fxUSD),
             address(AddrClassicERC20.USDC),
-            address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")),
-            address(tgUSD),
+            address(lpDeploymentContext.USGLPs("usg-USDC")),
+            address(usg),
             address(0),
             address(0),
             address(0),
@@ -40,15 +40,15 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
         }
     }
 
-    // QUOTE crvUSD-USDC => USDC => tgUSD-USDC => tgUSD
+    // QUOTE crvUSD-USDC => USDC => usg-USDC => usg
     function test_quote_curve_router_chainview_without_wStable() public {
         CurveQuote[] memory curveQuotes = new CurveQuote[](2);
         address[11] memory route = [
             address(AddrCurveStableLP.USDC_crvUSD),
             address(AddrCurveStableLP.USDC_crvUSD),
             address(AddrClassicERC20.USDC),
-            address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")),
-            address(tgUSD),
+            address(lpDeploymentContext.USGLPs("USG-USDC")),
+            address(usg),
             address(0),
             address(0),
             address(0),
@@ -77,7 +77,7 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
         }
     }
 
-    // QUOTE crvUSD-USDC => crvUSD => wcrvUSD => tgUSD-wcrvUSD => tgUSD
+    // QUOTE crvUSD-USDC => crvUSD => wcrvUSD => usg-wcrvUSD => usg
     function test_liquidator_curve_router_chainview_with_wStable() public {
         CurveQuote[] memory curveQuotes = new CurveQuote[](2);
 
@@ -120,8 +120,8 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
             address(AddrCurveStableLP.USDC_crvUSD),
             address(AddrCurveStableLP.USDC_crvUSD),
             address(AddrClassicERC20.USDC),
-            address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")),
-            address(tgUSD),
+            address(lpDeploymentContext.USGLPs("USG-USDC")),
+            address(usg),
             address(0),
             address(0),
             address(0),
@@ -175,9 +175,9 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
     }
 
     function testSwapTokens() public {
-        IERC20 _tgUSD = lpDeploymentContext.tgUSD();
-        address tgUSDAddress = address(_tgUSD);
-        address poolUSDCTgUSd = address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")); // Replace with actual address
+        IERC20 _USG = lpDeploymentContext.USG();
+        address USGAddress = address(_USG);
+        address poolUSDCUSG = address(lpDeploymentContext.USGLPs("USG-USDC")); // Replace with actual address
         address marketDataCollatAddress = address(AddrCurveStableLP.USDC_fxUSD);
 
         IERC20 lpContract;
@@ -186,9 +186,9 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
         address[11] memory routes = [address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0)];
         routes[0] = marketDataCollatAddress; // Collateral LP
         routes[1] = marketDataCollatAddress; // LP Collat => USDC (remove liquidity)
-        routes[2] = address(AddrClassicERC20.USDC); // tgUSD Address
-        routes[3] = poolUSDCTgUSd; // Pool USDC -> tgUSD
-        routes[4] = tgUSDAddress; // tgUSD
+        routes[2] = address(AddrClassicERC20.USDC); // usg Address
+        routes[3] = poolUSDCUSG; // Pool USDC -> usg
+        routes[4] = USGAddress; // usg
 
         uint256[5][5] memory swapParams = [
             [ZERO, ZERO, ZERO, ZERO, ZERO],
@@ -199,7 +199,7 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
         ];
         // Define the swap parameters
         swapParams[0] = [uint256(0), uint256(0), uint256(6), uint256(1), uint256(2)]; // Swap LP Collat => USDC (remove liquidity)
-        swapParams[1] = [uint256(0), uint256(1), uint256(1), uint256(10), uint256(2)]; // Swap USDC => tgUSD
+        swapParams[1] = [uint256(0), uint256(1), uint256(1), uint256(10), uint256(2)]; // Swap USDC => usg
 
         address[5] memory zapPools = [address(0), address(0), address(0), address(0), address(0)];
 

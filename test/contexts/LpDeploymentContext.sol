@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "forge-std/console.sol";
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {StdUtils} from "forge-std/StdUtils.sol";
 import {Test} from "forge-std/Test.sol";
@@ -16,41 +15,41 @@ contract LpDeploymentContext is StdCheats, StdUtils, Test {
     using SafeERC20 for IERC20Metadata;
     uint256 public constant MAX_UINT = uint256(int256(-1));
 
-    mapping(string => ICurveStableSwapNG) public tgUSDLPs;
+    mapping(string => ICurveStableSwapNG) public USGLPs;
 
-    IERC20 public tgUSD;
+    IERC20 public USG;
 
-    struct CreateTgUSDLpStruct {
+    struct CreateUSGLpStruct {
         IERC20Metadata otherStable;
         string name;
         string symbol;
         uint256 initialAmount;
     }
 
-    constructor(address creator, IERC20 _tgUSD) {
-        tgUSD = _tgUSD;
-        CreateTgUSDLpStruct[] memory params = new CreateTgUSDLpStruct[](1);
-        params[0] = CreateTgUSDLpStruct({otherStable: AddrClassicERC20.USDC, name: "tgUSD-USDC", symbol: "tgUSDC", initialAmount: 500_000});
-        createTgUSDLps(creator, params);
+    constructor(address creator, IERC20 _USG) {
+        USG = _USG;
+        CreateUSGLpStruct[] memory params = new CreateUSGLpStruct[](1);
+        params[0] = CreateUSGLpStruct({otherStable: AddrClassicERC20.USDC, name: "USG-USDC", symbol: "USGC", initialAmount: 500_000});
+        createUSGLps(creator, params);
     }
 
-    function createTgUSDLps(address creator, CreateTgUSDLpStruct[] memory createTgUSDParams) public {
-        for (uint256 i; i < createTgUSDParams.length; i++) {
-            _deployTgUSDLP(creator, createTgUSDParams[i].otherStable, createTgUSDParams[i].name, createTgUSDParams[i].symbol, createTgUSDParams[i].initialAmount);
+    function createUSGLps(address creator, CreateUSGLpStruct[] memory createUSGParams) public {
+        for (uint256 i; i < createUSGParams.length; i++) {
+            _deployUSGLP(creator, createUSGParams[i].otherStable, createUSGParams[i].name, createUSGParams[i].symbol, createUSGParams[i].initialAmount);
         }
     }
 
-    function _deployTgUSDLP(address creator, IERC20Metadata otherStable, string memory name, string memory symbol, uint256 initialAmount) internal {
+    function _deployUSGLP(address creator, IERC20Metadata otherStable, string memory name, string memory symbol, uint256 initialAmount) internal {
         uint256 otherStableDecimals = otherStable.decimals();
         // Give otherStable to owner before LP deployment
         deal(address(otherStable), creator, initialAmount * 10 ** otherStableDecimals);
         vm.startPrank(creator);
 
-        ICurveStableSwapNG lpTgUSD = ICurveStableSwapNG(
+        ICurveStableSwapNG lpUSG = ICurveStableSwapNG(
             AddrCurveStableLP.STABLE_SWAP_FACTORY.deploy_plain_pool(
                 name,
                 symbol,
-                Array.memoryAddress([address(otherStable), address(tgUSD)]),
+                Array.memoryAddress([address(otherStable), address(USG)]),
                 500,
                 1000000,
                 0,
@@ -61,12 +60,12 @@ contract LpDeploymentContext is StdCheats, StdUtils, Test {
                 Array.memoryAddress([address(0), address(0)])
             )
         );
-        otherStable.forceApprove(address(lpTgUSD), MAX_UINT);
-        tgUSD.approve(address(lpTgUSD), MAX_UINT);
+        otherStable.forceApprove(address(lpUSG), MAX_UINT);
+        USG.approve(address(lpUSG), MAX_UINT);
 
-        lpTgUSD.add_liquidity(Array.memoryUint256([uint256(initialAmount * 10 ** otherStableDecimals), uint256(initialAmount * 10 ** 18)]), uint256(0));
-        vm.label(address(lpTgUSD), name);
-        tgUSDLPs[name] = lpTgUSD;
+        lpUSG.add_liquidity(Array.memoryUint256([uint256(initialAmount * 10 ** otherStableDecimals), uint256(initialAmount * 10 ** 18)]), uint256(0));
+        vm.label(address(lpUSG), name);
+        USGLPs[name] = lpUSG;
 
         vm.stopPrank();
     }

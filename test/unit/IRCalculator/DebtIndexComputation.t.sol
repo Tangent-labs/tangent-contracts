@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
-import "../../../src/tgUSD/Utilities/IRCalculator.sol";
+import "../../../src/USG/Utilities/IRCalculator.sol";
 import "../../utils/IRCalculationFFI.sol";
 contract DebtIndexComputation is MarketDeploymentContext {
     IRCalculationFFI irFFI = new IRCalculationFFI();

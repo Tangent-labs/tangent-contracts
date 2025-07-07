@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
 import "../../../../src/interfaces/externals/Curve/ICrvPoolPlain.sol";
+import "forge-std/console.sol";
 
 contract GetLPPriceCurveStableSwap is MarketDeploymentContext {
     IERC20Metadata coin0;

@@ -6,7 +6,7 @@
 
 // import "./HDepositConvexCrvLP.sol";
 
-// import "../../../../../src/tgUSD/Utilities/Zapper.sol";
+// import "../../../../../src/USG/Utilities/Zapper.sol";
 
 // contract HZapDepositConvexCrvLP is HDepositConvexCrvLP {
 //     using SafeERC20 for IERC20;

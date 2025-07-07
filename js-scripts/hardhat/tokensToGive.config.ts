@@ -3,7 +3,7 @@ import {thiefConfig} from "defi-resources";
 export function TOKENS_TO_GIVE(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;
     return [
-        // tgUSD
+        // USG
         {
             ...obj.USDC,
             amount: mintedAmount,

@@ -4,7 +4,7 @@ import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Features/BorrowRepay/HBorrow.sol";
 
-import "../../../src/chainview/tgUSD/ui/MarketListUI.cv.sol";
+import "../../../src/chainview/USG/ui/MarketListUI.cv.sol";
 
 contract MarketListChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market1;
@@ -22,10 +22,10 @@ contract MarketListChainview is MarketDeploymentContext {
         markets[1] = address(market2);
 
         address[] memory pegKeepers = new address[](2);
-        pegKeepers[0] = address(pegKeeperTgUSD_USDC);
-        pegKeepers[1] = address(pegKeeperTgUSD_frxUSD);
+        pegKeepers[0] = address(pegKeeperUSG_USDC);
+        pegKeepers[1] = address(pegKeeperUSG_frxUSD);
 
-        try new MarketListUI(usr1, tgUSDOracle, tgUSD, sgUSD, markets, pegKeepers) {} catch (bytes memory reason) {
+        try new MarketListUI(usr1, USGOracle, usg, sUSG, markets, pegKeepers) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }

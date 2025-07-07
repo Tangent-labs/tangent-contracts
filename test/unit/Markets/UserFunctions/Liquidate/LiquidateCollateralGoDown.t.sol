@@ -20,7 +20,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
     ERC20BalanceChanges public balanceChanges;
 
     uint256 collatDeposited = 10_000 ether;
-    uint256 tgUSDBorrowed = 8_000 ether;
+    uint256 USGBorrowed = 8_000 ether;
 
     IERC20[] rewardTokens;
     function setUp() public {
@@ -31,12 +31,12 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         hBorrow = new HBorrow(usr1, market);
         hLpManipulator = new HLPManipulator(usr1);
 
-        hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, true);
+        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed, true);
 
         hDeposit.setMsgSender(usr2);
-        hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, false);
+        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed, false);
         hDeposit.setMsgSender(usr3);
-        hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, false);
+        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed, false);
 
         balanceChanges = new ERC20BalanceChanges();
 
@@ -66,12 +66,12 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         uint256 userDebt = market.userDebt(usr1);
         uint256 liquidationFee = (userDebt * market.liquidationFee()) / 100_000;
-        deal(address(tgUSD), usr1, userDebt + liquidationFee);
+        deal(address(usg), usr1, userDebt + liquidationFee);
 
-        verifyLostERC20(tgUSD, usr1, userDebt + liquidationFee, "tgUSD burnt from sender");
-        verifyReceiveERC20(tgUSD, feeTreasury, liquidationFee, "tgUSD fee are minted on the treasury");
+        verifyLostERC20(usg, usr1, userDebt + liquidationFee, "USG burnt from sender");
+        verifyReceiveERC20(usg, feeTreasury, liquidationFee, "USG fee are minted on the treasury");
 
-        verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "tgUSD burnt from sender");
+        verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "USG burnt from sender");
 
         // Liquidation passes after EMA of price_oralce passed
         market.liquidate(usr1, collatDeposited, 0, ZapStruct({router: address(0), routerCall: ""}));
@@ -84,7 +84,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         uint256 pendingInterests = irCalculator.mintableInterests();
         assertEq(market.userDebt(usr1), 0);
-        assertEq(market.totalDebt(), tgUSDBorrowed * 2 + ((pendingInterests * 2) / 3), "Total debt wrong");
+        assertEq(market.totalDebt(), USGBorrowed * 2 + ((pendingInterests * 2) / 3), "Total debt wrong");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
@@ -169,10 +169,10 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         uint256 debtToRepay = userDebt / 2;
         uint256 liquidationFee = (debtToRepay * market.liquidationFee()) / 100_000;
 
-        deal(address(tgUSD), usr1, 2 * userDebt);
+        deal(address(usg), usr1, 2 * userDebt);
 
-        verifyLostERC20(tgUSD, usr1, (debtToRepay + liquidationFee), "tgUSD burnt from sender");
-        verifyReceiveERC20(tgUSD, feeTreasury, liquidationFee, "tgUSD received by the treasuryFee");
+        verifyLostERC20(usg, usr1, (debtToRepay + liquidationFee), "USG burnt from sender");
+        verifyReceiveERC20(usg, feeTreasury, liquidationFee, "USG received by the treasuryFee");
 
         verifyReceiveERC20(collatToken, usr1, 5_000 ether, "Collat sent to liquidator");
 
@@ -193,8 +193,8 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         assertEq(ir, uint256(irCalculator.getIRParams(address(market)).rMin) * 1e13, "IR is at the minimum");
 
         uint256 collatToLiquidate = 100;
-        verifyLostERC20(tgUSD, usr1, 81, "tgUSD burnt from sender");
-        verifyReceiveERC20(tgUSD, feeTreasury, 1, "tgUSD received by the treasuryFee");
+        verifyLostERC20(usg, usr1, 81, "USG burnt from sender");
+        verifyReceiveERC20(usg, feeTreasury, 1, "USG received by the treasuryFee");
 
         verifyReceiveERC20(collatToken, usr1, collatToLiquidate, "Collat sent to liquidator");
 
@@ -204,8 +204,8 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         userDebt = market.userDebt(usr1);
         liquidationFee = (userDebt * market.liquidationFee()) / 100_000;
 
-        verifyLostERC20(tgUSD, usr1, userDebt + liquidationFee, "tgUSD burnt from sender");
-        verifyReceiveERC20(tgUSD, feeTreasury, liquidationFee, "tgUSD received by the treasuryFee");
+        verifyLostERC20(usg, usr1, userDebt + liquidationFee, "USG burnt from sender");
+        verifyReceiveERC20(usg, feeTreasury, liquidationFee, "USG received by the treasuryFee");
 
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "Collat sent to liquidator");
 

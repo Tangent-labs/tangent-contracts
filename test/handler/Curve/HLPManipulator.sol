@@ -6,7 +6,6 @@ import "../../../src/interfaces/externals/Curve/ICurveTriCryptoSwap.sol";
 
 import {Test} from "forge-std/Test.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "forge-std/console.sol";
 
 contract HLPManipulator is Test {
     using SafeERC20 for IERC20;

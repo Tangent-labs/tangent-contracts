@@ -2,7 +2,7 @@
 pragma solidity ^0.8.22;
 
 import "../../utils/AssertERC20.sol";
-import "../../../src/tgUSD/Market/abstract/MarketExternalActions.sol";
+import "../../../src/USG/Market/abstract/MarketExternalActions.sol";
 abstract contract HandlerBase is AssertERC20 {
     address public sender;
     MarketExternalActions public market;

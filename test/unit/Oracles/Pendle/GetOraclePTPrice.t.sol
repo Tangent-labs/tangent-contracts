@@ -15,8 +15,6 @@ contract GetOraclePTPrice is MarketDeploymentContext {
         for (uint256 i = 0; i < pendlePTs.length; i++) {
             IERC20Metadata pt = pendlePTs[i];
             uint256 oracleValue = oracles[pt].latestAnswer();
-
-            console.log(oracleValue);
         }
 
         skip(365 days);

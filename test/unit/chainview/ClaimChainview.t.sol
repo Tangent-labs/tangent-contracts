@@ -6,7 +6,7 @@ import "../../handler/Features/BorrowRepay/HBorrow.sol";
 
 import "../../handler/Features/BorrowRepay/HBorrow.sol";
 
-import "../../../src/chainview/tgUSD/ui/ClaimUI.cv.sol";
+import "../../../src/chainview/USG/ui/ClaimUI.cv.sol";
 
 contract ClaimChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market;

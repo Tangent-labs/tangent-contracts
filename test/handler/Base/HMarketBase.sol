@@ -3,7 +3,7 @@
 pragma solidity ^0.8.22;
 import "./HandlerBase.sol";
 
-import {IIRCalculator, IRCheckpoint} from "../../../src/interfaces/internals/tgUSD/IIRCalculator.sol";
+import {IIRCalculator, IRCheckpoint} from "../../../src/interfaces/internals/USG/IIRCalculator.sol";
 
 struct DebtData {
     uint216 ir;
@@ -61,8 +61,8 @@ abstract contract HMarketBase is HandlerBase {
     }
 
     function _beforeBorrowCheck(MarketCore _market, address receiver, uint256 borrowedAmount) internal {
-        verifyMintERC20(_market.tgUSD(), borrowedAmount, "tgUSD are  minted");
-        verifyReceiveERC20(_market.tgUSD(), receiver, borrowedAmount, "tgUSD borrowed is received by receiver");
+        verifyMintERC20(_market.USG(), borrowedAmount, "USG are  minted");
+        verifyReceiveERC20(_market.USG(), receiver, borrowedAmount, "USG borrowed is received by receiver");
     }
 
     // function _afterBorrowCheck(
@@ -83,8 +83,8 @@ abstract contract HMarketBase is HandlerBase {
     // }
 
     function _beforeRepayCheck(MarketCore _market, uint256 repayedAmount) internal {
-        verifyLostERC20(_market.tgUSD(), sender, repayedAmount, "tgUSD repayed is burnt from sender");
-        verifyBurnERC20(_market.tgUSD(), repayedAmount, "tgUSD repayed is burnt");
+        verifyLostERC20(_market.USG(), sender, repayedAmount, "USG repayed is burnt from sender");
+        verifyBurnERC20(_market.USG(), repayedAmount, "USG repayed is burnt");
     }
 
     function _afterRepayCheck(

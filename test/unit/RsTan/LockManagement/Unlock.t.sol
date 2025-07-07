@@ -8,54 +8,54 @@ contract Unlock is MarketDeploymentContext {
     function setUp() external {
         vm.startPrank(usr1);
         deal(address(tan), usr1, 2 * amount);
-        tan.approve(address(rsTan), 2 * amount);
+        tan.approve(address(vsTan), 2 * amount);
         // 1 is permalocked
-        rsTan.createLock(amount, true);
+        vsTan.createLock(amount, true);
         // 2 is not permalocked
-        rsTan.createLock(amount, false);
+        vsTan.createLock(amount, false);
         vm.stopPrank();
     }
 
     function test_burn_expired_position() external {
         vm.startPrank(usr1);
         skip(12 weeks);
-        assertEq(rsTan.totalSupply(), 2);
-        assertEq(rsTan.totalSupplyRsTan(), 2 * amount);
-        assertEq(rsTan.totalSupplyRsTan(), 2 * amount);
+        assertEq(vsTan.totalSupply(), 2);
+        assertEq(vsTan.totalSupplyVsTan(), 2 * amount);
+        assertEq(vsTan.totalSupplyVsTan(), 2 * amount);
         skip(1 weeks);
 
-        verifyLostERC20(tan, address(rsTan), amount, "Tan are unlocked and sent back to user from the rsTan");
+        verifyLostERC20(tan, address(vsTan), amount, "Tan are unlocked and sent back to user from the vsTan");
         verifyReceiveERC20(tan, usr1, amount, "Tan received by user");
 
-        assertEq(rsTan.balanceOf(usr1), 2);
-        assertEq(rsTan.ownerOf(1), usr1);
-        assertEq(rsTan.ownerOf(2), usr1);
+        assertEq(vsTan.balanceOf(usr1), 2);
+        assertEq(vsTan.ownerOf(1), usr1);
+        assertEq(vsTan.ownerOf(2), usr1);
 
-        rsTan.unlock(2, false);
+        vsTan.unlock(2, false);
 
         assertERC20Tracking();
 
-        assertEq(rsTan.totalSupplyRsTan(), amount);
-        assertEq(rsTan.totalSupply(), 1);
-        assertEq(rsTan.balanceOf(usr1), 1);
-        assertEq(rsTan.ownerOf(1), usr1);
+        assertEq(vsTan.totalSupplyVsTan(), amount);
+        assertEq(vsTan.totalSupply(), 1);
+        assertEq(vsTan.balanceOf(usr1), 1);
+        assertEq(vsTan.ownerOf(1), usr1);
 
         vm.expectRevert(abi.encodeWithSignature("ERC721NonexistentToken(uint256)", 2));
-        rsTan.ownerOf(2);
+        vsTan.ownerOf(2);
     }
 
     function test_unlock_fails_bcs_token_not_owned() external {
         vm.startPrank(usr2);
         skip(13 weeks);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.NotTokenOwner.selector));
-        rsTan.unlock(2, false);
+        vm.expectRevert(abi.encodeWithSelector(VsTan.NotTokenOwner.selector));
+        vsTan.unlock(2, false);
     }
 
     function test_unlock_fails_bcs_lock_not_finished() external {
         vm.startPrank(usr1);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.LockNotOver.selector));
-        rsTan.unlock(2, false);
+        vm.expectRevert(abi.encodeWithSelector(VsTan.LockNotOver.selector));
+        vsTan.unlock(2, false);
     }
 }

@@ -7,14 +7,14 @@ When a position is liquidable, any account can call the **liquidate** function o
 This function takes into parameters :
 
 - **address** _account_ :
-- **uint256** _tgUSDToRepay_ :
+- **uint256** _USGToRepay_ :
 - **address** _liquidator_ :
 - **bytes** _liquidationCall_ :
 
 ## Schemas
 
 - 🔴 Collateral
-- 🟢 tgUSD
+- 🟢 USG
 
 ### With liquidator
 
@@ -23,8 +23,8 @@ sequenceDiagram
     UnderlyingProtocol->>Market:🔴 Withdraw from Underlying protocol
     Market->>LiquidatorProxy :🔴 Send to the Liquidator proxy
     LiquidatorProxy->>Liquidator : 🔴 Send for dumping
-    Liquidator->>Sender: 🟢 Receives tgUSD
-    Sender->> 0x000 : 🟢 Burn the debt equivalent in tgUSD
+    Liquidator->>Sender: 🟢 Receives USG
+    Sender->> 0x000 : 🟢 Burn the debt equivalent in USG
 
 ```
 
@@ -34,5 +34,5 @@ sequenceDiagram
 sequenceDiagram
     UnderlyingProtocol->>Market: 🔴 Withdraw from Underlying protocol
     Market->>Sender : 🔴 Send to the sender
-    Sender->> 0x000 : 🟢 Burn the debt equivalent in tgUSD.
+    Sender->> 0x000 : 🟢 Burn the debt equivalent in USG.
 ```

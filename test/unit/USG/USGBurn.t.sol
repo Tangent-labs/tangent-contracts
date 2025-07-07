@@ -9,22 +9,22 @@ contract USGBurn is MarketDeploymentContext {
         controlTower.toggleMarket(usr1);
 
         vm.prank(usr1);
-        tgUSD.mint(usr2, amount);
+        usg.mint(usr2, amount);
     }
 
     function test_burnFrom_USG() external {
-        verifyLostERC20(tgUSD, usr2, amount);
-        verifyBurnERC20(tgUSD, amount);
+        verifyLostERC20(usg, usr2, amount);
+        verifyBurnERC20(usg, amount);
         vm.prank(usr1);
-        tgUSD.burnFrom(usr2, amount);
+        usg.burnFrom(usr2, amount);
         assertERC20Tracking();
     }
 
     function test_burn_USG() external {
-        verifyLostERC20(tgUSD, usr2, amount);
-        verifyBurnERC20(tgUSD, amount);
+        verifyLostERC20(usg, usr2, amount);
+        verifyBurnERC20(usg, amount);
         vm.prank(usr2);
-        tgUSD.burn(amount);
+        usg.burn(amount);
         assertERC20Tracking();
     }
 }

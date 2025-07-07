@@ -1,6 +1,6 @@
 // // SPDX-License-Identifier: MIT
 // pragma solidity ^0.8.24;
-// import "../../../../src/tgUSD/Utilities/Zapper.sol";
+// import "../../../../src/USG/Utilities/Zapper.sol";
 // import "../../contexts/MarketDeploymentContext.sol";
 // import "../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
 
@@ -33,7 +33,7 @@
 //     //     deal(usr1, amountIn);
 
 //     //     bytes32[] memory commands = Array.memoryBytes32(
-//     //         [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(minAmountOut - 1)]
+//     //         [addressToBytes32(address(USG)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(minAmountOut - 1)]
 //     //     );
 //     //     bytes[] memory state = new bytes[](0);
 //     //     vm.expectRevert(abi.encodeWithSelector(Zapper.MinAmountOutNotReached.selector));
@@ -52,7 +52,7 @@
 //         deal(usr1, amountIn);
 
 //         bytes32[] memory commands = Array.memoryBytes32(
-//             [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
+//             [addressToBytes32(address(USG)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
 //         );
 //         bytes[] memory state = new bytes[](0);
 //         vm.expectRevert(abi.encodeWithSelector(Zapper.TokenInMustBeZero.selector));
@@ -69,7 +69,7 @@
 //         deal(usr1, amountIn);
 
 //         bytes32[] memory commands = Array.memoryBytes32(
-//             [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
+//             [addressToBytes32(address(USG)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
 //         );
 //         bytes[] memory state = new bytes[](0);
 //         vm.expectRevert(abi.encodeWithSelector(Zapper.TokenInMustNotBeZero.selector));
@@ -86,7 +86,7 @@
 //         deal(usr1, amountIn);
 
 //         bytes32[] memory commands = Array.memoryBytes32(
-//             [addressToBytes32(address(tgUSD)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
+//             [addressToBytes32(address(USG)), addressToBytes32(mockedLP), addressToBytes32(usr1), addressToBytes32(address(zapper)), bytes32(0)]
 //         );
 //         bytes[] memory state = new bytes[](0);
 //         vm.expectRevert(abi.encodeWithSelector(Zapper.NotMarket.selector, address(AddrClassicERC20.USDC)));

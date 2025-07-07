@@ -13,7 +13,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
     HProcessRewards public hRewards;
     HDepositConvexCrvLP public hDeposit;
 
-    ICurveStableSwapNG public lpTgUSD_USDC;
+    ICurveStableSwapNG public lpUSG_USDC;
 
     uint256[][] public swapParams;
     address[] public route;
@@ -23,7 +23,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
 
-        lpTgUSD_USDC = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
+        lpUSG_USDC = lpDeploymentContext.USGLPs("usg-USDC");
         market = deployConvexCurveLPMarket(collatToken, true);
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
@@ -31,17 +31,17 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
         uint256 zero = 0;
 
         uint256[] memory unwrapLPToUSDC = Array.memoryUint256([zero, zero, uint256(6), uint256(10), uint256(2)]);
-        uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
+        uint256[] memory swapUsdcToUSG = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
         swapParams.push(unwrapLPToUSDC);
-        swapParams.push(swapUsdcToTgUSD);
+        swapParams.push(swapUsdcToUSG);
 
         hDeposit.depositAndBorrow(collatDeposited, initialDebt, true);
 
         route.push(address(AddrCurveStableLP.USDC_crvUSD));
         route.push(address(AddrCurveStableLP.USDC_crvUSD));
         route.push(address(AddrClassicERC20.USDC));
-        route.push(address(lpTgUSD_USDC));
-        route.push(address(tgUSD));
+        route.push(address(lpUSG_USDC));
+        route.push(address(usg));
     }
 
     function test_selfLiquidate_liquidate_zero_collateral() external {

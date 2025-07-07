@@ -8,8 +8,8 @@ import {IEnsoRouterV2} from "../../interfaces/externals/Aggregators/IEnsoRouterV
 
 import {ISFRAX} from "../../interfaces/externals/Frax/ISFRAX.sol";
 import {ICurveRouter} from "../../interfaces/externals/Curve/ICurveRouter.sol";
-import {IPriceOracle} from "../../interfaces/internals/tgUSD/IPriceOracle.sol";
-import {IRewardsHandler} from "../../interfaces/internals/tgUSD/IRewardsHandler.sol";
+import {IPriceOracle} from "../../interfaces/internals/USG/IPriceOracle.sol";
+import {IRewardsHandler} from "../../interfaces/internals/USG/IRewardsHandler.sol";
 
 import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
