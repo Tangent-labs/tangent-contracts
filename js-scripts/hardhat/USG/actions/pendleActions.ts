@@ -1,5 +1,9 @@
 import {AddressLike, Signer} from "ethers";
 import {ethers} from "hardhat";
+import {PENDLE_ROUTER_V4} from "defi-resources/build/ressources/contracts/routers";
+import {IERC20Metadata} from "../../../../typechain-types";
+import {THIEF_TOKEN_CONFIG} from "defi-resources/build/ressources/erc20/thiefConfig";
+import {giveTokenToAddresss} from "../../thief";
 
 // TypeScript interfaces for Pendle market information
 interface PendleTokenInfo {
@@ -46,8 +50,6 @@ interface PendleMarketInfo {
     };
 }
 
-export const PENDLE_ROUTER_V4 = "0x888888888889758F76e7103c6CbF23ABbF58F946";
-
 const EMPTY_SWAP_DATA = {
     swapType: 0, // NONE
     extRouter: ethers.ZeroAddress,
@@ -66,7 +68,9 @@ const EMPTY_LIMIT_DATA = {
 export const pendleDeposit = async (market: AddressLike, underlying: AddressLike, amountUnderlying: bigint, user: Signer) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
-    const underlyingContract = await ethers.getContractAt("IERC20", underlying.toString());
+    const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
+
+    await giveToken(underlyingContract, amountUnderlying, user);
 
     // Get market contract to access SY token
     const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
@@ -166,10 +170,22 @@ export const pendleWithdraw = async (market: AddressLike, underlyingToken: Addre
     };
 };
 
+const giveToken = async (contract: IERC20Metadata, amount: bigint, user: Signer) => {
+    const symbol = await contract.symbol();
+    const config = THIEF_TOKEN_CONFIG[symbol];
+
+    if (!config) {
+        throw new Error(`Token ${symbol} not found in THIEF_TOKEN_CONFIG`);
+    }
+    await giveTokenToAddresss(user, config.address, amount, config.slotBalance, config.isVyper);
+};
+
 export const pendleDepositKeepYt = async (market: AddressLike, underlying: AddressLike, amountUnderlying: bigint, user: Signer) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
-    const underlyingContract = await ethers.getContractAt("IERC20", underlying.toString());
+    const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
+
+    await giveToken(underlyingContract, amountUnderlying, user);
 
     // Get market contract to access SY token
     const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
@@ -207,9 +223,6 @@ export const pendleDepositKeepYt = async (market: AddressLike, underlying: Addre
 
         const [estimatedLpOut, estimatedYtOut, estimatedSyMintPy, estimatedSyInterm] = estimatedResult;
 
-        console.log(`Estimated LP out: ${ethers.formatEther(estimatedLpOut)}`);
-        console.log(`Estimated YT out: ${ethers.formatEther(estimatedYtOut)}`);
-
         // Use estimated values with some slippage tolerance (e.g., 95% of estimated)
         const minLpOut = (estimatedLpOut * 95n) / 100n;
         const minYtOut = (estimatedYtOut * 95n) / 100n;
@@ -224,13 +237,6 @@ export const pendleDepositKeepYt = async (market: AddressLike, underlying: Addre
         );
 
         const receipt = await tx.wait();
-        console.log("Receipt:", receipt);
-
-        console.log(`Transaction successful!`);
-        console.log(`Net LP out: ${ethers.formatEther(estimatedLpOut)}`);
-        console.log(`Net YT out: ${ethers.formatEther(estimatedYtOut)}`);
-        console.log(`Net SY mint PY: ${ethers.formatEther(estimatedSyMintPy)}`);
-        console.log(`Net SY intermediate: ${ethers.formatEther(estimatedSyInterm)}`);
 
         return {
             success: true,
@@ -242,42 +248,7 @@ export const pendleDepositKeepYt = async (market: AddressLike, underlying: Addre
         };
     } catch (error) {
         console.error("Error with addLiquiditySingleTokenKeepYt:", error);
-        console.log("Falling back to regular addLiquiditySingleToken...");
-
-        // Fallback to regular deposit without YT retention
-        const approxParams = {
-            guessMin: 0n,
-            guessMax: amountUnderlying / 2n,
-            guessOffchain: amountUnderlying / 4n,
-            maxIteration: 30,
-            eps: 1n * 10n ** 12n,
-        };
-
-        const limitData = {
-            limitRouter: ethers.ZeroAddress,
-            epsSkipMarket: 0n,
-            normalFills: [],
-            flashFills: [],
-            optData: "0x",
-        };
-
-        const tx = await router.connect(user).addLiquiditySingleToken(
-            userAddress,
-            market.toString(),
-            0n, // minLpOut
-            approxParams,
-            tokenInput,
-            limitData
-        );
-
-        const receipt = await tx.wait();
-        console.log("Fallback transaction successful!");
-
-        return {
-            success: true,
-            transactionHash: receipt?.hash,
-            fallback: true,
-        };
+        throw error;
     }
 };
 
@@ -290,8 +261,6 @@ export const pendleWithdrawSinglePt = async (market: AddressLike, amountLpToBurn
     const {_PT} = await marketContract.readTokens();
     const ptToken = await ethers.getContractAt("IERC20", _PT);
 
-    console.log(`PT token address: ${_PT}`);
-
     // Approve router to spend LP tokens
     await marketContract.connect(user).approve(PENDLE_ROUTER_V4, amountLpToBurn);
 
@@ -303,8 +272,6 @@ export const pendleWithdrawSinglePt = async (market: AddressLike, amountLpToBurn
         maxIteration: 50,
         eps: 1n * 10n ** 15n, // 1e15
     };
-    console.log("Calling removeLiquiditySinglePt...");
-
     try {
         // Call removeLiquiditySinglePt on the router
         const tx = await router.connect(user).removeLiquiditySinglePt(
@@ -321,10 +288,6 @@ export const pendleWithdrawSinglePt = async (market: AddressLike, amountLpToBurn
         // Get final balances
         const finalPtBalance = await ptToken.balanceOf(userAddress);
         const finalLpBalance = await marketContract.balanceOf(userAddress);
-
-        console.log(`Transaction successful!`);
-        console.log(`Final PT balance: ${ethers.formatEther(finalPtBalance)}`);
-        console.log(`Final LP balance: ${ethers.formatEther(finalLpBalance)}`);
 
         return {
             success: true,

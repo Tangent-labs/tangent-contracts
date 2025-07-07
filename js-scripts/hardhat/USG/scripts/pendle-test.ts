@@ -1,7 +1,5 @@
 import {ethers} from "hardhat";
 import {getPendleMarketInfo, pendleDeposit, pendleDepositKeepYt, pendleWithdraw, pendleWithdrawSinglePt} from "../actions/pendleActions";
-import {giveTokenToAddresss} from "../../thief";
-import {THIEF_TOKEN_CONFIG} from "defi-resources/build/ressources/erc20/thiefConfig";
 
 import {Signer} from "ethers";
 
@@ -16,24 +14,9 @@ const main = async (inInfo: InInfo) => {
     let lpBalance = 0n;
     const user = (await ethers.getSigners())[0] as unknown as Signer;
 
-    const config = THIEF_TOKEN_CONFIG[inInfo.token];
-
-    if (!config) {
-        throw new Error(`Token ${inInfo.token} not found in THIEF_TOKEN_CONFIG`);
-    }
-
     const marketInfo = await getPendleMarketInfo(inInfo.market);
     const marketContract = await ethers.getContractAt("IPendleMarketV3", inInfo.market);
     const userAddress = await user.getAddress();
-
-    // Give the underlying to the user
-    try {
-        // Give tokens to user
-        await giveTokenToAddresss(user, config.address, inInfo.amount, config.slotBalance, config.isVyper);
-    } catch (error) {
-        console.error("Error during giveTokenToAddresss:", error);
-        throw error;
-    }
 
     // Deposit the underlying into the market
     try {
@@ -63,14 +46,6 @@ const main = async (inInfo: InInfo) => {
     }
 
     try {
-        // Give tokens to user
-        await giveTokenToAddresss(user, config.address, inInfo.amount, config.slotBalance, config.isVyper);
-    } catch (error) {
-        console.error("Error during giveTokenToAddresss:", error);
-        throw error;
-    }
-
-    try {
         await pendleDepositKeepYt(inInfo.market, inInfo.underlying, inInfo.amount, user);
     } catch (error) {
         console.error("Error during Pendle deposit with YT retention:", error);
@@ -90,6 +65,7 @@ const main = async (inInfo: InInfo) => {
         console.error("Error during Pendle withdraw single PT:", error);
         throw error;
     }
+    console.log("Pendle test passed");
 };
 (async () => {
     try {
