@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
+import "forge-std/console.sol";
 
 contract GetOraclePendleLPPrice is MarketDeploymentContext {
     IERC20Metadata[] pendleLPs;

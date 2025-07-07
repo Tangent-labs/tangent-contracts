@@ -11,11 +11,11 @@ contract ZapIncreaseLockAmount is MarketDeploymentContext {
     function setUp() external {
         vm.startPrank(usr1);
         deal(address(tan), usr1, 2 * amountIn);
-        tan.approve(address(rsTan), 2 * amountIn);
+        tan.approve(address(vsTan), 2 * amountIn);
         // 1 is permalocked
-        rsTan.createLock(amountIn, true);
+        vsTan.createLock(amountIn, true);
         // 2 is not permalocked
-        rsTan.createLock(amountIn, false);
+        vsTan.createLock(amountIn, false);
         vm.stopPrank();
     }
 
@@ -28,23 +28,23 @@ contract ZapIncreaseLockAmount is MarketDeploymentContext {
         verifyLostERC20(ETH_NAKED, usr1, amountIn, "ETH is sent by user");
         verifyReceiveERC20(ETH_NAKED, address(mockRouter), amountIn, "Router received ETH");
 
-        verifyReceiveERC20(tan, address(rsTan), amountOutTan, "Tan receives by RsTan");
+        verifyReceiveERC20(tan, address(vsTan), amountOutTan, "Tan receives by VsTan");
 
-        rsTan.zapIncreaseLockAmount{value: amountIn}(
+        vsTan.zapIncreaseLockAmount{value: amountIn}(
             1,
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(rsTan), amountOutTan)
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(vsTan), amountOutTan)
             })
         );
 
         assertERC20Tracking();
 
-        Lock memory lock = rsTan.getLock(1);
+        Lock memory lock = vsTan.getLock(1);
         assertEq(lock.amount, amountOutTan + amountIn);
-        assertEq(lock.endLockTime, rsTan.MAX_UINT48());
+        assertEq(lock.endLockTime, vsTan.MAX_UINT48());
     }
 
     function test_zapCreateLock_with_ERC20() external {
@@ -53,27 +53,27 @@ contract ZapIncreaseLockAmount is MarketDeploymentContext {
         deal(address(AddrClassicERC20.USDT), usr1, amountIn);
         deal(address(tan), address(mockRouter), amountOutTan);
 
-        AddrClassicERC20.USDT.forceApprove(address(rsTan), MAX_UINT);
+        AddrClassicERC20.USDT.forceApprove(address(vsTan), MAX_UINT);
 
         verifyLostERC20(AddrClassicERC20.USDT, usr1, amountIn, "USDT is sent by user");
         verifyReceiveERC20(AddrClassicERC20.USDT, address(mockRouter), amountIn, "Router received USDT");
 
-        verifyReceiveERC20(tan, address(rsTan), amountOutTan, "Tan receives by RsTan");
+        verifyReceiveERC20(tan, address(vsTan), amountOutTan, "Tan receives by VsTan");
 
-        rsTan.zapIncreaseLockAmount(
+        vsTan.zapIncreaseLockAmount(
             1,
             ZapStructDeposit({
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, tan, address(rsTan), amountOutTan)
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, tan, address(vsTan), amountOutTan)
             })
         );
 
         assertERC20Tracking();
 
-        Lock memory lock = rsTan.getLock(1);
+        Lock memory lock = vsTan.getLock(1);
         assertEq(lock.amount, amountOutTan + amountIn);
-        assertEq(lock.endLockTime, rsTan.MAX_UINT48());
+        assertEq(lock.endLockTime, vsTan.MAX_UINT48());
     }
 }

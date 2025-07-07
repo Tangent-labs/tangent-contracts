@@ -7,17 +7,17 @@ contract CurveRouterTest is MarketDeploymentContext {
     ICurveRouter ROUTER = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
     uint256 amount = 10 * 10 ** 18;
 
-    //  "route": "USDC/fxUSD >> USDC/fxUSD >> USDC  >> USDC >> tgUSD-USDC* >> tgUSD* ",
+    //  "route": "USDC/fxUSD >> USDC/fxUSD >> USDC  >> USDC >> usg-USDC* >> usg* ",
     function test_curve_full_route2() external {
         address inLp = address(AddrCurveStableLP.USDC_fxUSD);
-        string memory lpKey = "tgUSD-USDC";
+        string memory lpKey = "USG-USDC";
 
         address[] memory route = new address[](11);
         route[0] = inLp;
         route[1] = inLp;
         route[2] = address(AddrClassicERC20.USDC);
-        route[3] = address(lpDeploymentContext.tgUSDLPs(lpKey));
-        route[4] = address(tgUSD);
+        route[3] = address(lpDeploymentContext.USGLPs(lpKey));
+        route[4] = address(usg);
         route[5] = address(0);
         route[6] = address(0);
         route[9] = address(0);
@@ -45,9 +45,9 @@ contract CurveRouterTest is MarketDeploymentContext {
         ROUTER.exchange(routerSwap._route, routerSwap._swap_params, amount, 1, routerSwap._pools, usr1);
     }
 
-    //  "USDT/crvUSD >> USDT/crvUSD >> USDT  >> USDT >> USDT/USDC >> USDC  >> USDC >> USR/USDC >> USR  >> USR >> wUSR* >> wUSR*  >> wUSR* >> tgUSD-wUSR* >> tgUSD* ",
+    //  "USDT/crvUSD >> USDT/crvUSD >> USDT  >> USDT >> USDT/USDC >> USDC  >> USDC >> USR/USDC >> USR  >> USR >> wUSR* >> wUSR*  >> wUSR* >> usg-wUSR* >> usg* ",
     function test_curve_full_route() external {
-        string memory lpKey = "tgUSD-wUSR";
+        string memory lpKey = "USG-wUSR";
 
         address[] memory route = new address[](11);
         route[0] = 0x390f3595bCa2Df7d23783dFd126427CCeb997BF4;
@@ -59,8 +59,8 @@ contract CurveRouterTest is MarketDeploymentContext {
         route[6] = 0x66a1E37c9b0eAddca17d3662D6c05F4DECf3e110;
         route[7] = address(wUSR);
         route[8] = address(wUSR);
-        route[9] = address(lpDeploymentContext.tgUSDLPs(lpKey));
-        route[10] = address(tgUSD);
+        route[9] = address(lpDeploymentContext.USGLPs(lpKey));
+        route[10] = address(usg);
 
         vm.startPrank(usr1);
         //USDC/crvUSD >> USDC/crvUSD >> crvUSD
@@ -144,7 +144,7 @@ contract CurveRouterTest is MarketDeploymentContext {
     function test_wrapping_usr_to_USR_RLP() external {
         vm.startPrank(usr1);
 
-        IERC20 tokenIn = tgUSD;
+        IERC20 tokenIn = usg;
         IERC20 tokenOut = AddrCryptoSwapLP.USR_RLP;
 
         deal(address(tokenIn), usr1, amount);
@@ -153,7 +153,7 @@ contract CurveRouterTest is MarketDeploymentContext {
         address[] memory route = Array.memoryAddress(
             [
                 address(tokenIn),
-                address(lpDeploymentContext.tgUSDLPs("tgUSD-USDC")),
+                address(lpDeploymentContext.USGLPs("USG-USDC")),
                 address(AddrClassicERC20.USDC),
                 address(AddrCurveStableLP.USR_USDC),
                 address(AddrClassicERC20.USR),

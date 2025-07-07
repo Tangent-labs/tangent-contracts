@@ -11,11 +11,11 @@ contract ZapCreateLock is MarketDeploymentContext {
     function setUp() external {
         vm.startPrank(usr1);
         deal(address(tan), usr1, 2 * amountIn);
-        tan.approve(address(rsTan), 2 * amountIn);
+        tan.approve(address(vsTan), 2 * amountIn);
         // 1 is permalocked
-        rsTan.createLock(amountIn, true);
+        vsTan.createLock(amountIn, true);
         // 2 is not permalocked
-        rsTan.createLock(amountIn, false);
+        vsTan.createLock(amountIn, false);
         vm.stopPrank();
     }
 
@@ -28,23 +28,23 @@ contract ZapCreateLock is MarketDeploymentContext {
         verifyLostERC20(ETH_NAKED, usr1, amountIn, "ETH is sent by user");
         verifyReceiveERC20(ETH_NAKED, address(mockRouter), amountIn, "Router received ETH");
 
-        verifyReceiveERC20(tan, address(rsTan), amountOutTan, "Tan receives by RsTan");
+        verifyReceiveERC20(tan, address(vsTan), amountOutTan, "Tan receives by VsTan");
 
-        rsTan.zapCreateLock{value: amountIn}(
+        vsTan.zapCreateLock{value: amountIn}(
             true,
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(rsTan), amountOutTan)
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(vsTan), amountOutTan)
             })
         );
 
         assertERC20Tracking();
 
-        Lock memory lock = rsTan.getLock(3);
+        Lock memory lock = vsTan.getLock(3);
         assertEq(lock.amount, amountOutTan);
-        assertEq(lock.endLockTime, rsTan.MAX_UINT48());
+        assertEq(lock.endLockTime, vsTan.MAX_UINT48());
     }
 
     function test_zapCreateLock_with_ERC20() external {
@@ -53,37 +53,37 @@ contract ZapCreateLock is MarketDeploymentContext {
         deal(address(AddrClassicERC20.USDT), usr1, amountIn);
         deal(address(tan), address(mockRouter), amountOutTan);
 
-        AddrClassicERC20.USDT.forceApprove(address(rsTan), MAX_UINT);
+        AddrClassicERC20.USDT.forceApprove(address(vsTan), MAX_UINT);
 
         verifyLostERC20(AddrClassicERC20.USDT, usr1, amountIn, "USDT is sent by user");
         verifyReceiveERC20(AddrClassicERC20.USDT, address(mockRouter), amountIn, "Router received USDT");
 
-        verifyReceiveERC20(tan, address(rsTan), amountOutTan, "Tan receives by RsTan");
+        verifyReceiveERC20(tan, address(vsTan), amountOutTan, "Tan receives by VsTan");
 
-        rsTan.zapCreateLock(
+        vsTan.zapCreateLock(
             true,
             ZapStructDeposit({
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, tan, address(rsTan), amountOutTan)
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, tan, address(vsTan), amountOutTan)
             })
         );
 
         assertERC20Tracking();
 
-        Lock memory lock = rsTan.getLock(3);
+        Lock memory lock = vsTan.getLock(3);
         assertEq(lock.amount, amountOutTan);
-        assertEq(lock.endLockTime, rsTan.MAX_UINT48());
+        assertEq(lock.endLockTime, vsTan.MAX_UINT48());
     }
 
     function test_zapCreateLock_fails_with_0_in_amountIn() external {
         vm.startPrank(usr1);
 
-        ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, tan, address(rsTan), amountOutTan);
+        ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, tan, address(vsTan), amountOutTan);
 
         vm.expectRevert(abi.encodeWithSelector(ZappingUtil.InvalidZapValue.selector));
-        rsTan.zapCreateLock(true, ZapStructDeposit({tokenIn: AddrClassicERC20.USDT, amountIn: 0, minAmountOut: 0, zap: zapCall}));
+        vsTan.zapCreateLock(true, ZapStructDeposit({tokenIn: AddrClassicERC20.USDT, amountIn: 0, minAmountOut: 0, zap: zapCall}));
     }
 
     function test_zapCreateLock_fails_with_msgValue_0_and_ethIN() external {
@@ -91,10 +91,10 @@ contract ZapCreateLock is MarketDeploymentContext {
 
         deal(usr1, 10 ether);
 
-        ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(rsTan), amountOutTan);
+        ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(vsTan), amountOutTan);
 
         vm.expectRevert(abi.encodeWithSelector(ZappingUtil.InvalidZapValue.selector));
-        rsTan.zapCreateLock{value: 0}(true, ZapStructDeposit({tokenIn: ETH_NAKED, amountIn: 10 ether, minAmountOut: 0, zap: zapCall}));
+        vsTan.zapCreateLock{value: 0}(true, ZapStructDeposit({tokenIn: ETH_NAKED, amountIn: 10 ether, minAmountOut: 0, zap: zapCall}));
     }
 
     function test_zapCreateLock_fails_with_msgValue_noEq_amountIn_for_ETH() external {
@@ -102,9 +102,9 @@ contract ZapCreateLock is MarketDeploymentContext {
 
         deal(usr1, 10 ether);
 
-        ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(rsTan), amountOutTan);
+        ZapStruct memory zapCall = encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tan, address(vsTan), amountOutTan);
 
         vm.expectRevert(abi.encodeWithSelector(ZappingUtil.InvalidZapValue.selector));
-        rsTan.zapCreateLock{value: 9 ether}(true, ZapStructDeposit({tokenIn: ETH_NAKED, amountIn: 10 ether, minAmountOut: 0, zap: zapCall}));
+        vsTan.zapCreateLock{value: 9 ether}(true, ZapStructDeposit({tokenIn: ETH_NAKED, amountIn: 10 ether, minAmountOut: 0, zap: zapCall}));
     }
 }

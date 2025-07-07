@@ -13,8 +13,8 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
     HDepositConvexCrvLP public hDeposit;
     HBorrow public hBorrow;
     HLPManipulator public hLpManipulator;
-    ICurveStableSwapNG public lpTgUSD_USDC;
-    ICurveStableSwapNG public lpTgUSD_wfrxUSD;
+    ICurveStableSwapNG public lpUSG_USDC;
+    ICurveStableSwapNG public lpUSG_wfrxUSD;
 
     uint256[][] public swapParams;
     address[] public route;
@@ -23,8 +23,8 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
     uint256 public initialDebt = 4_250 ether;
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        lpTgUSD_USDC = lpDeploymentContext.tgUSDLPs("tgUSD-USDC");
-        lpTgUSD_wfrxUSD = lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD");
+        lpUSG_USDC = lpDeploymentContext.USGLPs("USG-USDC");
+        lpUSG_wfrxUSD = lpDeploymentContext.USGLPs("USG-wfrxUSD");
 
         market = deployConvexCurveLPMarket(collatToken, true);
 
@@ -35,17 +35,17 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         uint256 zero = 0;
 
         uint256[] memory unwrapLPToUSDC = Array.memoryUint256([zero, zero, uint256(6), uint256(10), uint256(2)]);
-        uint256[] memory swapUsdcToTgUSD = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
+        uint256[] memory swapUsdcToUSG = Array.memoryUint256([zero, uint256(1), uint256(1), uint256(10), uint256(2)]);
         swapParams.push(unwrapLPToUSDC);
-        swapParams.push(swapUsdcToTgUSD);
+        swapParams.push(swapUsdcToUSG);
 
         hDeposit.depositAndBorrow(collatDeposited, initialDebt, true);
 
         route.push(address(AddrCurveStableLP.USDC_crvUSD));
         route.push(address(AddrCurveStableLP.USDC_crvUSD));
         route.push(address(AddrClassicERC20.USDC));
-        route.push(address(lpTgUSD_USDC));
-        route.push(address(tgUSD));
+        route.push(address(lpUSG_USDC));
+        route.push(address(usg));
     }
 
     function test_selfLiquidate_all_position_curveLP() external {
@@ -76,7 +76,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         uint256 amountToRepay = 1_000 ether;
         uint256 amountToLiquidate = 1_000 ether;
 
-        uint256 surplus = tgUSD.balanceOf(usr1);
+        uint256 surplus = usg.balanceOf(usr1);
         market.selfLiquidate(
             amountToLiquidate,
             amountToRepay,
@@ -86,7 +86,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
                 routerCall: encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, amountToLiquidate, 0, usr1))
             })
         );
-        surplus = tgUSD.balanceOf(usr1) - surplus;
+        surplus = usg.balanceOf(usr1) - surplus;
 
         assertGt(surplus, 10 ether);
 

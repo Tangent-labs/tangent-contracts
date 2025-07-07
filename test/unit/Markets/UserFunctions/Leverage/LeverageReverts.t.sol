@@ -29,16 +29,16 @@ contract LeverageReverts is MarketDeploymentContext {
     }
 
     function test_leverage_when_borrow_paused() external {
-        uint256 tgUSDMinted = 10_000 ether;
+        uint256 USGMinted = 10_000 ether;
         uint256 collatOut = 5_000 ether;
 
         deal(address(collatToken), address(mockRouter), collatOut);
 
         vm.startPrank(owner);
         market.setIsBorrowPaused(true);
-        ZapStruct memory zap = encoder.encodeSwapToMockRouter(address(mockRouter), tgUSD, tgUSDMinted, collatToken, address(market), collatOut);
+        ZapStruct memory zap = encoder.encodeSwapToMockRouter(address(mockRouter), usg, USGMinted, collatToken, address(market), collatOut);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.BorrowPaused.selector));
-        market.leverage(0, tgUSDMinted, collatOut, true, zap);
+        market.leverage(0, USGMinted, collatOut, true, zap);
     }
 
     function test_leverage_when_leverage_paused() external {

@@ -1,0 +1,1360 @@
+[
+  {
+    "display": "USDC/fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+    "in": "USDC/fxUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/fxUSD", "pool": "USDC/fxUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> USDC/fxUSD >> USDC/fxUSD",
+    "in": "USG*",
+    "out": "USDC/fxUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/fxUSD", "out": "USDC/fxUSD" }
+    ]
+  },
+  {
+    "display": "USDC/fxUSD >> USDC/fxUSD >> USDC >> deUSD/USDC >> deUSD >> deUSD/DOLA >> DOLA >> wDOLA* >> wDOLA* >> USG-wDOLA* >> USG*",
+    "in": "USDC/fxUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/fxUSD", "pool": "USDC/fxUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "deUSD/USDC", "out": "deUSD" },
+      { "in": "deUSD", "pool": "deUSD/DOLA", "out": "DOLA" },
+      { "in": "DOLA", "pool": "wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "USG-wDOLA*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wDOLA* >> wDOLA* >> wDOLA* >> DOLA >> deUSD/DOLA >> deUSD >> deUSD/USDC >> USDC >> USDC/fxUSD >> USDC/fxUSD",
+    "in": "USG*",
+    "out": "USDC/fxUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "wDOLA*", "out": "DOLA" },
+      { "in": "DOLA", "pool": "deUSD/DOLA", "out": "deUSD" },
+      { "in": "deUSD", "pool": "deUSD/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/fxUSD", "out": "USDC/fxUSD" }
+    ]
+  },
+  {
+    "display": "USDC/fxUSD >> USDC/fxUSD >> USDC >> USDC/crvUSD >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "USDC/fxUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/fxUSD", "pool": "USDC/fxUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/crvUSD", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> USDC/crvUSD >> USDC >> USDC/fxUSD >> USDC/fxUSD",
+    "in": "USG*",
+    "out": "USDC/fxUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "USDC/crvUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/fxUSD", "out": "USDC/fxUSD" }
+    ]
+  },
+  {
+    "display": "USDC/fxUSD >> USDC/fxUSD >> USDC >> USR/USDC >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "USDC/fxUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/fxUSD", "pool": "USDC/fxUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> USR/USDC >> USDC >> USDC/fxUSD >> USDC/fxUSD",
+    "in": "USG*",
+    "out": "USDC/fxUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/fxUSD", "out": "USDC/fxUSD" }
+    ]
+  },
+  {
+    "display": "USDC/fxUSD >> USDC/fxUSD >> USDC >> USDC/USDe >> USDe >> wUSDe* >> wUSDe* >> USG-wUSDe* >> USG*",
+    "in": "USDC/fxUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/fxUSD", "pool": "USDC/fxUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "USG-wUSDe*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSDe* >> wUSDe* >> wUSDe* >> USDe >> USDC/USDe >> USDC >> USDC/fxUSD >> USDC/fxUSD",
+    "in": "USG*",
+    "out": "USDC/fxUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "wUSDe*", "out": "USDe" },
+      { "in": "USDe", "pool": "USDC/USDe", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/fxUSD", "out": "USDC/fxUSD" }
+    ]
+  },
+  {
+    "display": "USDC/fxUSD >> USDC/fxUSD >> USDC >> FRAX/USDC >> FRAX >> FRAX/frxUSD >> frxUSD >> wfrxUSD* >> wfrxUSD* >> USG-wfrxUSD* >> USG*",
+    "in": "USDC/fxUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/fxUSD", "pool": "USDC/fxUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "FRAX/USDC", "out": "FRAX" },
+      { "in": "FRAX", "pool": "FRAX/frxUSD", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "USG-wfrxUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wfrxUSD* >> wfrxUSD* >> wfrxUSD* >> frxUSD >> FRAX/frxUSD >> FRAX >> FRAX/USDC >> USDC >> USDC/fxUSD >> USDC/fxUSD",
+    "in": "USG*",
+    "out": "USDC/fxUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "wfrxUSD*", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "FRAX/frxUSD", "out": "FRAX" },
+      { "in": "FRAX", "pool": "FRAX/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/fxUSD", "out": "USDC/fxUSD" }
+    ]
+  },
+  {
+    "display": "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "USDC/fxUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/fxUSD", "pool": "USDC/fxUSD", "out": "fxUSD" },
+      { "in": "fxUSD", "pool": "GHO/fxUSD", "out": "GHO" },
+      { "in": "GHO", "pool": "GHO/crvUSD", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> GHO/crvUSD >> GHO >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC/fxUSD",
+    "in": "USG*",
+    "out": "USDC/fxUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "GHO/crvUSD", "out": "GHO" },
+      { "in": "GHO", "pool": "GHO/fxUSD", "out": "fxUSD" },
+      { "in": "fxUSD", "pool": "USDC/fxUSD", "out": "USDC/fxUSD" }
+    ]
+  },
+  {
+    "display": "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> GHO/fxUSD >> GHO >> GHO/USR >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "USDC/fxUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/fxUSD", "pool": "USDC/fxUSD", "out": "fxUSD" },
+      { "in": "fxUSD", "pool": "GHO/fxUSD", "out": "GHO" },
+      { "in": "GHO", "pool": "GHO/USR", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> GHO/USR >> GHO >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC/fxUSD",
+    "in": "USG*",
+    "out": "USDC/fxUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "GHO/USR", "out": "GHO" },
+      { "in": "GHO", "pool": "GHO/fxUSD", "out": "fxUSD" },
+      { "in": "fxUSD", "pool": "USDC/fxUSD", "out": "USDC/fxUSD" }
+    ]
+  },
+  {
+    "display": "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> GHO/fxUSD >> GHO >> GHO/USDe >> USDe >> wUSDe* >> wUSDe* >> USG-wUSDe* >> USG*",
+    "in": "USDC/fxUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/fxUSD", "pool": "USDC/fxUSD", "out": "fxUSD" },
+      { "in": "fxUSD", "pool": "GHO/fxUSD", "out": "GHO" },
+      { "in": "GHO", "pool": "GHO/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "USG-wUSDe*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSDe* >> wUSDe* >> wUSDe* >> USDe >> GHO/USDe >> GHO >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC/fxUSD",
+    "in": "USG*",
+    "out": "USDC/fxUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "wUSDe*", "out": "USDe" },
+      { "in": "USDe", "pool": "GHO/USDe", "out": "GHO" },
+      { "in": "GHO", "pool": "GHO/fxUSD", "out": "fxUSD" },
+      { "in": "fxUSD", "pool": "USDC/fxUSD", "out": "USDC/fxUSD" }
+    ]
+  },
+  {
+    "display": "USDC/crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+    "in": "USDC/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/crvUSD", "pool": "USDC/crvUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> USDC/crvUSD >> USDC/crvUSD",
+    "in": "USG*",
+    "out": "USDC/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/crvUSD", "out": "USDC/crvUSD" }
+    ]
+  },
+  {
+    "display": "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> crvUSD/DOLA >> DOLA >> wDOLA* >> wDOLA* >> USG-wDOLA* >> USG*",
+    "in": "USDC/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/crvUSD", "pool": "USDC/crvUSD", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "crvUSD/DOLA", "out": "DOLA" },
+      { "in": "DOLA", "pool": "wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "USG-wDOLA*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wDOLA* >> wDOLA* >> wDOLA* >> DOLA >> crvUSD/DOLA >> crvUSD >> USDC/crvUSD >> USDC/crvUSD",
+    "in": "USG*",
+    "out": "USDC/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "wDOLA*", "out": "DOLA" },
+      { "in": "DOLA", "pool": "crvUSD/DOLA", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "USDC/crvUSD", "out": "USDC/crvUSD" }
+    ]
+  },
+  {
+    "display": "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "USDC/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/crvUSD", "pool": "USDC/crvUSD", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> USDC/crvUSD >> USDC/crvUSD",
+    "in": "USG*",
+    "out": "USDC/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "USDC/crvUSD", "out": "USDC/crvUSD" }
+    ]
+  },
+  {
+    "display": "USDC/crvUSD >> USDC/crvUSD >> USDC >> USR/USDC >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "USDC/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/crvUSD", "pool": "USDC/crvUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> USR/USDC >> USDC >> USDC/crvUSD >> USDC/crvUSD",
+    "in": "USG*",
+    "out": "USDC/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/crvUSD", "out": "USDC/crvUSD" }
+    ]
+  },
+  {
+    "display": "USDC/crvUSD >> USDC/crvUSD >> USDC >> USDC/USDe >> USDe >> wUSDe* >> wUSDe* >> USG-wUSDe* >> USG*",
+    "in": "USDC/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/crvUSD", "pool": "USDC/crvUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "USG-wUSDe*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSDe* >> wUSDe* >> wUSDe* >> USDe >> USDC/USDe >> USDC >> USDC/crvUSD >> USDC/crvUSD",
+    "in": "USG*",
+    "out": "USDC/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "wUSDe*", "out": "USDe" },
+      { "in": "USDe", "pool": "USDC/USDe", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/crvUSD", "out": "USDC/crvUSD" }
+    ]
+  },
+  {
+    "display": "USDC/crvUSD >> USDC/crvUSD >> USDC >> FRAX/USDC >> FRAX >> FRAX/frxUSD >> frxUSD >> wfrxUSD* >> wfrxUSD* >> USG-wfrxUSD* >> USG*",
+    "in": "USDC/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/crvUSD", "pool": "USDC/crvUSD", "out": "USDC" },
+      { "in": "USDC", "pool": "FRAX/USDC", "out": "FRAX" },
+      { "in": "FRAX", "pool": "FRAX/frxUSD", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "USG-wfrxUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wfrxUSD* >> wfrxUSD* >> wfrxUSD* >> frxUSD >> FRAX/frxUSD >> FRAX >> FRAX/USDC >> USDC >> USDC/crvUSD >> USDC/crvUSD",
+    "in": "USG*",
+    "out": "USDC/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "wfrxUSD*", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "FRAX/frxUSD", "out": "FRAX" },
+      { "in": "FRAX", "pool": "FRAX/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/crvUSD", "out": "USDC/crvUSD" }
+    ]
+  },
+  {
+    "display": "USDT/crvUSD >> USDT/crvUSD >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+    "in": "USDT/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDT/crvUSD", "pool": "USDT/crvUSD", "out": "USDT" },
+      { "in": "USDT", "pool": "USDC/USDT", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> USDC/USDT >> USDT >> USDT/crvUSD >> USDT/crvUSD",
+    "in": "USG*",
+    "out": "USDT/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDT", "out": "USDT" },
+      { "in": "USDT", "pool": "USDT/crvUSD", "out": "USDT/crvUSD" }
+    ]
+  },
+  {
+    "display": "USDT/crvUSD >> USDT/crvUSD >> crvUSD >> crvUSD/DOLA >> DOLA >> wDOLA* >> wDOLA* >> USG-wDOLA* >> USG*",
+    "in": "USDT/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDT/crvUSD", "pool": "USDT/crvUSD", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "crvUSD/DOLA", "out": "DOLA" },
+      { "in": "DOLA", "pool": "wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "USG-wDOLA*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wDOLA* >> wDOLA* >> wDOLA* >> DOLA >> crvUSD/DOLA >> crvUSD >> USDT/crvUSD >> USDT/crvUSD",
+    "in": "USG*",
+    "out": "USDT/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "wDOLA*", "out": "DOLA" },
+      { "in": "DOLA", "pool": "crvUSD/DOLA", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "USDT/crvUSD", "out": "USDT/crvUSD" }
+    ]
+  },
+  {
+    "display": "USDT/crvUSD >> USDT/crvUSD >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "USDT/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDT/crvUSD", "pool": "USDT/crvUSD", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> USDT/crvUSD >> USDT/crvUSD",
+    "in": "USG*",
+    "out": "USDT/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "USDT/crvUSD", "out": "USDT/crvUSD" }
+    ]
+  },
+  {
+    "display": "USDT/crvUSD >> USDT/crvUSD >> USDT >> USDC/USDT >> USDC >> USR/USDC >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "USDT/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDT/crvUSD", "pool": "USDT/crvUSD", "out": "USDT" },
+      { "in": "USDT", "pool": "USDC/USDT", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> USR/USDC >> USDC >> USDC/USDT >> USDT >> USDT/crvUSD >> USDT/crvUSD",
+    "in": "USG*",
+    "out": "USDT/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDT", "out": "USDT" },
+      { "in": "USDT", "pool": "USDT/crvUSD", "out": "USDT/crvUSD" }
+    ]
+  },
+  {
+    "display": "USDT/crvUSD >> USDT/crvUSD >> crvUSD >> crvUSD/FRAX >> FRAX >> FRAX/frxUSD >> frxUSD >> wfrxUSD* >> wfrxUSD* >> USG-wfrxUSD* >> USG*",
+    "in": "USDT/crvUSD",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDT/crvUSD", "pool": "USDT/crvUSD", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "crvUSD/FRAX", "out": "FRAX" },
+      { "in": "FRAX", "pool": "FRAX/frxUSD", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "USG-wfrxUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wfrxUSD* >> wfrxUSD* >> wfrxUSD* >> frxUSD >> FRAX/frxUSD >> FRAX >> crvUSD/FRAX >> crvUSD >> USDT/crvUSD >> USDT/crvUSD",
+    "in": "USG*",
+    "out": "USDT/crvUSD",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "wfrxUSD*", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "FRAX/frxUSD", "out": "FRAX" },
+      { "in": "FRAX", "pool": "crvUSD/FRAX", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "USDT/crvUSD", "out": "USDT/crvUSD" }
+    ]
+  },
+  {
+    "display": "sDAI/sUSDe >> sDAI/sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> wDOLA* >> wDOLA* >> USG-wDOLA* >> USG*",
+    "in": "sDAI/sUSDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "sDAI/sUSDe", "pool": "sDAI/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "DOLA/sUSDe", "out": "DOLA" },
+      { "in": "DOLA", "pool": "wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "USG-wDOLA*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wDOLA* >> wDOLA* >> wDOLA* >> DOLA >> DOLA/sUSDe >> sUSDe >> sDAI/sUSDe >> sDAI/sUSDe",
+    "in": "USG*",
+    "out": "sDAI/sUSDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "wDOLA*", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "sDAI/sUSDe", "out": "sDAI/sUSDe" }
+    ]
+  },
+  {
+    "display": "sDAI/sUSDe >> sDAI/sUSDe >> sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "sDAI/sUSDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "sDAI/sUSDe", "pool": "sDAI/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "scrvUSD/sUSDe", "out": "scrvUSD" },
+      { "in": "scrvUSD", "pool": "scrvUSD", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> scrvUSD >> scrvUSD >> scrvUSD/sUSDe >> sUSDe >> sDAI/sUSDe >> sDAI/sUSDe",
+    "in": "USG*",
+    "out": "sDAI/sUSDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "scrvUSD", "out": "scrvUSD" },
+      { "in": "scrvUSD", "pool": "scrvUSD/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "sDAI/sUSDe", "out": "sDAI/sUSDe" }
+    ]
+  },
+  {
+    "display": "sDAI/sUSDe >> sDAI/sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> DOLA/USR >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "sDAI/sUSDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "sDAI/sUSDe", "pool": "sDAI/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "DOLA/sUSDe", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/USR", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> DOLA/USR >> DOLA >> DOLA/sUSDe >> sUSDe >> sDAI/sUSDe >> sDAI/sUSDe",
+    "in": "USG*",
+    "out": "sDAI/sUSDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "DOLA/USR", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "sDAI/sUSDe", "out": "sDAI/sUSDe" }
+    ]
+  },
+  {
+    "display": "sDAI/sUSDe >> sDAI/sUSDe >> sDAI >> sDAI/FRAX >> FRAX >> FRAX/frxUSD >> frxUSD >> wfrxUSD* >> wfrxUSD* >> USG-wfrxUSD* >> USG*",
+    "in": "sDAI/sUSDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "sDAI/sUSDe", "pool": "sDAI/sUSDe", "out": "sDAI" },
+      { "in": "sDAI", "pool": "sDAI/FRAX", "out": "FRAX" },
+      { "in": "FRAX", "pool": "FRAX/frxUSD", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "USG-wfrxUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wfrxUSD* >> wfrxUSD* >> wfrxUSD* >> frxUSD >> FRAX/frxUSD >> FRAX >> sDAI/FRAX >> sDAI >> sDAI/sUSDe >> sDAI/sUSDe",
+    "in": "USG*",
+    "out": "sDAI/sUSDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "wfrxUSD*", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "FRAX/frxUSD", "out": "FRAX" },
+      { "in": "FRAX", "pool": "sDAI/FRAX", "out": "sDAI" },
+      { "in": "sDAI", "pool": "sDAI/sUSDe", "out": "sDAI/sUSDe" }
+    ]
+  },
+  {
+    "display": "sDAI/sUSDe >> sDAI/sUSDe >> sDAI >> sDAI/FRAX >> FRAX >> FRAX/USDC >> USDC >> USG-USDC* >> USG*",
+    "in": "sDAI/sUSDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "sDAI/sUSDe", "pool": "sDAI/sUSDe", "out": "sDAI" },
+      { "in": "sDAI", "pool": "sDAI/FRAX", "out": "FRAX" },
+      { "in": "FRAX", "pool": "FRAX/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> FRAX/USDC >> FRAX >> sDAI/FRAX >> sDAI >> sDAI/sUSDe >> sDAI/sUSDe",
+    "in": "USG*",
+    "out": "sDAI/sUSDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "FRAX/USDC", "out": "FRAX" },
+      { "in": "FRAX", "pool": "sDAI/FRAX", "out": "sDAI" },
+      { "in": "sDAI", "pool": "sDAI/sUSDe", "out": "sDAI/sUSDe" }
+    ]
+  },
+  {
+    "display": "USDC/USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+    "in": "USDC/USDT",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/USDT", "pool": "USDC/USDT", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> USDC/USDT >> USDC/USDT",
+    "in": "USG*",
+    "out": "USDC/USDT",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDT", "out": "USDC/USDT" }
+    ]
+  },
+  {
+    "display": "USDC/USDT >> USDC/USDT >> USDT >> deUSD/USDT >> deUSD >> deUSD/DOLA >> DOLA >> wDOLA* >> wDOLA* >> USG-wDOLA* >> USG*",
+    "in": "USDC/USDT",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/USDT", "pool": "USDC/USDT", "out": "USDT" },
+      { "in": "USDT", "pool": "deUSD/USDT", "out": "deUSD" },
+      { "in": "deUSD", "pool": "deUSD/DOLA", "out": "DOLA" },
+      { "in": "DOLA", "pool": "wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "USG-wDOLA*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wDOLA* >> wDOLA* >> wDOLA* >> DOLA >> deUSD/DOLA >> deUSD >> deUSD/USDT >> USDT >> USDC/USDT >> USDC/USDT",
+    "in": "USG*",
+    "out": "USDC/USDT",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "wDOLA*", "out": "DOLA" },
+      { "in": "DOLA", "pool": "deUSD/DOLA", "out": "deUSD" },
+      { "in": "deUSD", "pool": "deUSD/USDT", "out": "USDT" },
+      { "in": "USDT", "pool": "USDC/USDT", "out": "USDC/USDT" }
+    ]
+  },
+  {
+    "display": "USDC/USDT >> USDC/USDT >> USDT >> crvUSD/USDT >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "USDC/USDT",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/USDT", "pool": "USDC/USDT", "out": "USDT" },
+      { "in": "USDT", "pool": "crvUSD/USDT", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> crvUSD/USDT >> USDT >> USDC/USDT >> USDC/USDT",
+    "in": "USG*",
+    "out": "USDC/USDT",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "crvUSD/USDT", "out": "USDT" },
+      { "in": "USDT", "pool": "USDC/USDT", "out": "USDC/USDT" }
+    ]
+  },
+  {
+    "display": "USDC/USDT >> USDC/USDT >> USDC >> USR/USDC >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "USDC/USDT",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/USDT", "pool": "USDC/USDT", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> USR/USDC >> USDC >> USDC/USDT >> USDC/USDT",
+    "in": "USG*",
+    "out": "USDC/USDT",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDT", "out": "USDC/USDT" }
+    ]
+  },
+  {
+    "display": "USDC/USDT >> USDC/USDT >> USDC >> USDC/USDe >> USDe >> wUSDe* >> wUSDe* >> USG-wUSDe* >> USG*",
+    "in": "USDC/USDT",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/USDT", "pool": "USDC/USDT", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "USG-wUSDe*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSDe* >> wUSDe* >> wUSDe* >> USDe >> USDC/USDe >> USDC >> USDC/USDT >> USDC/USDT",
+    "in": "USG*",
+    "out": "USDC/USDT",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "wUSDe*", "out": "USDe" },
+      { "in": "USDe", "pool": "USDC/USDe", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDT", "out": "USDC/USDT" }
+    ]
+  },
+  {
+    "display": "USDC/USDT >> USDC/USDT >> USDC >> FRAX/USDC >> FRAX >> FRAX/frxUSD >> frxUSD >> wfrxUSD* >> wfrxUSD* >> USG-wfrxUSD* >> USG*",
+    "in": "USDC/USDT",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDC/USDT", "pool": "USDC/USDT", "out": "USDC" },
+      { "in": "USDC", "pool": "FRAX/USDC", "out": "FRAX" },
+      { "in": "FRAX", "pool": "FRAX/frxUSD", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "USG-wfrxUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wfrxUSD* >> wfrxUSD* >> wfrxUSD* >> frxUSD >> FRAX/frxUSD >> FRAX >> FRAX/USDC >> USDC >> USDC/USDT >> USDC/USDT",
+    "in": "USG*",
+    "out": "USDC/USDT",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "wfrxUSD*", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "FRAX/frxUSD", "out": "FRAX" },
+      { "in": "FRAX", "pool": "FRAX/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDT", "out": "USDC/USDT" }
+    ]
+  },
+  {
+    "display": "USR/RLP >> USR/RLP >> USR >> USR/USDC >> USDC >> USG-USDC* >> USG*",
+    "in": "USR/RLP",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USR/RLP", "pool": "USR/RLP", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> USR/USDC >> USR >> USR/RLP >> USR/RLP",
+    "in": "USG*",
+    "out": "USR/RLP",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "USR/RLP", "out": "USR/RLP" }
+    ]
+  },
+  {
+    "display": "USR/RLP >> USR/RLP >> USR >> DOLA/USR >> DOLA >> wDOLA* >> wDOLA* >> USG-wDOLA* >> USG*",
+    "in": "USR/RLP",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USR/RLP", "pool": "USR/RLP", "out": "USR" },
+      { "in": "USR", "pool": "DOLA/USR", "out": "DOLA" },
+      { "in": "DOLA", "pool": "wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "USG-wDOLA*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wDOLA* >> wDOLA* >> wDOLA* >> DOLA >> DOLA/USR >> USR >> USR/RLP >> USR/RLP",
+    "in": "USG*",
+    "out": "USR/RLP",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "wDOLA*", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/USR", "out": "USR" },
+      { "in": "USR", "pool": "USR/RLP", "out": "USR/RLP" }
+    ]
+  },
+  {
+    "display": "USR/RLP >> USR/RLP >> USR >> USR/USDC >> USDC >> crvUSD/USDC >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "USR/RLP",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USR/RLP", "pool": "USR/RLP", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "crvUSD/USDC", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> crvUSD/USDC >> USDC >> USR/USDC >> USR >> USR/RLP >> USR/RLP",
+    "in": "USG*",
+    "out": "USR/RLP",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "crvUSD/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "USR/RLP", "out": "USR/RLP" }
+    ]
+  },
+  {
+    "display": "USR/RLP >> USR/RLP >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "USR/RLP",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USR/RLP", "pool": "USR/RLP", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> USR/RLP >> USR/RLP",
+    "in": "USG*",
+    "out": "USR/RLP",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "USR/RLP", "out": "USR/RLP" }
+    ]
+  },
+  {
+    "display": "USR/RLP >> USR/RLP >> USR >> USR/USDC >> USDC >> USDC/USDe >> USDe >> wUSDe* >> wUSDe* >> USG-wUSDe* >> USG*",
+    "in": "USR/RLP",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USR/RLP", "pool": "USR/RLP", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "USG-wUSDe*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSDe* >> wUSDe* >> wUSDe* >> USDe >> USDC/USDe >> USDC >> USR/USDC >> USR >> USR/RLP >> USR/RLP",
+    "in": "USG*",
+    "out": "USR/RLP",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "wUSDe*", "out": "USDe" },
+      { "in": "USDe", "pool": "USDC/USDe", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "USR/RLP", "out": "USR/RLP" }
+    ]
+  },
+  {
+    "display": "frxUSD/USDe >> frxUSD/USDe >> USDe >> USDC/USDe >> USDC >> USG-USDC* >> USG*",
+    "in": "frxUSD/USDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "frxUSD/USDe", "pool": "frxUSD/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "USDC/USDe", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> USDC/USDe >> USDe >> frxUSD/USDe >> frxUSD/USDe",
+    "in": "USG*",
+    "out": "frxUSD/USDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "frxUSD/USDe", "out": "frxUSD/USDe" }
+    ]
+  },
+  {
+    "display": "frxUSD/USDe >> frxUSD/USDe >> frxUSD >> sUSDS/frxUSD >> sUSDS >> DOLA/sUSDS >> DOLA >> wDOLA* >> wDOLA* >> USG-wDOLA* >> USG*",
+    "in": "frxUSD/USDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "frxUSD/USDe", "pool": "frxUSD/USDe", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "sUSDS/frxUSD", "out": "sUSDS" },
+      { "in": "sUSDS", "pool": "DOLA/sUSDS", "out": "DOLA" },
+      { "in": "DOLA", "pool": "wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "USG-wDOLA*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wDOLA* >> wDOLA* >> wDOLA* >> DOLA >> DOLA/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> frxUSD/USDe >> frxUSD/USDe",
+    "in": "USG*",
+    "out": "frxUSD/USDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "wDOLA*", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/sUSDS", "out": "sUSDS" },
+      { "in": "sUSDS", "pool": "sUSDS/frxUSD", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "frxUSD/USDe", "out": "frxUSD/USDe" }
+    ]
+  },
+  {
+    "display": "frxUSD/USDe >> frxUSD/USDe >> USDe >> crvUSD/USDe >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "frxUSD/USDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "frxUSD/USDe", "pool": "frxUSD/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "crvUSD/USDe", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> crvUSD/USDe >> USDe >> frxUSD/USDe >> frxUSD/USDe",
+    "in": "USG*",
+    "out": "frxUSD/USDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "crvUSD/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "frxUSD/USDe", "out": "frxUSD/USDe" }
+    ]
+  },
+  {
+    "display": "frxUSD/USDe >> frxUSD/USDe >> USDe >> USDC/USDe >> USDC >> USR/USDC >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "frxUSD/USDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "frxUSD/USDe", "pool": "frxUSD/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "USDC/USDe", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> USR/USDC >> USDC >> USDC/USDe >> USDe >> frxUSD/USDe >> frxUSD/USDe",
+    "in": "USG*",
+    "out": "frxUSD/USDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "frxUSD/USDe", "out": "frxUSD/USDe" }
+    ]
+  },
+  {
+    "display": "frxUSD/USDe >> frxUSD/USDe >> USDe >> wUSDe* >> wUSDe* >> USG-wUSDe* >> USG*",
+    "in": "frxUSD/USDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "frxUSD/USDe", "pool": "frxUSD/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "USG-wUSDe*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSDe* >> wUSDe* >> wUSDe* >> USDe >> frxUSD/USDe >> frxUSD/USDe",
+    "in": "USG*",
+    "out": "frxUSD/USDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "wUSDe*", "out": "USDe" },
+      { "in": "USDe", "pool": "frxUSD/USDe", "out": "frxUSD/USDe" }
+    ]
+  },
+  {
+    "display": "frxUSD/USDe >> frxUSD/USDe >> frxUSD >> wfrxUSD* >> wfrxUSD* >> USG-wfrxUSD* >> USG*",
+    "in": "frxUSD/USDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "frxUSD/USDe", "pool": "frxUSD/USDe", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "USG-wfrxUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wfrxUSD* >> wfrxUSD* >> wfrxUSD* >> frxUSD >> frxUSD/USDe >> frxUSD/USDe",
+    "in": "USG*",
+    "out": "frxUSD/USDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "wfrxUSD*", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "frxUSD/USDe", "out": "frxUSD/USDe" }
+    ]
+  },
+  {
+    "display": "DOLA/USR >> DOLA/USR >> USR >> USR/USDC >> USDC >> USG-USDC* >> USG*",
+    "in": "DOLA/USR",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "DOLA/USR", "pool": "DOLA/USR", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> USR/USDC >> USR >> DOLA/USR >> DOLA/USR",
+    "in": "USG*",
+    "out": "DOLA/USR",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "DOLA/USR", "out": "DOLA/USR" }
+    ]
+  },
+  {
+    "display": "DOLA/USR >> DOLA/USR >> DOLA >> wDOLA* >> wDOLA* >> USG-wDOLA* >> USG*",
+    "in": "DOLA/USR",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "DOLA/USR", "pool": "DOLA/USR", "out": "DOLA" },
+      { "in": "DOLA", "pool": "wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "USG-wDOLA*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wDOLA* >> wDOLA* >> wDOLA* >> DOLA >> DOLA/USR >> DOLA/USR",
+    "in": "USG*",
+    "out": "DOLA/USR",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "wDOLA*", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/USR", "out": "DOLA/USR" }
+    ]
+  },
+  {
+    "display": "DOLA/USR >> DOLA/USR >> DOLA >> DOLA/scrvUSD >> scrvUSD >> scrvUSD >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "DOLA/USR",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "DOLA/USR", "pool": "DOLA/USR", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/scrvUSD", "out": "scrvUSD" },
+      { "in": "scrvUSD", "pool": "scrvUSD", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> scrvUSD >> scrvUSD >> DOLA/scrvUSD >> DOLA >> DOLA/USR >> DOLA/USR",
+    "in": "USG*",
+    "out": "DOLA/USR",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "scrvUSD", "out": "scrvUSD" },
+      { "in": "scrvUSD", "pool": "DOLA/scrvUSD", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/USR", "out": "DOLA/USR" }
+    ]
+  },
+  {
+    "display": "DOLA/USR >> DOLA/USR >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "DOLA/USR",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "DOLA/USR", "pool": "DOLA/USR", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> DOLA/USR >> DOLA/USR",
+    "in": "USG*",
+    "out": "DOLA/USR",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "DOLA/USR", "out": "DOLA/USR" }
+    ]
+  },
+  {
+    "display": "DOLA/USR >> DOLA/USR >> DOLA >> DOLA/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> wfrxUSD* >> wfrxUSD* >> USG-wfrxUSD* >> USG*",
+    "in": "DOLA/USR",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "DOLA/USR", "pool": "DOLA/USR", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/sUSDS", "out": "sUSDS" },
+      { "in": "sUSDS", "pool": "sUSDS/frxUSD", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "USG-wfrxUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wfrxUSD* >> wfrxUSD* >> wfrxUSD* >> frxUSD >> sUSDS/frxUSD >> sUSDS >> DOLA/sUSDS >> DOLA >> DOLA/USR >> DOLA/USR",
+    "in": "USG*",
+    "out": "DOLA/USR",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "wfrxUSD*", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "sUSDS/frxUSD", "out": "sUSDS" },
+      { "in": "sUSDS", "pool": "DOLA/sUSDS", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/USR", "out": "DOLA/USR" }
+    ]
+  },
+  {
+    "display": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> wDOLA* >> wDOLA* >> USG-wDOLA* >> USG*",
+    "in": "scrvUSD/sUSDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "scrvUSD/sUSDe", "pool": "scrvUSD/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "DOLA/sUSDe", "out": "DOLA" },
+      { "in": "DOLA", "pool": "wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "USG-wDOLA*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wDOLA* >> wDOLA* >> wDOLA* >> DOLA >> DOLA/sUSDe >> sUSDe >> scrvUSD/sUSDe >> scrvUSD/sUSDe",
+    "in": "USG*",
+    "out": "scrvUSD/sUSDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wDOLA*", "out": "wDOLA*" },
+      { "in": "wDOLA*", "pool": "wDOLA*", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "scrvUSD/sUSDe", "out": "scrvUSD/sUSDe" }
+    ]
+  },
+  {
+    "display": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "scrvUSD/sUSDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "scrvUSD/sUSDe", "pool": "scrvUSD/sUSDe", "out": "scrvUSD" },
+      { "in": "scrvUSD", "pool": "scrvUSD", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> scrvUSD >> scrvUSD >> scrvUSD/sUSDe >> scrvUSD/sUSDe",
+    "in": "USG*",
+    "out": "scrvUSD/sUSDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "scrvUSD", "out": "scrvUSD" },
+      { "in": "scrvUSD", "pool": "scrvUSD/sUSDe", "out": "scrvUSD/sUSDe" }
+    ]
+  },
+  {
+    "display": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> DOLA/USR >> USR >> USR/USDC >> USDC >> USG-USDC* >> USG*",
+    "in": "scrvUSD/sUSDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "scrvUSD/sUSDe", "pool": "scrvUSD/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "DOLA/sUSDe", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/USR", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> USR/USDC >> USR >> DOLA/USR >> DOLA >> DOLA/sUSDe >> sUSDe >> scrvUSD/sUSDe >> scrvUSD/sUSDe",
+    "in": "USG*",
+    "out": "scrvUSD/sUSDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "DOLA/USR", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "scrvUSD/sUSDe", "out": "scrvUSD/sUSDe" }
+    ]
+  },
+  {
+    "display": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> wfrxUSD* >> wfrxUSD* >> USG-wfrxUSD* >> USG*",
+    "in": "scrvUSD/sUSDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "scrvUSD/sUSDe", "pool": "scrvUSD/sUSDe", "out": "scrvUSD" },
+      { "in": "scrvUSD", "pool": "scrvUSD/sUSDS", "out": "sUSDS" },
+      { "in": "sUSDS", "pool": "sUSDS/frxUSD", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "USG-wfrxUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wfrxUSD* >> wfrxUSD* >> wfrxUSD* >> frxUSD >> sUSDS/frxUSD >> sUSDS >> scrvUSD/sUSDS >> scrvUSD >> scrvUSD/sUSDe >> scrvUSD/sUSDe",
+    "in": "USG*",
+    "out": "scrvUSD/sUSDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wfrxUSD*", "out": "wfrxUSD*" },
+      { "in": "wfrxUSD*", "pool": "wfrxUSD*", "out": "frxUSD" },
+      { "in": "frxUSD", "pool": "sUSDS/frxUSD", "out": "sUSDS" },
+      { "in": "sUSDS", "pool": "scrvUSD/sUSDS", "out": "scrvUSD" },
+      { "in": "scrvUSD", "pool": "scrvUSD/sUSDe", "out": "scrvUSD/sUSDe" }
+    ]
+  },
+  {
+    "display": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> DOLA/USR >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "scrvUSD/sUSDe",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "scrvUSD/sUSDe", "pool": "scrvUSD/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "DOLA/sUSDe", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/USR", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> DOLA/USR >> DOLA >> DOLA/sUSDe >> sUSDe >> scrvUSD/sUSDe >> scrvUSD/sUSDe",
+    "in": "USG*",
+    "out": "scrvUSD/sUSDe",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "DOLA/USR", "out": "DOLA" },
+      { "in": "DOLA", "pool": "DOLA/sUSDe", "out": "sUSDe" },
+      { "in": "sUSDe", "pool": "scrvUSD/sUSDe", "out": "scrvUSD/sUSDe" }
+    ]
+  },
+  {
+    "display": "pxETH/stETH >> pxETH/stETH >> stETH >> stETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+    "in": "pxETH/stETH",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "pxETH/stETH", "pool": "pxETH/stETH", "out": "stETH" },
+      { "in": "stETH", "pool": "stETH/ETH", "out": "ETH" },
+      { "in": "ETH", "pool": "WBTC/ETH/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> WBTC/ETH/USDC >> ETH >> stETH/ETH >> stETH >> pxETH/stETH >> pxETH/stETH",
+    "in": "USG*",
+    "out": "pxETH/stETH",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "WBTC/ETH/USDC", "out": "ETH" },
+      { "in": "ETH", "pool": "stETH/ETH", "out": "stETH" },
+      { "in": "stETH", "pool": "pxETH/stETH", "out": "pxETH/stETH" }
+    ]
+  },
+  {
+    "display": "WBTC/cbBTC >> WBTC/cbBTC >> WBTC >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+    "in": "WBTC/cbBTC",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "WBTC/cbBTC", "pool": "WBTC/cbBTC", "out": "WBTC" },
+      { "in": "WBTC", "pool": "WBTC/ETH/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> WBTC/ETH/USDC >> WBTC >> WBTC/cbBTC >> WBTC/cbBTC",
+    "in": "USG*",
+    "out": "WBTC/cbBTC",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "WBTC/ETH/USDC", "out": "WBTC" },
+      { "in": "WBTC", "pool": "WBTC/cbBTC", "out": "WBTC/cbBTC" }
+    ]
+  },
+  {
+    "display": "WBTC/cbBTC >> WBTC/cbBTC >> WBTC >> WBTC/ETH/USDC >> USDC >> USR/USDC >> USR >> wUSR* >> wUSR* >> USG-wUSR* >> USG*",
+    "in": "WBTC/cbBTC",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "WBTC/cbBTC", "pool": "WBTC/cbBTC", "out": "WBTC" },
+      { "in": "WBTC", "pool": "WBTC/ETH/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USR/USDC", "out": "USR" },
+      { "in": "USR", "pool": "wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "USG-wUSR*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSR* >> wUSR* >> wUSR* >> USR >> USR/USDC >> USDC >> WBTC/ETH/USDC >> WBTC >> WBTC/cbBTC >> WBTC/cbBTC",
+    "in": "USG*",
+    "out": "WBTC/cbBTC",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSR*", "out": "wUSR*" },
+      { "in": "wUSR*", "pool": "wUSR*", "out": "USR" },
+      { "in": "USR", "pool": "USR/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "WBTC/ETH/USDC", "out": "WBTC" },
+      { "in": "WBTC", "pool": "WBTC/cbBTC", "out": "WBTC/cbBTC" }
+    ]
+  },
+  {
+    "display": "WBTC/cbBTC >> WBTC/cbBTC >> WBTC >> WBTC/ETH/USDC >> USDC >> crvUSD/USDC >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "WBTC/cbBTC",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "WBTC/cbBTC", "pool": "WBTC/cbBTC", "out": "WBTC" },
+      { "in": "WBTC", "pool": "WBTC/ETH/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "crvUSD/USDC", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> crvUSD/USDC >> USDC >> WBTC/ETH/USDC >> WBTC >> WBTC/cbBTC >> WBTC/cbBTC",
+    "in": "USG*",
+    "out": "WBTC/cbBTC",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "crvUSD/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "WBTC/ETH/USDC", "out": "WBTC" },
+      { "in": "WBTC", "pool": "WBTC/cbBTC", "out": "WBTC/cbBTC" }
+    ]
+  },
+  {
+    "display": "WBTC/cbBTC >> WBTC/cbBTC >> WBTC >> WBTC/ETH/USDC >> USDC >> USDC/USDe >> USDe >> wUSDe* >> wUSDe* >> USG-wUSDe* >> USG*",
+    "in": "WBTC/cbBTC",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "WBTC/cbBTC", "pool": "WBTC/cbBTC", "out": "WBTC" },
+      { "in": "WBTC", "pool": "WBTC/ETH/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USDC/USDe", "out": "USDe" },
+      { "in": "USDe", "pool": "wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "USG-wUSDe*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wUSDe* >> wUSDe* >> wUSDe* >> USDe >> USDC/USDe >> USDC >> WBTC/ETH/USDC >> WBTC >> WBTC/cbBTC >> WBTC/cbBTC",
+    "in": "USG*",
+    "out": "WBTC/cbBTC",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wUSDe*", "out": "wUSDe*" },
+      { "in": "wUSDe*", "pool": "wUSDe*", "out": "USDe" },
+      { "in": "USDe", "pool": "USDC/USDe", "out": "USDC" },
+      { "in": "USDC", "pool": "WBTC/ETH/USDC", "out": "WBTC" },
+      { "in": "WBTC", "pool": "WBTC/cbBTC", "out": "WBTC/cbBTC" }
+    ]
+  },
+  {
+    "display": "frxETH/WETH >> frxETH/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+    "in": "frxETH/WETH",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "frxETH/WETH", "pool": "frxETH/WETH", "out": "WETH" },
+      { "in": "WETH", "pool": "WBTC/ETH/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> WBTC/ETH/USDC >> WETH >> frxETH/WETH >> frxETH/WETH",
+    "in": "USG*",
+    "out": "frxETH/WETH",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "WBTC/ETH/USDC", "out": "WETH" },
+      { "in": "WETH", "pool": "frxETH/WETH", "out": "frxETH/WETH" }
+    ]
+  },
+  {
+    "display": "pxETH/WETH >> pxETH/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+    "in": "pxETH/WETH",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "pxETH/WETH", "pool": "pxETH/WETH", "out": "WETH" },
+      { "in": "WETH", "pool": "WBTC/ETH/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> WBTC/ETH/USDC >> WETH >> pxETH/WETH >> pxETH/WETH",
+    "in": "USG*",
+    "out": "pxETH/WETH",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "WBTC/ETH/USDC", "out": "WETH" },
+      { "in": "WETH", "pool": "pxETH/WETH", "out": "pxETH/WETH" }
+    ]
+  },
+  {
+    "display": "USDC >> USG-USDC* >> USG*",
+    "in": "USDC",
+    "out": "USG*",
+    "singleSwaps": [{ "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC",
+    "in": "USG*",
+    "out": "USDC",
+    "singleSwaps": [{ "in": "USG*", "pool": "USG-USDC*", "out": "USDC" }]
+  },
+  {
+    "display": "USDT >> crvUSD/USDT >> crvUSD >> wcrvUSD* >> wcrvUSD* >> USG-wcrvUSD* >> USG*",
+    "in": "USDT",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "USDT", "pool": "crvUSD/USDT", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "USG-wcrvUSD*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-wcrvUSD* >> wcrvUSD* >> wcrvUSD* >> crvUSD >> crvUSD/USDT >> USDT",
+    "in": "USG*",
+    "out": "USDT",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-wcrvUSD*", "out": "wcrvUSD*" },
+      { "in": "wcrvUSD*", "pool": "wcrvUSD*", "out": "crvUSD" },
+      { "in": "crvUSD", "pool": "crvUSD/USDT", "out": "USDT" }
+    ]
+  },
+  {
+    "display": "WBTC >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+    "in": "WBTC",
+    "out": "USG*",
+    "singleSwaps": [
+      { "in": "WBTC", "pool": "WBTC/ETH/USDC", "out": "USDC" },
+      { "in": "USDC", "pool": "USG-USDC*", "out": "USG*" }
+    ]
+  },
+  {
+    "display": "USG* >> USG-USDC* >> USDC >> WBTC/ETH/USDC >> WBTC",
+    "in": "USG*",
+    "out": "WBTC",
+    "singleSwaps": [
+      { "in": "USG*", "pool": "USG-USDC*", "out": "USDC" },
+      { "in": "USDC", "pool": "WBTC/ETH/USDC", "out": "WBTC" }
+    ]
+  }
+]

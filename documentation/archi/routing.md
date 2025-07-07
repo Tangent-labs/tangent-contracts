@@ -12,7 +12,7 @@ stateDiagram-v2
     CallQuoteOnEnso --> is_API_Up
     is_API_Up --> ReturnValue: Success
     is_API_Up --> is_secondary_routing_possible: Error
-        is_secondary_routing_possible --> secondary_routing_type: If TokenIn = Collat or TgUSD AND TokenOut = TgUSD Or Collat
+        is_secondary_routing_possible --> secondary_routing_type: If TokenIn = Collat or USG AND TokenOut = USG Or Collat
             secondary_routing_type--> ChainviewCurveRouterQuote : Asset dumpable through Curve
             secondary_routing_type--> ChainviewPendleRouterQuote : Asset dumpable through Pendle
             ChainviewCurveRouterQuote-->ReturnValue
@@ -36,7 +36,7 @@ stateDiagram-v2
     CallRouteOnEnso --> is_API_Up
     is_API_Up --> ReturnValue: Success
     is_API_Up --> is_secondary_routing_possible: Error
-        is_secondary_routing_possible --> secondary_routing_type: If TokenIn = Collat or TgUSD AND TokenOut = TgUSD Or Collat
+        is_secondary_routing_possible --> secondary_routing_type: If TokenIn = Collat or USG AND TokenOut = USG Or Collat
             secondary_routing_type--> ChainviewCurveRouterQuote : Asset dumpable through Curve
             secondary_routing_type--> ChainviewPendleRouterQuote : Asset dumpable through Pendle
             ChainviewCurveRouterQuote-->ReturnValue

@@ -64,8 +64,8 @@ contract BorrowCvxMarket is MarketDeploymentContext {
 
         hDeposit.deposit(usr1, collatDeposited, true);
 
-        verifyMintERC20(tgUSD, borrowedAmount, "Cvx Reward tokens are burnt");
-        verifyReceiveERC20(tgUSD, usr2, borrowedAmount, "User 2, not the caller, receives tgUSD");
+        verifyMintERC20(usg, borrowedAmount, "Cvx Reward tokens are burnt");
+        verifyReceiveERC20(usg, usr2, borrowedAmount, "User 2, not the caller, receives USG");
 
         hBorrow.borrow(usr2, borrowedAmount);
 
@@ -104,7 +104,7 @@ contract BorrowCvxMarket is MarketDeploymentContext {
 
         vm.startPrank(owner);
         controlTower.toggleMarket(owner);
-        tgUSD.mint(usr1, repayAmount);
+        usg.mint(usr1, repayAmount);
         vm.stopPrank();
 
         hRepay.repay(usr1, repayAmount);
@@ -116,7 +116,7 @@ contract BorrowCvxMarket is MarketDeploymentContext {
         assertEq(market.userDebt(usr1), market.totalDebt());
 
         // vm.startPrank(owner);
-        // tgUSD.mint(usr1, market.userDebt(usr1));
+        // USG.mint(usr1, market.userDebt(usr1));
         // vm.stopPrank();
 
         // hRepay.repay(usr1, MAX_UINT, address(0));

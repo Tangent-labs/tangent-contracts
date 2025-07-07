@@ -3,7 +3,7 @@
 pragma solidity ^0.8.22;
 import "../../Base/HMarketBase.sol";
 
-import "../../../../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
+import "../../../../src/USG/Market/Convex/ConvexFxnLPMarket.sol";
 
 contract HDepositConvexFxnLP is HMarketBase {
     ConvexFxnLPMarket marketFxnLP;

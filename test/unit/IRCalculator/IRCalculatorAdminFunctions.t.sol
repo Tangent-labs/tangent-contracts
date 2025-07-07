@@ -8,9 +8,9 @@ contract IRCalculatorAdminFunctions is MarketDeploymentContext {
         vm.startPrank(owner);
     }
 
-    function test_setTgUSDOracle_success() external {
-        irCalculator.setTgUSDOracle(IAggregatorStablePriceV3(usr2));
-        assertEq(usr2, address(irCalculator.tgUSDOracle()));
+    function test_setUSGOracle_success() external {
+        irCalculator.setUSGOracle(IAggregatorStablePriceV3(usr2));
+        assertEq(usr2, address(irCalculator.USGOracle()));
     }
 
     function test_updateIRParams_success() external {

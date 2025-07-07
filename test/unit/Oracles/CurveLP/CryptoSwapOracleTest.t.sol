@@ -2,7 +2,6 @@
 pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
 import "../../../handler/Curve/HLPManipulator.sol";
-import "forge-std/console.sol";
 
 contract CryptoSwapOracleTest is MarketDeploymentContext {
     address[] cryptoSwaps;

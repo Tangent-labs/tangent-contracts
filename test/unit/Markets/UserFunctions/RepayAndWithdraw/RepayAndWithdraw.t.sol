@@ -25,7 +25,7 @@ contract RepayAndWithdraw is MarketDeploymentContext {
 
     function test_repayAndWithdraw_fully() external {
         verifyReceiveERC20(collatToken, usr1, depositedAmount);
-        verifyLostERC20(tgUSD, usr1, debtBorrow);
+        verifyLostERC20(usg, usr1, debtBorrow);
 
         market.repayAndWithdraw(depositedAmount, MAX_UINT);
 
@@ -36,7 +36,7 @@ contract RepayAndWithdraw is MarketDeploymentContext {
 
     function test_repayAndWithdraw_partial() external {
         verifyReceiveERC20(collatToken, usr1, depositedAmount / 2);
-        verifyLostERC20(tgUSD, usr1, debtBorrow / 2);
+        verifyLostERC20(usg, usr1, debtBorrow / 2);
 
         market.repayAndWithdraw(depositedAmount / 2, debtBorrow / 2);
 

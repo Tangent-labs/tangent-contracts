@@ -1,4 +1,4 @@
-# TgUSD
+# USG
 
 You need to have foundry in order to be able to work on this repo. [You can see this tutorial to install it](https://book.getfoundry.sh/getting-started/installation)
 
@@ -19,7 +19,7 @@ forge test
 To run all tests in a folder :
 
 ```
-forge test --match-path test/tgUSD/*.t.sol
+forge test --match-path test/USG/*.t.sol
 ```
 
 **-v** : for the `--verbosity` part you can use up to 5 v from `-v` to `-vvvvv`
@@ -31,10 +31,10 @@ forge test --match-path test/tgUSD/*.t.sol
 npm run hh-node
 ```
 
-## Deploy the dev context of tgUSD
+## Deploy the dev context of USG
 
 ```
-npm run deploy-tgUSD
+npm run deploy-USG
 ```
 
 ## Actions
@@ -44,15 +44,15 @@ npm run deploy-tgUSD
 Stake some collateral on all markets with test users
 
 ```
-npm run stake-markets-tgUSD
+npm run stake-markets-USG
 ```
 
-### Borrow tgUSD
+### Borrow USG
 
-Borrow some tgUSD on all markets with test users
+Borrow some USG on all markets with test users
 
 ```
-npm run borrow-markets-tgUSD
+npm run borrow-markets-USG
 ```
 
 ### Pass some time
@@ -71,12 +71,12 @@ Distribute rewards into markets in order to be processed. We are transfering rew
 npm run distribute-rewards-markets
 ```
 
-### Distribute and streams tgUSD rewards into RsTan
+### Distribute and streams USG rewards into VsTan
 
-Distribute rewards tgUSD into RsTan and start the streaming process.
+Distribute rewards USG into VsTan and start the streaming process.
 
 ```
-npm run distribute-rewards-rsTan
+npm run distribute-rewards-vsTan
 ```
 
 ### Swap in a Curve LP
@@ -130,8 +130,8 @@ vyper --version
 
 ## Generate Liquidation Routes
 
-This script generates liquidation path from the `js-scripts\hardhat\tgUSD\data\routes.csv`,
-and create the file `js-scripts\hardhat\tgUSD\data\verifiedRoutes.json`
+This script generates liquidation path from the `js-scripts\hardhat\USG\data\routes.csv`,
+and create the file `js-scripts\hardhat\USG\data\verifiedRoutes.json`
 
 ```
 npm run generate-routes
@@ -139,8 +139,8 @@ npm run generate-routes
 
 ## Test Exchange Routes
 
-This script tests the generated liquidation routes from `js-scripts\hardhat\tgUSD\data\verifiedRoutes.json` to
-`js-scripts\hardhat\tgUSD\data\successRoutes.json`.
+This script tests the generated liquidation routes from `js-scripts\hardhat\USG\data\verifiedRoutes.json` to
+`js-scripts\hardhat\USG\data\successRoutes.json`.
 
 ```
 npm run test-exchange-routes
@@ -148,9 +148,9 @@ npm run test-exchange-routes
 
 ## Hydrate Route (2 ways)
 
-This script takes a generated route with string `js-scripts\hardhat\tgUSD\data\tplRoute.json` and "hydrates" with addresses in `js-scripts\hardhat\tgUSD\data\hydratedRoute.json` that can be use by the liquidation bot.
+This script takes a generated route with string `js-scripts\hardhat\USG\data\tplRoute.json` and "hydrates" with addresses in `js-scripts\hardhat\USG\data\hydratedRoute.json` that can be use by the liquidation bot.
 
-by changing the script you can also take `js-scripts\hardhat\tgUSD\data\successRoutes.json` and make it a template `js-scripts\hardhat\tgUSD\data\tplRoute.json`
+by changing the script you can also take `js-scripts\hardhat\USG\data\successRoutes.json` and make it a template `js-scripts\hardhat\USG\data\tplRoute.json`
 
 ```
 npm run hydrate-route

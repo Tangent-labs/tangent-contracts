@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
-import "../../../src/tgUSD/Utilities/IRCalculator.sol";
+import "../../../src/USG/Utilities/IRCalculator.sol";
 import "../../utils/IRCalculationFFI.sol";
 contract ExpIRFormulaComputation is MarketDeploymentContext {
     uint256 constant _2_DOLLARS = 2 ether;
@@ -9,7 +9,7 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
 
     IRCalculationFFI irFFI = new IRCalculationFFI();
 
-    uint256 tgUSDPrice;
+    uint256 USGPrice;
     uint24 rMin;
     uint32 rMax;
     uint32 pMin;
@@ -20,7 +20,7 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
     uint32 k;
 
     function test_IR_from_fuzzing1() external {
-        tgUSDPrice = 909795958679092860;
+        USGPrice = 909795958679092860;
         rMin = 26;
         rMax = 29;
         pMin = 17;
@@ -31,14 +31,14 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         k = 10109;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(USGPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
 
     function test_IR_from_fuzzing2() external {
-        tgUSDPrice = 1120000000000002248;
+        USGPrice = 1120000000000002248;
         rMin = 0;
         rMax = 16111;
         pMin = 14446;
@@ -49,14 +49,14 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         k = 27580;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(USGPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
 
     function test_IR_from_fuzzing3() external {
-        tgUSDPrice = 1495288770417798419;
+        USGPrice = 1495288770417798419;
         rMin = 20937;
         rMax = 1807457;
         pMin = 1;
@@ -67,14 +67,14 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         k = 20441;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(USGPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
 
     function test_IR_from_fuzzing4() external {
-        tgUSDPrice = 202806;
+        USGPrice = 202806;
         rMin = 48396;
         rMax = 1955213;
         pMin = 0;
@@ -85,14 +85,14 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         k = 8;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(USGPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
 
     function test_IR_from_fuzzing5() external {
-        tgUSDPrice = 4746;
+        USGPrice = 4746;
         rMin = 3512;
         rMax = 10556;
         pMin = 0;
@@ -103,14 +103,14 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         k = 5062;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(USGPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
 
     function test_IR_from_fuzzing6() external {
-        tgUSDPrice = 1026721955184017480;
+        USGPrice = 1026721955184017480;
         rMin = 0;
         rMax = 1538949;
         pMin = 980874;
@@ -121,14 +121,14 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         k = 6911;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(USGPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
 
     function test_IR_from_fuzzing7() external {
-        tgUSDPrice = 1185971000000000099;
+        USGPrice = 1185971000000000099;
         rMin = 13898;
         rMax = 876633;
         pMin = 57;
@@ -139,15 +139,15 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         k = 92;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(USGPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }
 
     function test_IR_without_pInf() external {
         // 0.99$
-        tgUSDPrice = 99 * 10 ** 16;
+        USGPrice = 99 * 10 ** 16;
         rMin = 4_000;
         rMax = 400_000;
         pMin = 980_000;
@@ -157,13 +157,13 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         a2 = 2_000;
         k = 0;
 
-        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
+        uint256 calculated = irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
 
         assertEq(calculated, 1030000000000000000, "103% IR with these conditions");
     }
 
     function test_IR_stable_price_lower_than_pMin() external {
-        tgUSDPrice = 98 * 10 ** 16;
+        USGPrice = 98 * 10 ** 16;
         rMin = 4_000;
         rMax = 400_000;
         pMin = 990_000;
@@ -173,13 +173,13 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         a2 = 2;
         k = 0;
 
-        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
+        uint256 calculated = irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
 
         assertEq(calculated, 4000000000000000000, "Equals to the maximum rate, 400%");
     }
 
     function test_IR_stable_price_higher_than_pMax() external {
-        tgUSDPrice = 101 * 10 ** 16;
+        USGPrice = 101 * 10 ** 16;
         rMin = 4_000;
         rMax = 400_000;
         pMin = 990_000;
@@ -189,7 +189,7 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         a2 = 2;
         k = 0;
 
-        uint256 calculated = irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
+        uint256 calculated = irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k}));
 
         assertEq(calculated, 40000000000000000, "Equals to the maximum rate, 4%");
     }
@@ -228,7 +228,7 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
     }
 
     function test_IR_fuzzing_with_big_bounds(
-        uint256 tgUSDPrice_,
+        uint256 USGPrice_,
         bool isHEC,
         uint24 rMin_,
         uint32 rMax_,
@@ -246,18 +246,15 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         pMax_ = uint32(bound(uint256(pMax_), uint256(pMin_) + 1, 2_000_000));
         pInf_ = uint32(bound(uint256(pInf_), pMin_, pMax_));
 
-        tgUSDPrice_ = bound(tgUSDPrice_, pMin_ == 0 ? 0 : uint256(pMin_) * 10 ** 12 - 1, uint256(pMax_) * 10 ** 12 + 100);
+        USGPrice_ = bound(USGPrice_, pMin_ == 0 ? 0 : uint256(pMin_) * 10 ** 12 - 1, uint256(pMax_) * 10 ** 12 + 100);
 
         a1_ = uint32(bound(uint256(a1_), 0, 99_000));
         a2_ = uint32(bound(uint256(a2_), 0, 99_000));
 
         k_ = uint32(bound(k_, 0, 99_000));
 
-        uint256 expected = irFFI.getIRFFI(tgUSDPrice_, isHEC, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_);
-        uint256 calculated = irCalculator.simulateIR(
-            tgUSDPrice_,
-            IRParams({isHEC: isHEC, rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_})
-        );
+        uint256 expected = irFFI.getIRFFI(USGPrice_, isHEC, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_);
+        uint256 calculated = irCalculator.simulateIR(USGPrice_, IRParams({isHEC: isHEC, rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_}));
 
         if (expected <= 10_000) {
             assertApproxEqAbs(expected, calculated, 1); // 1 wei delta
@@ -266,7 +263,7 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         }
     }
     function test_IR_fuzzing_with_small_bounds(
-        uint256 tgUSDPrice_,
+        uint256 USGPrice_,
         bool isHEC,
         uint24 rMin_,
         uint32 rMax_,
@@ -284,18 +281,15 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         pMax_ = uint32(bound(uint256(pMax_), uint256(pMin_) + 1, 2_000_000));
         pInf_ = uint32(bound(uint256(pInf_), pMin_, pMax_));
 
-        tgUSDPrice_ = bound(tgUSDPrice_, pMin_ == 0 ? 0 : uint256(pMin_) * 10 ** 12 - 1, uint256(pMax_) * 10 ** 12 + 100);
+        USGPrice_ = bound(USGPrice_, pMin_ == 0 ? 0 : uint256(pMin_) * 10 ** 12 - 1, uint256(pMax_) * 10 ** 12 + 100);
 
         a1_ = uint32(bound(uint256(a1_), 0, 990_000));
         a2_ = uint32(bound(uint256(a2_), 0, 990_000));
 
         k_ = uint32(bound(k_, 0, 99_000));
 
-        uint256 expected = irFFI.getIRFFI(tgUSDPrice_, isHEC, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_);
-        uint256 calculated = irCalculator.simulateIR(
-            tgUSDPrice_,
-            IRParams({isHEC: isHEC, rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_})
-        );
+        uint256 expected = irFFI.getIRFFI(USGPrice_, isHEC, rMin_, rMax_, pMin_, pInf_, pMax_, a1_, a2_, k_);
+        uint256 calculated = irCalculator.simulateIR(USGPrice_, IRParams({isHEC: isHEC, rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_}));
 
         if (expected <= 10_000) {
             assertApproxEqAbs(expected, calculated, 1); // 1 wei delta
@@ -305,7 +299,7 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
     }
 
     function test_IR_from_vince() external {
-        tgUSDPrice = 970000000000000000;
+        USGPrice = 970000000000000000;
         rMin = 0;
         rMax = 160000;
         pMin = 980000;
@@ -316,8 +310,8 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         k = 300;
 
         assertApproxEqRel(
-            irFFI.getIRFFI(tgUSDPrice, true, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
-            irCalculator.simulateIR(tgUSDPrice, IRParams({isHEC: true, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            irFFI.getIRFFI(USGPrice, true, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(USGPrice, IRParams({isHEC: true, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
             10 * 1e14 //0.1%
         );
     }

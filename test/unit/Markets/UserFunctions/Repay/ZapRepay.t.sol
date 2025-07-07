@@ -35,9 +35,9 @@ contract ZapRepay is MarketDeploymentContext {
         uint256 amountOut = 3_000 ether;
         deal(usr2, amountIn);
 
-        deal(address(tgUSD), address(mockRouter), amountOut);
+        deal(address(usg), address(mockRouter), amountOut);
 
-        verifyBurnERC20(tgUSD, amountOut, "tgUSD burnt after zap");
+        verifyBurnERC20(usg, amountOut, "usg burnt after zap");
 
         verifyLostERC20(ETH_NAKED, usr2, amountIn, "Usr2 sends ETH");
         verifyReceiveERC20(ETH_NAKED, address(mockRouter), amountIn, "Router received this ETH");
@@ -48,7 +48,7 @@ contract ZapRepay is MarketDeploymentContext {
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
                 minAmountOut: 2_999 ether,
-                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tgUSD, usr2, amountOut)
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, usg, usr2, amountOut)
             })
         );
 
@@ -59,16 +59,16 @@ contract ZapRepay is MarketDeploymentContext {
         assertEq(address(mockRouter).balance, amountIn, "Native coin sent to router");
     }
 
-    function test_zap_repay_total_with_ERC20_more_than_actualDebt_returns_tgUSD_surplus() external {
+    function test_zap_repay_total_with_ERC20_more_than_actualDebt_returns_USG_surplus() external {
         vm.startPrank(usr1);
         uint256 amountIn = 10_000 ether;
         uint256 amountOut = 10_001 ether;
 
         deal(address(AddrClassicERC20.USDT), usr1, amountIn);
-        deal(address(tgUSD), address(mockRouter), amountOut);
+        deal(address(usg), address(mockRouter), amountOut);
 
-        verifyBurnERC20(tgUSD, initialDebt, "tgUSD burnt after zap");
-        verifyReceiveERC20(tgUSD, address(usr1), amountOut - initialDebt, "Usr1 receives the surplus of tgUSD");
+        verifyBurnERC20(usg, initialDebt, "usg burnt after zap");
+        verifyReceiveERC20(usg, address(usr1), amountOut - initialDebt, "Usr1 receives the surplus of usg");
 
         verifyLostERC20(AddrClassicERC20.USDT, usr1, amountIn, "Usr1 sends USDT");
         verifyReceiveERC20(AddrClassicERC20.USDT, address(mockRouter), amountIn, "Router received USDT");
@@ -81,7 +81,7 @@ contract ZapRepay is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: amountOut,
-                zap: encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, tgUSD, usr1, amountOut)
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), AddrClassicERC20.USDT, amountIn, usg, usr1, amountOut)
             })
         );
 

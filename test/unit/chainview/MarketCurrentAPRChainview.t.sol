@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 
-import {MarketCurrentAPR, TVLAprs, MarketAPRInput} from "../../../src/chainview/tgUSD/apr/MarketCurrentAPR.cv.sol";
+import {MarketCurrentAPR, TVLAprs, MarketAPRInput} from "../../../src/chainview/USG/apr/MarketCurrentAPR.cv.sol";
 
 contract MarketCurrentAPRChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market1;

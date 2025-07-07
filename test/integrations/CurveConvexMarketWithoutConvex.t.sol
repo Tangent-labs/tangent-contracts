@@ -27,8 +27,8 @@ contract CurveConvexMarketWithoutConvex is MarketDeploymentContext {
         uint256 borrowedAmount1 = 3_440 ether;
 
         verifyLostERC20(collatToken, usr1, collatDeposited1, "Verify that user sent its LP");
-        verifyMintERC20(tgUSD, borrowedAmount1, "tgUSD need to be minted");
-        verifyReceiveERC20(tgUSD, usr1, borrowedAmount1, "User receives the borrowed amount");
+        verifyMintERC20(usg, borrowedAmount1, "USG need to be minted");
+        verifyReceiveERC20(usg, usr1, borrowedAmount1, "User receives the borrowed amount");
 
         vm.startSnapshotGas("Deposit And Borrow", "On a Curve LP not linked to Convex");
         hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1, true);

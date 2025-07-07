@@ -3,8 +3,8 @@ pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 
 import "../../handler/Features/BorrowRepay/HBorrow.sol";
-import {MarketAccountLiquidationBotInfo} from "../../../src/chainview/tgUSD/bot/MarketAccountLiquidationBotInfo.cv.sol";
-import {GetAccountLiquidation} from "../../../src/chainview/tgUSD/GetAccountLiquidation.sol";
+import {MarketAccountLiquidationBotInfo} from "../../../src/chainview/USG/bot/MarketAccountLiquidationBotInfo.cv.sol";
+import {GetAccountLiquidation} from "../../../src/chainview/USG/GetAccountLiquidation.sol";
 contract MarketAccountLiquidationBotInfoChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market1;
     ConvexCrvLPMarket public market2;

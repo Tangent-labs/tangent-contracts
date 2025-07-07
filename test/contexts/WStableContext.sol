@@ -49,14 +49,14 @@ contract WStableContext is OraclesContext {
         vm.label(address(wDOLA), "wDOLA");
         vm.label(address(wUSR), "wUSR");
 
-        LpDeploymentContext.CreateTgUSDLpStruct[] memory params = new LpDeploymentContext.CreateTgUSDLpStruct[](5);
-        params[0] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wfrxUSD, name: "tgUSD-wfrxUSD", symbol: "tgfrxUSD", initialAmount: 500_000});
-        params[1] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wcrvUSD, name: "tgUSD-wcrvUSD", symbol: "tgcrvUSD", initialAmount: 500_000});
-        params[2] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wUSDE, name: "tgUSD-wUSDe", symbol: "tgUSDE", initialAmount: 500_000});
-        params[3] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wDOLA, name: "tgUSD-wDOLA", symbol: "tgDOLA", initialAmount: 500_000});
-        params[4] = LpDeploymentContext.CreateTgUSDLpStruct({otherStable: wUSR, name: "tgUSD-wUSR", symbol: "tgUSR", initialAmount: 500_000});
-        lpDeploymentContext.createTgUSDLps(owner, params);
+        LpDeploymentContext.CreateUSGLpStruct[] memory params = new LpDeploymentContext.CreateUSGLpStruct[](5);
+        params[0] = LpDeploymentContext.CreateUSGLpStruct({otherStable: wfrxUSD, name: "USG-wfrxUSD", symbol: "tgfrxUSD", initialAmount: 500_000});
+        params[1] = LpDeploymentContext.CreateUSGLpStruct({otherStable: wcrvUSD, name: "USG-wcrvUSD", symbol: "tgcrvUSD", initialAmount: 500_000});
+        params[2] = LpDeploymentContext.CreateUSGLpStruct({otherStable: wUSDE, name: "USG-wUSDe", symbol: "USGE", initialAmount: 500_000});
+        params[3] = LpDeploymentContext.CreateUSGLpStruct({otherStable: wDOLA, name: "USG-wDOLA", symbol: "tgDOLA", initialAmount: 500_000});
+        params[4] = LpDeploymentContext.CreateUSGLpStruct({otherStable: wUSR, name: "USG-wUSR", symbol: "tgUSR", initialAmount: 500_000});
+        lpDeploymentContext.createUSGLps(owner, params);
 
-        setupTgUSDOracle();
+        setupUSGOracle();
     }
 }

@@ -21,7 +21,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
     ERC20BalanceChanges public balanceChanges;
 
     uint256 collatDeposited = 6 ether;
-    uint256 tgUSDBorrowed = 13_000 ether;
+    uint256 USGBorrowed = 13_000 ether;
     uint256 badDebtToRepay = 7_000 ether;
 
     function setUp() public {
@@ -34,7 +34,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
         skip(1 hours);
 
-        hDeposit.depositAndBorrow(collatDeposited, tgUSDBorrowed, true);
+        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed, true);
     }
 
     function test_liquidateBadDebt_fails_because_no_bad_debt() external {
@@ -83,23 +83,23 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
         skip(1 days);
         hDeposit.setMsgSender(usr2);
-        hDeposit.depositAndBorrow(10 ether, tgUSDBorrowed, true);
+        hDeposit.depositAndBorrow(10 ether, USGBorrowed, true);
 
-        verifyLostERC20(tgUSD, usr2, badDebtToRepay, "Verify that the usr2 loose the tgUSD");
-        verifyBurnERC20(tgUSD, badDebtToRepay, "Verify that the supply of tgUSD is reduced");
+        verifyLostERC20(usg, usr2, badDebtToRepay, "Verify that the usr2 loose the USG");
+        verifyBurnERC20(usg, badDebtToRepay, "Verify that the supply of USG is reduced");
 
         vm.startPrank(usr2);
         market.repayBadDebt(badDebtToRepay);
         assertERC20Tracking();
 
-        assertEq(market.badDebt(), tgUSDBorrowed - badDebtToRepay, "Check that bad debt has been reduced");
+        assertEq(market.badDebt(), USGBorrowed - badDebtToRepay, "Check that bad debt has been reduced");
 
         vm.expectRevert(abi.encodeWithSelector(DebtIR.RepayMoreThanBadDebt.selector));
         market.repayBadDebt(badDebtToRepay);
 
         uint256 remainingDebt = market.badDebt();
-        verifyLostERC20(tgUSD, usr2, remainingDebt, "Verify that the usr2 loose the tgUSD");
-        verifyBurnERC20(tgUSD, remainingDebt, "Verify that the supply of tgUSD is reduced");
+        verifyLostERC20(usg, usr2, remainingDebt, "Verify that the usr2 loose the USG");
+        verifyBurnERC20(usg, remainingDebt, "Verify that the supply of USG is reduced");
         market.repayBadDebt(remainingDebt);
         assertERC20Tracking();
         assertEq(market.badDebt(), 0, "BadDebt is fully recovered");

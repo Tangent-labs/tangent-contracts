@@ -25,11 +25,11 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
         vm.startPrank(usr1);
 
         uint256 amountIn = 5 ether;
-        uint256 tgUSDBought = 15_000 ether;
+        uint256 USGBought = 15_000 ether;
         deal(usr1, amountIn);
-        deal(address(tgUSD), address(mockRouter), tgUSDBought);
+        deal(address(usg), address(mockRouter), USGBought);
 
-        verifyBurnERC20(tgUSD, tgUSDBought);
+        verifyBurnERC20(usg, USGBought);
         verifyLostERC20(ETH_NAKED, usr1, amountIn);
 
         verifyReceiveERC20(collatToken, usr1, withdrawnAmount);
@@ -40,8 +40,8 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
-                minAmountOut: tgUSDBought,
-                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, tgUSD, address(usr1), tgUSDBought)
+                minAmountOut: USGBought,
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, usg, address(usr1), USGBought)
             })
         );
         assertERC20Tracking();
@@ -49,8 +49,8 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
         assertEq(market.totalCollateral(), depositedAmount - withdrawnAmount);
         assertEq(market.collateralBalances(usr1), depositedAmount - withdrawnAmount);
 
-        assertEq(market.userDebt(usr1), debtBorrow - tgUSDBought);
-        assertEq(market.totalDebt(), debtBorrow - tgUSDBought);
+        assertEq(market.userDebt(usr1), debtBorrow - USGBought);
+        assertEq(market.totalDebt(), debtBorrow - USGBought);
     }
 
     function test_zapRepayAndWithdraw_fullRepay_partialWithdraw_with_erc20() external {
@@ -61,12 +61,12 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
         uint256 amountReturnZap = debtBorrow + 1_000 ether;
 
         deal(address(tokenIn), usr1, debtBorrow);
-        deal(address(tgUSD), address(mockRouter), amountReturnZap);
+        deal(address(usg), address(mockRouter), amountReturnZap);
 
-        verifyBurnERC20(tgUSD, debtBorrow);
+        verifyBurnERC20(usg, debtBorrow);
         verifyLostERC20(tokenIn, usr1, debtBorrow);
 
-        verifyReceiveERC20(tgUSD, usr1, amountReturnZap - debtBorrow);
+        verifyReceiveERC20(usg, usr1, amountReturnZap - debtBorrow);
         verifyReceiveERC20(collatToken, usr1, withdrawnAmount);
         verifyLostERC20(collatToken, address(market), withdrawnAmount);
 
@@ -77,7 +77,7 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
                 tokenIn: tokenIn,
                 amountIn: debtBorrow,
                 minAmountOut: amountReturnZap,
-                zap: encoder.encodeSwapToMockRouter(address(mockRouter), tokenIn, debtBorrow, tgUSD, address(usr1), amountReturnZap)
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), tokenIn, debtBorrow, usg, address(usr1), amountReturnZap)
             })
         );
         assertERC20Tracking();
@@ -103,10 +103,10 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
         uint256 amountReturnZap = debtBorrow + 1_000 ether;
 
         deal(address(tokenIn), usr2, debtBorrow);
-        deal(address(tgUSD), address(mockRouter), amountReturnZap);
+        deal(address(usg), address(mockRouter), amountReturnZap);
 
-        verifyBurnERC20(tgUSD, debtBorrow);
-        verifyReceiveERC20(tgUSD, usr2, amountReturnZap - debtBorrow);
+        verifyBurnERC20(usg, debtBorrow);
+        verifyReceiveERC20(usg, usr2, amountReturnZap - debtBorrow);
         verifyLostERC20(tokenIn, usr2, debtBorrow);
 
         verifyReceiveERC20(collatToken, usr2, depositedAmount);
@@ -119,7 +119,7 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
                 tokenIn: tokenIn,
                 amountIn: debtBorrow,
                 minAmountOut: amountReturnZap,
-                zap: encoder.encodeSwapToMockRouter(address(mockRouter), tokenIn, debtBorrow, tgUSD, address(usr2), amountReturnZap)
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), tokenIn, debtBorrow, usg, address(usr2), amountReturnZap)
             })
         );
         assertERC20Tracking();

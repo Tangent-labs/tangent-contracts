@@ -28,8 +28,8 @@ contract DepositAndBorrowCvxMarket is MarketDeploymentContext {
         verifyReceiveERC20(market.cvxRewardToken(), address(market), collatDeposited1, "Verify that market receives Cvx Reward tokens");
         verifyBalERC20NotChanging(AddrCurveStableLP.USDC_crvUSD, address(market), "Verify that as staking, no LP are received by the MarketCore");
         verifyLostERC20(AddrCurveStableLP.USDC_crvUSD, usr1, collatDeposited1, "Verify that user sent its LP");
-        verifyMintERC20(tgUSD, borrowedAmount1, "tgUSD are not minted");
-        verifyReceiveERC20(tgUSD, usr1, borrowedAmount1, "User receives the borrowed amount");
+        verifyMintERC20(usg, borrowedAmount1, "USG are not minted");
+        verifyReceiveERC20(usg, usr1, borrowedAmount1, "User receives the borrowed amount");
 
         vm.startSnapshotGas("Deposit And Borrow", "First deposit and borrow ever on the market and stake");
         hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1, true);
@@ -50,7 +50,7 @@ contract DepositAndBorrowCvxMarket is MarketDeploymentContext {
         verifyReceiveERC20(market.cvxRewardToken(), address(market), collatDeposited2, "Verify that market receives Cvx Reward tokens");
         verifyBalERC20NotChanging(AddrCurveStableLP.USDC_crvUSD, address(market), "Verify that as staking, no LP are received by the MarketCore");
         verifyLostERC20(AddrCurveStableLP.USDC_crvUSD, usr2, collatDeposited2, "Verify that user sent its LP");
-        verifyReceiveERC20(tgUSD, usr2, borrowedAmount2 + 12, "User receives 50 tgUSD");
+        verifyReceiveERC20(usg, usr2, borrowedAmount2 + 12, "User receives 50 USG");
 
         hDeposit.setMsgSender(usr2);
         hDeposit.depositAndBorrow(collatDeposited2, borrowedAmount2, true);

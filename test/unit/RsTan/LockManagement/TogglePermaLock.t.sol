@@ -8,34 +8,34 @@ contract TogglePermaLock is MarketDeploymentContext {
     function setUp() external {
         vm.startPrank(usr1);
         deal(address(tan), usr1, 2 * amount);
-        tan.approve(address(rsTan), 2 * amount);
-        rsTan.createLock(amount, true);
-        rsTan.createLock(amount, false);
+        tan.approve(address(vsTan), 2 * amount);
+        vsTan.createLock(amount, true);
+        vsTan.createLock(amount, false);
         vm.stopPrank();
     }
 
     function test_togglePermaLock_from_false_to_true() external {
         vm.startPrank(usr1);
-        uint256 oldEndLockTimeExpected = rsTan.nextEndLockTime();
-        (uint48 oldEndLockTime, ) = rsTan.locks(2);
+        uint256 oldEndLockTimeExpected = vsTan.nextEndLockTime();
+        (uint48 oldEndLockTime, ) = vsTan.locks(2);
         assertEq(oldEndLockTimeExpected, oldEndLockTime);
 
-        rsTan.togglePermaLock(2);
+        vsTan.togglePermaLock(2);
 
-        (uint48 newEndLockTime, uint208 amountAfter) = rsTan.locks(2);
-        assertEq(rsTan.MAX_UINT48(), newEndLockTime, "Permalocked");
+        (uint48 newEndLockTime, uint208 amountAfter) = vsTan.locks(2);
+        assertEq(vsTan.MAX_UINT48(), newEndLockTime, "Permalocked");
         assertEq(amountAfter, amount);
     }
 
     function test_togglePermaLock_from_true_to_false() external {
         vm.startPrank(usr1);
-        uint256 nextEndLockTime = rsTan.nextEndLockTime();
-        (uint48 oldEndLockTime, ) = rsTan.locks(1);
-        assertEq(oldEndLockTime, rsTan.MAX_UINT48());
+        uint256 nextEndLockTime = vsTan.nextEndLockTime();
+        (uint48 oldEndLockTime, ) = vsTan.locks(1);
+        assertEq(oldEndLockTime, vsTan.MAX_UINT48());
 
-        rsTan.togglePermaLock(1);
+        vsTan.togglePermaLock(1);
 
-        (uint48 newEndLockTime, uint208 amountAfter) = rsTan.locks(1);
+        (uint48 newEndLockTime, uint208 amountAfter) = vsTan.locks(1);
 
         assertEq(nextEndLockTime, newEndLockTime, "Not Permalocked anymore");
         assertEq(amountAfter, amount);
@@ -45,14 +45,14 @@ contract TogglePermaLock is MarketDeploymentContext {
         vm.startPrank(usr1);
         skip(13 weeks);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.LockExpired.selector));
-        rsTan.togglePermaLock(2);
+        vm.expectRevert(abi.encodeWithSelector(VsTan.LockExpired.selector));
+        vsTan.togglePermaLock(2);
     }
 
     function test_togglePermaLock_fails_bcs_token_not_owned() external {
         vm.startPrank(usr2);
 
-        vm.expectRevert(abi.encodeWithSelector(RsTan.NotTokenOwner.selector));
-        rsTan.togglePermaLock(2);
+        vm.expectRevert(abi.encodeWithSelector(VsTan.NotTokenOwner.selector));
+        vsTan.togglePermaLock(2);
     }
 }

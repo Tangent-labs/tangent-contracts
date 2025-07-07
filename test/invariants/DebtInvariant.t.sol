@@ -36,7 +36,7 @@ contract DebtInvariant is MarketDeploymentContext {
         targetSender(usr5);
         targetSender(usr6);
 
-        borrowInvariantHandler = new BorrowInvariantHandler(marketsMemory, tgUSD);
+        borrowInvariantHandler = new BorrowInvariantHandler(marketsMemory, usg);
 
         targetContract(address(borrowInvariantHandler));
 

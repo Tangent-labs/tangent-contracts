@@ -1,5 +1,5 @@
 import {Test} from "forge-std/Test.sol";
-import "forge-std/console.sol";
+
 import {IERC20Metadata, IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {TokenAmount} from "../../src/interfaces/internals/ICommonStruct.sol";
 

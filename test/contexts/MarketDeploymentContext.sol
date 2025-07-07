@@ -3,8 +3,8 @@ pragma solidity ^0.8.24;
 
 import "./MarketInitParams.sol";
 
-import "../../src/interfaces/internals/tgUSD/IMarketCore.sol";
-import "../../src/interfaces/internals/tgUSD/IIRCalculator.sol";
+import "../../src/interfaces/internals/USG/IMarketCore.sol";
+import "../../src/interfaces/internals/USG/IIRCalculator.sol";
 contract MarketDeploymentContext is MarketInitParams {
     function deployConvexCurveLPMarket(IERC20Metadata collat, bool isConvexLinked) public returns (ConvexCrvLPMarket) {
         ParamsInitConvexCurveLPMarket memory initP = cvxCurveLPMaps[address(collat)];

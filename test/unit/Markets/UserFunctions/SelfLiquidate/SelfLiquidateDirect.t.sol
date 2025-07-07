@@ -26,12 +26,12 @@ contract SelfLiquidateDirect is MarketDeploymentContext {
         hDeposit.depositAndBorrow(collatDeposited, initialDebt, true);
     }
 
-    function test_selfLiquidate_all_position_with_tgUSD_having_before() external {
+    function test_selfLiquidate_all_position_with_USG_having_before() external {
         vm.startPrank(usr1);
         uint256 collatToDump = market.collateralBalances(usr1);
 
-        verifyBurnERC20(tgUSD, initialDebt, "tgUSD Burnt after a repay");
-        verifyLostERC20(tgUSD, usr1, initialDebt, "tgUSD taken from usr1");
+        verifyBurnERC20(usg, initialDebt, "usg Burnt after a repay");
+        verifyLostERC20(usg, usr1, initialDebt, "usg taken from usr1");
 
         market.selfLiquidate(collatDeposited, MAX_UINT, initialDebt, ZapStruct({router: address(0), routerCall: ""}));
 

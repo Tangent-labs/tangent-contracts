@@ -15,7 +15,7 @@ contract CheckpointMulti is MarketDeploymentContext {
 
     uint256 depositedAmount = 10_000 ether;
     uint256 borrowedAmount = 7_000 ether;
-    uint256 tgUSDPrice;
+    uint256 USGPrice;
     uint256 timestamp;
     function setUp() public {
         // We deploy few contracts. LEC contracts start to accumulate IR since now
@@ -29,12 +29,12 @@ contract CheckpointMulti is MarketDeploymentContext {
         irCalculationFFI = new IRCalculationFFI();
 
         // Depegs of the LPs
-        lpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 1, 0, 350_000 ether);
-        lpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-wfrxUSD"), 1, 0, 350_000 ether);
+        lpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-USDC"), 1, 0, 350_000 ether);
+        lpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-wfrxUSD"), 1, 0, 350_000 ether);
 
         skip(1 weeks);
         vm.startPrank(usr4);
-        tgUSDPrice = tgUSDOracle.price_w();
+        USGPrice = USGOracle.price_w();
         for (uint256 i; i < markets.length; i++) {
             address market = markets[i];
             IERC20 collat = ICollateral(market).collatToken();
@@ -72,8 +72,8 @@ contract CheckpointMulti is MarketDeploymentContext {
 
         assertEq(irCalculator.mintableInterests(), totalNewIR);
 
-        verifyMintERC20(tgUSD, totalNewIR, "IR minted");
-        verifyReceiveERC20(tgUSD, controlTower.feeTreasury(), totalNewIR, "Interests received by Fee Treasury");
+        verifyMintERC20(usg, totalNewIR, "IR minted");
+        verifyReceiveERC20(usg, controlTower.feeTreasury(), totalNewIR, "Interests received by Fee Treasury");
         irCalculator.mintIR();
         assertERC20Tracking();
 
@@ -105,8 +105,8 @@ contract CheckpointMulti is MarketDeploymentContext {
 
         assertEq(irCalculator.mintableInterests(), totalNewIR);
 
-        verifyMintERC20(tgUSD, totalNewIR, "IR minted");
-        verifyReceiveERC20(tgUSD, controlTower.feeTreasury(), totalNewIR, "Interests received by Fee Treasury");
+        verifyMintERC20(usg, totalNewIR, "IR minted");
+        verifyReceiveERC20(usg, controlTower.feeTreasury(), totalNewIR, "Interests received by Fee Treasury");
         irCalculator.mintIR();
         assertERC20Tracking();
 

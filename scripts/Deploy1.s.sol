@@ -4,18 +4,18 @@ pragma solidity ^0.8.13;
 import {Script, console} from "forge-std/Script.sol";
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
 
-import {Tan} from "../src/tgUSD/Tokens/Tan.sol";
+import {Tan} from "../src/USG/Tokens/Tan.sol";
 
-import "../src/tgUSD/Market/Convex/ConvexCrvLPMarket.sol";
-import "../src/tgUSD/Market/Convex/ConvexFxnLPMarket.sol";
-import "../src/tgUSD/Market/MarketNoSociabilization.sol";
+import "../src/USG/Market/Convex/ConvexCrvLPMarket.sol";
+import "../src/USG/Market/Convex/ConvexFxnLPMarket.sol";
+import "../src/USG/Market/MarketNoSociabilization.sol";
 
-import "../src/tgUSD/Tokens/TgUSD.sol";
-import "../src/tgUSD/Tokens/WStable.sol";
-import "../src/tgUSD/Rewards/RewardAccumulator.sol";
-import "../src/tgUSD/Utilities/ControlTower.sol";
-import "../src/tgUSD/Utilities/MarketCreator.sol";
-import "../src/tgUSD/Utilities/ZappingProxy.sol";
+import "../src/USG/Tokens/USG.sol";
+import "../src/USG/Tokens/WStable.sol";
+import "../src/USG/Rewards/RewardAccumulator.sol";
+import "../src/USG/Utilities/ControlTower.sol";
+import "../src/USG/Utilities/MarketCreator.sol";
+import "../src/USG/Utilities/ZappingProxy.sol";
 
 contract Deploy1 is Script {
     address convexCrvLPMarketImplem;

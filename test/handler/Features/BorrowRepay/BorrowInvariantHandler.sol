@@ -4,15 +4,15 @@ pragma solidity ^0.8.22;
 
 import {Test} from "forge-std/Test.sol";
 
-import "../../../../src/tgUSD/Market/abstract/MarketExternalActions.sol";
+import "../../../../src/USG/Market/abstract/MarketExternalActions.sol";
 
 contract BorrowInvariantHandler is Test {
     MarketExternalActions[] public markets;
 
-    IERC20 public tgUSD;
+    IERC20 public USG;
 
-    constructor(MarketExternalActions[] memory _markets, IERC20 _tgUSD) {
-        tgUSD = _tgUSD;
+    constructor(MarketExternalActions[] memory _markets, IERC20 _USG) {
+        USG = _USG;
         for (uint256 index = 0; index < _markets.length; index++) {
             markets.push(_markets[index]);
         }
@@ -34,7 +34,7 @@ contract BorrowInvariantHandler is Test {
         vm.stopPrank();
     }
 
-    function repay(address account, uint256 tgUSDToRepay, address callerZapper) public {
+    function repay(address account, uint256 USGToRepay, address callerZapper) public {
         skip(pickRandomDuration());
 
         MarketExternalActions _market = pickRandomMarket();
@@ -45,19 +45,19 @@ contract BorrowInvariantHandler is Test {
         if (userDebt == 0) {
             bool depositOrRepay = vm.randomBool();
             if (depositOrRepay) {
-                deposit(msg.sender, tgUSDToRepay, vm.randomBool());
+                deposit(msg.sender, USGToRepay, vm.randomBool());
                 return;
             } else {
-                borrow(msg.sender, tgUSDToRepay);
+                borrow(msg.sender, USGToRepay);
                 return;
             }
         }
 
         bool isFullRepay = vm.randomBool();
-        tgUSDToRepay = isFullRepay ? userDebt : bound(tgUSDToRepay, 1, userDebt - _market.minimumLoan());
-        deal(address(tgUSD), msg.sender, tgUSDToRepay);
+        USGToRepay = isFullRepay ? userDebt : bound(USGToRepay, 1, userDebt - _market.minimumLoan());
+        deal(address(USG), msg.sender, USGToRepay);
 
-        _market.repay(msg.sender, tgUSDToRepay);
+        _market.repay(msg.sender, USGToRepay);
         vm.stopPrank();
     }
 

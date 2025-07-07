@@ -23,7 +23,7 @@ contract ZapLeverage is MarketDeploymentContext {
 
     uint256 collatReceivedFromZap = 200_000 ether;
 
-    uint256 tgUSDToFlashMint = 750_000 ether;
+    uint256 USGToFlashMint = 750_000 ether;
     uint256 collatReceivedFromLeverage = 700_000 ether;
 
     function setUp() public {
@@ -36,7 +36,7 @@ contract ZapLeverage is MarketDeploymentContext {
 
         hLpManipulator = new HLPManipulator(usr2);
 
-        hLpManipulator.dumpCrvPool(lpDeploymentContext.tgUSDLPs("tgUSD-USDC"), 1, 0, 400_000 ether);
+        hLpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-USDC"), 1, 0, 400_000 ether);
         skip(30 minutes);
         irCalculator.checkpointIR(address(market));
         skip(500 days);
@@ -49,18 +49,18 @@ contract ZapLeverage is MarketDeploymentContext {
         deal(usr4, ethIn);
         deal(address(collatToken), address(mockRouter), collatReceivedFromZap + collatReceivedFromLeverage);
 
-        verifyMintERC20(tgUSD, tgUSDToFlashMint, "Some tgUSD are minted during leverage");
-        verifyReceiveERC20(tgUSD, address(mockRouter), tgUSDToFlashMint, "TgUSD are sent to the router");
+        verifyMintERC20(usg, USGToFlashMint, "Some USG are minted during leverage");
+        verifyReceiveERC20(usg, address(mockRouter), USGToFlashMint, "USG are sent to the router");
 
         verifyLostERC20(ETH_NAKED, usr4, ethIn, "ETH token taken from usr1");
         verifyReceiveERC20(collatToken, address(market), collatReceivedFromZap + collatReceivedFromLeverage, "Collat token received by the market");
 
         market.zapLeverage{value: ethIn}(
-            tgUSDToFlashMint,
+            USGToFlashMint,
             collatReceivedFromLeverage,
             false,
-            // Swap of tgUSD to collat
-            encoder.encodeSwapToMockRouter(address(mockRouter), tgUSD, tgUSDToFlashMint, collatToken, address(market), collatReceivedFromLeverage),
+            // Swap of USG to collat
+            encoder.encodeSwapToMockRouter(address(mockRouter), usg, USGToFlashMint, collatToken, address(market), collatReceivedFromLeverage),
             // Swap of ETH to collat
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
@@ -72,7 +72,7 @@ contract ZapLeverage is MarketDeploymentContext {
 
         uint256 index = irCalculator.debtIndexes(address(market));
 
-        uint256 shares = (tgUSDToFlashMint * RAY) / index;
+        uint256 shares = (USGToFlashMint * RAY) / index;
 
         uint256 expectedStaked = (totalCollat * (100_000 - market.socFeePercentage())) / 100_000;
         assertEq(market.collateralBalances(usr4), expectedStaked);
@@ -93,17 +93,17 @@ contract ZapLeverage is MarketDeploymentContext {
         deal(address(AddrClassicERC20.USDT), usr4, usdtIn);
         deal(address(collatToken), address(mockRouter), collatReceivedFromZap + collatReceivedFromLeverage);
 
-        verifyMintERC20(tgUSD, tgUSDToFlashMint, "Some tgUSD are minted during leverage");
-        verifyReceiveERC20(tgUSD, address(mockRouter), tgUSDToFlashMint, "TgUSD are sent to the router");
+        verifyMintERC20(usg, USGToFlashMint, "Some USG are minted during leverage");
+        verifyReceiveERC20(usg, address(mockRouter), USGToFlashMint, "USG are sent to the router");
 
         verifyLostERC20(AddrClassicERC20.USDT, usr4, usdtIn, "USDT token taken from usr1");
 
         market.zapLeverage(
-            tgUSDToFlashMint,
+            USGToFlashMint,
             collatReceivedFromLeverage,
             true,
-            // Swap of tgUSD to collat
-            encoder.encodeSwapToMockRouter(address(mockRouter), tgUSD, tgUSDToFlashMint, collatToken, address(market), collatReceivedFromLeverage),
+            // Swap of USG to collat
+            encoder.encodeSwapToMockRouter(address(mockRouter), usg, USGToFlashMint, collatToken, address(market), collatReceivedFromLeverage),
             // Swap of ETH to collat
             ZapStructDeposit({
                 tokenIn: AddrClassicERC20.USDT,
@@ -113,7 +113,7 @@ contract ZapLeverage is MarketDeploymentContext {
             })
         );
         uint256 index = irCalculator.debtIndexes(address(market));
-        uint256 shares = (tgUSDToFlashMint * RAY) / index;
+        uint256 shares = (USGToFlashMint * RAY) / index;
 
         assertEq(market.collateralBalances(usr4), totalCollat);
         assertEq(market.totalCollateral(), totalCollat);
@@ -129,13 +129,13 @@ contract ZapLeverage is MarketDeploymentContext {
         vm.startPrank(usr1);
         uint256 uDebt = market.userDebt(usr4);
 
-        deal(address(tgUSD), address(mockRouter), uDebt + (market.liquidationFee() * uDebt) / 100_000);
+        deal(address(usg), address(mockRouter), uDebt + (market.liquidationFee() * uDebt) / 100_000);
 
         market.liquidate(
             usr4,
             market.collateralBalances(usr4),
             0,
-            encoder.encodeSwapToMockRouter(address(mockRouter), collatToken, totalCollat, tgUSD, usr1, uDebt + (market.liquidationFee() * uDebt) / 100_000)
+            encoder.encodeSwapToMockRouter(address(mockRouter), collatToken, totalCollat, usg, usr1, uDebt + (market.liquidationFee() * uDebt) / 100_000)
         );
 
         assertEq(market.collateralBalances(usr4), 0);

@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 // Définition des répertoires
-const SRC_DIR = "src/tgUSD";
+const SRC_DIR = "src/USG";
 const FLATTENED_DIR = "flattened";
 
 // Fonction pour exécuter une commande shell
