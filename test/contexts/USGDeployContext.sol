@@ -94,7 +94,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         convexCrvLPMarketImplem = address(new ConvexCrvLPMarket());
         convexFxnLPMarketImplem = address(new ConvexFxnLPMarket());
-        marketBasicERC20 = address(new BasicERC20Market());
+        marketBasicERC20Implem = address(new BasicERC20Market());
 
         encoder = new Encoder();
         ensoUtils = new EnsoUtils();
