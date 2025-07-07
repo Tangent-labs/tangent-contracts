@@ -7,19 +7,15 @@ import {IStakingProxyERC20} from "../../../interfaces/externals/Convex/IStakingP
 import {MarketInit, GlobalMarketInitParams} from "../../../interfaces/internals/USG/IMarketCore.sol";
 import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 import {MarketExternalActions} from "../abstract/MarketExternalActions.sol";
-import {Sociabilization} from "../../Utilities/Sociabilization.sol";
 
 /// @notice Lending Market of a FXN LP on Convex
-contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
+contract ConvexFxnLPMarket is MarketExternalActions {
     ICvxFxnBooster constant CVX_BOOSTER = ICvxFxnBooster(0xAffe966B27ba3E4Ebb8A0eC124C7b7019CC762f8);
     IStakingProxyERC20 public stakingProxyVault;
 
-    function initialize(GlobalMarketInitParams memory _marketConstants, MarketInit memory _marketInit, uint256 _pid, uint256 _socFeePercentage) external {
+    function initialize(GlobalMarketInitParams memory _marketConstants, MarketInit memory _marketInit, uint256 _pid) external {
         // Common
         _initializationCommon(_marketConstants, _marketInit);
-
-        // Sociabilization
-        _initializeSociabilization(_socFeePercentage);
 
         // Convex FXN
         address vaultAddress = CVX_BOOSTER.createVault(_pid);
@@ -32,26 +28,13 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
                         DEPOSIT  
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function _depositSociabilization(uint256 lpDeposited, bool isStaked) internal override returns (uint256) {
-        require(lpDeposited != 0, ZeroCollatAmount());
-        uint256 stakedAmount = _sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR);
-        return stakedAmount;
-    }
-
-    function _postDeposit(IERC20 _collatToken, bool isStaked) internal override {
-        if (isStaked) {
-            stakingProxyVault.deposit(_collatToken.balanceOf(address(this)), true);
-        }
+    function _postDeposit(IERC20 _collatToken) internal override {
+        stakingProxyVault.deposit(_collatToken.balanceOf(address(this)), true);
     }
 
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {
-        uint256 lpAvailable = collatToken.balanceOf(address(this)) - socFeePending;
-
-        // Verify that all there are enough LlamaLend LP on the contract
-        if (lpAvailable < lpToWithdraw) {
-            // If not enough are on the contract, we need to withdraw the difference from Convex
-            stakingProxyVault.withdraw(lpToWithdraw - lpAvailable);
-        }
+        // Withdraw from Convex vault
+        stakingProxyVault.withdraw(lpToWithdraw);
 
         // Transfer the collateral back to the user
         collatToken.transfer(to, lpToWithdraw);
@@ -68,11 +51,5 @@ contract ConvexFxnLPMarket is MarketExternalActions, Sociabilization {
         stakingProxyVault.getReward();
 
         return _claimUnderlyingRewards(_rewardTokens);
-    }
-
-    //TODO Seems strange to me, enters maybe in collision with sociabilization pending fees.
-    function stakeAll(address receiver) external nonReentrant {
-        uint256 amountToStake = _stakeAll(receiver, collatToken);
-        stakingProxyVault.deposit(amountToStake, true);
     }
 }

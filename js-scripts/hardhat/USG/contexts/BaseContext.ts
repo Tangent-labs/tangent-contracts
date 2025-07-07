@@ -15,7 +15,7 @@ import {
     IRCalculator,
     IYearnV3Vault,
     MarketCreator,
-    MarketNoSociabilization,
+    BasicERC20Market,
     RewardAccumulator,
     VsTan,
     Tan,
@@ -49,7 +49,7 @@ export class BaseContext extends MainSetup {
 
     marketCvxCrvImplem!: ConvexCrvLPMarket;
     marketCvxFxnImplem!: ConvexFxnLPMarket;
-    marketNoSociabilizationImplem!: MarketNoSociabilization;
+    marketNoSociabilizationImplem!: BasicERC20Market;
 
     coins: {[name: string]: IERC20Metadata} = {};
 
@@ -81,7 +81,7 @@ export class BaseContext extends MainSetup {
         this.marketCvxFxnImplem = await (await ethers.getContractFactory("ConvexFxnLPMarket")).deploy();
         await this.marketCvxFxnImplem.waitForDeployment();
 
-        this.marketNoSociabilizationImplem = await (await ethers.getContractFactory("MarketNoSociabilization")).deploy();
+        this.marketNoSociabilizationImplem = await (await ethers.getContractFactory("BasicERC20Market")).deploy();
         await this.marketNoSociabilizationImplem.waitForDeployment();
     }
 

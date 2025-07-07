@@ -16,7 +16,6 @@ contract MarketDeploymentContext is MarketInitParams {
                 getMarketInit(initP.marketInit, collat),
                 isConvexLinked ? initP.cvxRewardToken : ICvxRewardToken(address(0)),
                 isConvexLinked ? initP.pid : 0,
-                initP.socFeePercentage,
                 getBaseIRParamsHEC(),
                 getBaseRCParams()
             )
@@ -46,7 +45,7 @@ contract MarketDeploymentContext is MarketInitParams {
         vm.startPrank(owner);
 
         ConvexFxnLPMarket convexMarket = ConvexFxnLPMarket(
-            marketCreator.createConvexFxnMarket(getMarketInit(initP.marketInit, collat), initP.pid, initP.socFeePercentage, getBaseIRParamsLEC(), getBaseRCParams())
+            marketCreator.createConvexFxnMarket(getMarketInit(initP.marketInit, collat), initP.pid, getBaseIRParamsLEC(), getBaseRCParams())
         );
 
         verifyParams_and_dealCollat(initP.marketInit.collat);
@@ -63,13 +62,11 @@ contract MarketDeploymentContext is MarketInitParams {
         return convexMarket;
     }
 
-    function deployMarketNoSociabilisation(IERC20Metadata collat) public returns (MarketNoSociabilization) {
-        MarketInitSimplified memory marketInit = noSociabilizationMaps[address(collat)];
+    function deployBasicERC20Market(IERC20Metadata collat) public returns (BasicERC20Market) {
+        MarketInitSimplified memory marketInit = basicERC20Maps[address(collat)];
         vm.startPrank(owner);
 
-        MarketNoSociabilization marketNoSoc = MarketNoSociabilization(
-            marketCreator.createNoSociabilizationMarket(getMarketInit(marketInit, collat), getBaseIRParamsLEC(), getBaseRCParams())
-        );
+        BasicERC20Market marketNoSoc = BasicERC20Market(marketCreator.createBasicERC20Market(getMarketInit(marketInit, collat), getBaseIRParamsLEC(), getBaseRCParams()));
 
         verifyParams_and_dealCollat(marketInit.collat);
 

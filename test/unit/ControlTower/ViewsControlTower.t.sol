@@ -22,7 +22,7 @@ contract ViewsControlTower is MarketDeploymentContext {
     function test_areContractsMarkets() external {
         address market1 = address(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true));
         address market2 = address(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD));
-        address market3 = address(deployMarketNoSociabilisation(AddrPTPendle.sUSDe_31_07_25));
+        address market3 = address(deployBasicERC20Market(AddrPTPendle.sUSDe_31_07_25));
 
         assertTrue(controlTower.areContractsMarkets(Array.memoryAddress([market1, market2, market3])));
         assertFalse(controlTower.areContractsMarkets(Array.memoryAddress([market1, address(0), market3])));

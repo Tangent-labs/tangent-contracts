@@ -23,7 +23,6 @@ contract ZapDepositAndBorrow is MarketDeploymentContext {
 
         market.zapDepositAndBorrow{value: amountIn}(
             USGToBorrow,
-            true,
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
@@ -45,7 +44,6 @@ contract ZapDepositAndBorrow is MarketDeploymentContext {
 
         market.zapDepositAndBorrow(
             USGToBorrow,
-            false,
             ZapStructDeposit({
                 tokenIn: AddrClassicERC20.USDC,
                 amountIn: amountIn,

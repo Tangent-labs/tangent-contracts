@@ -34,7 +34,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
         skip(1 hours);
 
-        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed, true);
+        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed);
     }
 
     function test_liquidateBadDebt_fails_because_no_bad_debt() external {
@@ -83,7 +83,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
         skip(1 days);
         hDeposit.setMsgSender(usr2);
-        hDeposit.depositAndBorrow(10 ether, USGBorrowed, true);
+        hDeposit.depositAndBorrow(10 ether, USGBorrowed);
 
         verifyLostERC20(usg, usr2, badDebtToRepay, "Verify that the usr2 loose the USG");
         verifyBurnERC20(usg, badDebtToRepay, "Verify that the supply of USG is reduced");

@@ -25,12 +25,12 @@ contract AddConvexLinkLater is MarketDeploymentContext {
 
         vm.startPrank(usr1);
         collatToken.approve(address(market), MAX_UINT);
-        market.deposit(usr1, amountIn, true);
+        market.deposit(usr1, amountIn);
         vm.stopPrank();
 
         vm.startPrank(usr2);
         collatToken.approve(address(market), MAX_UINT);
-        market.deposit(usr2, amountIn, false);
+        market.deposit(usr2, amountIn);
         vm.stopPrank();
 
         assertEq(0, market.socFeePending());
@@ -53,14 +53,12 @@ contract AddConvexLinkLater is MarketDeploymentContext {
         vm.stopPrank();
 
         vm.startPrank(usr1);
-        market.deposit(usr1, amountIn, true);
+        market.deposit(usr1, amountIn);
         vm.stopPrank();
 
         vm.startPrank(usr2);
-        market.deposit(usr2, amountIn, false);
+        market.deposit(usr2, amountIn);
         vm.stopPrank();
-
-        assertEq((amountIn * market.socFeePercentage()) / 100_000, market.socFeePending());
 
         vm.prank(owner);
         rewardAccumulator.addNewRewards(address(market), rewards);

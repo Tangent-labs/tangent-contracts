@@ -5,13 +5,13 @@ contract AccessControlMarkets is MarketDeploymentContext {
     ConvexCrvLPMarket marketCrv;
     ConvexCrvLPMarket marketCrvWithoutConvex;
     ConvexFxnLPMarket marketFxn;
-    MarketNoSociabilization marketNoSoc;
+    BasicERC20Market marketNoSoc;
 
     function setUp() public {
         marketCrv = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
         marketCrvWithoutConvex = deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, false);
         marketFxn = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
-        marketNoSoc = deployMarketNoSociabilisation(AddrPTPendle.sUSDe_31_07_25);
+        marketNoSoc = deployBasicERC20Market(AddrPTPendle.sUSDe_31_07_25);
 
         vm.startPrank(usr1);
     }

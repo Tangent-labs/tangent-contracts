@@ -8,7 +8,6 @@ import {ICollateral} from "../../interfaces/internals/USG/ICollateral.sol";
 import {IDebtIR} from "../../interfaces/internals/USG/IDebtIR.sol";
 import {IIRCalculator, IRParams} from "../../interfaces/internals/USG/IIRCalculator.sol";
 import {IPriceOracle} from "../../interfaces/internals/USG/IPriceOracle.sol";
-import {ISociabilization} from "../../interfaces/internals/USG/ISociabilization.sol";
 import {IRewardAccumulator, RCParams, Reward} from "../../interfaces/internals/USG/IRewardAccumulator.sol";
 
 contract GetMarketDetails is BalancesAllowances, ERC20Infos {
@@ -39,10 +38,6 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         IRParams irParams;
         RCParams rcParams;
     }
-    struct Sociabilization {
-        uint256 socFeePercentage;
-        uint256 socFeePending;
-    }
 
     struct MarketRewards {
         ERC20StaticInfos erc20Info;
@@ -53,7 +48,6 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         CollateralInfos collateralInfos;
         DebtInfos debtInfos;
         MarketConstants constants;
-        Sociabilization sociabilization;
         OutputBalanceAllowances[] obas;
         MarketRewards[] rewardData;
     }
@@ -65,7 +59,6 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                 collateralInfos: _getCollateralInfos(account, market),
                 debtInfos: _getDebtInfos(account, market),
                 constants: _getMarketConstants(market),
-                sociabilization: _getSociabilization(market),
                 obas: _getBalancesAllowances(account, market),
                 rewardData: _getRewardData(market)
             });
@@ -123,18 +116,6 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
             });
     }
 
-    function _getSociabilization(address market) internal view returns (Sociabilization memory) {
-        Sociabilization memory soc;
-
-        try ISociabilization(market).socFeePercentage() {
-            ISociabilization sociabilization = ISociabilization(market);
-            soc = Sociabilization({socFeePercentage: sociabilization.socFeePercentage(), socFeePending: sociabilization.socFeePending()});
-        } catch {
-            soc = Sociabilization({socFeePercentage: 0, socFeePending: 0});
-        }
-
-        return soc;
-    }
     function _getBalancesAllowances(address account, address market) internal view returns (OutputBalanceAllowances[] memory) {
         IERC20Metadata collatToken = ICollateral(market).collatToken();
 

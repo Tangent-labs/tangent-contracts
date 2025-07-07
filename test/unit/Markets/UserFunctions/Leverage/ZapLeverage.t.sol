@@ -58,7 +58,6 @@ contract ZapLeverage is MarketDeploymentContext {
         market.zapLeverage{value: ethIn}(
             USGToFlashMint,
             collatReceivedFromLeverage,
-            false,
             // Swap of USG to collat
             encoder.encodeSwapToMockRouter(address(mockRouter), usg, USGToFlashMint, collatToken, address(market), collatReceivedFromLeverage),
             // Swap of ETH to collat
@@ -74,7 +73,6 @@ contract ZapLeverage is MarketDeploymentContext {
 
         uint256 shares = (USGToFlashMint * RAY) / index;
 
-        uint256 expectedStaked = (totalCollat * (100_000 - market.socFeePercentage())) / 100_000;
         assertEq(market.collateralBalances(usr4), expectedStaked);
         assertEq(market.totalCollateral(), expectedStaked);
         assertEq(market.socFeePending(), totalCollat - expectedStaked);
@@ -101,7 +99,6 @@ contract ZapLeverage is MarketDeploymentContext {
         market.zapLeverage(
             USGToFlashMint,
             collatReceivedFromLeverage,
-            true,
             // Swap of USG to collat
             encoder.encodeSwapToMockRouter(address(mockRouter), usg, USGToFlashMint, collatToken, address(market), collatReceivedFromLeverage),
             // Swap of ETH to collat

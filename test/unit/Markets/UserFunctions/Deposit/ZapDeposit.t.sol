@@ -31,7 +31,6 @@ contract ZapDeposit is MarketDeploymentContext {
 
         market.zapDeposit(
             usr1,
-            true,
             ZapStructDeposit({
                 tokenIn: AddrClassicERC20.CRV,
                 amountIn: amountIn,
@@ -65,7 +64,6 @@ contract ZapDeposit is MarketDeploymentContext {
 
         market.zapDeposit{value: amountIn}(
             usr1,
-            true,
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
@@ -86,7 +84,6 @@ contract ZapDeposit is MarketDeploymentContext {
 
         market.zapDeposit{value: amountIn}(
             usr1,
-            false,
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
@@ -95,14 +92,9 @@ contract ZapDeposit is MarketDeploymentContext {
             })
         );
 
-        uint256 collatAdded = (amountOut * (100_000 - market.socFeePercentage())) / 100_000;
-        uint256 fee = amountOut - collatAdded;
-        uint256 amountOut_ = amountOut;
-
-        assertEq(market.socFeePending(), fee);
-        assertEq(market.cvxRewardToken().balanceOf(address(market)), amountOut_, "AmountOut is staked by the market in Convex");
-        assertEq(market.collateralBalances(usr1), amountOut_ + collatAdded, "User collateral is equal to the amountOut + collatAdded");
-        assertEq(market.totalCollateral(), amountOut_ + collatAdded, "Total collateral is equal to the amountOut + collatAdded");
+        assertEq(market.cvxRewardToken().balanceOf(address(market)), amountOut, "AmountOut is staked by the market in Convex");
+        assertEq(market.collateralBalances(usr1), amountOut + collatAdded, "User collateral is equal to the amountOut + collatAdded");
+        assertEq(market.totalCollateral(), amountOut + collatAdded, "Total collateral is equal to the amountOut + collatAdded");
 
         assertERC20Tracking();
 
@@ -111,24 +103,22 @@ contract ZapDeposit is MarketDeploymentContext {
         vm.stopPrank();
         vm.startPrank(usr2);
 
-        verifyLostERC20(collatToken, address(market), amountOut_, "Market receives the collat token");
+        verifyLostERC20(collatToken, address(market), amountOut, "Market receives the collat token");
 
         market.zapDeposit{value: amountIn}(
             usr2,
-            true,
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
-                minAmountOut: amountOut_,
-                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, collatToken, address(market), amountOut_)
+                minAmountOut: amountOut,
+                zap: encoder.encodeSwapToMockRouter(address(mockRouter), ETH_NAKED, amountIn, collatToken, address(market), amountOut)
             })
         );
 
-        assertEq(market.socFeePending(), 0);
-        assertEq(market.cvxRewardToken().balanceOf(address(market)), 3 * amountOut_, "AmountOut is staked by the market in Convex");
-        assertEq(market.collateralBalances(usr1), amountOut_ + collatAdded, "User collateral is equal to the amountOut + collatAdded");
-        assertEq(market.collateralBalances(usr2), amountOut_ + (amountOut_ - collatAdded), "1 amountOut + fee that are pending");
-        assertEq(market.totalCollateral(), 3 * amountOut_, "Total collateral is equal to the amountOut + collatAdded");
+        assertEq(market.cvxRewardToken().balanceOf(address(market)), 3 * amountOut, "AmountOut is staked by the market in Convex");
+        assertEq(market.collateralBalances(usr1), 2 * amountOut, "User collateral is equal to the amountOut + collatAdded");
+        assertEq(market.collateralBalances(usr2), 2 * amountOut, "1 amountOut + fee that are pending");
+        assertEq(market.totalCollateral(), 3 * amountOut, "Total collateral is equal to the amountOut + collatAdded");
 
         assertERC20Tracking();
     }
@@ -158,7 +148,6 @@ contract ZapDeposit is MarketDeploymentContext {
 
         market.zapDeposit(
             usr1,
-            false,
             ZapStructDeposit({
                 tokenIn: AddrClassicERC20.CVX,
                 amountIn: 1,
@@ -172,7 +161,6 @@ contract ZapDeposit is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(ZappingUtil.InvalidZapValue.selector));
         market.zapDeposit{value: 10 ether}(
             usr1,
-            false,
             ZapStructDeposit({
                 tokenIn: AddrClassicERC20.CRV,
                 amountIn: 1,

@@ -33,7 +33,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount, true);
+        hDeposit.depositAndBorrow(amountIn, borrowedAmount);
 
         uint256 withdrawnAmount = 1_000 ether;
 
@@ -52,7 +52,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount, false);
+        hDeposit.depositAndBorrow(amountIn, borrowedAmount);
 
         uint256 withdrawnAmount = 1_000 ether;
 
@@ -72,8 +72,8 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountInStaked = 10_000 ether;
         uint256 borrowedAmount1 = 5_000 ether;
         uint256 borrowedAmount2 = 1_000 ether;
-        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount1, true);
-        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount2, false);
+        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount1);
+        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount2);
 
         uint256 withdrawnAmount = 12_000 ether;
         uint256 availableAmount = market.collatToken().balanceOf(address(market)) - market.socFeePending();
@@ -95,16 +95,16 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
     }
 
     function test_several_stake_then_stakeAll_then_withdraw_all() external {
-        hDeposit.depositAndBorrow(158_492 ether, 120_000 ether, false);
-        hDeposit.depositAndBorrow(158_492 ether, 120_000 ether, true);
-        hDeposit.depositAndBorrow(158_492 ether, 120_000 ether, false);
+        hDeposit.depositAndBorrow(158_492 ether, 120_000 ether);
+        hDeposit.depositAndBorrow(158_492 ether, 120_000 ether);
+        hDeposit.depositAndBorrow(158_492 ether, 120_000 ether);
 
         market.stakeAll(usr1);
     }
 
     function test_deposit_fails_when_0_collat_to_stake() external {
         vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
-        market.deposit(usr1, 0, false);
+        market.deposit(usr1, 0);
 
         vm.startPrank(usr1);
         deal(address(collatToken), usr1, 30);

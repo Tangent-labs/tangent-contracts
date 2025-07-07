@@ -37,7 +37,7 @@ contract CreateMarket is MarketDeploymentContext {
     function test_createNoSocMarket_fails_as_not_owner() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        marketCreator.createNoSociabilizationMarket(marketInit, irParams, rcParams);
+        marketCreator.createBasicERC20Market(marketInit, irParams, rcParams);
     }
 
     function test_market_creation_fails_as_maxLTV_smaller_than_liquidation_threshold() external {
@@ -45,14 +45,14 @@ contract CreateMarket is MarketDeploymentContext {
         marketInit.maxLTV = 90_000;
         marketInit.liquidationThreshold = 89_000;
         vm.expectRevert(abi.encodeWithSelector(Collateral.LiquidationThresholdTooLow.selector));
-        marketCreator.createNoSociabilizationMarket(marketInit, irParams, rcParams);
+        marketCreator.createBasicERC20Market(marketInit, irParams, rcParams);
     }
 
     function test_market_creation_fails_as_liquidation_threshold_more_than_100() external {
         vm.startPrank(owner);
         marketInit.liquidationThreshold = 100_000;
         vm.expectRevert(abi.encodeWithSelector(Collateral.LiquidationThresholdTooHigh.selector));
-        marketCreator.createNoSociabilizationMarket(marketInit, irParams, rcParams);
+        marketCreator.createBasicERC20Market(marketInit, irParams, rcParams);
     }
 
     function test_market_creation_fails_as_liquidation_fee_more_than_15() external {
@@ -63,16 +63,6 @@ contract CreateMarket is MarketDeploymentContext {
 
         marketInit.liquidationFee = 15_000;
         vm.expectRevert(abi.encodeWithSelector(Collateral.LiquidationFeeTooHigh.selector));
-        marketCreator.createNoSociabilizationMarket(marketInit, irParams, rcParams);
-    }
-
-    function test_market_creation_fails_as_soc_fee_more_than_2() external {
-        vm.startPrank(owner);
-
-        marketInit.maxLTV = 89_000;
-        marketInit.liquidationThreshold = 90_000;
-
-        vm.expectRevert(abi.encodeWithSelector(Sociabilization.SocFeeTooHigh.selector));
-        marketCreator.createConvexFxnMarket(marketInit, 12, 2_001, irParams, rcParams);
+        marketCreator.createBasicERC20Market(marketInit, irParams, rcParams);
     }
 }

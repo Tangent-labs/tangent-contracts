@@ -61,8 +61,8 @@ abstract contract HMarketBase is HandlerBase {
     }
 
     function _beforeBorrowCheck(MarketCore _market, address receiver, uint256 borrowedAmount) internal {
-        verifyMintERC20(_market.USG(), borrowedAmount, "USG are  minted");
-        verifyReceiveERC20(_market.USG(), receiver, borrowedAmount, "USG borrowed is received by receiver");
+        verifyMintERC20(_market.usg(), borrowedAmount, "USG are  minted");
+        verifyReceiveERC20(_market.usg(), receiver, borrowedAmount, "USG borrowed is received by receiver");
     }
 
     // function _afterBorrowCheck(
@@ -83,8 +83,8 @@ abstract contract HMarketBase is HandlerBase {
     // }
 
     function _beforeRepayCheck(MarketCore _market, uint256 repayedAmount) internal {
-        verifyLostERC20(_market.USG(), sender, repayedAmount, "USG repayed is burnt from sender");
-        verifyBurnERC20(_market.USG(), repayedAmount, "USG repayed is burnt");
+        verifyLostERC20(_market.usg(), sender, repayedAmount, "USG repayed is burnt from sender");
+        verifyBurnERC20(_market.usg(), repayedAmount, "USG repayed is burnt");
     }
 
     function _afterRepayCheck(

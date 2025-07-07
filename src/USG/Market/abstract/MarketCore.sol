@@ -57,7 +57,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         isInitialized = true;
 
         // Core references initialization
-        USG = _globalParams._USG;
+        usg = _globalParams._USG;
         controlTower = _globalParams._controlTower;
         irCalculator = _globalParams._irCalculator;
         rewardAccumulator = _globalParams._rewardAccumulator;
@@ -113,7 +113,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @param _for            Address of the user/position receiving collateral.
      * @param amountDeposited Amount of collateral deposited.
      */
-    function _deposit(address _for, uint256 amountDeposited, IERC20 _collatToken, bool isStaked) internal {
+    function _deposit(address _for, uint256 amountDeposited, IERC20 _collatToken) internal {
         // Cannot deposit on a market with paused deposits
         require(!isDepositPaused, DepositPaused());
         // Checkpoint the IR and indexes
@@ -121,28 +121,15 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Increase collateral balance of the position and update total debt
         _updateCollateral(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited);
 
-        _postDeposit(_collatToken, isStaked);
-    }
-
-    /**
-     * @dev Hook to modify or process LP tokens deposited, e.g. staking or rewards integration.
-     *      When not override, returns the collatDeposited as is. Otherwise, refers to the overriding implementation.
-     * @param collatDeposited Amount of LP tokens deposited.
-     * @param isStaked        Whether the deposited tokens are staked or not.
-     * @return Returns the adjusted deposited LP amount.
-     */
-    function _depositSociabilization(uint256 collatDeposited, bool isStaked) internal virtual returns (uint256) {
-        require(collatDeposited != 0, ZeroCollatAmount());
-        return collatDeposited;
+        _postDeposit(_collatToken);
     }
 
     /**
      * @dev Hook after deposit to allow extended logic such as staking the collateral in an underlying protocol.
      *      When not override, does nothing. Otherwise, refers to the overriding implementation.
      * @param _collatToken Collateral token being deposited.
-     * @param isStaked     Whether tokens are staked post-deposit.
      */
-    function _postDeposit(IERC20 _collatToken, bool isStaked) internal virtual {}
+    function _postDeposit(IERC20 _collatToken) internal virtual {}
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         WITHDRAW
@@ -231,7 +218,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // If it's a leverage transaction, USG is already minted before
         if (!isLeverage) {
             // Mint USG to the receiver
-            USG.mint(receiver, USGToBorrow);
+            usg.mint(receiver, USGToBorrow);
         }
 
         return (_userDebtShares + newUserDebtShares, newTotalDebtShares);
@@ -243,7 +230,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @param USGToBorrow   Amount of USG to borrow.
      * @param isLeverage      Whether this borrow is part of a leverage transaction.
      */
-    function _depositAndBorrow(uint256 amountDeposited, uint256 USGToBorrow, IERC20 _collatToken, bool isStaked, bool isLeverage) internal {
+    function _depositAndBorrow(uint256 amountDeposited, uint256 USGToBorrow, IERC20 _collatToken, bool isLeverage) internal {
         require(!isDepositPaused, DepositPaused());
         // Collat amount after the deposit
         uint256 newCollatAmount = collateralBalances[msg.sender] + amountDeposited;
@@ -252,7 +239,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         _updateCollatAndDebts(msg.sender, newCollatAmount, totalCollateral + amountDeposited, newUserDebtShare, newTotalDebtShares);
 
-        _postDeposit(_collatToken, isStaked);
+        _postDeposit(_collatToken);
     }
 
     /* --------
@@ -313,7 +300,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             require(newUserDebt >= minimumLoan, UserDebtTooLow());
         }
 
-        USG.burnFrom(msg.sender, USGToRepay);
+        usg.burnFrom(msg.sender, USGToRepay);
 
         return (USGToRepay, newUserDebtShares, totalDebtShares - sharesToRemove, newUserDebt, isFullRepay);
     }
@@ -454,7 +441,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         _postLiquidate(collatAmountToLiquidate, USGToRepay + fee, liquidateInput.minUSGOut, liquidateCall);
 
         if (fee != 0) {
-            USG.mint(controlTower.feeTreasury(), fee);
+            usg.mint(controlTower.feeTreasury(), fee);
         }
 
         return (collatAmountToLiquidate, USGToRepay, fee, isRepayAll);
@@ -479,13 +466,13 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // When liquidator is not zero, it allows to the LiquidatorProxy to receive the collateral.
         // Then, if needed, liquidator will allow the custom Liquidator to sell the collateral for USG in the same transaction.
         if (liquidationCall.router != address(0)) {
-            _zappingProxy.zapProxy(collatToken, USG, minUSGOut, msg.sender, liquidationCall);
+            _zappingProxy.zapProxy(collatToken, usg, minUSGOut, msg.sender, liquidationCall);
         }
 
         // Burns USG from the sender.
         // The debt has to be on the caller of the transaction.
         // In case a liquidator is passed in parameter, it needs to send it back to the sender of the tx.
-        USG.burnFrom(msg.sender, USGToBurn);
+        usg.burnFrom(msg.sender, USGToBurn);
     }
 
     /**
@@ -526,7 +513,6 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @param collatToDeposit    Amount of collateral to deposit
      * @param USGToFlashMint   Amount of USG to add to the user debt and to sell for collateral
      * @param minCollatAmountOut Minimum amount of collat received through the selling of 'USGToFlashMint' USG
-     * @param isStaked           Whether the deposited tokens are staked or not.
      * @param dumpUSGCall      Contains address and bytes of the contract to sell USG for collateral
      * @return Amount of collateral bought with the 'USGToFlashMint'
      * @return Amount of collareal to stake for the sender
@@ -536,25 +522,24 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         uint256 collatToDeposit,
         uint256 USGToFlashMint,
         uint256 minCollatAmountOut,
-        bool isStaked,
         ZapStruct calldata dumpUSGCall
     ) internal returns (uint256, uint256) {
         require(!isDepositPaused, DepositPaused());
         require(!isLeveragePaused, LeveragePaused());
 
-        IUSG _USG = USG;
+        IUSG _usg = usg;
 
         IZappingProxy _zappingProxy = zappingProxy;
 
         // Mint the USG on the Zapper, ready to be exchanged through the router
-        _USG.mint(address(_zappingProxy), USGToFlashMint);
+        _usg.mint(address(_zappingProxy), USGToFlashMint);
         // Exchange the USG that has just been minted on the Zapper for the collateral of the market
-        uint256 collatBought = _zappingProxy.zapProxy(_USG, collatToken, minCollatAmountOut, address(this), dumpUSGCall);
+        uint256 collatBought = _zappingProxy.zapProxy(_usg, collatToken, minCollatAmountOut, address(this), dumpUSGCall);
 
-        uint256 stakedAmount = _depositSociabilization(collatToDeposit + collatBought, isStaked);
+        uint256 stakedAmount = collatToDeposit + collatBought;
 
         // Performs same modification as in depositAndBorrow
-        _depositAndBorrow(stakedAmount, USGToFlashMint, _collatToken, isStaked, true);
+        _depositAndBorrow(stakedAmount, USGToFlashMint, _collatToken, true);
 
         return (collatBought, stakedAmount);
     }

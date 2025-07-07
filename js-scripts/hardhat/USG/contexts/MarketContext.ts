@@ -1,6 +1,6 @@
 import {ethers} from "hardhat";
 import {AddressLike, ContractTransactionReceipt, Interface, InterfaceAbi, LogDescription, MaxUint256} from "ethers";
-import {ConvexCrvLPMarket, ConvexFxnLPMarket, MarketNoSociabilization} from "../../../../typechain-types";
+import {ConvexCrvLPMarket, ConvexFxnLPMarket, BasicERC20Market} from "../../../../typechain-types";
 import {BaseContext} from "./BaseContext";
 import {OracleContext} from "./OracleContext";
 import {
@@ -14,7 +14,7 @@ import {
 } from "../config/market";
 
 import * as MarketCreator from "../../../../artifacts/src/USG/Utilities/MarketCreator.sol/MarketCreator.json";
-import {MarketInitStruct} from "../../../../typechain-types/src/USG/Market/MarketNoSociabilization";
+import {MarketInitStruct} from "../../../../typechain-types/src/USG/Market/BasicERC20Market";
 import {commonERC20} from "defi-resources";
 
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
@@ -24,7 +24,7 @@ export type PendlePTMarketsKeys = keyof typeof STATIC_CONFIG_PT_PENDLE;
 export class MarketContext {
     convexCrvMarkets: {[key: string]: ConvexCrvLPMarket} = {};
     convexFxnMarkets: {[key: string]: ConvexFxnLPMarket} = {};
-    pendlePTMarkets: {[key: string]: MarketNoSociabilization} = {};
+    pendlePTMarkets: {[key: string]: BasicERC20Market} = {};
 
     marketInit(staticConfig: any, oracle: AddressLike, name: string): MarketInitStruct {
         return {
@@ -91,7 +91,7 @@ export class MarketContext {
             const receipt = await (
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
-                    .createNoSociabilizationMarket(
+                    .createBasicERC20Market(
                         this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], "PENDLE PT - " + staticConfig.collatName),
                         LEC_CONFIG_IR_PARAMS,
                         LEC_CONFIG_RC_PARAMS
@@ -109,7 +109,7 @@ export class MarketContext {
         for (let index = 0; index < receipt!.logs.length; index++) {
             const log = receipt!.logs[index];
             const parsedLog = iface.parseLog(log)!;
-            if (parsedLog?.name && ["MarketConvexCrvCreated", "MarketConvexFxnCreated", "MarketNoSociabilizationCreated"].includes(parsedLog.name)) {
+            if (parsedLog?.name && ["MarketConvexCrvCreated", "MarketConvexFxnCreated", "BasicERC20MarketCreated"].includes(parsedLog.name)) {
                 if (STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys]) {
                     const market = await this.getConvexCrvMarket(parsedLog);
                     this.convexCrvMarkets[key] = market;
@@ -137,6 +137,6 @@ export class MarketContext {
     }
 
     async getNoSocMarket(parsedLog: LogDescription) {
-        return await ethers.getContractAt("MarketNoSociabilization", parsedLog.args.proxy);
+        return await ethers.getContractAt("BasicERC20Market", parsedLog.args.proxy);
     }
 }

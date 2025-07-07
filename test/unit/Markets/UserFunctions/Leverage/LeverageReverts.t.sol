@@ -25,7 +25,7 @@ contract LeverageReverts is MarketDeploymentContext {
         market.setIsDepositPaused(true);
 
         vm.expectRevert(abi.encodeWithSelector(MarketCore.DepositPaused.selector));
-        market.leverage(0, 10, 100, true, ZapStruct({router: address(collatToken), routerCall: ""}));
+        market.leverage(0, 10, 100, ZapStruct({router: address(collatToken), routerCall: ""}));
     }
 
     function test_leverage_when_borrow_paused() external {
@@ -38,7 +38,7 @@ contract LeverageReverts is MarketDeploymentContext {
         market.setIsBorrowPaused(true);
         ZapStruct memory zap = encoder.encodeSwapToMockRouter(address(mockRouter), usg, USGMinted, collatToken, address(market), collatOut);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.BorrowPaused.selector));
-        market.leverage(0, USGMinted, collatOut, true, zap);
+        market.leverage(0, USGMinted, collatOut, zap);
     }
 
     function test_leverage_when_leverage_paused() external {
@@ -46,6 +46,6 @@ contract LeverageReverts is MarketDeploymentContext {
         market.setIsLeveragePaused(true);
 
         vm.expectRevert(abi.encodeWithSelector(MarketCore.LeveragePaused.selector));
-        market.leverage(0, 10, 100, true, ZapStruct({router: address(collatToken), routerCall: ""}));
+        market.leverage(0, 10, 100, ZapStruct({router: address(collatToken), routerCall: ""}));
     }
 }
