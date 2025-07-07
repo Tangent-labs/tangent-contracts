@@ -134,6 +134,23 @@ interface IPendleRouterV4 {
         uint256 netSyInterm
     );
 
+    function addLiquidityDualTokenAndPt(
+        address receiver,
+        address market,
+        TokenInput calldata input,
+        uint256 netPtDesired,
+        uint256 minLpOut
+    ) external payable returns (uint256 netLpOut, uint256 netPtUsed, uint256 netSyInterm);
+
+    function removeLiquiditySinglePt(
+        address receiver,
+        address market,
+        uint256 netLpToRemove,
+        uint256 minPtOut,
+        ApproxParams calldata guessPtReceivedFromSy,
+        LimitOrderData calldata limit
+    ) external returns (uint256 netPtOut, uint256 netSyFee);
+
     function swapExactPtForSy(
         address receiver,
         address market,
@@ -184,4 +201,12 @@ interface IPendleRouterV4 {
         TokenInput calldata input,
         LimitOrderData calldata limit
     ) external returns (uint256 netLpOut, uint256 netSyFee, uint256 netSyInterm);
+
+    function addLiquiditySingleTokenKeepYt(
+        address receiver,
+        address market,
+        uint256 minLpOut,
+        uint256 minYtOut,
+        TokenInput calldata input
+    ) external payable returns (uint256 netLpOut, uint256 netYtOut, uint256 netSyMintPy, uint256 netSyInterm);
 }
