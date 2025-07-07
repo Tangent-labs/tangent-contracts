@@ -542,9 +542,6 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         uint256 stakedAmount = collatToDeposit + collatBought;
 
-        // Cannot deposit 0
-        require(stakedAmount != 0, ZeroCollatAmount());
-
         // Performs same modification as in depositAndBorrow
         _depositAndBorrow(stakedAmount, USGToFlashMint, _collatToken, true);
 
