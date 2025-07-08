@@ -15,7 +15,7 @@ import {
     IRCalculator,
     IYearnV3Vault,
     MarketCreator,
-    MarketNoSociabilization,
+    BasicERC20Market,
     RewardAccumulator,
     VsTan,
     Tan,
@@ -49,7 +49,7 @@ export class BaseContext extends MainSetup {
 
     marketCvxCrvImplem!: ConvexCrvLPMarket;
     marketCvxFxnImplem!: ConvexFxnLPMarket;
-    marketNoSociabilizationImplem!: MarketNoSociabilization;
+    marketBasicER20Implem!: BasicERC20Market;
 
     coins: {[name: string]: IERC20Metadata} = {};
 
@@ -81,8 +81,8 @@ export class BaseContext extends MainSetup {
         this.marketCvxFxnImplem = await (await ethers.getContractFactory("ConvexFxnLPMarket")).deploy();
         await this.marketCvxFxnImplem.waitForDeployment();
 
-        this.marketNoSociabilizationImplem = await (await ethers.getContractFactory("MarketNoSociabilization")).deploy();
-        await this.marketNoSociabilizationImplem.waitForDeployment();
+        this.marketBasicER20Implem = await (await ethers.getContractFactory("BasicERC20Market")).deploy();
+        await this.marketBasicER20Implem.waitForDeployment();
     }
 
     async deploysUSG() {
@@ -121,7 +121,7 @@ export class BaseContext extends MainSetup {
             this.zappingProxy,
             this.marketCvxCrvImplem,
             this.marketCvxFxnImplem,
-            this.marketNoSociabilizationImplem
+            this.marketBasicER20Implem
         );
         await this.marketCreator.waitForDeployment();
 
@@ -267,7 +267,7 @@ export async function createJSONAddress(
         implementations: {
             convexCrvMarket: await baseContext.marketCvxCrvImplem.getAddress(),
             convexFxnMarket: await baseContext.marketCvxFxnImplem.getAddress(),
-            noSociabilizationMarket: await baseContext.marketNoSociabilizationImplem.getAddress(),
+            basicERC20Market: await baseContext.marketBasicER20Implem.getAddress(),
         },
         markets,
         oracles,

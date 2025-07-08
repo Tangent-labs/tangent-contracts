@@ -48,7 +48,7 @@ contract BorrowReverts is MarketDeploymentContext {
     }
 
     function test_borrow_more_than_LTV_with_not_enough_collat() external {
-        hDeposit.deposit(usr1, 3 ether, false);
+        hDeposit.deposit(usr1, 3 ether);
         uint256 maxBorrow = market.maxBorrowable(usr1);
 
         vm.startPrank(usr1);

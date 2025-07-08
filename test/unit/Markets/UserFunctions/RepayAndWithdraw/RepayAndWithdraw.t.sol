@@ -20,7 +20,7 @@ contract RepayAndWithdraw is MarketDeploymentContext {
         deal(address(collatToken), usr1, 100_000 ether);
         collatToken.approve(address(market), MAX_UINT);
 
-        market.depositAndBorrow(depositedAmount, debtBorrow, true);
+        market.depositAndBorrow(depositedAmount, debtBorrow);
     }
 
     function test_repayAndWithdraw_fully() external {

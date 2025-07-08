@@ -23,7 +23,7 @@ contract SelfLiquidateDirect is MarketDeploymentContext {
         market = deployConvexCurveLPMarket(collatToken, true);
 
         hDeposit = new HDepositConvexCrvLP(usr1, market);
-        hDeposit.depositAndBorrow(collatDeposited, initialDebt, true);
+        hDeposit.depositAndBorrow(collatDeposited, initialDebt);
     }
 
     function test_selfLiquidate_all_position_with_USG_having_before() external {

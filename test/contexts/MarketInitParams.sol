@@ -6,19 +6,17 @@ import "./WStableContext.sol";
 contract MarketInitParams is WStableContext {
     mapping(address => ParamsInitConvexCurveLPMarket) public cvxCurveLPMaps;
     mapping(address => ParamsInitConvexFxnLPMarket) public cvxFxnLPMaps;
-    mapping(address => MarketInitSimplified) public noSociabilizationMaps;
+    mapping(address => MarketInitSimplified) public basicERC20Maps;
 
     struct ParamsInitConvexCurveLPMarket {
         MarketInitSimplified marketInit;
         ICvxRewardToken cvxRewardToken;
         uint256 pid;
-        uint256 socFeePercentage;
     }
 
     struct ParamsInitConvexFxnLPMarket {
         MarketInitSimplified marketInit;
         uint256 pid;
-        uint256 socFeePercentage;
     }
 
     struct MarketInitSimplified {
@@ -34,7 +32,7 @@ contract MarketInitParams is WStableContext {
     constructor() {
         initConvexCurveParams();
         initConvexFxnParams();
-        initMarketNoSociabilization();
+        initBasicERC20Market();
     }
 
     function initConvexCurveParams() public {
@@ -50,8 +48,7 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 1_000_000 ether
             }),
             cvxRewardToken: AddrCvxRewardTokens.USDC_crvUSD_LP,
-            pid: PidCvxCrvBooster.USDC_crvUSD_LP,
-            socFeePercentage: 1_000
+            pid: PidCvxCrvBooster.USDC_crvUSD_LP
         });
 
         // Convex Curve - CRVUSD-USDT
@@ -66,8 +63,7 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 1_000_000 ether
             }),
             cvxRewardToken: AddrCvxRewardTokens.USDT_crvUSD_LP,
-            pid: PidCvxCrvBooster.USDT_crvUSD_LP,
-            socFeePercentage: 1_000
+            pid: PidCvxCrvBooster.USDT_crvUSD_LP
         });
 
         // Convex Curve - FRXETH-WETH
@@ -82,8 +78,7 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 1_000_000 ether
             }),
             cvxRewardToken: AddrCvxRewardTokens.WETH_frxETH_LP,
-            pid: PidCvxCrvBooster.WETH_frxETH_LP,
-            socFeePercentage: 1_000
+            pid: PidCvxCrvBooster.WETH_frxETH_LP
         });
 
         // Convex Curve - PXETH-WETH
@@ -98,8 +93,7 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 1_000_000 ether
             }),
             cvxRewardToken: AddrCvxRewardTokens.WETH_pxETH_LP,
-            pid: PidCvxCrvBooster.WETH_pxETH_LP,
-            socFeePercentage: 1_000
+            pid: PidCvxCrvBooster.WETH_pxETH_LP
         });
 
         // Convex Curve - ETH-stETH
@@ -114,8 +108,7 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 100_000_000 ether
             }),
             cvxRewardToken: AddrCvxRewardTokens.ETH_stETH_LP,
-            pid: PidCvxCrvBooster.ETH_stETH_LP,
-            socFeePercentage: 1_000
+            pid: PidCvxCrvBooster.ETH_stETH_LP
         });
 
         // Convex Curve - ETH-CVX
@@ -130,8 +123,7 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 1_000_000 ether
             }),
             cvxRewardToken: AddrCvxRewardTokens.CVX_ETH_LP,
-            pid: PidCvxCrvBooster.CVX_ETH_LP,
-            socFeePercentage: 1_000
+            pid: PidCvxCrvBooster.CVX_ETH_LP
         });
 
         // Convex Curve - scrvUSD/sDOLA
@@ -146,8 +138,7 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 1_000_000 ether
             }),
             cvxRewardToken: AddrCvxRewardTokens.scrvUSD_sDOLA_LP,
-            pid: PidCvxCrvBooster.scrvUSD_sDOLA_LP,
-            socFeePercentage: 1_000
+            pid: PidCvxCrvBooster.scrvUSD_sDOLA_LP
         });
 
         // Convex Curve - TriCrypto USDC
@@ -162,8 +153,7 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 1_000_000 ether
             }),
             cvxRewardToken: AddrCvxRewardTokens.USDC_WBTC_WETH,
-            pid: PidCvxCrvBooster.USDC_WBTC_WETH,
-            socFeePercentage: 0
+            pid: PidCvxCrvBooster.USDC_WBTC_WETH
         });
 
         /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -182,8 +172,7 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 1_000_000 ether
             }),
             cvxRewardToken: ICvxRewardToken(address(0)),
-            pid: 0,
-            socFeePercentage: 0
+            pid: 0
         });
 
         // Convex Curve - sUSDS/USDT
@@ -198,8 +187,7 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 1_000_000 ether
             }),
             cvxRewardToken: ICvxRewardToken(address(0)),
-            pid: 0,
-            socFeePercentage: 0
+            pid: 0
         });
     }
 
@@ -215,14 +203,13 @@ contract MarketInitParams is WStableContext {
                 minimumLoan: 3_000 ether,
                 maxMarketDebt: 1_000_000 ether
             }),
-            pid: PidCvxFxnBooster.USDC_fxUSD_LP,
-            socFeePercentage: 1_000
+            pid: PidCvxFxnBooster.USDC_fxUSD_LP
         });
     }
 
-    function initMarketNoSociabilization() public {
+    function initBasicERC20Market() public {
         // Pendle - eUSDe_29_05_25
-        noSociabilizationMaps[address(AddrPTPendle.eUSDe_29_05_25)] = MarketInitSimplified({
+        basicERC20Maps[address(AddrPTPendle.eUSDe_29_05_25)] = MarketInitSimplified({
             name: "Pendle - eUSDe 05/29/25",
             collat: AddrPTPendle.eUSDe_29_05_25,
             maxLTV: 85_000,
@@ -233,7 +220,7 @@ contract MarketInitParams is WStableContext {
         });
 
         // Pendle - sUSDe_31_07_25
-        noSociabilizationMaps[address(AddrPTPendle.sUSDe_31_07_25)] = MarketInitSimplified({
+        basicERC20Maps[address(AddrPTPendle.sUSDe_31_07_25)] = MarketInitSimplified({
             name: "Pendle - sUSDe 07/31/25",
             collat: AddrPTPendle.sUSDe_31_07_25,
             maxLTV: 85_000,

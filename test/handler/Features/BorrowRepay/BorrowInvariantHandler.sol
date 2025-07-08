@@ -18,7 +18,7 @@ contract BorrowInvariantHandler is Test {
         }
     }
 
-    function deposit(address _for, uint256 depositedAmount, bool isStaked) public {
+    function deposit(address _for, uint256 depositedAmount) public {
         skip(pickRandomDuration());
         MarketExternalActions _market = pickRandomMarket();
         vm.startPrank(msg.sender);
@@ -29,7 +29,7 @@ contract BorrowInvariantHandler is Test {
         deal(address(_collatToken), msg.sender, depositedAmount);
 
         _collatToken.approve(address(_market), depositedAmount);
-        _market.deposit(msg.sender, depositedAmount, isStaked);
+        _market.deposit(msg.sender, depositedAmount);
 
         vm.stopPrank();
     }
@@ -45,7 +45,7 @@ contract BorrowInvariantHandler is Test {
         if (userDebt == 0) {
             bool depositOrRepay = vm.randomBool();
             if (depositOrRepay) {
-                deposit(msg.sender, USGToRepay, vm.randomBool());
+                deposit(msg.sender, USGToRepay);
                 return;
             } else {
                 borrow(msg.sender, USGToRepay);
@@ -72,7 +72,7 @@ contract BorrowInvariantHandler is Test {
         if (maxBorrowAmount == 0) {
             bool depositOrRepay = vm.randomBool();
             if (depositOrRepay) {
-                deposit(msg.sender, borrowedAmount, vm.randomBool());
+                deposit(msg.sender, borrowedAmount);
                 return;
             } else {
                 repay(msg.sender, borrowedAmount, address(0));
@@ -87,7 +87,7 @@ contract BorrowInvariantHandler is Test {
                 low = minLoan - actualDebt;
             }
             if (low > maxBorrowAmount) {
-                deposit(msg.sender, 0, false);
+                deposit(msg.sender, 0);
                 return;
             }
             borrowedAmount = bound(borrowedAmount, low, maxBorrowAmount);

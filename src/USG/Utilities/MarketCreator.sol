@@ -17,7 +17,7 @@ import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {GlobalMarketInitParams, MarketInit, IRewardAccumulator, IERC20Metadata} from "../../interfaces/internals/USG/IMarketCore.sol";
 import {IConvexCrvLPMarket, ICvxRewardToken} from "../../interfaces/internals/USG/IConvexCrvLPMarket.sol";
 import {IConvexFxnLPMarket} from "../../interfaces/internals/USG/IConvexFxnLPMarket.sol";
-import {IMarketNoSociabilization} from "../../interfaces/internals/USG/IMarketNoSociabilization.sol";
+import {IBasicERC20Market} from "../../interfaces/internals/USG/IBasicERC20Market.sol";
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 import {IRParams, IIRCalculator} from "../../interfaces/internals/USG/IIRCalculator.sol";
 import {RCParams} from "../../interfaces/internals/USG/IRewardAccumulator.sol";
@@ -50,11 +50,11 @@ contract MarketCreator is LightOwnable {
     address public marketConvexFxn;
 
     /// @notice
-    address public marketNoSociabilization;
+    address public marketBasicERC20;
 
     event MarketConvexCrvCreated(address proxy, string name);
     event MarketConvexFxnCreated(address proxy, string name);
-    event MarketNoSociabilizationCreated(address proxy, string name);
+    event BasicERC20MarketCreated(address proxy, string name);
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                             CONSTRUCTOR
@@ -69,7 +69,7 @@ contract MarketCreator is LightOwnable {
         IZappingProxy _zappingProxy,
         address _marketConvexCrv,
         address _marketConvexFxn,
-        address _marketNoSociabilization
+        address _marketBasicERC20
     ) {
         controlTower = _controlTower;
         USG = _USG;
@@ -78,7 +78,7 @@ contract MarketCreator is LightOwnable {
         zappingProxy = _zappingProxy;
         marketConvexCrv = _marketConvexCrv;
         marketConvexFxn = _marketConvexFxn;
-        marketNoSociabilization = _marketNoSociabilization;
+        marketBasicERC20 = _marketBasicERC20;
         _transferOwnership(_owner);
     }
 
@@ -98,12 +98,11 @@ contract MarketCreator is LightOwnable {
         MarketInit memory _marketInit,
         ICvxRewardToken _cvxRewardToken,
         uint256 _pid,
-        uint256 _socFeePercentage,
         IRParams calldata _irParams,
         RCParams calldata _rcParams
     ) external onlyOwner returns (address) {
         address proxy = marketConvexCrv.clone();
-        IConvexCrvLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _cvxRewardToken, _pid, _socFeePercentage);
+        IConvexCrvLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _cvxRewardToken, _pid);
 
         controlTower.toggleMarket(proxy);
         irCalculator.initializeMarket(proxy, _irParams);
@@ -113,15 +112,9 @@ contract MarketCreator is LightOwnable {
         return proxy;
     }
 
-    function createConvexFxnMarket(
-        MarketInit memory _marketInit,
-        uint256 _pid,
-        uint256 _socFeePercentage,
-        IRParams calldata _irParams,
-        RCParams calldata _rcParams
-    ) external onlyOwner returns (address) {
+    function createConvexFxnMarket(MarketInit memory _marketInit, uint256 _pid, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
         address proxy = marketConvexFxn.clone();
-        IConvexFxnLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _pid, _socFeePercentage);
+        IConvexFxnLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _pid);
 
         controlTower.toggleMarket(proxy);
         irCalculator.initializeMarket(proxy, _irParams);
@@ -131,15 +124,15 @@ contract MarketCreator is LightOwnable {
         return proxy;
     }
 
-    function createNoSociabilizationMarket(MarketInit memory _marketInit, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
-        address proxy = marketNoSociabilization.clone();
-        IMarketNoSociabilization(proxy).initialize(_getGlobalParams(), _marketInit);
+    function createBasicERC20Market(MarketInit memory _marketInit, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
+        address proxy = marketBasicERC20.clone();
+        IBasicERC20Market(proxy).initialize(_getGlobalParams(), _marketInit);
 
         controlTower.toggleMarket(proxy);
         irCalculator.initializeMarket(proxy, _irParams);
         rewardAccumulator.initializeMarket(proxy, _rcParams);
 
-        emit MarketNoSociabilizationCreated(proxy, _marketInit.name);
+        emit BasicERC20MarketCreated(proxy, _marketInit.name);
         return proxy;
     }
 }

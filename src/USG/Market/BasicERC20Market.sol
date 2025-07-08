@@ -7,7 +7,7 @@ import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 import {MarketExternalActions} from "./abstract/MarketExternalActions.sol";
 
 /// @notice
-contract MarketNoSociabilization is MarketExternalActions {
+contract BasicERC20Market is MarketExternalActions {
     function initialize(GlobalMarketInitParams memory _marketConstants, MarketInit memory _marketInit) external {
         // Common
         _initializationCommon(_marketConstants, _marketInit);

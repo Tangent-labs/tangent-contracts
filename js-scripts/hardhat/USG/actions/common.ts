@@ -11,7 +11,7 @@ export async function executeUserMarketAction(
     actionFn: (market: any, marketAddress: string, user: HardhatEthersSigner, parsedAmount: bigint) => Promise<void>
 ) {
     for (const marketAddress of Object.keys(userAmountByMarket || {})) {
-        const market = await ethers.getContractAt("MarketNoSociabilization", marketAddress);
+        const market = await ethers.getContractAt("BasicERC20Market", marketAddress);
 
         for (const user of mainSetup.users) {
             const amount = userAmountByMarket?.[marketAddress]?.[user.address] || "0";

@@ -2,7 +2,6 @@
 pragma solidity ^0.8.24;
 
 import "../../../../contexts/MarketDeploymentContext.sol";
-import "../../../../handler/Features/ConvexCrv/HZapDepositConvexCrvLP.sol";
 
 contract ZapDepositAndBorrow is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
@@ -23,7 +22,6 @@ contract ZapDepositAndBorrow is MarketDeploymentContext {
 
         market.zapDepositAndBorrow{value: amountIn}(
             USGToBorrow,
-            true,
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
@@ -45,7 +43,6 @@ contract ZapDepositAndBorrow is MarketDeploymentContext {
 
         market.zapDepositAndBorrow(
             USGToBorrow,
-            false,
             ZapStructDeposit({
                 tokenIn: AddrClassicERC20.USDC,
                 amountIn: amountIn,

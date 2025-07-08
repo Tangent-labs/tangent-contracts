@@ -2,7 +2,6 @@
 pragma solidity ^0.8.24;
 
 import "../../../../contexts/MarketDeploymentContext.sol";
-import "../../../../handler/Features/ConvexCrv/HZapDepositConvexCrvLP.sol";
 
 contract ZapRepayAndWithdraw is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
@@ -18,7 +17,7 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
 
         vm.startPrank(usr1);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(depositedAmount, debtBorrow, true);
+        market.depositAndBorrow(depositedAmount, debtBorrow);
     }
 
     function test_zapRepayAndWithdraw_partial_with_eth() external {
@@ -97,7 +96,7 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
     function test_zapRepayAndWithdraw_fullWithdraw_fullRepay() external {
         vm.startPrank(usr2);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(depositedAmount, debtBorrow, false);
+        market.depositAndBorrow(depositedAmount, debtBorrow);
 
         IERC20 tokenIn = AddrClassicERC20.frxUSD;
         uint256 amountReturnZap = debtBorrow + 1_000 ether;

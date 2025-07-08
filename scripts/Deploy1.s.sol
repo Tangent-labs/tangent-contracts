@@ -8,7 +8,7 @@ import {Tan} from "../src/USG/Tokens/Tan.sol";
 
 import "../src/USG/Market/Convex/ConvexCrvLPMarket.sol";
 import "../src/USG/Market/Convex/ConvexFxnLPMarket.sol";
-import "../src/USG/Market/MarketNoSociabilization.sol";
+import "../src/USG/Market/BasicERC20Market.sol";
 
 import "../src/USG/Tokens/USG.sol";
 import "../src/USG/Tokens/WStable.sol";
@@ -37,7 +37,7 @@ contract Deploy1 is Script {
         vm.startBroadcast(pk);
         convexCrvLPMarketImplem = address(new ConvexCrvLPMarket());
         convexFxnLPMarketImplem = address(new ConvexFxnLPMarket());
-        marketNoSociabilizationImplem = address(new MarketNoSociabilization());
+        marketNoSociabilizationImplem = address(new BasicERC20Market());
 
         controlTower = new ControlTower(owner, feeTreasury);
 
