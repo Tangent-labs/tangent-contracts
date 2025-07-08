@@ -9,7 +9,7 @@ import "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 import {OracleBase} from "../OracleBase.sol";
 
 /// @title OracleDuoPoolStable
-/// @notice This contract provides price oracle functionality for a dual pool stablecoin setup.
+/// @notice This contract provides price oracle functionality for a dual pool stablePool of Curve Finance.
 contract OracleDuoPoolStable is OracleBase {
     /// @notice Struct to store oracle parameters
     struct OracleDuoPoolStruct {

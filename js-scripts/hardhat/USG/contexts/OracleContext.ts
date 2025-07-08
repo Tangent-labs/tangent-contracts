@@ -118,7 +118,7 @@ export class OracleContext {
 
         for (let index = 0; index < this.oraclePendlePTParams.length; index++) {
             const item = this.oraclePendlePTParams[index];
-            this.oracles[item.key] = (await OraclePendlePTFactory.deploy(PendlePools[item.key].MARKET, this.oracles[item.underlyingOracle])) as unknown as IPriceOracle;
+            this.oracles[item.key] = (await OraclePendlePTFactory.deploy(PendlePools[item.key].MARKET, this.oracles[item.underlyingOracle], 900)) as unknown as IPriceOracle;
         }
     }
 

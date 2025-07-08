@@ -12,7 +12,8 @@ struct OracleCoinFromCurveLPStruct {
     uint128 isParamsForPriceOracle;
     bool isReversed;
 }
-
+/// @title OracleCoinFromCurveLP
+/// @notice This contract provides price oracle functionality for an ERC20, from a pool of Curve
 contract OracleCoinFromCurveLP is OracleBase {
     OracleCoinFromCurveLPStruct public oracleParams;
     constructor(address _lp, IPriceOracle _otherStableOracle, bool isReversed) {
@@ -32,6 +33,11 @@ contract OracleCoinFromCurveLP is OracleBase {
         });
     }
 
+    /**
+     * @notice Returns a time weighted price of a token present in a Curve pool
+     * @dev    Using the price_oracle, we can are protected from flash attacks.
+     * @return The price of the token from the pool.
+     */
     function latestAnswer() external view override returns (uint256) {
         OracleCoinFromCurveLPStruct memory params = oracleParams;
 

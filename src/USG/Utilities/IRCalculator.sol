@@ -13,9 +13,8 @@ import {IUSG} from "../../interfaces/internals/USG/IUSG.sol";
 
 import {ABDKMath64x64} from "../../libs/ABDKMath64x64.sol";
 
-///@notice Contract allowing to compute the interest rate and reward cut of a USG market
-// TODO Put a cap on USG price to prevent overflow on IR computation
-// TODO Comments are bad
+/// @title IRCalculator
+/// @notice Calculates and stores interest rates for all markets.
 contract IRCalculator is IIRCalculator, LightOwnable, ReentrancyGuardTransient {
     uint256 public constant DENOMINATOR = 100_000;
 
@@ -40,9 +39,10 @@ contract IRCalculator is IIRCalculator, LightOwnable, ReentrancyGuardTransient {
     /// @notice Gives the parameter of the market
     mapping(address => IRParams) public irParams;
 
-    /// @notice Last interest rate since previous interaction with the market. In RAY.
+    /// @notice Last interest rate and timestamp stored during the last interaction. In RAY.
     mapping(address => IRCheckpoint) public irCheckpoints;
 
+    /// @notice Last debt indexes per market.
     mapping(address => uint256) public debtIndexes;
 
     error IRStartPriceLtOne();

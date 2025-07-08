@@ -26,7 +26,7 @@ contract BorrowReverts is MarketDeploymentContext {
     }
 
     function test_borrow_fails_when_borrow_is_paused() external {
-        vm.startPrank(owner);
+        vm.startPrank(pauser);
         market.setIsBorrowPaused(true);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.BorrowPaused.selector));
         market.borrow(usr1, 0);

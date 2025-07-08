@@ -4,6 +4,8 @@ import {IPriceOracle} from "../../../interfaces/internals/USG/IPriceOracle.sol";
 import {ICurveTriCryptoSwap} from "../../../interfaces/externals/Curve/ICurveTriCryptoSwap.sol";
 import {OracleBase} from "../OracleBase.sol";
 
+/// @title OracleCryptoSwap
+/// @notice This contract provides price oracle functionality for a dual pool cryptoswap of Curve Finance.
 contract OracleCryptoSwap is OracleBase {
     struct OracleCryptoSwapStruct {
         address lp;

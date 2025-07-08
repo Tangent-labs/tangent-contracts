@@ -13,11 +13,11 @@ import "../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../src/libs/Resources/ResourcesPendle.sol";
 import "../../src/libs/Resources/ResourcesYearn.sol";
 
-import "../../src/USG/Lock/VsTan.sol";
+import "../../src/USG/Tokens/VsTan.sol";
 import "../../src/USG/Tokens/Tan.sol";
 import "../../src/USG/Tokens/USG.sol";
 import "../../src/USG/Tokens/WStable.sol";
-import "../../src/USG/Rewards/RewardAccumulator.sol";
+import "../../src/USG/Utilities/RewardAccumulator.sol";
 import "../../src/USG/Utilities/ControlTower.sol";
 import "../../src/USG/Utilities/MarketCreator.sol";
 import "../../src/USG/Utilities/ZappingProxy.sol";
@@ -58,6 +58,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address processor = makeAddr("Processor");
 
     address public owner = makeAddr("Owner");
+    address public pauser = makeAddr("Pauser");
     address public ownerGauge = makeAddr("ownerGauge");
     address public feeTreasury = makeAddr("feeTreasury");
     address public mockedLP = makeAddr("Mocked LP");
