@@ -1,32 +1,29 @@
-import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import {ethers} from "hardhat";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {depositOnCurveStableLp} from "../actions/depositOnCurveStableLp";
-import {depositOnCurveGauge} from "../actions/depositOnCurveGauge";
-import {withdrawOnCurveGauge} from "../actions/withdrawOnCurveGauge";
+import {giveTokensToAddresses} from "../../thief";
+import {depositCurveLP} from "../actions/depositCurveLP";
 import {depositStakeDao} from "../actions/depositStakeDao";
 import {depositLlamaLend} from "../actions/depositLlamaLend";
-import {giveTokensToAddresses} from "../../thief";
 import {TOKENS_TO_GIVE} from "../../tokensToGive.config";
+import {withdrawCurveLP} from "../actions/withdrawCurveLP";
+import {withdrawStakeDao} from "../actions/withdrawStakeDao";
+import {depositCurveGauge} from "../actions/depositCurveGauge";
+import {withdrawCurveGauge} from "../actions/withdrawCurveGauge";
+import {crvUSD} from "defi-resources/build/ressources/erc20/common";
+import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {CRV_DUO_USDC_crvUSD, CRV_DUO_USDe_USDC, CRV_DUO_USDT_crvUSD} from "defi-resources/build/ressources/lps/curve";
 import {SDT_crvUSD_USDC_STRAT, SDT_crvUSD_USDT_GAUGE, SDT_crvUSD_USDT_STRAT} from "defi-resources/build/ressources/erc20/stakeDao";
-import {crvUSD} from "defi-resources/build/ressources/erc20/common";
-import {withdrawStakeDao} from "../actions/withdrawStakeDao";
-import {removeLiquidityOnCurveStableLp} from "../actions/removeLiquidityOnCurveStableLp";
 
 export class PointsContext {
-    private user1: HardhatEthersSigner | null = null;
-    private user2: HardhatEthersSigner | null = null;
+    user1: HardhatEthersSigner | null = null;
+    user2: HardhatEthersSigner | null = null;
 
     constructor() {}
 
     async initUsers(): Promise<void> {
         try {
-            // Get two signers from Hardhat
             const signers = await ethers.getSigners();
-            if (signers.length < 2) {
-                throw new Error("Not enough signers available");
-            }
+
             this.user1 = signers[0];
             this.user2 = signers[1];
 
@@ -70,23 +67,23 @@ export class PointsContext {
 
             // Day 1: User1 deposits and stakes
             const user1 = this.user1;
-            const USDeUSDC = await depositOnCurveStableLp(CRV_DUO_USDe_USDC, 10000, 10n ** 20n, 100000000n, user1);
+            const USDeUSDC = await depositCurveLP(CRV_DUO_USDe_USDC, 10n ** 20n, 100000000n, user1);
             console.log(`User1 deposited on Curve USDe/USDC`);
 
-            await depositOnCurveGauge("0x04E80Db3f84873e4132B221831af1045D27f140F", USDeUSDC, user1, 10000000n);
+            await depositCurveGauge("0x04E80Db3f84873e4132B221831af1045D27f140F", USDeUSDC, user1, 10000000n);
             console.log(`User1 staked on Curve Gauge`);
 
             // Advance time by 12 days
             await this.advanceTime(12);
 
             // Day 8: User1 withdraws from gauge and transfers LP to User2
-            await withdrawOnCurveGauge("0x04E80Db3f84873e4132B221831af1045D27f140F", user1, 1000000n);
+            await withdrawCurveGauge("0x04E80Db3f84873e4132B221831af1045D27f140F", user1, 1000000n);
             console.log(`User1 withdrew from Curve Gauge`);
 
             await this.transferPosition(CRV_DUO_USDe_USDC, user1, this.user2.address, 5000000n);
 
             // Day 8: User1 deposits to another Curve pool and StakeDao
-            const crvUSDUSDC = await depositOnCurveStableLp(CRV_DUO_USDC_crvUSD, 10000, 1000000n, 10n ** 19n, user1);
+            const crvUSDUSDC = await depositCurveLP(CRV_DUO_USDC_crvUSD, 1000000n, 10n ** 19n, user1);
             console.log(`User1 deposited on Curve USDC/crvUSD`);
 
             await depositStakeDao(crvUSDUSDC, SDT_crvUSD_USDC_STRAT, user1, 1000000n);
@@ -98,7 +95,7 @@ export class PointsContext {
             // Day 22: User2 deposits, stakes, and withdraws
             const user2 = this.user2;
 
-            const USDT_USDC = await depositOnCurveStableLp(CRV_DUO_USDT_crvUSD, 100000, 100000000n, 100000000n, user2);
+            const USDT_USDC = await depositCurveLP(CRV_DUO_USDT_crvUSD, 100000000n, 100000000n, user2);
             console.log(`User2 deposited on Curve USDT/crvUSD`);
 
             await depositStakeDao(USDT_USDC, SDT_crvUSD_USDT_STRAT, user2, 10000000000000000000n);
@@ -128,7 +125,7 @@ export class PointsContext {
 
             const lpBalance = await USDT_USDC.balanceOf(user2);
 
-            await removeLiquidityOnCurveStableLp(CRV_DUO_USDT_crvUSD, lpBalance, user2);
+            await withdrawCurveLP(CRV_DUO_USDT_crvUSD, lpBalance, user2);
             console.log("User2 withdrawn all funds on CRV_DUO_USDT_crvUSD lp");
         } catch (error) {
             console.error("Error in curveDeposit:", error);

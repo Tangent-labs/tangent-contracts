@@ -1,10 +1,8 @@
 import {ethers} from "hardhat";
-import {giveTokensToAddresses} from "../../thief";
-import {TOKENS_TO_GIVE} from "../../tokensToGive.config";
 import {MaxUint256} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 
-export const depositOnCurveStableLp = async (address: string, amountToGive: number, firstTokenAmount: bigint, secondTokenAmount: bigint, user: HardhatEthersSigner) => {
+export const depositCurveLP = async (address: string, firstTokenAmount: bigint, secondTokenAmount: bigint, user: HardhatEthersSigner) => {
     const lp = await ethers.getContractAt("ICurveStableSwapNG", address);
 
     const coin0Address = await lp.coins(0);
@@ -12,8 +10,6 @@ export const depositOnCurveStableLp = async (address: string, amountToGive: numb
 
     const coin0Contract = await ethers.getContractAt("ERC20", coin0Address);
     const coin1Contract = await ethers.getContractAt("ERC20", coin1Address);
-
-    await giveTokensToAddresses([user], TOKENS_TO_GIVE(amountToGive));
 
     await coin0Contract.connect(user).approve(address, MaxUint256);
     await coin1Contract.connect(user).approve(address, MaxUint256);

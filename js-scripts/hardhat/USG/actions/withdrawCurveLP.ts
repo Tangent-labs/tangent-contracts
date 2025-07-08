@@ -1,7 +1,7 @@
 import {ethers} from "hardhat";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 
-export const removeLiquidityOnCurveStableLp = async (address: string, amount: bigint, user: HardhatEthersSigner) => {
+export const withdrawCurveLP = async (address: string, amount: bigint, user: HardhatEthersSigner) => {
     const lp = await ethers.getContractAt("ICurveStableSwapNG", address);
 
     try {
