@@ -32,6 +32,7 @@ import {WStablesContext} from "./WStableContext";
 export class BaseContext extends MainSetup {
     owner!: HardhatEthersSigner;
     feeTreso!: HardhatEthersSigner;
+    pauser!: HardhatEthersSigner;
 
     controlTower!: ControlTower;
     USG!: USG;
@@ -55,6 +56,7 @@ export class BaseContext extends MainSetup {
 
     async deployContracts1() {
         this.owner = this.users[0];
+        this.pauser = this.users[1];
         this.feeTreso = this.users[4];
 
         this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
@@ -119,6 +121,7 @@ export class BaseContext extends MainSetup {
             this.irCalculator,
             this.rewardAccumulator,
             this.zappingProxy,
+            this.pauser,
             this.marketCvxCrvImplem,
             this.marketCvxFxnImplem,
             this.marketBasicER20Implem

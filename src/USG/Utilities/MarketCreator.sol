@@ -23,8 +23,9 @@ import {IRParams, IIRCalculator} from "../../interfaces/internals/USG/IIRCalcula
 import {RCParams} from "../../interfaces/internals/USG/IRewardAccumulator.sol";
 import {IZappingProxy} from "../../interfaces/internals/USG/IZappingProxy.sol";
 import {IUSG} from "../../interfaces/internals/USG/IUSG.sol";
+
 /// @title MarketCreator
-/// @notice Convergence's factory to deploy clone of contracts
+/// @notice Factory to deploy market following the Minimal proxy implementation
 contract MarketCreator is LightOwnable {
     using Clones for address;
 
@@ -37,19 +38,22 @@ contract MarketCreator is LightOwnable {
     /// @notice IR Calculator
     IIRCalculator public irCalculator;
 
-    /// @notice
+    /// @notice Reward accumulator
     IRewardAccumulator public rewardAccumulator;
 
-    /// @notice
+    /// @notice Zapping proxy
     IZappingProxy public zappingProxy;
 
-    /// @notice
+    /// @notice Pauser EOA
+    address public pauser;
+
+    /// @notice Convex CRV market implementation
     address public marketConvexCrv;
 
-    /// @notice
+    /// @notice Convex FXN market implementation
     address public marketConvexFxn;
 
-    /// @notice
+    /// @notice Basic ERC20 market implementation
     address public marketBasicERC20;
 
     event MarketConvexCrvCreated(address proxy, string name);
@@ -67,6 +71,7 @@ contract MarketCreator is LightOwnable {
         IIRCalculator _irCalculator,
         IRewardAccumulator _rewardAccumulator,
         IZappingProxy _zappingProxy,
+        address _pauser,
         address _marketConvexCrv,
         address _marketConvexFxn,
         address _marketBasicERC20
@@ -76,6 +81,7 @@ contract MarketCreator is LightOwnable {
         irCalculator = _irCalculator;
         rewardAccumulator = _rewardAccumulator;
         zappingProxy = _zappingProxy;
+        pauser = _pauser;
         marketConvexCrv = _marketConvexCrv;
         marketConvexFxn = _marketConvexFxn;
         marketBasicERC20 = _marketBasicERC20;
@@ -90,7 +96,8 @@ contract MarketCreator is LightOwnable {
                 _controlTower: controlTower,
                 _irCalculator: irCalculator,
                 _rewardAccumulator: rewardAccumulator,
-                _zappingProxy: zappingProxy
+                _zappingProxy: zappingProxy,
+                _pauser: pauser
             });
     }
 

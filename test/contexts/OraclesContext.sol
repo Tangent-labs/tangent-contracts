@@ -50,6 +50,7 @@ contract OraclesContext is USGDeployContext {
             irCalculator,
             rewardAccumulator,
             zappingProxy,
+            pauser,
             convexCrvLPMarketImplem,
             convexFxnLPMarketImplem,
             marketBasicERC20Implem
@@ -302,15 +303,15 @@ contract OraclesContext is USGDeployContext {
 
     function setupPendlePTTokens() internal {
         // Oracle PT sUSDE 31_07_25
-        oracles[AddrPTPendle.sUSDe_31_07_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrClassicERC20.USDe]);
+        oracles[AddrPTPendle.sUSDe_31_07_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrClassicERC20.USDe], 900);
         vm.label(address(oracles[AddrPTPendle.sUSDe_31_07_25]), "Oracle PT sUSDe 31_07_25");
 
         // Oracle PT eUSDE 29_05_25
-        oracles[AddrPTPendle.eUSDe_29_05_25] = new OraclePendlePT(AddrMarketPendle.eUSDe_29_05_25, oracles[AddrClassicERC20.USDe]);
+        oracles[AddrPTPendle.eUSDe_29_05_25] = new OraclePendlePT(AddrMarketPendle.eUSDe_29_05_25, oracles[AddrClassicERC20.USDe], 900);
         vm.label(address(oracles[AddrPTPendle.eUSDe_29_05_25]), "Oracle PT eUSDe 29_05_25");
 
         // Oracle PT eBTC 26_06_25
-        oracles[AddrPTPendle.eBTC_26_06_25] = new OraclePendlePT(AddrMarketPendle.eBTC_26_06_25, oracles[AddrClassicERC20.eBTC]);
+        oracles[AddrPTPendle.eBTC_26_06_25] = new OraclePendlePT(AddrMarketPendle.eBTC_26_06_25, oracles[AddrClassicERC20.eBTC], 900);
         vm.label(address(oracles[AddrPTPendle.eBTC_26_06_25]), "Oracle PT eBTC 26_06_25");
     }
 

@@ -42,6 +42,7 @@ struct GlobalMarketInitParams {
     IIRCalculator _irCalculator;
     IRewardAccumulator _rewardAccumulator;
     IZappingProxy _zappingProxy;
+    address _pauser;
 }
 
 struct MarketInit {

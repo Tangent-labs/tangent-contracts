@@ -62,6 +62,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         irCalculator = _globalParams._irCalculator;
         rewardAccumulator = _globalParams._rewardAccumulator;
         zappingProxy = _globalParams._zappingProxy;
+        pauser = _globalParams._pauser;
 
         collatToken = _marketInit.collatToken;
         collatOracle = _marketInit.collatOracle;
