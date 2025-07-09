@@ -180,7 +180,7 @@ const giveToken = async (contract: IERC20Metadata, amount: bigint, user: Signer)
     await giveTokenToAddresss(user, config.address, amount, config.slotBalance, config.isVyper);
 };
 
-export const depositPendleYT = async (market: AddressLike, underlying: AddressLike, amountUnderlying: bigint, user: Signer) => {
+export const pendleDepositYT = async (market: AddressLike, underlying: AddressLike, amountUnderlying: bigint, user: Signer) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
     const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
@@ -252,7 +252,7 @@ export const depositPendleYT = async (market: AddressLike, underlying: AddressLi
     }
 };
 
-export const depositPendleLP = async (market: AddressLike, amountLpToBurn: bigint, minPtOut: bigint, user: Signer) => {
+export const pendleDepositPT = async (market: AddressLike, amountLpToBurn: bigint, minPtOut: bigint, user: Signer) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
     const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());

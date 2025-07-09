@@ -1,5 +1,5 @@
 import {ethers} from "hardhat";
-import {getPendleMarketContracts, pendleDepositLP, depositPendleYT, pendleWithdrawLP, depositPendleLP} from "../actions/pendleActions";
+import {getPendleMarketContracts, pendleDepositLP, pendleDepositYT, pendleWithdrawLP, pendleDepositPT} from "../actions/pendleActions";
 
 import {Signer} from "ethers";
 
@@ -46,7 +46,7 @@ const main = async (inInfo: InInfo) => {
     }
 
     try {
-        await depositPendleYT(inInfo.market, inInfo.underlying, inInfo.amount, user);
+        await pendleDepositYT(inInfo.market, inInfo.underlying, inInfo.amount, user);
     } catch (error) {
         console.error("Error during Pendle deposit with YT retention:", error);
         throw error;
@@ -54,7 +54,7 @@ const main = async (inInfo: InInfo) => {
 
     try {
         lpBalance = await marketContract.balanceOf(userAddress);
-        await depositPendleLP(inInfo.market, lpBalance, 0n, user);
+        await pendleDepositPT(inInfo.market, lpBalance, 0n, user);
         // ptBalance
         const ptContract = marketContracts.pt;
         const ptBalance = await ptContract.balanceOf(userAddress);
@@ -80,3 +80,5 @@ const main = async (inInfo: InInfo) => {
         process.exitCode = 1;
     }
 })();
+
+// npx hardhat run  js-scripts/hardhat/USG/scripts/pendle-test.ts
