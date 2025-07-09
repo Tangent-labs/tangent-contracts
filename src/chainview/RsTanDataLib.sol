@@ -22,19 +22,14 @@ struct Reward {
     uint256 rewardPerTokenStored;
 }
 
-library RsTanDataLib {
+abstract contract RsTanDataLib {
     struct RsTanData {
         uint256 tanPrice;
         uint256 totalSupplyRsTan;
         uint256 rewardRate;
         uint256 apr;
     }
-    function getRsTanData(
-        address rsTanAddress,
-        address tanPoolAddress,
-        address tgUSDAddress,
-        address chainlinkEthOracleAddress
-    ) public view returns (RsTanDataLib.RsTanData memory data) {
+    function getRsTanData(address rsTanAddress, address tanPoolAddress, address tgUSDAddress, address chainlinkEthOracleAddress) public view returns (RsTanData memory data) {
         IChainlinkOracle ethOracle = IChainlinkOracle(chainlinkEthOracleAddress);
         uint256 ethPrice = ethOracle.latestAnswer();
 

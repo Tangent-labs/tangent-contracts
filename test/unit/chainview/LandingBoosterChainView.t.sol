@@ -17,11 +17,12 @@ contract LandingBoosterChainView is MarketDeploymentContext {
     function test_LandingBoosterChainView_ui_returns() public {
         //  ,0x508f0e1b565b40aeb94671bed228083203330882,0x35e30bc815935bb5ec1743f772331864d780cc26,0xaf5b3f4a0b4dc334db7137e5584e0e971e5e4962
 
+        address[] memory pegKeepers = Array.memoryAddress([address(pegKeeperTgUSD_USDC), address(pegKeeperTgUSD_frxUSD)]);
+
         LandingBooster.LandingBoosterIn memory input = LandingBooster.LandingBoosterIn({
             tgUSD: address(tgUSD),
             tgUSDOracle: address(tgUSDOracle),
-            pegKeeperTgUSD_USDC: address(pegKeeperTgUSD_USDC),
-            pegKeeperTgUSD_frxUSD: address(pegKeeperTgUSD_frxUSD),
+            pegKeepers: pegKeepers,
             sgUSD: address(sgUSD),
             rsTan: address(rsTan),
             tanPool: address(0)
@@ -36,6 +37,7 @@ contract LandingBoosterChainView is MarketDeploymentContext {
             ]
         );
         try new LandingBooster(params, input) {} catch (bytes memory reason) {
+            console.logBytes(reason);
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }

@@ -15,7 +15,7 @@ interface IAggregatorStablePriceV3 {
     function price_w() external view returns (uint256);
 }
 
-library TgUsdInfoLib {
+abstract contract TgUsdInfoLib {
     struct TgUsdInfo {
         uint256 circulatingTgUsd;
         uint256 tgUsdPrice;
@@ -23,19 +23,17 @@ library TgUsdInfoLib {
         uint256 tgUsdStakedOnSgUsd;
     }
 
-    function getTgUsdInfo(
-        address tgUSDAddress,
-        address tgUSDOracleAddress,
-        address pegKeeperTgUSD_USDCAddress,
-        address pegKeeperTgUSD_frxUSDAddress,
-        address sgUSDAddress
-    ) public view returns (TgUsdInfo memory info) {
+    function getTgUsdInfo(address tgUSDAddress, address tgUSDOracleAddress, address[] memory pegKeepers, address sgUSDAddress) public view returns (TgUsdInfo memory info) {
         // 1. Supply of tgUSD (excluding pegKeepers)
         ITgUSD tgUSD = ITgUSD(tgUSDAddress);
         uint256 totalSupply = tgUSD.totalSupply();
-        uint256 pegKeeperBalance1 = tgUSD.balanceOf(pegKeeperTgUSD_USDCAddress);
-        uint256 pegKeeperBalance2 = tgUSD.balanceOf(pegKeeperTgUSD_frxUSDAddress);
-        info.circulatingTgUsd = totalSupply - pegKeeperBalance1 - pegKeeperBalance2;
+        uint256 totalPegKeeperBalance = 0;
+
+        for (uint256 i = 0; i < pegKeepers.length; i++) {
+            totalPegKeeperBalance += tgUSD.balanceOf(pegKeepers[i]);
+        }
+
+        info.circulatingTgUsd = totalSupply - totalPegKeeperBalance;
 
         // 2. tgUSD Price
         IAggregatorStablePriceV3 tgUSDOracle = IAggregatorStablePriceV3(tgUSDOracleAddress);
