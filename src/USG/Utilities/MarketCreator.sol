@@ -17,14 +17,15 @@ import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {GlobalMarketInitParams, MarketInit, IRewardAccumulator, IERC20Metadata} from "../../interfaces/internals/USG/IMarketCore.sol";
 import {IConvexCrvLPMarket, ICvxRewardToken} from "../../interfaces/internals/USG/IConvexCrvLPMarket.sol";
 import {IConvexFxnLPMarket} from "../../interfaces/internals/USG/IConvexFxnLPMarket.sol";
-import {IMarketNoSociabilization} from "../../interfaces/internals/USG/IMarketNoSociabilization.sol";
+import {IBasicERC20Market} from "../../interfaces/internals/USG/IBasicERC20Market.sol";
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 import {IRParams, IIRCalculator} from "../../interfaces/internals/USG/IIRCalculator.sol";
 import {RCParams} from "../../interfaces/internals/USG/IRewardAccumulator.sol";
 import {IZappingProxy} from "../../interfaces/internals/USG/IZappingProxy.sol";
 import {IUSG} from "../../interfaces/internals/USG/IUSG.sol";
+
 /// @title MarketCreator
-/// @notice Convergence's factory to deploy clone of contracts
+/// @notice Factory to deploy market following the Minimal proxy implementation
 contract MarketCreator is LightOwnable {
     using Clones for address;
 
@@ -37,24 +38,27 @@ contract MarketCreator is LightOwnable {
     /// @notice IR Calculator
     IIRCalculator public irCalculator;
 
-    /// @notice
+    /// @notice Reward accumulator
     IRewardAccumulator public rewardAccumulator;
 
-    /// @notice
+    /// @notice Zapping proxy
     IZappingProxy public zappingProxy;
 
-    /// @notice
+    /// @notice Pauser EOA
+    address public pauser;
+
+    /// @notice Convex CRV market implementation
     address public marketConvexCrv;
 
-    /// @notice
+    /// @notice Convex FXN market implementation
     address public marketConvexFxn;
 
-    /// @notice
-    address public marketNoSociabilization;
+    /// @notice Basic ERC20 market implementation
+    address public marketBasicERC20;
 
     event MarketConvexCrvCreated(address proxy, string name);
     event MarketConvexFxnCreated(address proxy, string name);
-    event MarketNoSociabilizationCreated(address proxy, string name);
+    event BasicERC20MarketCreated(address proxy, string name);
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                             CONSTRUCTOR
@@ -67,18 +71,20 @@ contract MarketCreator is LightOwnable {
         IIRCalculator _irCalculator,
         IRewardAccumulator _rewardAccumulator,
         IZappingProxy _zappingProxy,
+        address _pauser,
         address _marketConvexCrv,
         address _marketConvexFxn,
-        address _marketNoSociabilization
+        address _marketBasicERC20
     ) {
         controlTower = _controlTower;
         USG = _USG;
         irCalculator = _irCalculator;
         rewardAccumulator = _rewardAccumulator;
         zappingProxy = _zappingProxy;
+        pauser = _pauser;
         marketConvexCrv = _marketConvexCrv;
         marketConvexFxn = _marketConvexFxn;
-        marketNoSociabilization = _marketNoSociabilization;
+        marketBasicERC20 = _marketBasicERC20;
         _transferOwnership(_owner);
     }
 
@@ -90,7 +96,8 @@ contract MarketCreator is LightOwnable {
                 _controlTower: controlTower,
                 _irCalculator: irCalculator,
                 _rewardAccumulator: rewardAccumulator,
-                _zappingProxy: zappingProxy
+                _zappingProxy: zappingProxy,
+                _pauser: pauser
             });
     }
 
@@ -98,12 +105,11 @@ contract MarketCreator is LightOwnable {
         MarketInit memory _marketInit,
         ICvxRewardToken _cvxRewardToken,
         uint256 _pid,
-        uint256 _socFeePercentage,
         IRParams calldata _irParams,
         RCParams calldata _rcParams
     ) external onlyOwner returns (address) {
         address proxy = marketConvexCrv.clone();
-        IConvexCrvLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _cvxRewardToken, _pid, _socFeePercentage);
+        IConvexCrvLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _cvxRewardToken, _pid);
 
         controlTower.toggleMarket(proxy);
         irCalculator.initializeMarket(proxy, _irParams);
@@ -113,15 +119,9 @@ contract MarketCreator is LightOwnable {
         return proxy;
     }
 
-    function createConvexFxnMarket(
-        MarketInit memory _marketInit,
-        uint256 _pid,
-        uint256 _socFeePercentage,
-        IRParams calldata _irParams,
-        RCParams calldata _rcParams
-    ) external onlyOwner returns (address) {
+    function createConvexFxnMarket(MarketInit memory _marketInit, uint256 _pid, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
         address proxy = marketConvexFxn.clone();
-        IConvexFxnLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _pid, _socFeePercentage);
+        IConvexFxnLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _pid);
 
         controlTower.toggleMarket(proxy);
         irCalculator.initializeMarket(proxy, _irParams);
@@ -131,15 +131,15 @@ contract MarketCreator is LightOwnable {
         return proxy;
     }
 
-    function createNoSociabilizationMarket(MarketInit memory _marketInit, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
-        address proxy = marketNoSociabilization.clone();
-        IMarketNoSociabilization(proxy).initialize(_getGlobalParams(), _marketInit);
+    function createBasicERC20Market(MarketInit memory _marketInit, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
+        address proxy = marketBasicERC20.clone();
+        IBasicERC20Market(proxy).initialize(_getGlobalParams(), _marketInit);
 
         controlTower.toggleMarket(proxy);
         irCalculator.initializeMarket(proxy, _irParams);
         rewardAccumulator.initializeMarket(proxy, _rcParams);
 
-        emit MarketNoSociabilizationCreated(proxy, _marketInit.name);
+        emit BasicERC20MarketCreated(proxy, _marketInit.name);
         return proxy;
     }
 }

@@ -32,7 +32,7 @@ contract WithdrawCvxMarket is MarketDeploymentContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount, true);
+        hDeposit.depositAndBorrow(amountIn, borrowedAmount);
 
         uint256 withdrawnAmount = 1_000 ether;
 

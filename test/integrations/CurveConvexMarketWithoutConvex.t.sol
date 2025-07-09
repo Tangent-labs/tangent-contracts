@@ -31,7 +31,7 @@ contract CurveConvexMarketWithoutConvex is MarketDeploymentContext {
         verifyReceiveERC20(usg, usr1, borrowedAmount1, "User receives the borrowed amount");
 
         vm.startSnapshotGas("Deposit And Borrow", "On a Curve LP not linked to Convex");
-        hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1, true);
+        hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1);
         vm.stopSnapshotGas("Deposit And Borrow", "On a Curve LP not linked to Convex");
 
         assertERC20Tracking();
@@ -41,9 +41,8 @@ contract CurveConvexMarketWithoutConvex is MarketDeploymentContext {
         assertEq(market.userDebt(usr1), borrowedAmount1, "Position debt should be equal to the borrowed amount");
         assertEq(market.userDebtShares(usr1), borrowedAmount1, "Position debt index should be 0");
         assertEq(market.totalDebt(), borrowedAmount1, "Total debt should be 0");
-        assertEq(market.socFeePending(), 0);
 
-        hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1, false);
+        hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1);
 
         skip(15 days);
         vm.startPrank(usr1);

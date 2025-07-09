@@ -21,8 +21,8 @@ contract CheckpointMulti is MarketDeploymentContext {
         // We deploy few contracts. LEC contracts start to accumulate IR since now
         markets.push(address(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true)));
         markets.push(address(deployConvexCurveLPMarket(AddrCurveStableLP.sUSDS_USDT, false)));
-        markets.push(address(deployMarketNoSociabilisation(AddrPTPendle.sUSDe_31_07_25)));
-        markets.push(address(deployMarketNoSociabilisation(AddrPTPendle.eUSDe_29_05_25)));
+        markets.push(address(deployBasicERC20Market(AddrPTPendle.sUSDe_31_07_25)));
+        markets.push(address(deployBasicERC20Market(AddrPTPendle.eUSDe_29_05_25)));
         markets.push(address(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD)));
 
         lpManipulator = new HLPManipulator(owner);
@@ -42,7 +42,7 @@ contract CheckpointMulti is MarketDeploymentContext {
             deal(address(collat), usr4, depositedAmount);
             collat.approve(market, MAX_UINT);
 
-            MarketExternalActions(market).depositAndBorrow(depositedAmount, borrowedAmount, true);
+            MarketExternalActions(market).depositAndBorrow(depositedAmount, borrowedAmount);
             indexes.push(irCalculator.debtIndexes(market));
 
             IRCheckpoint memory irCheckpoint = irCalculator.getIRCheckpoint(market);

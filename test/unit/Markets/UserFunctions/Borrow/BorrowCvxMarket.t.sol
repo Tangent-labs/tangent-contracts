@@ -62,7 +62,7 @@ contract BorrowCvxMarket is MarketDeploymentContext {
         borrowedAmount = bound(borrowedAmount, minimumLoan + 1, market.maxMarketDebt());
         collatDeposited = bound(collatDeposited, minimumCollatForDebt(borrowedAmount), 2_000_000 ether);
 
-        hDeposit.deposit(usr1, collatDeposited, true);
+        hDeposit.deposit(usr1, collatDeposited);
 
         verifyMintERC20(usg, borrowedAmount, "Cvx Reward tokens are burnt");
         verifyReceiveERC20(usg, usr2, borrowedAmount, "User 2, not the caller, receives USG");

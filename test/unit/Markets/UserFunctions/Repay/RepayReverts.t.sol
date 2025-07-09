@@ -37,7 +37,7 @@ contract RepayReverts is MarketDeploymentContext {
 
     function test_repay_and_leave_position_under_minimum_loan() external {
         deal(address(usg), usr1, 1);
-        hDeposit.depositAndBorrow(10_000 ether, 3_000 ether, true);
+        hDeposit.depositAndBorrow(10_000 ether, 3_000 ether);
 
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooLow.selector));

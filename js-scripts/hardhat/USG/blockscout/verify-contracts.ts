@@ -87,9 +87,7 @@ export async function verifyContracts() {
     await forceAbi(client, addresses.oracles["pxETH-WETH"], "Oracle pxETH/WETH", false, abiOracleDuoPoolStable);
     await forceAbi(client, addresses.oracles["pxETH-stETH"], "Oracle pxETH/stETH", false, abiOracleDuoPoolStable);
     await forceAbi(client, addresses.oracles["frxETH-WETH"], "Oracle frxETH/WETH", false, abiOracleDuoPoolStable);
-    console.log("YO");
     await forceAbi(client, addresses.oracles["cbBTC-WBTC"], "Oracle cbBTC/WBTC", false, abiOracleDuoPoolStable);
-    console.log("YI");
 
     const abiOracleCryptoSwap = (await artifacts.readArtifact("OracleCryptoSwap")).abi;
     await forceAbi(client, addresses.oracles["USDT-WBTC-WETH"], "Oracle USDC/WBTC/WETH", false, abiOracleCryptoSwap);
@@ -201,12 +199,12 @@ export async function verifyContracts() {
         }
     }
 
-    const abiNoSociabilization = (await artifacts.readArtifact("MarketNoSociabilization")).abi;
+    const abiBasicMarketERC20 = (await artifacts.readArtifact("BasicERC20Market")).abi;
 
     // Markets Pendle PT
     for (const marketObject of Object.values(addresses.markets)) {
         if (marketObject.marketType === "Pendle_PT") {
-            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Pendle_PT", false, abiNoSociabilization);
+            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Pendle_PT", false, abiBasicMarketERC20);
         }
     }
 

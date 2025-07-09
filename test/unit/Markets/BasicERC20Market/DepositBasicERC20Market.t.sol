@@ -2,15 +2,15 @@
 pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
 
-contract DepositNoSociabilization is MarketDeploymentContext {
-    MarketNoSociabilization public market;
+contract DepositBasicERC20Market is MarketDeploymentContext {
+    BasicERC20Market public market;
     IERC20Metadata public collatToken;
 
     uint256 collatDeposited1 = 5_000 ether;
     uint256 borrowedAmount1 = 3_440 ether;
     function setUp() public {
         collatToken = AddrPTPendle.eUSDe_29_05_25;
-        market = deployMarketNoSociabilisation(collatToken);
+        market = deployBasicERC20Market(collatToken);
         deal(address(collatToken), usr1, collatDeposited1);
 
         vm.prank(usr1);
@@ -24,7 +24,7 @@ contract DepositNoSociabilization is MarketDeploymentContext {
         verifyLostERC20(collatToken, usr1, collatDeposited1);
         verifyReceiveERC20(collatToken, address(market), collatDeposited1);
 
-        market.depositAndBorrow(collatDeposited1, borrowedAmount1, true);
+        market.depositAndBorrow(collatDeposited1, borrowedAmount1);
 
         assertERC20Tracking();
     }
@@ -36,7 +36,7 @@ contract DepositNoSociabilization is MarketDeploymentContext {
         verifyLostERC20(collatToken, usr1, collatDeposited1);
         verifyReceiveERC20(collatToken, address(market), collatDeposited1);
 
-        market.depositAndBorrow(collatDeposited1, borrowedAmount1, false);
+        market.depositAndBorrow(collatDeposited1, borrowedAmount1);
 
         assertERC20Tracking();
 
@@ -53,6 +53,6 @@ contract DepositNoSociabilization is MarketDeploymentContext {
         vm.startPrank(usr1);
 
         vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
-        market.deposit(usr1, 0, true);
+        market.deposit(usr1, 0);
     }
 }

@@ -33,7 +33,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount, true);
+        hDeposit.depositAndBorrow(amountIn, borrowedAmount);
 
         uint256 withdrawnAmount = 1_000 ether;
 
@@ -52,11 +52,11 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount, false);
+        hDeposit.depositAndBorrow(amountIn, borrowedAmount);
 
         uint256 withdrawnAmount = 1_000 ether;
 
-        verifyLostERC20(collatToken, address(market), withdrawnAmount, "Verify that market receives Cvx Reward tokens");
+        // verifyLostERC20(collatToken, address(market), withdrawnAmount, "Verify that market receives Cvx Reward tokens");
         verifyReceiveERC20(collatToken, usr1, withdrawnAmount, "Verify that user 1 retrieve its collateral");
 
         vm.startSnapshotGas("Withdraw", "Withdraw fully from unstaked collat");
@@ -65,18 +65,18 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
 
         assertERC20Tracking();
 
-        assertEq(market.collateralBalances(usr1), amountIn - withdrawnAmount - market.socFeePending());
+        assertEq(market.collateralBalances(usr1), amountIn - withdrawnAmount);
     }
 
     function test_withdraw_from_staked_and_not_staked() external {
         uint256 amountInStaked = 10_000 ether;
         uint256 borrowedAmount1 = 5_000 ether;
         uint256 borrowedAmount2 = 1_000 ether;
-        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount1, true);
-        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount2, false);
+        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount1);
+        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount2);
 
         uint256 withdrawnAmount = 12_000 ether;
-        uint256 availableAmount = market.collatToken().balanceOf(address(market)) - market.socFeePending();
+        uint256 availableAmount = market.collatToken().balanceOf(address(market));
         uint256 amountWithdrawnFromConvex = withdrawnAmount - availableAmount;
         uint256 amountWithdrawnDirectly = withdrawnAmount - amountWithdrawnFromConvex;
         // verifyLostERC20(market.cvxRewardToken(), address(market), amountWithdrawnFromConvex, "Verify that we withdraw the right amount of Cvx Reward");
@@ -91,6 +91,6 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
 
         assertERC20Tracking();
 
-        assertEq(market.collateralBalances(usr1), 2 * amountInStaked - withdrawnAmount - market.socFeePending());
+        assertEq(market.collateralBalances(usr1), 2 * amountInStaked - withdrawnAmount);
     }
 }

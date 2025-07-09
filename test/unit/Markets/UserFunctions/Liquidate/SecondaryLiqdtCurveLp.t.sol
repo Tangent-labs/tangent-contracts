@@ -36,7 +36,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
     function test_secondaryLiquidator_liquidate_with_secondary_liquidator_crvUSD_USDC() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit_crvUSD_USDC.depositAndBorrow(collatDeposited, 4_250 ether, true);
+        hDeposit_crvUSD_USDC.depositAndBorrow(collatDeposited, 4_250 ether);
 
         irCalculator.checkpointIR(address(market_crvUSD_USDC));
 
@@ -114,7 +114,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
     function test_secondaryLiquidator_liquidate_with_secondary_liquidator_fxUSD_USDC() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit_fxUSD_USDC.depositAndBorrow(collatDeposited, 4_250 ether, true);
+        hDeposit_fxUSD_USDC.depositAndBorrow(collatDeposited, 4_250 ether);
 
         irCalculator.checkpointIR(address(market_fxUSD_USDC));
 

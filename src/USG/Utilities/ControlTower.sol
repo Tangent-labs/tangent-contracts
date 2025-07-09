@@ -5,6 +5,8 @@ import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 import {IUSG} from "../../interfaces/internals/USG/IUSG.sol";
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 
+/// @title ControlTower
+/// @notice Owns the access control of the protocol.
 contract ControlTower is LightOwnable, IControlTower {
     address public feeTreasury;
 

@@ -22,7 +22,7 @@ contract ZapRepay is MarketDeploymentContext {
         market = deployConvexCurveLPMarket(collatToken, true);
         hDeposit = new HDepositConvexCrvLP(usr1, market);
 
-        hDeposit.depositAndBorrow(initialDeposit, initialDebt, true);
+        hDeposit.depositAndBorrow(initialDeposit, initialDebt);
 
         skip(10 days);
 

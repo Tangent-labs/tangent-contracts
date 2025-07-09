@@ -3,7 +3,7 @@
 pragma solidity ^0.8.22;
 import "../Base/HandlerBase.sol";
 
-import "../../../src/USG/Rewards/RewardAccumulator.sol";
+import "../../../src/USG/Utilities/RewardAccumulator.sol";
 
 contract HProcessRewards is HandlerBase {
     MarketExternalActions marketRewards;
