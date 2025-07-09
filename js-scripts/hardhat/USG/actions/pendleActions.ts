@@ -65,7 +65,7 @@ const EMPTY_LIMIT_DATA = {
     optData: "0x",
 };
 
-export const pendleDeposit = async (market: AddressLike, underlying: AddressLike, amountUnderlying: bigint, user: Signer) => {
+export const pendleDepositLP = async (market: AddressLike, underlying: AddressLike, amountUnderlying: bigint, user: Signer) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
     const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
@@ -118,7 +118,7 @@ export const pendleDeposit = async (market: AddressLike, underlying: AddressLike
     await tx.wait();
 };
 
-export const pendleWithdraw = async (market: AddressLike, underlyingToken: AddressLike, amountLpToBurn: bigint, user: Signer) => {
+export const pendleWithdrawLP = async (market: AddressLike, underlyingToken: AddressLike, amountLpToBurn: bigint, user: Signer) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
     const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
@@ -180,7 +180,7 @@ const giveToken = async (contract: IERC20Metadata, amount: bigint, user: Signer)
     await giveTokenToAddresss(user, config.address, amount, config.slotBalance, config.isVyper);
 };
 
-export const pendleDepositKeepYt = async (market: AddressLike, underlying: AddressLike, amountUnderlying: bigint, user: Signer) => {
+export const depositPendleYT = async (market: AddressLike, underlying: AddressLike, amountUnderlying: bigint, user: Signer) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
     const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
@@ -252,7 +252,7 @@ export const pendleDepositKeepYt = async (market: AddressLike, underlying: Addre
     }
 };
 
-export const pendleWithdrawSinglePt = async (market: AddressLike, amountLpToBurn: bigint, minPtOut: bigint, user: Signer) => {
+export const depositPendleLP = async (market: AddressLike, amountLpToBurn: bigint, minPtOut: bigint, user: Signer) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
     const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
@@ -301,18 +301,27 @@ export const pendleWithdrawSinglePt = async (market: AddressLike, amountLpToBurn
     }
 };
 
+// TypeScript interfaces for Pendle market contracts
+interface PendleMarketContracts {
+    // Market contract
+    market: any; // IPendleMarketV3
+
+    // Core token contracts
+    sy: any; // ISYToken
+    pt: any; // IERC20Metadata
+    yt: any; // IERC20Metadata
+}
+
 /**
- * Retrieves comprehensive information about a Pendle market including PT, YT, SY tokens and their input/output tokens
+ * Retrieves the contract instances for a Pendle market including PT, YT, SY tokens
  * @param market - The address of the Pendle market contract
- * @returns Promise<PendleMarketInfo> - Complete market information including:
- *   - Market basic info (name, symbol, decimals, expiry, etc.)
- *   - SY token info (address, name, symbol, input/output tokens, asset, yield token)
- *   - PT token info (address, name, symbol, decimals, total supply)
- *   - YT token info (address, name, symbol, decimals, total supply)
- *   - Reward tokens array
- *   - Formatted display information
+ * @returns Promise<PendleMarketContracts> - Contract instances for:
+ *   - Market contract (IPendleMarketV3)
+ *   - SY token contract (ISYToken)
+ *   - PT token contract (IERC20Metadata)
+ *   - YT token contract (IERC20Metadata)
  */
-export const getPendleMarketInfo = async (market: AddressLike): Promise<PendleMarketInfo> => {
+export const getPendleMarketContracts = async (market: AddressLike): Promise<PendleMarketContracts> => {
     const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
 
     // Get market tokens (SY, PT, YT)
@@ -325,121 +334,15 @@ export const getPendleMarketInfo = async (market: AddressLike): Promise<PendleMa
     const ptToken = await ethers.getContractAt("IERC20Metadata", _PT);
     const ytToken = await ethers.getContractAt("IERC20Metadata", _YT);
 
-    // Parallel execution of all contract calls for better performance
-    const [
-        // Market information
-        marketName,
-        marketSymbol,
-        marketDecimals,
-        expiry,
-        isExpired,
-        totalSupply,
-        rewardTokens,
+    const marketContracts = {
+        // Market contract
+        market: marketContract,
 
-        // SY token information
-        tokensIn,
-        tokensOut,
-        syName,
-        sySymbol,
-        syDecimals,
-        syTotalSupply,
-        syAsset,
-        syYieldToken,
-
-        // PT token information
-        ptName,
-        ptSymbol,
-        ptDecimals,
-        ptTotalSupply,
-
-        // YT token information
-        ytName,
-        ytSymbol,
-        ytDecimals,
-        ytTotalSupply,
-    ] = await Promise.all([
-        // Market calls
-        marketContract.name(),
-        marketContract.symbol(),
-        marketContract.decimals(),
-        marketContract.expiry(),
-        marketContract.isExpired(),
-        marketContract.totalSupply(),
-        marketContract.getRewardTokens(),
-
-        // SY token calls
-        syToken.getTokensIn(),
-        syToken.getTokensOut(),
-        syToken.name(),
-        syToken.symbol(),
-        syToken.decimals(),
-        syToken.totalSupply(),
-        syToken.asset(),
-        syToken.yieldToken(),
-
-        // PT token calls
-        ptToken.name(),
-        ptToken.symbol(),
-        ptToken.decimals(),
-        ptToken.totalSupply(),
-
-        // YT token calls
-        ytToken.name(),
-        ytToken.symbol(),
-        ytToken.decimals(),
-        ytToken.totalSupply(),
-    ]);
-
-    const marketInfo = {
-        // Market basic info
-        marketAddress: market.toString(),
-        marketName,
-        marketSymbol,
-        marketDecimals,
-        expiry: expiry.toString(),
-        isExpired,
-        totalSupply: totalSupply.toString(),
-
-        // Core tokens
-        sy: {
-            address: _SY,
-            name: syName,
-            symbol: sySymbol,
-            decimals: syDecimals,
-            totalSupply: syTotalSupply.toString(),
-            asset: syAsset,
-            yieldToken: syYieldToken,
-            tokensIn,
-            tokensOut,
-        },
-        pt: {
-            address: _PT,
-            name: ptName,
-            symbol: ptSymbol,
-            decimals: ptDecimals,
-            totalSupply: ptTotalSupply.toString(),
-        },
-        yt: {
-            address: _YT,
-            name: ytName,
-            symbol: ytSymbol,
-            decimals: ytDecimals,
-            totalSupply: ytTotalSupply.toString(),
-        },
-
-        // Additional info
-        rewardTokens,
-
-        // Formatted info for display
-        formatted: {
-            expiryDate: new Date(Number(expiry) * 1000).toISOString(),
-            isExpired: isExpired ? "Yes" : "No",
-            totalSupplyFormatted: ethers.formatEther(totalSupply),
-            syTotalSupplyFormatted: ethers.formatEther(syTotalSupply),
-            ptTotalSupplyFormatted: ethers.formatEther(ptTotalSupply),
-            ytTotalSupplyFormatted: ethers.formatEther(ytTotalSupply),
-        },
+        // Core token contracts
+        sy: syToken,
+        pt: ptToken,
+        yt: ytToken,
     };
 
-    return marketInfo;
+    return marketContracts;
 };

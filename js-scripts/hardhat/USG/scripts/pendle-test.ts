@@ -1,5 +1,5 @@
 import {ethers} from "hardhat";
-import {getPendleMarketInfo, pendleDeposit, pendleDepositKeepYt, pendleWithdraw, pendleWithdrawSinglePt} from "../actions/pendleActions";
+import {getPendleMarketContracts, pendleDepositLP, depositPendleYT, pendleWithdrawLP, depositPendleLP} from "../actions/pendleActions";
 
 import {Signer} from "ethers";
 
@@ -14,13 +14,13 @@ const main = async (inInfo: InInfo) => {
     let lpBalance = 0n;
     const user = (await ethers.getSigners())[0] as unknown as Signer;
 
-    const marketInfo = await getPendleMarketInfo(inInfo.market);
-    const marketContract = await ethers.getContractAt("IPendleMarketV3", inInfo.market);
+    const marketContracts = await getPendleMarketContracts(inInfo.market);
+    const marketContract = marketContracts.market;
     const userAddress = await user.getAddress();
 
     // Deposit the underlying into the market
     try {
-        await pendleDeposit(inInfo.market, inInfo.underlying, inInfo.amount, user);
+        await pendleDepositLP(inInfo.market, inInfo.underlying, inInfo.amount, user);
         lpBalance = await marketContract.balanceOf(userAddress);
 
         // withdraw
@@ -34,7 +34,7 @@ const main = async (inInfo: InInfo) => {
 
     // Withdraw the LP tokens from the market
     try {
-        await pendleWithdraw(inInfo.market, inInfo.underlying, lpBalance, user);
+        await pendleWithdrawLP(inInfo.market, inInfo.underlying, lpBalance, user);
         lpBalance = await marketContract.balanceOf(userAddress);
 
         if (lpBalance > 0n) {
@@ -46,7 +46,7 @@ const main = async (inInfo: InInfo) => {
     }
 
     try {
-        await pendleDepositKeepYt(inInfo.market, inInfo.underlying, inInfo.amount, user);
+        await depositPendleYT(inInfo.market, inInfo.underlying, inInfo.amount, user);
     } catch (error) {
         console.error("Error during Pendle deposit with YT retention:", error);
         throw error;
@@ -54,9 +54,9 @@ const main = async (inInfo: InInfo) => {
 
     try {
         lpBalance = await marketContract.balanceOf(userAddress);
-        await pendleWithdrawSinglePt(inInfo.market, lpBalance, 0n, user);
+        await depositPendleLP(inInfo.market, lpBalance, 0n, user);
         // ptBalance
-        const ptContract = await ethers.getContractAt("IERC20", marketInfo.pt.address);
+        const ptContract = marketContracts.pt;
         const ptBalance = await ptContract.balanceOf(userAddress);
         if (ptBalance === 0n) {
             throw new Error("no PT tokens after withdraw");
