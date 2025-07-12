@@ -16,7 +16,6 @@ contract LandingChainViewTest is MarketDeploymentContext {
     // LIST
     function test_LandingChainView_ui_returns() public {
         try new LandingChainView() {} catch (bytes memory reason) {
-            console.logBytes(reason);
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }
