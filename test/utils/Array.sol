@@ -27,8 +27,23 @@ library Array {
         }
         return array;
     }
+    function memoryAddress(address[4] memory addresses) public pure returns (address[] memory) {
+        address[] memory array = new address[](addresses.length);
+        for (uint i = 0; i < addresses.length; i++) {
+            array[i] = addresses[i];
+        }
+        return array;
+    }
 
     function memoryAddress(address[5] memory addresses) public pure returns (address[] memory) {
+        address[] memory array = new address[](addresses.length);
+        for (uint i = 0; i < addresses.length; i++) {
+            array[i] = addresses[i];
+        }
+        return array;
+    }
+
+    function memoryAddress(address[6] memory addresses) public pure returns (address[] memory) {
         address[] memory array = new address[](addresses.length);
         for (uint i = 0; i < addresses.length; i++) {
             array[i] = addresses[i];
