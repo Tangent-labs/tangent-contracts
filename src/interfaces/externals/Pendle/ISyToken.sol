@@ -1,7 +1,7 @@
-interface ISYToken {
-    // Constructor (can't be in interface, noted for info)
-    // constructor(address _fToken);
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
 
+interface ISYToken {
     // Errors
     error SYInsufficientSharesOut(uint256 actualSharesOut, uint256 requiredSharesOut);
     error SYInsufficientTokenOut(uint256 actualTokenOut, uint256 requiredTokenOut);

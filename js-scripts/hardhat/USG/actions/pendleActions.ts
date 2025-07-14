@@ -5,50 +5,7 @@ import {IERC20Metadata} from "../../../../typechain-types";
 import {THIEF_TOKEN_CONFIG} from "defi-resources/build/ressources/erc20/thiefConfig";
 import {giveTokenToAddresss} from "../../thief";
 
-// TypeScript interfaces for Pendle market information
-interface PendleTokenInfo {
-    address: string;
-    name: string;
-    symbol: string;
-    decimals: bigint;
-    totalSupply: string;
-}
-
-interface PendleSYTokenInfo extends PendleTokenInfo {
-    asset: string;
-    yieldToken: string;
-    tokensIn: string[];
-    tokensOut: string[];
-}
-
-interface PendleMarketInfo {
-    // Market basic info
-    marketAddress: string;
-    marketName: string;
-    marketSymbol: string;
-    marketDecimals: bigint;
-    expiry: string;
-    isExpired: boolean;
-    totalSupply: string;
-
-    // Core tokens
-    sy: PendleSYTokenInfo;
-    pt: PendleTokenInfo;
-    yt: PendleTokenInfo;
-
-    // Additional info
-    rewardTokens: string[];
-
-    // Formatted info for display
-    formatted: {
-        expiryDate: string;
-        isExpired: string;
-        totalSupplyFormatted: string;
-        syTotalSupplyFormatted: string;
-        ptTotalSupplyFormatted: string;
-        ytTotalSupplyFormatted: string;
-    };
-}
+const DEAD_ADDRESS = "0x000000000000000000000000000000000000dEaD";
 
 const EMPTY_SWAP_DATA = {
     swapType: 0, // NONE
@@ -65,12 +22,20 @@ const EMPTY_LIMIT_DATA = {
     optData: "0x",
 };
 
-export const pendleDepositLP = async (market: AddressLike, underlying: AddressLike, amountUnderlying: bigint, user: Signer) => {
+export const giveToken = async (contract: IERC20Metadata, amount: bigint, user: Signer) => {
+    const symbol = await contract.symbol();
+    const config = THIEF_TOKEN_CONFIG[symbol];
+
+    if (!config) {
+        throw new Error(`Token ${symbol} not found in THIEF_TOKEN_CONFIG`);
+    }
+    await giveTokenToAddresss(user, config.address, amount, config.slotBalance, config.isVyper);
+};
+
+export const pendleDepositLP = async (market: AddressLike, amount: bigint, user: Signer, underlying: AddressLike) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
     const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
-
-    await giveToken(underlyingContract, amountUnderlying, user);
 
     // Get market contract to access SY token
     const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
@@ -85,12 +50,12 @@ export const pendleDepositLP = async (market: AddressLike, underlying: AddressLi
     }
 
     // Approve router to spend underlying tokens
-    await underlyingContract.connect(user).approve(PENDLE_ROUTER_V4, amountUnderlying);
+    await underlyingContract.connect(user).approve(PENDLE_ROUTER_V4, amount);
 
     // Create TokenInput
     const tokenInput = {
         tokenIn: underlying.toString(),
-        netTokenIn: amountUnderlying,
+        netTokenIn: amount,
         tokenMintSy: underlying.toString(),
         pendleSwap: ethers.ZeroAddress,
         swapData: EMPTY_SWAP_DATA,
@@ -99,8 +64,8 @@ export const pendleDepositLP = async (market: AddressLike, underlying: AddressLi
     // Create ApproxParams for LP output estimation
     const approxParams = {
         guessMin: 0n,
-        guessMax: amountUnderlying / 2n, // Conservative estimate
-        guessOffchain: amountUnderlying / 4n, // Initial guess
+        guessMax: amount / 2n, // Conservative estimate
+        guessOffchain: amount / 4n, // Initial guess
         maxIteration: 30,
         eps: 1n * 10n ** 12n, // 1e12
     };
@@ -118,7 +83,7 @@ export const pendleDepositLP = async (market: AddressLike, underlying: AddressLi
     await tx.wait();
 };
 
-export const pendleWithdrawLP = async (market: AddressLike, underlyingToken: AddressLike, amountLpToBurn: bigint, user: Signer) => {
+export const pendleWithdrawLP = async (market: AddressLike, amount: bigint, user: Signer, underlying: AddressLike) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
     const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
@@ -129,12 +94,12 @@ export const pendleWithdrawLP = async (market: AddressLike, underlyingToken: Add
     const tokensOut = await syToken.getTokensOut();
 
     // Use provided underlying token or default to the first token in the array
-    if (!tokensOut.includes(underlyingToken.toString())) {
-        throw new Error(`Underlying token ${underlyingToken} is not in the SY token's getTokensOut array. Available tokens: ${tokensOut.join(", ")}`);
+    if (!tokensOut.includes(underlying.toString())) {
+        throw new Error(`Underlying token ${underlying} is not in the SY token's getTokensOut array. Available tokens: ${tokensOut.join(", ")}`);
     }
 
     // Approve router to spend LP tokens
-    await marketContract.connect(user).approve(PENDLE_ROUTER_V4, amountLpToBurn);
+    await marketContract.connect(user).approve(PENDLE_ROUTER_V4, amount);
 
     // Create SwapData for no swap
     const swapData = {
@@ -146,9 +111,9 @@ export const pendleWithdrawLP = async (market: AddressLike, underlyingToken: Add
 
     // Create TokenOutput configuration
     const tokenOutput = {
-        tokenOut: underlyingToken,
+        tokenOut: underlying,
         minTokenOut: 0n,
-        tokenRedeemSy: underlyingToken,
+        tokenRedeemSy: underlying,
         pendleSwap: ethers.ZeroAddress,
         swapData: swapData,
     };
@@ -157,7 +122,7 @@ export const pendleWithdrawLP = async (market: AddressLike, underlyingToken: Add
     const tx = await router.connect(user).removeLiquiditySingleToken(
         userAddress, // receiver
         market.toString(), // market
-        amountLpToBurn, // netLpToBurn
+        amount, // netLpToBurn
         tokenOutput, // output
         EMPTY_LIMIT_DATA // limit
     );
@@ -170,22 +135,93 @@ export const pendleWithdrawLP = async (market: AddressLike, underlyingToken: Add
     };
 };
 
-const giveToken = async (contract: IERC20Metadata, amount: bigint, user: Signer) => {
-    const symbol = await contract.symbol();
-    const config = THIEF_TOKEN_CONFIG[symbol];
+export const pendleDepositPT = async (market: AddressLike, amount: bigint, user: Signer) => {
+    const userAddress = await user.getAddress();
+    const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
+    const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
 
-    if (!config) {
-        throw new Error(`Token ${symbol} not found in THIEF_TOKEN_CONFIG`);
+    // Get market tokens to identify the PT token
+    const {_PT} = await marketContract.readTokens();
+    const ptToken = await ethers.getContractAt("IERC20", _PT);
+
+    // Approve router to spend LP tokens
+    await marketContract.connect(user).approve(PENDLE_ROUTER_V4, amount);
+
+    // Create ApproxParams for PT received from SY conversion
+    const approxParams = {
+        guessMin: 0n,
+        guessMax: 1n * 10n ** 24n, // 1e24
+        guessOffchain: 5n * 10n ** 23n, // 5e23
+        maxIteration: 50,
+        eps: 1n * 10n ** 15n, // 1e15
+    };
+    try {
+        // Call removeLiquiditySinglePt on the router
+        const tx = await router.connect(user).removeLiquiditySinglePt(
+            userAddress, // receiver
+            market.toString(), // market
+            amount, // netLpToBurn
+            0n, // minPtOut
+            approxParams, // guessPtReceivedFromSy
+            EMPTY_LIMIT_DATA // limit
+        );
+
+        const receipt = await tx.wait();
+
+        // Get final balances
+        const finalPtBalance = await ptToken.balanceOf(userAddress);
+        const finalLpBalance = await marketContract.balanceOf(userAddress);
+
+        return {
+            success: true,
+            transactionHash: receipt?.hash,
+            finalPtBalance: finalPtBalance,
+            finalLpBalance: finalLpBalance,
+        };
+    } catch (error) {
+        console.error("Error with removeLiquiditySinglePt:", error);
+        throw error;
     }
-    await giveTokenToAddresss(user, config.address, amount, config.slotBalance, config.isVyper);
 };
 
-export const pendleDepositYT = async (market: AddressLike, underlying: AddressLike, amountUnderlying: bigint, user: Signer) => {
+export const pendleWithdrawPT = async (market: AddressLike, amount: bigint, user: Signer) => {
+    const userAddress = await user.getAddress();
+    const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
+    const {_PT} = await marketContract.readTokens();
+    const ptToken = await ethers.getContractAt("IERC20Metadata", _PT);
+
+    await ptToken.connect(user).transfer(DEAD_ADDRESS, amount);
+
+    // Final YT balance
+    const ytBalance = await ptToken.balanceOf(userAddress);
+
+    return {
+        success: true,
+        ytBalance,
+    };
+};
+
+export const pendleWithdrawYT = async (market: AddressLike, amount: bigint, user: Signer) => {
+    const userAddress = await user.getAddress();
+
+    const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
+    const {_YT} = await marketContract.readTokens();
+    const ytToken = await ethers.getContractAt("IERC20", _YT);
+    await ytToken.connect(user).transfer(DEAD_ADDRESS, amount);
+
+    // Final YT balance
+    const ytBalance = await ytToken.balanceOf(userAddress);
+
+    return {
+        success: true,
+        ytBalance,
+    };
+};
+
+export const pendleDepositYT = async (market: AddressLike, amount: bigint, user: Signer, underlying: AddressLike) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
     const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
-
-    await giveToken(underlyingContract, amountUnderlying, user);
 
     // Get market contract to access SY token
     const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
@@ -200,12 +236,12 @@ export const pendleDepositYT = async (market: AddressLike, underlying: AddressLi
     }
 
     // Approve router to spend underlying tokens
-    await underlyingContract.connect(user).approve(PENDLE_ROUTER_V4, amountUnderlying);
+    await underlyingContract.connect(user).approve(PENDLE_ROUTER_V4, amount);
 
     // Create TokenInput
     const tokenInput = {
         tokenIn: underlying.toString(),
-        netTokenIn: amountUnderlying,
+        netTokenIn: amount,
         tokenMintSy: underlying.toString(),
         pendleSwap: ethers.ZeroAddress,
         swapData: EMPTY_SWAP_DATA,
@@ -252,57 +288,8 @@ export const pendleDepositYT = async (market: AddressLike, underlying: AddressLi
     }
 };
 
-export const pendleDepositPT = async (market: AddressLike, amountLpToBurn: bigint, minPtOut: bigint, user: Signer) => {
-    const userAddress = await user.getAddress();
-    const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
-    const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
-
-    // Get market tokens to identify the PT token
-    const {_PT} = await marketContract.readTokens();
-    const ptToken = await ethers.getContractAt("IERC20", _PT);
-
-    // Approve router to spend LP tokens
-    await marketContract.connect(user).approve(PENDLE_ROUTER_V4, amountLpToBurn);
-
-    // Create ApproxParams for PT received from SY conversion
-    const approxParams = {
-        guessMin: 0n,
-        guessMax: 1n * 10n ** 24n, // 1e24
-        guessOffchain: 5n * 10n ** 23n, // 5e23
-        maxIteration: 50,
-        eps: 1n * 10n ** 15n, // 1e15
-    };
-    try {
-        // Call removeLiquiditySinglePt on the router
-        const tx = await router.connect(user).removeLiquiditySinglePt(
-            userAddress, // receiver
-            market.toString(), // market
-            amountLpToBurn, // netLpToBurn
-            minPtOut, // minPtOut
-            approxParams, // guessPtReceivedFromSy
-            EMPTY_LIMIT_DATA // limit
-        );
-
-        const receipt = await tx.wait();
-
-        // Get final balances
-        const finalPtBalance = await ptToken.balanceOf(userAddress);
-        const finalLpBalance = await marketContract.balanceOf(userAddress);
-
-        return {
-            success: true,
-            transactionHash: receipt?.hash,
-            finalPtBalance: finalPtBalance,
-            finalLpBalance: finalLpBalance,
-        };
-    } catch (error) {
-        console.error("Error with removeLiquiditySinglePt:", error);
-        throw error;
-    }
-};
-
 // TypeScript interfaces for Pendle market contracts
-interface PendleMarketContracts {
+export interface PendleMarketContracts {
     // Market contract
     market: any; // IPendleMarketV3
 
