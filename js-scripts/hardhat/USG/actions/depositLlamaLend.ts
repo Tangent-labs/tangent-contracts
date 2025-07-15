@@ -3,9 +3,15 @@ import {MaxUint256} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {giveTokensToAddresses} from "../../thief";
 import {TOKENS_TO_GIVE} from "../../tokensToGive.config";
+import {CURVE_CONTEXT} from "defi-resources/build/ressources/mappings/curveContext";
 
-export const depositLlamaLend = async (vaultAddress: string, tokenAddress: string, user: HardhatEthersSigner, tokenToGive: number, amountToDeposit: bigint) => {
-    const vault = await ethers.getContractAt("ILlamaVault", vaultAddress);
+type LlamaKey = keyof typeof CURVE_CONTEXT;
+
+export const depositLlamaLend = async (key: LlamaKey, user: HardhatEthersSigner, tokenToGive: number, amountToDeposit: bigint) => {
+    const context = CURVE_CONTEXT[key];
+
+    const vault = await ethers.getContractAt("ILlamaVault", context.curveLp);
+    const tokenAddress = await vault.asset();
     const erc20 = await ethers.getContractAt("ERC20", tokenAddress);
 
     await giveTokensToAddresses([user], TOKENS_TO_GIVE(tokenToGive));

@@ -12,9 +12,9 @@ async function main() {
     await giveTokensToAddresses([user], TOKENS_TO_GIVE(1000000));
     //
 
-    const mkt = await instanciateMarket("0x91Eb504dc608b66619067A808323DE79f4096036");
+    const mkt = await instanciateMarket("0x963B59A52647777E3646034213d6A7B5aEA4F1d8");
 
-    await depositAndBorrowUSG(mkt, "0x91Eb504dc608b66619067A808323DE79f4096036", user, 10n ** 22n, 10n ** 22n * 3n);
+    await depositAndBorrowUSG(mkt, "0x963B59A52647777E3646034213d6A7B5aEA4F1d8", user, 10n ** 23n, 10n ** 21n * 4n);
 
     await repayUSG(mkt, user, 10n ** 18n);
 

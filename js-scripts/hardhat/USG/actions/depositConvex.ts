@@ -1,10 +1,16 @@
 import {ethers} from "hardhat";
 import {MaxUint256} from "ethers";
-import {ICurveStableSwapNG} from "../../../../typechain-types/src/interfaces/externals/Curve/ICurveStableSwapNG";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import {CURVE_CONTEXT} from "defi-resources/build/ressources/mappings/curveContext";
 
-export const depositConvex = async (address: string, lp: ICurveStableSwapNG, user: HardhatEthersSigner, pid: number, amount: bigint) => {
-    const booster = await ethers.getContractAt("ICvxBooster", address);
-    await lp.connect(user).approve(address, MaxUint256);
-    await booster.connect(user).deposit(pid, amount, true);
+type ConvexKey = keyof typeof CURVE_CONTEXT;
+
+export const depositConvex = async (lpKey: ConvexKey, user: HardhatEthersSigner, amount: bigint) => {
+    const context = CURVE_CONTEXT[lpKey];
+
+    const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
+    const booster = await ethers.getContractAt("ICvxBooster", context.convexRewardToken);
+
+    await lp.connect(user).approve(booster, MaxUint256);
+    await booster.connect(user).deposit(context.convexPID, amount, true);
 };
