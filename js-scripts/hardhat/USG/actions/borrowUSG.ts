@@ -1,9 +1,12 @@
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {IERC20, MarketExternalActions} from "../../../../typechain-types";
 import {MaxUint256} from "ethers";
+import {ethers} from "hardhat";
 
-export const borrowUSG = async (market: MarketExternalActions, marketAddress: string, collatContract: IERC20, user: HardhatEthersSigner, borrowAmount: bigint) => {
+export const borrowUSG = async (marketAddress: string, user: HardhatEthersSigner, borrowAmount: bigint) => {
+    const market = await ethers.getContractAt("MarketExternalActions", marketAddress);
     const userAddress = await user.getAddress();
-    await collatContract.connect(user).approve(marketAddress, MaxUint256);
-    await market?.connect(user)?.borrow(userAddress, borrowAmount);
+    const collatAddress = await market.collatToken();
+    const collatContract = await ethers.getContractAt("IERC20", collatAddress);
+    await collatContract.connect(user).approve(market, MaxUint256);
+    await market.connect(user).borrow(userAddress, borrowAmount);
 };

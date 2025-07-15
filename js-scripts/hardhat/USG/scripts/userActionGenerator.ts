@@ -62,23 +62,27 @@ class BlockchainScriptGenerator {
 
         switch (row.actionType.toLowerCase()) {
             case "depositcurvelp":
-                return `await depositCurveLP("${row.contractAddress}", ${row.user}, ${amount});`;
+                return `await depositCurveLP("${row.contractAddress}", ${row.user}, ${row.amount});`;
+            case "withdrawcurvelp":
+                return `await withdrawCurveLP("${row.contractAddress}", ${amount}, ${row.user});`;
             case "depositcurvegauge":
                 return `await depositCurveGauge("${row.contractAddress}", ${row.user}, ${amount});`;
             case "withdrawcurvegauge":
                 return `await withdrawCurveGauge("${row.contractAddress}", ${row.user}, ${amount});`;
-            case "transferposition":
-                return `await context.transferPosition("${row.contractAddress}", ${row.user}, ${row.additionalParams ? `${row.additionalParams}.address` : '""'}, ${amount});`;
-            case "advancetime":
-                return `await context.advanceTime(${row.amount});`;
             case "depositstakedao":
                 return `await depositStakeDao("${row.contractAddress}", ${row.user}, ${amount});`;
             case "withdrawstakedao":
                 return `await withdrawStakeDao("${row.contractAddress}", ${row.user}, ${amount});`;
             case "depositllamalend":
-                return `await depositLlamaLend("${row.contractAddress}", ${row.user}, ${row.amount}, ${amount});`;
-            case "withdrawcurvelp":
-                return `await withdrawCurveLP("${row.contractAddress}", ${amount}, ${row.user});`;
+                return `await depositLlamaLend("${row.contractAddress}", ${row.user}, ${amount});`;
+            case "transfercurvelp":
+                return `await context.transferCurveLP("${row.contractAddress}", ${row.user}, ${row.additionalParams ? `${row.additionalParams}.address` : '""'}, ${amount});`;
+            case "transfercurvegauge":
+                return `await context.transferCurveGauge("${row.contractAddress}", ${row.user}, ${row.additionalParams ? `${row.additionalParams}.address` : '""'}, ${amount});`;
+            case "transferstakedaogauge":
+                return `await context.transferStakeDaoGauge("${row.contractAddress}", ${row.user}, ${row.additionalParams ? `${row.additionalParams}.address` : '""'}, ${amount});`;
+            case "advancetime":
+                return `await context.advanceTime(${row.amount});`;
             default:
                 throw new Error(`Unknown action type: ${row.actionType}`);
         }
@@ -97,8 +101,10 @@ import { PointsContext } from '../contexts/PointsContext';
 
 export async function executeGeneratedActions(context: PointsContext): Promise<void> {
     try {
-        const user1 = context.getUser1();
-        const user2 = context.getUser2();
+        
+        const user1 = context.user1;
+        const user2 = context.user2;
+
         if (!user1 || !user2) {
             throw new Error("Users not initialized. Call initUsers first.");
         }

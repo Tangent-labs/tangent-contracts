@@ -2,10 +2,9 @@ import {ethers} from "hardhat";
 import {MaxUint256} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {CURVE_CONTEXT} from "defi-resources/build/ressources/mappings/curveContext";
+import {CurveLpKey} from "./depositCurveLP";
 
-type ConvexKey = keyof typeof CURVE_CONTEXT;
-
-export const depositConvex = async (lpKey: ConvexKey, user: HardhatEthersSigner, amount: bigint) => {
+export const depositConvex = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: bigint) => {
     const context = CURVE_CONTEXT[lpKey];
 
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);

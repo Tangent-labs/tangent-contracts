@@ -1,10 +1,9 @@
 import {ethers} from "hardhat";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {CURVE_CONTEXT} from "defi-resources/build/ressources/mappings/curveContext";
+import {CurveLpKey} from "./depositCurveLP";
 
-type CurveGaugeKey = keyof typeof CURVE_CONTEXT;
-
-export const withdrawCurveGauge = async (lpKey: CurveGaugeKey, user: HardhatEthersSigner, amount: bigint) => {
+export const withdrawCurveGauge = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: bigint) => {
     const context = CURVE_CONTEXT[lpKey];
 
     const gauge = await ethers.getContractAt("ISharedLiquidityGauge", context.curveGauge);

@@ -5,8 +5,7 @@ import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import {CURVE_CONTEXT} from "defi-resources/build/ressources/mappings/curveContext";
 import {executeGeneratedActions} from "../scripts/campaignActions";
-
-type tranferedPositionKey = keyof typeof CURVE_CONTEXT;
+import {CurveLpKey} from "../actions/depositCurveLP";
 
 export class PointsContext {
     user1: HardhatEthersSigner | null = null;
@@ -40,19 +39,37 @@ export class PointsContext {
         }
     }
 
-    async transferPosition(lpKey: tranferedPositionKey, fromUser: HardhatEthersSigner, toAddress: string, amount: bigint): Promise<void> {
+    async transferStakeDaoGauge(lpKey: CurveLpKey, fromUser: HardhatEthersSigner, toAddress: string, amount: bigint): Promise<void> {
         const context = CURVE_CONTEXT[lpKey];
 
-        let address;
-
-        if (context.stakeDaoGauge !== "") {
-            address = context.stakeDaoGauge;
-        } else {
-            address = context.curveLp;
+        try {
+            const tokenContract = new ethers.Contract(context.stakeDaoGauge, ["function transfer(address to, uint256 amount) external returns (bool)"], fromUser);
+            const tx = await tokenContract.transfer(toAddress, amount);
+            await tx.wait();
+        } catch (error) {
+            console.error("Error in transferPosition:", error);
+            throw error;
         }
+    }
+
+    async transferCurveGauge(lpKey: CurveLpKey, fromUser: HardhatEthersSigner, toAddress: string, amount: bigint): Promise<void> {
+        const context = CURVE_CONTEXT[lpKey];
 
         try {
-            const tokenContract = new ethers.Contract(address, ["function transfer(address to, uint256 amount) external returns (bool)"], fromUser);
+            const tokenContract = new ethers.Contract(context.curveGauge, ["function transfer(address to, uint256 amount) external returns (bool)"], fromUser);
+            const tx = await tokenContract.transfer(toAddress, amount);
+            await tx.wait();
+        } catch (error) {
+            console.error("Error in transferPosition:", error);
+            throw error;
+        }
+    }
+
+    async transferCurveLP(lpKey: CurveLpKey, fromUser: HardhatEthersSigner, toAddress: string, amount: bigint): Promise<void> {
+        const context = CURVE_CONTEXT[lpKey];
+
+        try {
+            const tokenContract = new ethers.Contract(context.curveLp, ["function transfer(address to, uint256 amount) external returns (bool)"], fromUser);
             const tx = await tokenContract.transfer(toAddress, amount);
             await tx.wait();
         } catch (error) {
@@ -68,13 +85,5 @@ export class PointsContext {
             console.error("Error in curveDeposit:", error);
             throw error;
         }
-    }
-
-    getUser1(): HardhatEthersSigner | null {
-        return this.user1;
-    }
-
-    getUser2(): HardhatEthersSigner | null {
-        return this.user2;
     }
 }

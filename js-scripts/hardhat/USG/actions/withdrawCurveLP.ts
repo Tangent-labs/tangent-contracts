@@ -1,8 +1,7 @@
 import {ethers} from "hardhat";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {CURVE_CONTEXT} from "defi-resources/build/ressources/mappings/curveContext";
-
-type CurveLpKey = keyof typeof CURVE_CONTEXT;
+import {CurveLpKey} from "./depositCurveLP";
 
 export const withdrawCurveLP = async (lpKey: CurveLpKey, amount: bigint, user: HardhatEthersSigner) => {
     const context = CURVE_CONTEXT[lpKey];

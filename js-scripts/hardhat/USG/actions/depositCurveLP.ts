@@ -3,11 +3,19 @@ import {MaxUint256} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {CURVE_CONTEXT} from "defi-resources/build/ressources/mappings/curveContext";
 
-type CurveLpKey = keyof typeof CURVE_CONTEXT;
+export type CurveLpKey = keyof typeof CURVE_CONTEXT;
 
-export const depositCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: bigint) => {
+/**
+ * Deposit Curve LP tokens using a numerical amount.
+ * @param lpKey The Curve LP key
+ * @param user The signer/user
+ * @param amount The amount to deposit, as a number (will be converted to bigint)
+ */
+export const depositCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
     const context = CURVE_CONTEXT[lpKey];
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
+
+    console.log("context.curveLp : ", context.curveLp);
 
     const coin0Address = await lp.coins(0);
     const coin1Address = await lp.coins(1);
@@ -17,15 +25,11 @@ export const depositCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSigne
 
     const [decimals0, decimals1] = await Promise.all([coin0.decimals(), coin1.decimals()]);
 
-    const scale0 = 10n ** BigInt(decimals0);
-    const scale1 = 10n ** BigInt(decimals1);
+    const amount0 = BigInt(amount / 2) * 10n ** BigInt(decimals0);
+    const amount1 = BigInt(amount / 2) * 10n ** BigInt(decimals1);
 
-    const totalScale = scale0 + scale1;
-    const amount0 = (amount * scale0) / totalScale;
-    const amount1 = amount - amount0;
-
-    await coin0.connect(user).approve(lp.target, MaxUint256);
-    await coin1.connect(user).approve(lp.target, MaxUint256);
+    await coin0.connect(user).approve(context.curveLp, MaxUint256);
+    await coin1.connect(user).approve(context.curveLp, MaxUint256);
 
     try {
         await lp.connect(user)["add_liquidity(uint256[],uint256)"]([amount0, amount1], 0n);
