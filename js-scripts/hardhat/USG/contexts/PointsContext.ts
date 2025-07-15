@@ -20,7 +20,7 @@ export class PointsContext {
             this.user1 = signers[0];
             this.user2 = signers[1];
 
-            await giveTokensToAddresses([this.user1, this.user2], TOKENS_TO_GIVE(10000000));
+            await giveTokensToAddresses([this.user1, this.user2], TOKENS_TO_GIVE(100000000));
             console.log(`Distributed tokens to ${this.user1.address} and ${this.user2.address}`);
         } catch (error) {
             console.error("Error in initUsers:", error);
@@ -47,7 +47,7 @@ export class PointsContext {
             const tx = await tokenContract.transfer(toAddress, amount);
             await tx.wait();
         } catch (error) {
-            console.error("Error in transferPosition:", error);
+            console.error("Error in transferStakeDaoGauge:", error);
             throw error;
         }
     }
@@ -57,10 +57,12 @@ export class PointsContext {
 
         try {
             const tokenContract = new ethers.Contract(context.curveGauge, ["function transfer(address to, uint256 amount) external returns (bool)"], fromUser);
+
             const tx = await tokenContract.transfer(toAddress, amount);
+
             await tx.wait();
         } catch (error) {
-            console.error("Error in transferPosition:", error);
+            console.error("Error in transferCurveGauge:", error);
             throw error;
         }
     }
@@ -73,7 +75,7 @@ export class PointsContext {
             const tx = await tokenContract.transfer(toAddress, amount);
             await tx.wait();
         } catch (error) {
-            console.error("Error in transferPosition:", error);
+            console.error("Error in transferCurveLP:", error);
             throw error;
         }
     }

@@ -33,7 +33,7 @@ class BlockchainScriptGenerator {
         const rows = csvData.split("\n").map((row) => row.split(","));
         const headers = rows[0];
 
-        const expectedHeaders = ["Action Type", "Contract Address", "User", "Amount", "Additional Params", "Comment"];
+        const expectedHeaders = ["Action Type", "Contract Address", "User", "Amount", "Additional Params"];
         if (!headers.every((h, i) => h.trim() === expectedHeaders[i])) {
             throw new Error("Invalid CSV headers");
         }
@@ -140,7 +140,7 @@ ${actions.map((action) => this.generateActionCode(action)).join("\n\n")}
 async function main() {
     console.log("CALL MAIN IN userActionGenerator.ts");
 
-    const generator = new BlockchainScriptGenerator("14kY9R4FzMriJ_vo-rt5yISM0pFIMJdkklcEf-wAlG70", "0");
+    const generator = new BlockchainScriptGenerator("14kY9R4FzMriJ_vo-rt5yISM0pFIMJdkklcEf-wAlG70", "25851155");
     await generator.generateScript();
 }
 

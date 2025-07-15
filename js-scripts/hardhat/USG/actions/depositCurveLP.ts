@@ -5,6 +5,39 @@ import {CURVE_CONTEXT} from "defi-resources/build/ressources/mappings/curveConte
 
 export type CurveLpKey = keyof typeof CURVE_CONTEXT;
 
+async function safeApprove(token: any, user: HardhatEthersSigner, spender: string, amount: bigint) {
+    const symbol = await token.symbol();
+
+    try {
+        const tx = await token.connect(user).approve(spender, 0n); // Reset to 0
+        await tx.wait();
+    } catch (resetError) {
+        console.warn(`Could not reset ${symbol} allowance to 0:`, resetError);
+    }
+
+    try {
+        const tx = await token.connect(user).approve(spender, amount);
+        await tx.wait();
+    } catch (err) {
+        console.warn(`Standard approve failed for ${symbol}, trying raw tx...`);
+
+        try {
+            // Send raw tx as fallback
+            await user.sendTransaction({
+                to: token.target,
+                data: token.interface.encodeFunctionData("approve", [spender, 0]),
+            });
+
+            await user.sendTransaction({
+                to: token.target,
+                data: token.interface.encodeFunctionData("approve", [spender, amount]),
+            });
+        } catch (rawErr) {
+            throw new Error(`Fallback raw approve failed for ${symbol}: ${rawErr}`);
+        }
+    }
+}
+
 /**
  * Deposit Curve LP tokens using a numerical amount.
  * @param lpKey The Curve LP key
@@ -14,8 +47,6 @@ export type CurveLpKey = keyof typeof CURVE_CONTEXT;
 export const depositCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
     const context = CURVE_CONTEXT[lpKey];
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
-
-    console.log("context.curveLp : ", context.curveLp);
 
     const coin0Address = await lp.coins(0);
     const coin1Address = await lp.coins(1);
@@ -28,12 +59,13 @@ export const depositCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSigne
     const amount0 = BigInt(amount / 2) * 10n ** BigInt(decimals0);
     const amount1 = BigInt(amount / 2) * 10n ** BigInt(decimals1);
 
-    await coin0.connect(user).approve(context.curveLp, MaxUint256);
-    await coin1.connect(user).approve(context.curveLp, MaxUint256);
+    await safeApprove(coin0, user, context.curveLp, MaxUint256);
+    await safeApprove(coin1, user, context.curveLp, MaxUint256);
 
     try {
         await lp.connect(user)["add_liquidity(uint256[],uint256)"]([amount0, amount1], 0n);
     } catch (err) {
+        console.warn("First add_liquidity signature failed, trying second...");
         try {
             await lp.connect(user)["add_liquidity(uint256[2],uint256)"]([amount0, amount1], 0n);
         } catch (signatureError) {
