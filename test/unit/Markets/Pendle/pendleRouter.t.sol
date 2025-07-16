@@ -54,7 +54,7 @@ contract PendleRouterTest is MarketDeploymentContext {
         ytToken = IERC20Metadata(_YT);
         ptToken = IERC20Metadata(_PT);
 
-        address[] memory tokensIn = ISYToken(address(syToken)).getTokensIn();
+        address[] memory tokensIn = IPendleSYToken(address(syToken)).getTokensIn();
 
         // check if underlyingToken is in the tokensIn array
         bool isUnderlyingTokenIn = false;

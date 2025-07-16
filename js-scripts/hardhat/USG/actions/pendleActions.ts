@@ -1,53 +1,99 @@
-import {AddressLike, Signer} from "ethers";
+import {AddressLike, MaxUint256, Signer, ZeroAddress} from "ethers";
 import {ethers} from "hardhat";
 import {PENDLE_ROUTER_V4} from "defi-resources/build/ressources/contracts/routers";
-import {IERC20Metadata} from "../../../../typechain-types";
-import {THIEF_TOKEN_CONFIG} from "defi-resources/build/ressources/erc20/thiefConfig";
-import {giveTokenToAddresss} from "../../thief";
+import {PendlePools} from "defi-resources";
+import {IERC20Metadata, IPendleMarketV3, IPendleSYToken} from "../../../../typechain-types";
 
-const DEAD_ADDRESS = "0x000000000000000000000000000000000000dEaD";
+export type PendleKeys = keyof typeof PendlePools;
 
 const EMPTY_SWAP_DATA = {
     swapType: 0, // NONE
-    extRouter: ethers.ZeroAddress,
+    extRouter: ZeroAddress,
     extCalldata: "0x",
     needScale: false,
 };
 
 const EMPTY_LIMIT_DATA = {
-    limitRouter: ethers.ZeroAddress,
+    limitRouter: ZeroAddress,
     epsSkipMarket: 0n,
     normalFills: [],
     flashFills: [],
     optData: "0x",
 };
 
-export const giveToken = async (contract: IERC20Metadata, amount: bigint, user: Signer) => {
-    const symbol = await contract.symbol();
-    const config = THIEF_TOKEN_CONFIG[symbol];
+async function pendleDepositSy(sy: string, amount: bigint, user: Signer) {
+    const syToken = await ethers.getContractAt("IPendleSYToken", sy);
 
-    if (!config) {
-        throw new Error(`Token ${symbol} not found in THIEF_TOKEN_CONFIG`);
-    }
-    await giveTokenToAddresss(user, config.address, amount, config.slotBalance, config.isVyper);
-};
+    const tokensIn = await syToken.getTokensIn();
+    const underlyingContract = await ethers.getContractAt("IERC20Metadata", tokensIn[0]);
 
-export const pendleDepositLP = async (market: AddressLike, amount: bigint, user: Signer, underlying: AddressLike) => {
-    const userAddress = await user.getAddress();
+    await underlyingContract.connect(user).approve(syToken, MaxUint256);
+    const bal = await syToken.balanceOf(user);
+    await syToken.connect(user).deposit(user, underlyingContract, amount, 0);
+
+    return (await syToken.balanceOf(user)) - bal;
+}
+
+export async function pendleDepositPTAndYT(marketKey: PendleKeys, amount: bigint, user: Signer) {
+    const pendleData = PendlePools[marketKey];
+
+    const syMinted = await pendleDepositSy(pendleData.SY, amount, user);
+
+    const ytToken = await ethers.getContractAt("IPendleYTToken", pendleData.YT);
+    const syToken = await ethers.getContractAt("IPendleSYToken", pendleData.SY);
+
+    await syToken.connect(user).transfer(ytToken, syMinted);
+    await ytToken.connect(user).mintPY(user, user);
+}
+
+export async function pendleDepositLPP(marketKey: PendleKeys, amount: bigint, user: Signer) {
+    const pendleData = PendlePools[marketKey];
+
+    const syMinted = await pendleDepositSy(pendleData.SY, amount, user);
+    const am = syMinted / 2n;
+    await pendleDepositPTAndYT(marketKey, am, user);
+
+    const marketContract = await ethers.getContractAt("IPendleMarketV3", pendleData.MARKET);
+    const syToken = await ethers.getContractAt("IPendleSYToken", pendleData.SY);
+    const ptToken = await ethers.getContractAt("IERC20Metadata", pendleData.PT);
+
+    await syToken.connect(user).transfer(marketContract, am);
+    await ptToken.connect(user).transfer(marketContract, am);
+
+    await marketContract.mint(user, am, am);
+}
+
+export async function pendleWithdrawPT(marketKey: PendleKeys, amount: bigint, user: Signer) {
+    const pendleData = PendlePools[marketKey];
+
+    const ptToken = await ethers.getContractAt("IERC20Metadata", pendleData.PT);
+    const ytToken = await ethers.getContractAt("IPendleYTToken", pendleData.YT);
+
+    await ptToken.connect(user).transfer(ytToken, amount);
+    await ytToken.connect(user).redeemPY(user);
+}
+
+export async function pendleWithdrawYT(marketKey: PendleKeys, amount: bigint, user: Signer) {
+    const pendleData = PendlePools[marketKey];
+
+    const ytToken = await ethers.getContractAt("IPendleYTToken", pendleData.YT);
+
+    await ytToken.connect(user).transfer(ytToken, amount);
+    await ytToken.connect(user).redeemPY(user);
+}
+
+export const pendleDepositLP = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
+    const pendleData = PendlePools[marketKey];
+
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
-    const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
 
     // Get market contract to access SY token
-    const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
-    const {_SY} = await marketContract.readTokens();
-    const syToken = await ethers.getContractAt("ISYToken", _SY);
+    const syToken = await ethers.getContractAt("IPendleSYToken", pendleData.SY);
 
-    // Check if underlying token is in the SY token's getTokensIn array
     const tokensIn = await syToken.getTokensIn();
-    const isUnderlyingTokenIn = tokensIn.includes(underlying.toString());
-    if (!isUnderlyingTokenIn) {
-        throw new Error(`Underlying token ${underlying} is not in the SY token's getTokensIn array. Available tokens: ${tokensIn.join(", ")}`);
-    }
+
+    const underlying = tokensIn[0];
+    const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
 
     // Approve router to spend underlying tokens
     await underlyingContract.connect(user).approve(PENDLE_ROUTER_V4, amount);
@@ -57,7 +103,7 @@ export const pendleDepositLP = async (market: AddressLike, amount: bigint, user:
         tokenIn: underlying.toString(),
         netTokenIn: amount,
         tokenMintSy: underlying.toString(),
-        pendleSwap: ethers.ZeroAddress,
+        pendleSwap: ZeroAddress,
         swapData: EMPTY_SWAP_DATA,
     };
 
@@ -72,8 +118,8 @@ export const pendleDepositLP = async (market: AddressLike, amount: bigint, user:
 
     // Call addLiquiditySingleToken directly on the router
     const tx = await router.connect(user).addLiquiditySingleToken(
-        userAddress, // receiver
-        market.toString(), // market
+        user, // receiver
+        pendleData.MARKET, // market
         1n, // index of SY token
         approxParams, // guessLpOut
         tokenInput, // input
@@ -83,20 +129,17 @@ export const pendleDepositLP = async (market: AddressLike, amount: bigint, user:
     await tx.wait();
 };
 
-export const pendleWithdrawLP = async (market: AddressLike, amount: bigint, user: Signer, underlying: AddressLike) => {
-    const userAddress = await user.getAddress();
+export const pendleWithdrawLP = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
+    const pendleData = PendlePools[marketKey];
+
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
-    const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
+    const marketContract = await ethers.getContractAt("IPendleMarketV3", pendleData.MARKET);
 
     // Get market tokens to identify the underlying token
-    const {_SY} = await marketContract.readTokens();
-    const syToken = await ethers.getContractAt("ISYToken", _SY);
+    const syToken = await ethers.getContractAt("IPendleSYToken", pendleData.SY);
     const tokensOut = await syToken.getTokensOut();
 
-    // Use provided underlying token or default to the first token in the array
-    if (!tokensOut.includes(underlying.toString())) {
-        throw new Error(`Underlying token ${underlying} is not in the SY token's getTokensOut array. Available tokens: ${tokensOut.join(", ")}`);
-    }
+    const underlying = tokensOut[0];
 
     // Approve router to spend LP tokens
     await marketContract.connect(user).approve(PENDLE_ROUTER_V4, amount);
@@ -104,7 +147,7 @@ export const pendleWithdrawLP = async (market: AddressLike, amount: bigint, user
     // Create SwapData for no swap
     const swapData = {
         swapType: 0, // NONE
-        extRouter: ethers.ZeroAddress,
+        extRouter: ZeroAddress,
         extCalldata: "0x",
         needScale: false,
     };
@@ -114,14 +157,14 @@ export const pendleWithdrawLP = async (market: AddressLike, amount: bigint, user
         tokenOut: underlying,
         minTokenOut: 0n,
         tokenRedeemSy: underlying,
-        pendleSwap: ethers.ZeroAddress,
+        pendleSwap: ZeroAddress,
         swapData: swapData,
     };
 
     // Call removeLiquiditySingleToken on the router
     const tx = await router.connect(user).removeLiquiditySingleToken(
-        userAddress, // receiver
-        market.toString(), // market
+        user, // receiver
+        pendleData.MARKET, // market
         amount, // netLpToBurn
         tokenOutput, // output
         EMPTY_LIMIT_DATA // limit
@@ -135,14 +178,15 @@ export const pendleWithdrawLP = async (market: AddressLike, amount: bigint, user
     };
 };
 
-export const pendleDepositPT = async (market: AddressLike, amount: bigint, user: Signer) => {
+export const pendleDepositPT = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
+    const pendleData = PendlePools[marketKey];
+
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
-    const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
+    const marketContract = await ethers.getContractAt("IPendleMarketV3", pendleData.MARKET);
 
     // Get market tokens to identify the PT token
-    const {_PT} = await marketContract.readTokens();
-    const ptToken = await ethers.getContractAt("IERC20", _PT);
+    const ptToken = await ethers.getContractAt("IERC20", pendleData.PT);
 
     // Approve router to spend LP tokens
     await marketContract.connect(user).approve(PENDLE_ROUTER_V4, amount);
@@ -159,7 +203,7 @@ export const pendleDepositPT = async (market: AddressLike, amount: bigint, user:
         // Call removeLiquiditySinglePt on the router
         const tx = await router.connect(user).removeLiquiditySinglePt(
             userAddress, // receiver
-            market.toString(), // market
+            pendleData.MARKET, // market
             amount, // netLpToBurn
             0n, // minPtOut
             approxParams, // guessPtReceivedFromSy
@@ -184,56 +228,18 @@ export const pendleDepositPT = async (market: AddressLike, amount: bigint, user:
     }
 };
 
-export const pendleWithdrawPT = async (market: AddressLike, amount: bigint, user: Signer) => {
-    const userAddress = await user.getAddress();
-    const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
-    const {_PT} = await marketContract.readTokens();
-    const ptToken = await ethers.getContractAt("IERC20Metadata", _PT);
+export const pendleDepositYT = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
+    const pendleData = PendlePools[marketKey];
 
-    await ptToken.connect(user).transfer(DEAD_ADDRESS, amount);
-
-    // Final YT balance
-    const ytBalance = await ptToken.balanceOf(userAddress);
-
-    return {
-        success: true,
-        ytBalance,
-    };
-};
-
-export const pendleWithdrawYT = async (market: AddressLike, amount: bigint, user: Signer) => {
-    const userAddress = await user.getAddress();
-
-    const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
-    const {_YT} = await marketContract.readTokens();
-    const ytToken = await ethers.getContractAt("IERC20", _YT);
-    await ytToken.connect(user).transfer(DEAD_ADDRESS, amount);
-
-    // Final YT balance
-    const ytBalance = await ytToken.balanceOf(userAddress);
-
-    return {
-        success: true,
-        ytBalance,
-    };
-};
-
-export const pendleDepositYT = async (market: AddressLike, amount: bigint, user: Signer, underlying: AddressLike) => {
     const userAddress = await user.getAddress();
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
-    const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
 
-    // Get market contract to access SY token
-    const marketContract = await ethers.getContractAt("IPendleMarketV3", market.toString());
-    const {_SY} = await marketContract.readTokens();
-    const syToken = await ethers.getContractAt("ISYToken", _SY);
+    const syToken = await ethers.getContractAt("IPendleSYToken", pendleData.SY);
 
-    // Check if underlying token is in the SY token's getTokensIn array
     const tokensIn = await syToken.getTokensIn();
-    const isUnderlyingTokenIn = tokensIn.includes(underlying.toString());
-    if (!isUnderlyingTokenIn) {
-        throw new Error(`Underlying token ${underlying} is not in the SY token's getTokensIn array. Available tokens: ${tokensIn.join(", ")}`);
-    }
+    const underlying = tokensIn[0];
+
+    const underlyingContract = await ethers.getContractAt("IERC20Metadata", underlying.toString());
 
     // Approve router to spend underlying tokens
     await underlyingContract.connect(user).approve(PENDLE_ROUTER_V4, amount);
@@ -243,7 +249,7 @@ export const pendleDepositYT = async (market: AddressLike, amount: bigint, user:
         tokenIn: underlying.toString(),
         netTokenIn: amount,
         tokenMintSy: underlying.toString(),
-        pendleSwap: ethers.ZeroAddress,
+        pendleSwap: ZeroAddress,
         swapData: EMPTY_SWAP_DATA,
     };
 
@@ -251,7 +257,7 @@ export const pendleDepositYT = async (market: AddressLike, amount: bigint, user:
         // First, let's estimate the expected output using staticCall
         const estimatedResult = await router.connect(user).addLiquiditySingleTokenKeepYt.staticCall(
             userAddress, // receiver
-            market.toString(), // market
+            pendleData.MARKET, // market
             0n, // minLpOut
             0n, // minYtOut
             tokenInput // input
@@ -266,7 +272,7 @@ export const pendleDepositYT = async (market: AddressLike, amount: bigint, user:
         // Call addLiquiditySingleTokenKeepYt on the router
         const tx = await router.connect(user).addLiquiditySingleTokenKeepYt(
             userAddress, // receiver
-            market.toString(), // market
+            pendleData.MARKET, // market
             minLpOut, // minLpOut
             minYtOut, // minYtOut
             tokenInput // input
@@ -291,12 +297,12 @@ export const pendleDepositYT = async (market: AddressLike, amount: bigint, user:
 // TypeScript interfaces for Pendle market contracts
 export interface PendleMarketContracts {
     // Market contract
-    market: any; // IPendleMarketV3
+    market: IPendleMarketV3; // IPendleMarketV3
 
     // Core token contracts
-    sy: any; // ISYToken
-    pt: any; // IERC20Metadata
-    yt: any; // IERC20Metadata
+    sy: IPendleSYToken; // IPendleSYToken
+    pt: IERC20Metadata; // IERC20Metadata
+    yt: IERC20Metadata; // IERC20Metadata
 }
 
 /**
@@ -304,7 +310,7 @@ export interface PendleMarketContracts {
  * @param market - The address of the Pendle market contract
  * @returns Promise<PendleMarketContracts> - Contract instances for:
  *   - Market contract (IPendleMarketV3)
- *   - SY token contract (ISYToken)
+ *   - SY token contract (IPendleSYToken)
  *   - PT token contract (IERC20Metadata)
  *   - YT token contract (IERC20Metadata)
  */
@@ -315,7 +321,7 @@ export const getPendleMarketContracts = async (market: AddressLike): Promise<Pen
     const {_SY, _PT, _YT} = await marketContract.readTokens();
 
     // Get SY token contract to access input/output tokens
-    const syToken = await ethers.getContractAt("ISYToken", _SY);
+    const syToken = await ethers.getContractAt("IPendleSYToken", _SY);
 
     // Get PT and YT token contracts
     const ptToken = await ethers.getContractAt("IERC20Metadata", _PT);
