@@ -9,20 +9,12 @@ async function safeApprove(token: any, user: HardhatEthersSigner, spender: strin
     const symbol = await token.symbol();
 
     try {
-        const tx = await token.connect(user).approve(spender, 0n); // Reset to 0
-        await tx.wait();
-    } catch (resetError) {
-        console.warn(`Could not reset ${symbol} allowance to 0:`, resetError);
-    }
-
-    try {
         const tx = await token.connect(user).approve(spender, amount);
         await tx.wait();
     } catch (err) {
         console.warn(`Standard approve failed for ${symbol}, trying raw tx...`);
 
         try {
-            // Send raw tx as fallback
             await user.sendTransaction({
                 to: token.target,
                 data: token.interface.encodeFunctionData("approve", [spender, 0]),
