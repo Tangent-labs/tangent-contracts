@@ -23,7 +23,7 @@ contract GetOraclePTPrice is MarketDeploymentContext {
             IERC20Metadata pt = pendlePTs[i];
             uint256 oracleValueBeforeSwap = oracles[pt].latestAnswer();
 
-            (, IPriceOracle underlyingOracle, uint96 decimals) = OraclePendlePT(address(oracles[pt])).params();
+            (, uint96 decimals, IPriceOracle underlyingOracle, ) = OraclePendlePT(address(oracles[pt])).params();
 
             assertEq(underlyingOracle.latestAnswer() * 10 ** (18 - decimals), oracleValueBeforeSwap);
         }

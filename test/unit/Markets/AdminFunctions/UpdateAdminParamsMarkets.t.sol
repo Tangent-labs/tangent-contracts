@@ -58,14 +58,4 @@ contract UpdateAdminParamsMarkets is MarketDeploymentContext {
         market.setMinimumLoan(5_000 ether);
         assertEq(market.minimumLoan(), 5_000 ether);
     }
-
-    function test_setSocFeePercentage_success() external {
-        market.setSocFeePercentage(1_500);
-        assertEq(market.socFeePercentage(), 1_500);
-    }
-
-    function test_setSocFeePercentage_fails_because_too_high() external {
-        vm.expectRevert(abi.encodeWithSelector(Sociabilization.SocFeeTooHigh.selector));
-        market.setSocFeePercentage(15_001);
-    }
 }

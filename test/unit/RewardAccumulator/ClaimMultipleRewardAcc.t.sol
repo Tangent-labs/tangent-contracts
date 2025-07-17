@@ -33,8 +33,8 @@ contract ClaimMultipleRewardAcc is MarketDeploymentContext {
         hBorrow = new HBorrow(usr1, market);
         minimumLoan = market.minimumLoan();
 
-        hDeposit.deposit(usr1, collatDeposited, true);
-        hDeposit2.deposit(usr1, collatDeposited, true);
+        hDeposit.deposit(usr1, collatDeposited);
+        hDeposit2.deposit(usr1, collatDeposited);
 
         vm.startPrank(usr1);
 

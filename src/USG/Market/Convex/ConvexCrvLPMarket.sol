@@ -8,11 +8,10 @@ import {ICvxRewardToken} from "../../../interfaces/externals/Convex/ICvxRewardTo
 import {GlobalMarketInitParams, MarketInit} from "../../../interfaces/internals/USG/IMarketCore.sol";
 
 import {MarketExternalActions} from "../abstract/MarketExternalActions.sol";
-import {Sociabilization} from "../../Utilities/Sociabilization.sol";
 import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 
 /// @notice Lending Market of a Curve LP on Convex
-contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
+contract ConvexCrvLPMarket is MarketExternalActions {
     /// @notice Booster contract of Convex Curve. Used for depositing assets into pools.
     ICvxBooster public constant CVX_BOOSTER = ICvxBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
 
@@ -26,18 +25,9 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
     error CvxRewardTokenNull();
     error PidNull();
 
-    function initialize(
-        GlobalMarketInitParams memory _marketConstants,
-        MarketInit memory _marketInit,
-        ICvxRewardToken _cvxRewardToken,
-        uint256 _pid,
-        uint256 _socFeePercentage
-    ) external {
+    function initialize(GlobalMarketInitParams memory _marketConstants, MarketInit memory _marketInit, ICvxRewardToken _cvxRewardToken, uint256 _pid) external {
         // Common
         _initializationCommon(_marketConstants, _marketInit);
-
-        // Sociabilization
-        _initializeSociabilization(_socFeePercentage);
 
         // Convex Crv
         // Allows CVX_BOOSTER to transfer LP from the market contract
@@ -60,22 +50,11 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
                         DEPOSIT  
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function _depositSociabilization(uint256 lpDeposited, bool isStaked) internal override returns (uint256) {
-        uint256 stakedAmount = lpDeposited;
-        require(lpDeposited != 0, ZeroCollatAmount());
-        // When there are no Convex contract because no inflation yet
-        if (pid != 0) {
-            stakedAmount = _sociabilizationProcess(lpDeposited, isStaked, DENOMINATOR);
-        }
-
-        return stakedAmount;
-    }
-
-    function _postDeposit(IERC20 _collatToken, bool isStaked) internal override {
+    function _postDeposit(IERC20 _collatToken) internal override {
         uint256 _pid = pid;
 
         // When pid = 0 / Means the Market is not yet linked to Convex
-        if (isStaked && _pid != 0) {
+        if (_pid != 0) {
             CVX_BOOSTER.deposit(_pid, _collatToken.balanceOf(address(this)), true);
         }
     }
@@ -85,13 +64,8 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
 
         // If the LP is linked to Convex
         if (address(_cvxRewardToken) != address(0)) {
-            uint256 lpAvailable = collatToken.balanceOf(address(this)) - socFeePending;
-
-            // Verify that all there are enough LlamaLend LP on the contract
-            if (lpAvailable < lpToWithdraw) {
-                // If not enough are on the contract, we need to withdraw the difference from Convex
-                _cvxRewardToken.withdrawAndUnwrap(lpToWithdraw - lpAvailable, false);
-            }
+            // If not enough are on the contract, we need to withdraw the difference from Convex
+            _cvxRewardToken.withdrawAndUnwrap(lpToWithdraw, false);
         }
 
         collatToken.transfer(to, lpToWithdraw);
@@ -113,11 +87,5 @@ contract ConvexCrvLPMarket is MarketExternalActions, Sociabilization {
         }
 
         return _claimUnderlyingRewards(_rewardTokens);
-    }
-
-    //TODO Seems strange to me, enters maybe in collision with sociabilization pending fees.
-    function stakeAll(address receiver) external nonReentrant {
-        uint256 amountToStake = _stakeAll(receiver, collatToken);
-        CVX_BOOSTER.deposit(pid, amountToStake, true);
     }
 }

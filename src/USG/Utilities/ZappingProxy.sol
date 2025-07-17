@@ -7,7 +7,7 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 
 /// @title ZappingProxy
 /// @notice This contract is used to zap tokens in and out of the system. Tokens are transiting to this contract and are pulled by the router passed in parameters.
-
+///         NO TOKENS SHOULD BE SEND DIRECTLY HERE OR THEY WILL BE POTENTIALLY IMMEDIATLY STOLEN
 contract ZappingProxy is IZappingProxy {
     using SafeERC20 for IERC20;
 
@@ -20,6 +20,15 @@ contract ZappingProxy is IZappingProxy {
     error TokenInMustNotBeETH();
     error TokenInMustBeETH();
 
+    /**
+     * @notice Allow a tokenIn to be spend by a router, call the router and ensure that the router returned a minimum amount of tokenOut afterwards.
+     * @param tokenIn      Token to be spent by the router
+     * @param tokenOut     Token to be received by the `receiver`
+     * @param minAmountOut Minimum amount of token out received by the `receiver`
+     * @param receiver     Contract receiving the tokenOut
+     * @param zap          Struct containing the router and the raw bytes data that will be executed
+     * @return Amount of tokenOut received
+     */
     function zapProxy(IERC20 tokenIn, IERC20 tokenOut, uint256 minAmountOut, address receiver, ZapStruct calldata zap) external payable returns (uint256) {
         address router = zap.router;
         require(tokenIn != tokenOut, TokenInOutMustBeDifferent());

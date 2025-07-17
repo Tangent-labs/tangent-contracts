@@ -6,7 +6,8 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 
-/// @notice
+/// @title WStable
+/// @notice Wrapper for stable allowing to capture yield of underlying ERC4626.
 contract WStable is ERC20, LightOwnable {
     uint256 constant MAX_UINT = uint256(int256(-1));
     uint256 public constant DENOMINATOR = 100_000;
@@ -36,8 +37,6 @@ contract WStable is ERC20, LightOwnable {
 
     /**
      *  @notice Mints tgStable against corresponding stable. A
-     *  @dev    When isStaked is true, the ratio of tgStable received / stable send is >= 1 as he'll take also all pending fees.
-     *          When isStaked is false, the same ratio is < 1 as a fee is taken and deposited in the contract as "pending".
      *  @param amountIn Amount of tgStable to deposit in exchange of tgStable
      *  @param receiver Receiver of the tgStable
      *  @param isSaving For the sociabilization process
@@ -56,7 +55,6 @@ contract WStable is ERC20, LightOwnable {
             savingAccount.deposit(amountIn, address(this));
         }
 
-        // Computes the amount of tgStable to mint regarding 'isStaked'
         // Mints the amount of tgStable for the receiver
         _mint(receiver, amountToMint);
     }

@@ -37,11 +37,11 @@ contract AddNewRewardRewardAcc is MarketDeploymentContext {
 
         vm.startPrank(usr1);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(amountStaked * 2, borrowed, true);
+        market.depositAndBorrow(amountStaked * 2, borrowed);
 
         vm.startPrank(usr2);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(amountStaked, borrowed, true);
+        market.depositAndBorrow(amountStaked, borrowed);
 
         vm.startPrank(owner);
         uint256 distributed = 10_000 ether;

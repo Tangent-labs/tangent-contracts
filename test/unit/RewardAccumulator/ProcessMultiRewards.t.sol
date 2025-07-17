@@ -7,7 +7,7 @@ contract ProcessMultiRewards is MarketDeploymentContext {
     HLPManipulator public lpManipulator;
 
     IERC20Metadata public collatToken1 = AddrPTPendle.eUSDe_29_05_25;
-    MarketNoSociabilization public market1;
+    BasicERC20Market public market1;
 
     IERC20Metadata public collatToken2 = AddrCurveStableLP.USDC_crvUSD;
     ConvexCrvLPMarket public market2;
@@ -32,7 +32,7 @@ contract ProcessMultiRewards is MarketDeploymentContext {
         lpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-USDC"), 1, 0, 470_000 ether);
 
         // Deploy several markets
-        market1 = deployMarketNoSociabilisation(collatToken1);
+        market1 = deployBasicERC20Market(collatToken1);
         market2 = deployConvexCurveLPMarket(collatToken2, true);
         market3 = deployConvexCurveLPMarket(collatToken3, true);
         market4 = deployConvexFxnLPMarket(collatToken4);
@@ -53,7 +53,7 @@ contract ProcessMultiRewards is MarketDeploymentContext {
             // Perform staking
             deal(address(collatToken), usr1, 100_000 ether);
             collatToken.approve(address(market), MAX_UINT);
-            market.depositAndBorrow(10_000 ether, 5_000 ether, true);
+            market.depositAndBorrow(10_000 ether, 5_000 ether);
 
             // Deposit rewards on the market contract,ready to be processed
             IERC20[] memory rewardTokens = rewardAccumulator.getRewardTokens(address(market));

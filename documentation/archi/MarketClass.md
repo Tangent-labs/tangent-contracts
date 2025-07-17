@@ -11,7 +11,7 @@ MarketCore <|--Rewards
 Rewards <|--Collateral
 MarketExternalActions <|--MarketCore
 
-MarketNoSociabilization <|--MarketExternalActions
+BasicERC20Market <|--MarketExternalActions
 ConvexCrvLPMarket  <|--MarketExternalActions
 ConvexFxnLPMarket <|--MarketExternalActions
 

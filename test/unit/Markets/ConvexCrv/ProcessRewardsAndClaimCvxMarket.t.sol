@@ -38,7 +38,7 @@ contract ProcessRewardsAndClaimCvxMarket is MarketDeploymentContext {
         borrowedAmount = bound(borrowedAmount, minimumLoan, market.maxMarketDebt());
         collatDeposited = bound(collatDeposited, minimumCollatForDebt(borrowedAmount), 2_000_000 ether);
 
-        hDeposit.deposit(usr1, collatDeposited, true);
+        hDeposit.deposit(usr1, collatDeposited);
 
         vm.startPrank(usr1);
         hBorrow.borrow(usr2, borrowedAmount);
@@ -65,9 +65,9 @@ contract ProcessRewardsAndClaimCvxMarket is MarketDeploymentContext {
         borrowedAmount = bound(borrowedAmount, minimumLoan, market.maxMarketDebt());
         collatDeposited = bound(collatDeposited, minimumCollatForDebt(borrowedAmount), 2_000_000 ether);
 
-        hDeposit.deposit(usr1, collatDeposited, true);
+        hDeposit.deposit(usr1, collatDeposited);
 
-        hDeposit2.deposit(usr1, collatDeposited, true);
+        hDeposit2.deposit(usr1, collatDeposited);
 
         vm.startPrank(usr1);
         hBorrow.borrow(usr2, borrowedAmount);

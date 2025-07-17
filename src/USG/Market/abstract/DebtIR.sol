@@ -18,7 +18,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
     IIRCalculator public irCalculator;
 
     /// @notice The USG token contract
-    IUSG public USG;
+    IUSG public usg;
 
     /// @notice Maximum allowable total debt in the market (in USG units)
     uint256 public maxMarketDebt;
@@ -68,7 +68,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
         uint256 _badDebt = badDebt;
         require(amount <= _badDebt, RepayMoreThanBadDebt());
         badDebt = _badDebt - amount;
-        USG.burnFrom(msg.sender, amount);
+        usg.burnFrom(msg.sender, amount);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

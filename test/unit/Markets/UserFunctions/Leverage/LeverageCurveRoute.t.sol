@@ -52,7 +52,6 @@ contract LeverageCurveRoute is MarketDeploymentContext {
             collatToDeposit,
             USGToFlashMint,
             minCollatOut,
-            true,
             // Simulate zap call with a transfer to the market
             ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routeCall})
         );
@@ -81,7 +80,6 @@ contract LeverageCurveRoute is MarketDeploymentContext {
             0,
             USGToFlashMint,
             minCollatOut,
-            true,
             // Simulate zap call with a transfer to the market
             ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routeCall})
         );

@@ -33,7 +33,8 @@ struct KickParams {
     uint128 percentage;
 }
 
-/// @notice
+/// @title VsTan
+/// @notice Locking NFT contract of TAN.
 contract VsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, ZappingUtil {
     using SafeERC20 for IERC20;
     /// @notice Duration for which tokens are locked (13 weeks).

@@ -35,7 +35,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
         swapParams.push(unwrapLPToUSDC);
         swapParams.push(swapUsdcToUSG);
 
-        hDeposit.depositAndBorrow(collatDeposited, initialDebt, true);
+        hDeposit.depositAndBorrow(collatDeposited, initialDebt);
 
         route.push(address(AddrCurveStableLP.USDC_crvUSD));
         route.push(address(AddrCurveStableLP.USDC_crvUSD));

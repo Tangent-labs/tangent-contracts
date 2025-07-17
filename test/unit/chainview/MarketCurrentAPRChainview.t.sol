@@ -27,7 +27,7 @@ contract MarketCurrentAPRChainview is MarketDeploymentContext {
             IERC20 collatToken = market.collatToken();
             deal(address(collatToken), usr1, 100_000 ether);
             collatToken.approve(address(market), MAX_UINT);
-            market.deposit(usr1, 100_000 ether, true);
+            market.deposit(usr1, 100_000 ether);
 
             IERC20[] memory rewardTokens = rewardAccumulator.getRewardTokens(address(market));
             // Distribute rewards

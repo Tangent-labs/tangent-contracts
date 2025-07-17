@@ -50,33 +50,29 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @dev    Collateral is always taken from the sender. Sender needs to allow the 'collatToken' to be spent by the market.
      * @param  _for             Address for who the collateral is deposited.
      * @param  depositedAmount  Amount of collateral to deposit
-     * @param  isStaked         Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
      */
-    function deposit(address _for, uint256 depositedAmount, bool isStaked) external nonReentrant updateRewards(_for) {
+    function deposit(address _for, uint256 depositedAmount) external nonReentrant updateRewards(_for) {
         IERC20 _collatToken = collatToken;
         _collatToken.transferFrom(msg.sender, address(this), depositedAmount);
 
-        uint256 stakedAmount = _depositSociabilization(depositedAmount, isStaked);
-        _deposit(_for, stakedAmount, _collatToken, isStaked);
+        _deposit(_for, depositedAmount, _collatToken);
 
-        emit Deposit(_for, stakedAmount);
+        emit Deposit(_for, depositedAmount);
     }
 
     /**
      * @notice Zap from a token to the collateral and deposit the collateral into the market.
      * @dev    Zaped asset is always taken from the sender. Sender needs to allow the 'asset' to be spent by the market.
      * @param  _for           Address for who the collateral is deposited.
-     * @param  isStaked       Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
      * @param  zapCall        Contains address and bytes of the contract selling the zapped asset to the collateral.
      */
-    function zapDeposit(address _for, bool isStaked, ZapStructDeposit calldata zapCall) external payable nonReentrant updateRewards(_for) {
+    function zapDeposit(address _for, ZapStructDeposit calldata zapCall) external payable nonReentrant updateRewards(_for) {
         IERC20 _collatToken = collatToken;
         uint256 collatReceived = _zapDeposit(zapCall, _collatToken, address(this));
 
-        uint256 stakedAmount = _depositSociabilization(collatReceived, isStaked);
-        _deposit(_for, stakedAmount, _collatToken, isStaked);
+        _deposit(_for, collatReceived, _collatToken);
 
-        emit ZapDeposit(_for, stakedAmount, zapCall.tokenIn, zapCall.amountIn);
+        emit ZapDeposit(_for, collatReceived, zapCall.tokenIn, zapCall.amountIn);
     }
 
     /**
@@ -84,34 +80,29 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @dev    Collateral is always taken from the sender. Sender needs to allow the 'collatToken' to be spent by the market.
      * @param  depositedAmount Amount of collateral to deposit
      * @param  debtBorrow      Amount of USG to borrow
-     * @param  isStaked        Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
      */
-    function depositAndBorrow(uint256 depositedAmount, uint256 debtBorrow, bool isStaked) external nonReentrant updateRewards(msg.sender) {
+    function depositAndBorrow(uint256 depositedAmount, uint256 debtBorrow) external nonReentrant updateRewards(msg.sender) {
         IERC20 _collatToken = collatToken;
         _collatToken.transferFrom(msg.sender, address(this), depositedAmount);
-        uint256 stakedAmount = _depositSociabilization(depositedAmount, isStaked);
 
-        _depositAndBorrow(stakedAmount, debtBorrow, _collatToken, isStaked, false);
+        _depositAndBorrow(depositedAmount, debtBorrow, _collatToken, false);
 
-        emit DepositAndBorrow(msg.sender, stakedAmount, debtBorrow);
+        emit DepositAndBorrow(msg.sender, depositedAmount, debtBorrow);
     }
 
     /**
      * @notice Zap from a token to the collateral, deposit the collateral into the market and borrow some USG.
      * @dev    Zaped asset is always taken from the sender. Sender needs to allow the 'asset' to be spent by the market.
      * @param  debtBorrow     The collateral is deposited to this address
-     * @param  isStaked       Amount of collateral to deposit
      * @param  zapCall        Stake or not the collateral. Cost less gas when is false but a deposit sociabilization fee is applied.
      */
-    function zapDepositAndBorrow(uint256 debtBorrow, bool isStaked, ZapStructDeposit calldata zapCall) external payable nonReentrant updateRewards(msg.sender) {
+    function zapDepositAndBorrow(uint256 debtBorrow, ZapStructDeposit calldata zapCall) external payable nonReentrant updateRewards(msg.sender) {
         IERC20 _collatToken = collatToken;
         uint256 collatReceived = _zapDeposit(zapCall, _collatToken, address(this));
 
-        uint256 stakedAmount = _depositSociabilization(collatReceived, isStaked);
+        _depositAndBorrow(collatReceived, debtBorrow, _collatToken, false);
 
-        _depositAndBorrow(stakedAmount, debtBorrow, _collatToken, isStaked, false);
-
-        emit ZapDepositAndBorrow(msg.sender, stakedAmount, debtBorrow, zapCall.tokenIn, zapCall.amountIn);
+        emit ZapDepositAndBorrow(msg.sender, collatReceived, debtBorrow, zapCall.tokenIn, zapCall.amountIn);
     }
 
     /**
@@ -160,7 +151,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  zapCall        Zap details
      */
     function zapRepayAndWithdraw(uint256 withdrawAmount, ZapStructDeposit calldata zapCall) external payable nonReentrant updateRewards(msg.sender) {
-        uint256 USGToRepay = _zapDeposit(zapCall, USG, msg.sender);
+        uint256 USGToRepay = _zapDeposit(zapCall, usg, msg.sender);
         (uint256 USGToBurn, bool isRepayAll) = _repayAndWithdraw(withdrawAmount, USGToRepay);
 
         emit ZapRepayAndWithdraw(msg.sender, withdrawAmount, USGToBurn, isRepayAll, zapCall.tokenIn, zapCall.amountIn);
@@ -180,12 +171,12 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     }
 
     /**
-     * @notice Repay some USG debt on the market
+     * @notice Repay some usg debt on the market
      * @param  account        Account of the position to repay debt on.
      * @param  zapCall   Only used on zapAndRepay. It's the address calling the zapper and that will receive the USG during the zapping.
      */
     function zapRepay(address account, ZapStructDeposit calldata zapCall) external payable nonReentrant {
-        uint256 USGToRepay = _zapDeposit(zapCall, USG, msg.sender);
+        uint256 USGToRepay = _zapDeposit(zapCall, usg, msg.sender);
 
         (uint256 USGToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares, , bool isRepayAll) = _repay(account, USGToRepay);
 
@@ -292,14 +283,12 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  collatToDeposit    Amount of collateral to deposit, can be 0
      * @param  USGToFlashMint   Amount of USG to mint that is sold for collateral, will be incremented to userDebt.
      * @param  minCollatAmountOut Slippage, minimum amount of collatAmount to receive from the selling of USG.
-     * @param  isStaked           For markets with sociabilization mecanism prior to costly staking. When false, tx will be cheaper but a fee is taken on the collateral amount deposited.
      * @param  leverageCall       Contract and data allowing to sell the USG for collateral.
      */
     function leverage(
         uint256 collatToDeposit,
         uint256 USGToFlashMint,
         uint256 minCollatAmountOut,
-        bool isStaked,
         ZapStruct calldata leverageCall
     ) external nonReentrant updateRewards(msg.sender) {
         IERC20 _collatToken = collatToken;
@@ -308,7 +297,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
             _collatToken.transferFrom(msg.sender, address(this), collatToDeposit);
         }
 
-        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, USGToFlashMint, minCollatAmountOut, isStaked, leverageCall);
+        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, USGToFlashMint, minCollatAmountOut, leverageCall);
 
         emit Leverage(msg.sender, stakedAmount, collatBought, USGToFlashMint);
     }
@@ -318,21 +307,19 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @dev    The route and liquidator contract must be specified and setup properlly.
      * @param  USGToFlashMint   Amount of USG to mint that is sold for collateral, will be incremented to userDebt.
      * @param  minCollatAmountOut Slippage, minimum amount of collatAmount to receive from the selling of USG.
-     * @param  isStaked           For markets with sociabilization mecanism prior to costly staking. When false, tx will be cheaper but a fee is taken on the collateral amount deposited.
      * @param  leverageCall       Contract and data allowing to sell the USG for collateral.
      * @param  zapDepositCall     Contract and data allowing to sell the zapToken for collateral.
      */
     function zapLeverage(
         uint256 USGToFlashMint,
         uint256 minCollatAmountOut,
-        bool isStaked,
         ZapStruct calldata leverageCall,
         ZapStructDeposit calldata zapDepositCall
     ) external payable nonReentrant updateRewards(msg.sender) {
         IERC20 _collatToken = collatToken;
         uint256 collatToDeposit = _zapDeposit(zapDepositCall, _collatToken, address(this));
 
-        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, USGToFlashMint, minCollatAmountOut, isStaked, leverageCall);
+        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, USGToFlashMint, minCollatAmountOut, leverageCall);
 
         emit ZapLeverage(msg.sender, stakedAmount, collatToDeposit, collatBought, USGToFlashMint, zapDepositCall.tokenIn, zapDepositCall.amountIn);
     }

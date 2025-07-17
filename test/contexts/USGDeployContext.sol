@@ -13,11 +13,11 @@ import "../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../src/libs/Resources/ResourcesPendle.sol";
 import "../../src/libs/Resources/ResourcesYearn.sol";
 
-import "../../src/USG/Lock/VsTan.sol";
+import "../../src/USG/Tokens/VsTan.sol";
 import "../../src/USG/Tokens/Tan.sol";
 import "../../src/USG/Tokens/USG.sol";
 import "../../src/USG/Tokens/WStable.sol";
-import "../../src/USG/Rewards/RewardAccumulator.sol";
+import "../../src/USG/Utilities/RewardAccumulator.sol";
 import "../../src/USG/Utilities/ControlTower.sol";
 import "../../src/USG/Utilities/MarketCreator.sol";
 import "../../src/USG/Utilities/ZappingProxy.sol";
@@ -26,7 +26,7 @@ import "../mocks/MockRouter.sol";
 
 import "../../src/USG/Market/Convex/ConvexCrvLPMarket.sol";
 import "../../src/USG/Market/Convex/ConvexFxnLPMarket.sol";
-import "../../src/USG/Market/MarketNoSociabilization.sol";
+import "../../src/USG/Market/BasicERC20Market.sol";
 import "../../src/USG/Market/abstract/MarketCore.sol";
 import "../../src/USG/Market/abstract/DebtIR.sol";
 
@@ -58,6 +58,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address processor = makeAddr("Processor");
 
     address public owner = makeAddr("Owner");
+    address public pauser = makeAddr("Pauser");
     address public ownerGauge = makeAddr("ownerGauge");
     address public feeTreasury = makeAddr("feeTreasury");
     address public mockedLP = makeAddr("Mocked LP");
@@ -70,7 +71,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     MarketCreator public marketCreator;
     address public convexCrvLPMarketImplem;
     address public convexFxnLPMarketImplem;
-    address public marketNoSociabilizationImplem;
+    address public marketBasicERC20Implem;
 
     USG public usg;
     Tan public tan;
@@ -94,7 +95,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         convexCrvLPMarketImplem = address(new ConvexCrvLPMarket());
         convexFxnLPMarketImplem = address(new ConvexFxnLPMarket());
-        marketNoSociabilizationImplem = address(new MarketNoSociabilization());
+        marketBasicERC20Implem = address(new BasicERC20Market());
 
         encoder = new Encoder();
         ensoUtils = new EnsoUtils();
@@ -158,7 +159,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         vm.label(address(convexCrvLPMarketImplem), "Implementation CvxCrvMarket");
         vm.label(address(convexFxnLPMarketImplem), "Implementation CvxFxnMarket");
-        vm.label(address(marketNoSociabilizationImplem), "Implementation NoSocMarket");
+        vm.label(address(marketBasicERC20Implem), "Implementation BasicERC20Market");
 
         vm.stopPrank();
 

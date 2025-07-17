@@ -4,7 +4,6 @@ pragma solidity ^0.8.24;
 import "./OraclesContext.sol";
 
 contract WStableContext is OraclesContext {
-    uint256 socFeePercentage = 2_000;
     WStable public wfrxUSD;
     WStable public wcrvUSD;
     WStable public wUSDE;
