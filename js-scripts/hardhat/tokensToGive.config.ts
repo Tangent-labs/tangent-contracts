@@ -41,6 +41,10 @@ export function TOKENS_TO_GIVE(mintedAmount: number) {
             amount: mintedAmount,
         },
         {
+            ...obj.GHO,
+            amount: mintedAmount,
+        },
+        {
             ...obj.frxETH,
             amount: mintedAmount,
         },

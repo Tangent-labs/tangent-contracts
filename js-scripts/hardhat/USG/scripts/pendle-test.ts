@@ -1,7 +1,7 @@
 import {ethers} from "hardhat";
 import {pendleWithdrawYT, pendleWithdrawPT, pendleDepositPTAndYT, pendleDepositLP, pendleWithdrawLP, PendleKeys} from "../actions/pendleActions";
 
-import {Signer} from "ethers";
+import {formatEther, parseEther, Signer} from "ethers";
 import {giveTokenToAddresss} from "../../thief";
 import {THIEF_TOKEN_CONFIG} from "defi-resources/build/ressources/erc20/thiefConfig";
 import {PendlePools} from "defi-resources";
@@ -19,23 +19,23 @@ const testAll = async (key: PendleKeys) => {
     await giveTokenToAddresss(user, await underlyingContract.getAddress(), ethers.parseEther("1000") * 10n, config.slotBalance, config.isVyper);
 
     /* ---------------------------------------- LP ---------------------------------------------*/
-    await test_LP("fGHO 07/31/25", ethers.parseEther("1000"), user);
+    await test_LP("fGHO 07/31/25", 1000, user);
 
     /* ---------------------------------------- YT ---------------------------------------------*/
-    await test_YT("fGHO 07/31/25", ethers.parseEther("1000"), user);
+    await test_YT("fGHO 07/31/25", 1000, user);
 
     /* ---------------------------------------- PT ---------------------------------------------*/
-    await test_PT("fGHO 07/31/25", ethers.parseEther("1000"), user);
+    await test_PT("fGHO 07/31/25", 1000, user);
 
     console.log("Pendle test passed");
 };
 
-const test_LP = async (key: PendleKeys, amount: bigint, user: Signer) => {
+const test_LP = async (key: PendleKeys, amount: number, user: Signer) => {
     const market = await ethers.getContractAt("IPendleMarketV3", PendlePools[key].MARKET);
     try {
         const lpBalanceBefore = await market.balanceOf(user);
 
-        await pendleDepositLP(key, amount, user);
+        await pendleDepositLP(key, user, amount);
         const lpBalanceAfter = await market.balanceOf(user);
 
         // withdraw
@@ -50,7 +50,7 @@ const test_LP = async (key: PendleKeys, amount: bigint, user: Signer) => {
     // Withdraw the LP tokens from the market
     try {
         const lpBalanceBefore = await market.balanceOf(user);
-        await pendleWithdrawLP(key, lpBalanceBefore, user);
+        await pendleWithdrawLP(key, user, Number(formatEther(lpBalanceBefore)));
         const lpBalanceAfter = await market.balanceOf(user);
 
         if (lpBalanceAfter > lpBalanceBefore) {
@@ -62,7 +62,7 @@ const test_LP = async (key: PendleKeys, amount: bigint, user: Signer) => {
     }
 };
 
-const test_YT = async (key: PendleKeys, amount: bigint, user: Signer) => {
+const test_YT = async (key: PendleKeys, amount: number, user: Signer) => {
     const yt = await ethers.getContractAt("IPendleYTToken", PendlePools[key].YT);
 
     try {
@@ -70,7 +70,7 @@ const test_YT = async (key: PendleKeys, amount: bigint, user: Signer) => {
 
         const ytBalanceBefore = await yt.balanceOf(user);
 
-        await pendleDepositPTAndYT(key, amount, user);
+        await pendleDepositPTAndYT(key, user, amount);
 
         // withdraw
         const ytBalanceAfter = await yt.balanceOf(user);
@@ -87,7 +87,7 @@ const test_YT = async (key: PendleKeys, amount: bigint, user: Signer) => {
         const ytBalanceBefore = await yt.balanceOf(user);
 
         // Withdraw YT tokens
-        await pendleWithdrawYT(key, ytBalanceBefore, user);
+        await pendleWithdrawYT(key, user, Number(formatEther(ytBalanceBefore)));
 
         // Check YT balance
 
@@ -103,13 +103,13 @@ const test_YT = async (key: PendleKeys, amount: bigint, user: Signer) => {
     }
 };
 
-const test_PT = async (key: PendleKeys, amount: bigint, user: Signer) => {
+const test_PT = async (key: PendleKeys, amount: number, user: Signer) => {
     const pt = await ethers.getContractAt("IERC20Metadata", PendlePools[key].PT);
 
     try {
         const ptBalanceBefore = await pt.balanceOf(user);
 
-        await pendleDepositPTAndYT(key, amount, user);
+        await pendleDepositPTAndYT(key, user, amount);
         // ptBalance
         const ptBalanceAfter = await pt.balanceOf(user);
 
@@ -128,7 +128,7 @@ const test_PT = async (key: PendleKeys, amount: bigint, user: Signer) => {
         const ptBalanceBefore = await pt.balanceOf(user);
 
         // Withdraw PT tokens
-        await pendleWithdrawPT(key, amount, user);
+        await pendleWithdrawPT(key, user, Number(formatEther(ptBalanceBefore)));
 
         // Check PT balance
         const ptBalanceAfter = await pt.balanceOf(user);

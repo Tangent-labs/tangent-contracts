@@ -5,7 +5,8 @@ import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import {CURVE_CONTEXT} from "defi-resources/build/ressources/mappings/curveContext";
 import {executeGeneratedActions} from "../scripts/campaignActions";
-import {CurveLpKey} from "../actions/depositCurveLP";
+import {CurveLpKey} from "../actions/curveEcoActions";
+import {AddressLike, parseEther} from "ethers";
 
 export class PointsContext {
     user1: HardhatEthersSigner | null = null;
@@ -35,47 +36,6 @@ export class PointsContext {
             console.log(`Advanced blockchain time by ${days} days`);
         } catch (error) {
             console.error("Error in advanceTime:", error);
-            throw error;
-        }
-    }
-
-    async transferStakeDaoGauge(lpKey: CurveLpKey, fromUser: HardhatEthersSigner, toAddress: string, amount: bigint): Promise<void> {
-        const context = CURVE_CONTEXT[lpKey];
-
-        try {
-            const tokenContract = new ethers.Contract(context.stakeDaoGauge, ["function transfer(address to, uint256 amount) external returns (bool)"], fromUser);
-            const tx = await tokenContract.transfer(toAddress, amount);
-            await tx.wait();
-        } catch (error) {
-            console.error("Error in transferStakeDaoGauge:", error);
-            throw error;
-        }
-    }
-
-    async transferCurveGauge(lpKey: CurveLpKey, fromUser: HardhatEthersSigner, toAddress: string, amount: bigint): Promise<void> {
-        const context = CURVE_CONTEXT[lpKey];
-
-        try {
-            const tokenContract = new ethers.Contract(context.curveGauge, ["function transfer(address to, uint256 amount) external returns (bool)"], fromUser);
-
-            const tx = await tokenContract.transfer(toAddress, amount);
-
-            await tx.wait();
-        } catch (error) {
-            console.error("Error in transferCurveGauge:", error);
-            throw error;
-        }
-    }
-
-    async transferCurveLP(lpKey: CurveLpKey, fromUser: HardhatEthersSigner, toAddress: string, amount: bigint): Promise<void> {
-        const context = CURVE_CONTEXT[lpKey];
-
-        try {
-            const tokenContract = new ethers.Contract(context.curveLp, ["function transfer(address to, uint256 amount) external returns (bool)"], fromUser);
-            const tx = await tokenContract.transfer(toAddress, amount);
-            await tx.wait();
-        } catch (error) {
-            console.error("Error in transferCurveLP:", error);
             throw error;
         }
     }
