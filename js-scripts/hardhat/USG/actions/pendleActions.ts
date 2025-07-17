@@ -46,7 +46,7 @@ export async function pendleDepositPTAndYT(marketKey: PendleKeys, amount: bigint
     await ytToken.connect(user).mintPY(user, user);
 }
 
-export async function pendleDepositLPP(marketKey: PendleKeys, amount: bigint, user: Signer) {
+export async function pendleDepositLP(marketKey: PendleKeys, amount: bigint, user: Signer) {
     const pendleData = PendlePools[marketKey];
 
     const syMinted = await pendleDepositSy(pendleData.SY, amount, user);
@@ -63,7 +63,7 @@ export async function pendleDepositLPP(marketKey: PendleKeys, amount: bigint, us
     await marketContract.connect(user).mint(user, am, am);
 }
 
-export async function pendleWithdrawLPP(marketKey: PendleKeys, amount: bigint, user: Signer) {
+export async function pendleWithdrawLP(marketKey: PendleKeys, amount: bigint, user: Signer) {
     const pendleData = PendlePools[marketKey];
 
     const marketContract = await ethers.getContractAt("IPendleMarketV3", pendleData.MARKET);

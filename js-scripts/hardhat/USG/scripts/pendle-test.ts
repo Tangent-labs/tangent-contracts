@@ -1,5 +1,5 @@
 import {ethers} from "hardhat";
-import {pendleWithdrawYT, pendleWithdrawPT, pendleDepositPTAndYT, pendleDepositLPP, pendleWithdrawLPP, PendleKeys} from "../actions/pendleActions";
+import {pendleWithdrawYT, pendleWithdrawPT, pendleDepositPTAndYT, pendleDepositLP, pendleWithdrawLP, PendleKeys} from "../actions/pendleActions";
 
 import {Signer} from "ethers";
 import {giveTokenToAddresss} from "../../thief";
@@ -35,7 +35,7 @@ const test_LP = async (key: PendleKeys, amount: bigint, user: Signer) => {
     try {
         const lpBalanceBefore = await market.balanceOf(user);
 
-        await pendleDepositLPP(key, amount, user);
+        await pendleDepositLP(key, amount, user);
         const lpBalanceAfter = await market.balanceOf(user);
 
         // withdraw
@@ -50,7 +50,7 @@ const test_LP = async (key: PendleKeys, amount: bigint, user: Signer) => {
     // Withdraw the LP tokens from the market
     try {
         const lpBalanceBefore = await market.balanceOf(user);
-        await pendleWithdrawLPP(key, lpBalanceBefore, user);
+        await pendleWithdrawLP(key, lpBalanceBefore, user);
         const lpBalanceAfter = await market.balanceOf(user);
 
         if (lpBalanceAfter > lpBalanceBefore) {
