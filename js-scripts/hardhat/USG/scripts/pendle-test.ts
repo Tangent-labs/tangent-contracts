@@ -1,56 +1,42 @@
 import {ethers} from "hardhat";
-import {
-    getPendleMarketContracts,
-    pendleWithdrawLP,
-    PendleMarketContracts,
-    pendleWithdrawYT,
-    pendleWithdrawPT,
-    pendleDepositPTAndYT,
-    pendleDepositLPP,
-} from "../actions/pendleActions";
+import {pendleWithdrawYT, pendleWithdrawPT, pendleDepositPTAndYT, pendleDepositLPP, pendleWithdrawLPP, PendleKeys} from "../actions/pendleActions";
 
 import {Signer} from "ethers";
 import {giveTokenToAddresss} from "../../thief";
 import {THIEF_TOKEN_CONFIG} from "defi-resources/build/ressources/erc20/thiefConfig";
+import {PendlePools} from "defi-resources";
 
-type InInfo = {
-    amount: bigint;
-    market: string;
-};
-
-const testAll = async (inInfo: InInfo) => {
+const testAll = async (key: PendleKeys) => {
     const user = (await ethers.getSigners())[0] as unknown as Signer;
-    const marketContracts = await getPendleMarketContracts(inInfo.market);
-    const userAddress = await user.getAddress();
+    const syToken = await ethers.getContractAt("IPendleSYToken", PendlePools[key].SY);
 
-    const SY = marketContracts.sy;
-
-    const tokensIn = await SY.getTokensIn();
+    const tokensIn = await syToken.getTokensIn();
 
     const underlyingContract = await ethers.getContractAt("IERC20Metadata", tokensIn[0]);
 
     const config = THIEF_TOKEN_CONFIG[await underlyingContract.symbol()];
 
-    await giveTokenToAddresss(user, await underlyingContract.getAddress(), inInfo.amount * 10n, config.slotBalance, config.isVyper);
+    await giveTokenToAddresss(user, await underlyingContract.getAddress(), ethers.parseEther("1000") * 10n, config.slotBalance, config.isVyper);
 
     /* ---------------------------------------- LP ---------------------------------------------*/
-    await test_LP(marketContracts, userAddress, inInfo, user);
+    await test_LP("fGHO 07/31/25", ethers.parseEther("1000"), user);
 
     /* ---------------------------------------- YT ---------------------------------------------*/
-    await test_YT(marketContracts, userAddress, inInfo, user);
+    await test_YT("fGHO 07/31/25", ethers.parseEther("1000"), user);
 
     /* ---------------------------------------- PT ---------------------------------------------*/
-    await test_PT(marketContracts, userAddress, inInfo, user);
+    await test_PT("fGHO 07/31/25", ethers.parseEther("1000"), user);
 
     console.log("Pendle test passed");
 };
 
-const test_LP = async (marketContract: PendleMarketContracts, userAddress: string, inInfo: InInfo, user: Signer) => {
+const test_LP = async (key: PendleKeys, amount: bigint, user: Signer) => {
+    const market = await ethers.getContractAt("IPendleMarketV3", PendlePools[key].MARKET);
     try {
-        const lpBalanceBefore = await marketContract.market.balanceOf(userAddress);
+        const lpBalanceBefore = await market.balanceOf(user);
 
-        await pendleDepositLPP(inInfo.market, inInfo.amount, user);
-        const lpBalanceAfter = await marketContract.market.balanceOf(userAddress);
+        await pendleDepositLPP(key, amount, user);
+        const lpBalanceAfter = await market.balanceOf(user);
 
         // withdraw
         if (lpBalanceAfter < lpBalanceBefore) {
@@ -63,9 +49,9 @@ const test_LP = async (marketContract: PendleMarketContracts, userAddress: strin
 
     // Withdraw the LP tokens from the market
     try {
-        const lpBalanceBefore = await marketContract.market.balanceOf(userAddress);
-        await pendleWithdrawLP(inInfo.market, lpBalanceBefore, user);
-        const lpBalanceAfter = await marketContract.market.balanceOf(userAddress);
+        const lpBalanceBefore = await market.balanceOf(user);
+        await pendleWithdrawLPP(key, lpBalanceBefore, user);
+        const lpBalanceAfter = await market.balanceOf(user);
 
         if (lpBalanceAfter > lpBalanceBefore) {
             throw new Error("Withdraw failed, more LP tokens after");
@@ -76,17 +62,18 @@ const test_LP = async (marketContract: PendleMarketContracts, userAddress: strin
     }
 };
 
-const test_YT = async (marketContracts: PendleMarketContracts, userAddress: string, inInfo: InInfo, user: Signer) => {
+const test_YT = async (key: PendleKeys, amount: bigint, user: Signer) => {
+    const yt = await ethers.getContractAt("IPendleYTToken", PendlePools[key].YT);
+
     try {
         // deposit some LP
 
-        const ytContract = marketContracts.yt;
-        const ytBalanceBefore = await ytContract.balanceOf(userAddress);
+        const ytBalanceBefore = await yt.balanceOf(user);
 
-        await pendleDepositPTAndYT(inInfo.market, inInfo.amount, user);
+        await pendleDepositPTAndYT(key, amount, user);
 
         // withdraw
-        const ytBalanceAfter = await ytContract.balanceOf(userAddress);
+        const ytBalanceAfter = await yt.balanceOf(user);
 
         if (ytBalanceAfter < ytBalanceBefore) {
             throw new Error("Deposit failed, more YT tokens after");
@@ -97,15 +84,14 @@ const test_YT = async (marketContracts: PendleMarketContracts, userAddress: stri
     }
 
     try {
-        const ytContract = marketContracts.yt;
-        const ytBalanceBefore = await ytContract.balanceOf(userAddress);
+        const ytBalanceBefore = await yt.balanceOf(user);
 
         // Withdraw YT tokens
-        await pendleWithdrawYT(inInfo.market, ytBalanceBefore, user);
+        await pendleWithdrawYT(key, ytBalanceBefore, user);
 
         // Check YT balance
 
-        const ytBalanceAfter = await ytContract.balanceOf(userAddress);
+        const ytBalanceAfter = await yt.balanceOf(user);
         console.log(`ytBalance: ${ytBalanceBefore} -> ${ytBalanceAfter}`);
 
         if (ytBalanceAfter > ytBalanceBefore) {
@@ -117,14 +103,15 @@ const test_YT = async (marketContracts: PendleMarketContracts, userAddress: stri
     }
 };
 
-const test_PT = async (marketContracts: PendleMarketContracts, userAddress: string, inInfo: InInfo, user: Signer) => {
-    try {
-        const ptContract = marketContracts.pt;
-        const ptBalanceBefore = await ptContract.balanceOf(userAddress);
+const test_PT = async (key: PendleKeys, amount: bigint, user: Signer) => {
+    const pt = await ethers.getContractAt("IERC20Metadata", PendlePools[key].PT);
 
-        await pendleDepositPTAndYT(inInfo.market, inInfo.amount, user);
+    try {
+        const ptBalanceBefore = await pt.balanceOf(user);
+
+        await pendleDepositPTAndYT(key, amount, user);
         // ptBalance
-        const ptBalanceAfter = await ptContract.balanceOf(userAddress);
+        const ptBalanceAfter = await pt.balanceOf(user);
 
         if (ptBalanceAfter < ptBalanceBefore) {
             throw new Error("Deposit failed, less PT tokens after");
@@ -138,14 +125,13 @@ const test_PT = async (marketContracts: PendleMarketContracts, userAddress: stri
     try {
         // First deposit some LP tokens to have something to withdraw
 
-        const ptContract = marketContracts.pt;
-        const ptBalanceBefore = await ptContract.balanceOf(userAddress);
+        const ptBalanceBefore = await pt.balanceOf(user);
 
         // Withdraw PT tokens
-        await pendleWithdrawPT(inInfo.market, ptBalanceBefore, user);
+        await pendleWithdrawPT(key, amount, user);
 
         // Check PT balance
-        const ptBalanceAfter = await ptContract.balanceOf(userAddress);
+        const ptBalanceAfter = await pt.balanceOf(user);
 
         if (ptBalanceAfter > ptBalanceBefore) {
             throw new Error("Less PT tokens received after pendleWithdrawPT");
@@ -158,10 +144,7 @@ const test_PT = async (marketContracts: PendleMarketContracts, userAddress: stri
 
 (async () => {
     try {
-        await testAll({
-            amount: ethers.parseEther("1000"),
-            market: "0xC64D59eb11c869012C686349d24e1D7C91C86ee2",
-        });
+        await testAll("fGHO 07/31/25");
     } catch (error) {
         console.error(error);
         process.exitCode = 1;

@@ -60,12 +60,20 @@ export async function pendleDepositLPP(marketKey: PendleKeys, amount: bigint, us
     await syToken.connect(user).transfer(marketContract, am);
     await ptToken.connect(user).transfer(marketContract, am);
 
-    await marketContract.mint(user, am, am);
+    await marketContract.connect(user).mint(user, am, am);
+}
+
+export async function pendleWithdrawLPP(marketKey: PendleKeys, amount: bigint, user: Signer) {
+    const pendleData = PendlePools[marketKey];
+
+    const marketContract = await ethers.getContractAt("IPendleMarketV3", pendleData.MARKET);
+
+    await marketContract.connect(user).transfer(marketContract, amount);
+    await marketContract.connect(user).burn(user, user, amount);
 }
 
 export async function pendleWithdrawPT(marketKey: PendleKeys, amount: bigint, user: Signer) {
     const pendleData = PendlePools[marketKey];
-
     const ptToken = await ethers.getContractAt("IERC20Metadata", pendleData.PT);
     const ytToken = await ethers.getContractAt("IPendleYTToken", pendleData.YT);
 
@@ -82,7 +90,7 @@ export async function pendleWithdrawYT(marketKey: PendleKeys, amount: bigint, us
     await ytToken.connect(user).redeemPY(user);
 }
 
-export const pendleDepositLP = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
+export const pendleDepositLPRouter = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
     const pendleData = PendlePools[marketKey];
 
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
@@ -129,7 +137,7 @@ export const pendleDepositLP = async (marketKey: PendleKeys, amount: bigint, use
     await tx.wait();
 };
 
-export const pendleWithdrawLP = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
+export const pendleWithdrawLPRouter = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
     const pendleData = PendlePools[marketKey];
 
     const router = await ethers.getContractAt("IPendleRouterV4", PENDLE_ROUTER_V4);
@@ -178,7 +186,7 @@ export const pendleWithdrawLP = async (marketKey: PendleKeys, amount: bigint, us
     };
 };
 
-export const pendleDepositPT = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
+export const pendleDepositPTRouter = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
     const pendleData = PendlePools[marketKey];
 
     const userAddress = await user.getAddress();
@@ -228,7 +236,7 @@ export const pendleDepositPT = async (marketKey: PendleKeys, amount: bigint, use
     }
 };
 
-export const pendleDepositYT = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
+export const pendleDepositYTRouter = async (marketKey: PendleKeys, amount: bigint, user: Signer) => {
     const pendleData = PendlePools[marketKey];
 
     const userAddress = await user.getAddress();

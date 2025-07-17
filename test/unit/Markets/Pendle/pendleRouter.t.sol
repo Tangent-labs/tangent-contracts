@@ -6,7 +6,7 @@ import "../../../contexts/MarketDeploymentContext.sol";
 import "../../../../src/interfaces/externals/Pendle/IPendleMarketV3.sol";
 import "../../../../src/interfaces/externals/Pendle/IPendleRouterV4.sol";
 import "../../../../src/interfaces/externals/Pendle/IPendlePYLpOracle.sol";
-import "../../../../src/interfaces/externals/Pendle/ISyToken.sol";
+import "../../../../src/interfaces/externals/Pendle/IPendleSYToken.sol";
 
 contract PendleRouterTest is MarketDeploymentContext {
     IPendleMarketV3 public market;
