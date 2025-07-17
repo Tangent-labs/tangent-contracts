@@ -65,8 +65,8 @@ class BlockchainScriptGenerator {
         const actionType = row.actionType;
         if (actionType.includes("transfer") || actionType === "repayUSG") {
             return `await ${actionType}(${transferParams});`;
-        } else if (actionType === "advanceTime") {
-            return `await context.advanceTime(${row.amount});`;
+        } else if (actionType === "timeTravel") {
+            return `await timeTravel(${row.amount});`;
         } else if (["depositAndBorrowUSG", "repayUSGAndWithdraw"].includes(actionType)) {
             return `await ${actionType}(${compositBorrowParams});`;
         } else {
@@ -76,26 +76,26 @@ class BlockchainScriptGenerator {
 
     generateScriptContent(actions: ActionRow[]): string {
         return `
+import { ethers } from "hardhat";
+import { giveTokensToAddresses } from "../../thief";
+import { timeTravel } from "../actions/time-travel";
 import { depositCurveLP, withdrawCurveLP, depositCurveGauge, withdrawCurveGauge, depositStakeDao, withdrawStakeDao, depositConvex, withdrawConvex, depositLlamaLend, withdrawLlamaLend, transferCurveLP, transferCurveGauge, transferStakeDaoGauge } from '../actions/curveEcoActions';
 import { pendleDepositPTAndYT, pendleDepositLP, pendleWithdrawLP, pendleWithdrawPT, pendleWithdrawYT, pendleDepositLPRouter, pendleDepositPTRouter, pendleDepositYTRouter, pendleWithdrawLPRouter} from "../actions/pendleActions";
 import { borrowUSG, repayUSG, depositAndBorrowUSG, repayUSGAndWithdraw } from "../actions/usgActions";
-import { PointsContext } from '../contexts/PointsContext';
+import { TOKENS_TO_GIVE } from "../../tokensToGive.config";
 
-export async function executeGeneratedActions(context: PointsContext): Promise<void> {
+main();
+export async function main() {
     try {
+        const [user0, user1, user2, user3, user4, user5, user6, user7, user8, user9] = await ethers.getSigners();
+        await giveTokensToAddresses([user0, user1, user2, user3, user4, user5, user6, user7, user8, user9], TOKENS_TO_GIVE(100000000));
         
-        const user1 = context.user1;
-        const user2 = context.user2;
 
-        if (!user1 || !user2) {
-            throw new Error("Users not initialized. Call initUsers first.");
-        }
 ${actions.map((action) => this.generateActionCode(action)).join("\n\n")}
     } catch (error) {
         throw error;
     }
-}
-        `;
+}`;
     }
 
     async generateScript(): Promise<void> {

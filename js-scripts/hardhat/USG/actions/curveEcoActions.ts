@@ -67,6 +67,11 @@ export const withdrawCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSign
     return lp;
 };
 
+export async function transferCurveLP(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {
+    const context = CURVE_CONTEXT[lpKey];
+    await transfer(context.curveLp, from, to, amount);
+}
+
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     CURVE GAUGE 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -100,6 +105,11 @@ export const withdrawCurveGauge = async (lpKey: CurveLpKey, user: HardhatEthersS
         throw Error("Not enough Curve Gauge token to withdraw from " + lpKey);
     }
 };
+
+export async function transferCurveGauge(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {
+    const context = CURVE_CONTEXT[lpKey];
+    await transfer(context.curveGauge, from, to, amount);
+}
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     CONVEX 
@@ -137,6 +147,11 @@ export const withdrawStakeDao = async (lpKey: CurveLpKey, user: HardhatEthersSig
     await stakeVault.connect(user).withdraw(parseEther(amount.toString()));
 };
 
+export async function transferStakeDaoGauge(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {
+    const context = CURVE_CONTEXT[lpKey];
+    await transfer(context.stakeDaoGauge, from, to, amount);
+}
+
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     LLAMALEND  
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -155,18 +170,3 @@ export const withdrawLlamaLend = async (key: CurveLpKey, user: HardhatEthersSign
     const vault = await ethers.getContractAt("ILlamaVault", context.curveLp);
     await vault.connect(user)["withdraw(uint256)"](parseEther(amount.toString()));
 };
-
-export async function transferStakeDaoGauge(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {
-    const context = CURVE_CONTEXT[lpKey];
-    await transfer(context.stakeDaoGauge, from, to, amount);
-}
-
-export async function transferCurveGauge(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {
-    const context = CURVE_CONTEXT[lpKey];
-    await transfer(context.curveGauge, from, to, amount);
-}
-
-export async function transferCurveLP(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {
-    const context = CURVE_CONTEXT[lpKey];
-    await transfer(context.curveLp, from, to, amount);
-}

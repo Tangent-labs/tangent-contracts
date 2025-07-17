@@ -1,3 +1,6 @@
+import {ethers} from "hardhat";
+import {giveTokensToAddresses} from "../../thief";
+import {timeTravel} from "../actions/time-travel";
 import {
     depositCurveLP,
     withdrawCurveLP,
@@ -25,16 +28,14 @@ import {
     pendleWithdrawLPRouter,
 } from "../actions/pendleActions";
 import {borrowUSG, repayUSG, depositAndBorrowUSG, repayUSGAndWithdraw} from "../actions/usgActions";
-import {PointsContext} from "../contexts/PointsContext";
+import {TOKENS_TO_GIVE} from "../../tokensToGive.config";
 
-export async function executeGeneratedActions(context: PointsContext): Promise<void> {
+main();
+export async function main() {
     try {
-        const user1 = context.user1;
-        const user2 = context.user2;
+        const [user0, user1, user2, user3, user4, user5, user6, user7, user8, user9] = await ethers.getSigners();
+        await giveTokensToAddresses([user0, user1, user2, user3, user4, user5, user6, user7, user8, user9], TOKENS_TO_GIVE(100000000));
 
-        if (!user1 || !user2) {
-            throw new Error("Users not initialized. Call initUsers first.");
-        }
         await depositCurveLP("USDe_USDC", user1, 1000);
 
         await depositCurveGauge("USDe_USDC", user1, 100);
@@ -55,11 +56,11 @@ export async function executeGeneratedActions(context: PointsContext): Promise<v
 
         await pendleWithdrawPT("fGHO 07/31/25", user1, 50);
 
-        await context.advanceTime(30);
+        await timeTravel(30);
 
         await depositLlamaLend("LLAMALEND_sDOLA_crvUSD", user2, 1000);
 
-        await context.advanceTime(30);
+        await timeTravel(30);
 
         await withdrawStakeDao("USDC_crvUSD", user1, 2000);
 
