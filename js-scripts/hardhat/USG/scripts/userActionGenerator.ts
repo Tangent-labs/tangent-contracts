@@ -78,7 +78,6 @@ class BlockchainScriptGenerator {
         return `
 import { ethers } from "hardhat";
 import {giveTokensToAddresses} from "../../thief/thief";
-import {TOKENS_TO_GIVE_WITHOUT_LP} from "../../thief/tokensToGiveWithoutLP";
 import { timeTravel } from "../actions/time-travel";
 import { depositCurveLP, withdrawCurveLP, depositCurveGauge, withdrawCurveGauge, depositStakeDao, withdrawStakeDao, depositConvex, withdrawConvex, depositLlamaLend, withdrawLlamaLend, transferCurveLP, transferCurveGauge, transferStakeDaoGauge } from '../actions/curveEcoActions';
 import { pendleDepositPTAndYT, pendleDepositLP, pendleWithdrawLP, pendleWithdrawPT, pendleWithdrawYT, pendleDepositLPRouter, pendleDepositPTRouter, pendleDepositYTRouter, pendleWithdrawLPRouter} from "../actions/pendleActions";
@@ -88,8 +87,6 @@ main();
 export async function main() {
     try {
         const [user0, user1, user2, user3, user4, user5, user6, user7, user8, user9] = await ethers.getSigners();
-        await giveTokensToAddresses([user0, user1, user2, user3, user4, user5, user6, user7, user8, user9], TOKENS_TO_GIVE_WITHOUT_LP(100000000));
-        
 
 ${actions.map((action) => this.generateActionCode(action)).join("\n\n")}
     } catch (error) {
