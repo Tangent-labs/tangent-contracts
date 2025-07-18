@@ -1,7 +1,7 @@
 import {AddressLike} from "ethers";
 import {ethers} from "hardhat";
 import {setStorageAt} from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import {GlobalHelper} from "./GlobalHelper";
+import {GlobalHelper} from "../GlobalHelper";
 import {THIEF_TOKEN_CONFIG} from "defi-resources/build/ressources/erc20/thiefConfig";
 
 interface Tokens {

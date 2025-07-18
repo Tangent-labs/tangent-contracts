@@ -1,10 +1,10 @@
-import {giveTokensToAddresses} from "./thief";
+import {giveTokensToAddresses} from "./thief/thief";
 import {ethers} from "hardhat";
 
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {TOKENS_TO_GIVE} from "./tokensToGive.config";
 import {commonERC20} from "defi-resources";
 import {MaxUint256} from "ethers";
+import {TOKENS_TO_GIVE_WITHOUT_LP} from "./thief/tokensToGiveWithoutLP";
 
 export class MainSetup {
     users: HardhatEthersSigner[] = [];
@@ -29,7 +29,7 @@ export class MainSetup {
             amount: number;
         }[]
     ) {
-        await giveTokensToAddresses(users, TOKENS_TO_GIVE(this.erc20Minted).concat(extraTokens));
+        await giveTokensToAddresses(users, TOKENS_TO_GIVE_WITHOUT_LP(this.erc20Minted).concat(extraTokens));
         const erc4626 = [
             {saving: commonERC20.sfrxUSD, stable: commonERC20.frxUSD},
             // {saving: commonERC20.wstUSR, stable: "0x6c8984bc7DBBeDAf4F6b2FD766f16eBB7d10AAb4"},

@@ -5,7 +5,7 @@ import * as contractAddresses from "../../../../addresses.json";
 export async function distributeRewardsVsTan() {
     const USG = await ethers.getContractAt("USG", contractAddresses.tokens.USG);
 
-    const vsTan = await ethers.getContractAt("VsTan", contractAddresses.lock.vsTan);
+    const vsTan = await ethers.getContractAt("VsTan", contractAddresses.tokens.vsTan);
 
     await USG.approve(vsTan, MaxUint256);
 

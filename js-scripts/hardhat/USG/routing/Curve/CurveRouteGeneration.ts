@@ -2,7 +2,7 @@ import {AddressLike, MaxUint256, ZeroAddress} from "ethers";
 import fs from "fs";
 import {ethers} from "hardhat";
 import path from "path";
-import {giveTokenToAddresss} from "../../../thief";
+import {giveTokenToAddresss} from "../../../thief/thief";
 import {commonERC20, routers, thiefConfig, curveLp} from "defi-resources";
 import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
 
