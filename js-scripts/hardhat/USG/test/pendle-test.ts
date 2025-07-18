@@ -2,7 +2,7 @@ import {ethers} from "hardhat";
 import {pendleWithdrawYT, pendleWithdrawPT, pendleDepositPTAndYT, pendleDepositLP, pendleWithdrawLP, PendleKeys} from "../actions/pendleActions";
 
 import {formatEther, parseEther, Signer} from "ethers";
-import {giveTokenToAddresss} from "../../thief";
+import {giveTokenToAddresss} from "../../thief/thief";
 import {THIEF_TOKEN_CONFIG} from "defi-resources/build/ressources/erc20/thiefConfig";
 import {PendlePools} from "defi-resources";
 

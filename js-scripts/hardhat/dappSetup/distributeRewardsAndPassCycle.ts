@@ -1,5 +1,5 @@
 import {thiefConfig} from "defi-resources";
-import {giveTokensToAddresses} from "../thief";
+import {giveTokensToAddresses} from "../thief/thief";
 import {BoosterSetup} from "./Booster.setup";
 import {ethers} from "hardhat";
 import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
@@ -50,11 +50,6 @@ async function main() {
 
     await time.increaseTo(nextTimestamp);
 
-    await boosterSetup.cycleProcessor.cycleProcess(3, [
-        boosterSetup.SD_CRV_STAKING,
-        boosterSetup.SD_PENDLE_STAKING,
-        boosterSetup.SD_FXN_STAKING,
-        boosterSetup.SD_BAL_STAKING,
-    ]);
+    await boosterSetup.cycleProcessor.cycleProcess(3, [boosterSetup.SD_CRV_STAKING, boosterSetup.SD_PENDLE_STAKING, boosterSetup.SD_FXN_STAKING, boosterSetup.SD_BAL_STAKING]);
 }
 main();
