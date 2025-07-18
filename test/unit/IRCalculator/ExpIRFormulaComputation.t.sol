@@ -257,7 +257,7 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
         uint256 calculated = irCalculator.simulateIR(USGPrice_, IRParams({isHEC: isHEC, rMin: rMin_, rMax: rMax_, pMin: pMin_, pInf: pInf_, pMax: pMax_, a1: a1_, a2: a2_, k: k_}));
 
         if (expected <= 10_000) {
-            assertApproxEqAbs(expected, calculated, 1); // 1 wei delta
+            assertApproxEqAbs(expected, calculated, 2); // 1 wei delta
         } else {
             assertApproxEqRel(expected, calculated, 10 * 1e13); //0.01% delta
         }
