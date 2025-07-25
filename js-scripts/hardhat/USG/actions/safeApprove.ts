@@ -1,8 +1,9 @@
 import {ethers} from "hardhat";
 import {AddressLike, parseEther} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import {IERC20Metadata} from "../../../../typechain-types/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata";
 
-export async function safeApprove(token: any, user: HardhatEthersSigner, spender: string, amount: bigint) {
+export async function safeApprove(token: IERC20Metadata, user: HardhatEthersSigner, spender: string, amount: bigint) {
     const symbol = await token.symbol();
 
     try {
@@ -21,6 +22,12 @@ export async function safeApprove(token: any, user: HardhatEthersSigner, spender
                 to: token.target,
                 data: token.interface.encodeFunctionData("approve", [spender, amount]),
             });
+            try {
+                await token.connect(user).approve(spender, 0);
+                await token.connect(user).approve(spender, amount);
+            } catch (rawErr) {
+                throw new Error(`Fallback raw approve failed for ${symbol}: ${rawErr}`);
+            }
         } catch (rawErr) {
             throw new Error(`Fallback raw approve failed for ${symbol}: ${rawErr}`);
         }

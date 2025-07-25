@@ -39,7 +39,6 @@ contract LandingChainView is USGInfo, RsTanInfo {
     address public constant sUSG = address(0);
     address public constant tan = address(0);
     address public constant tanPool = address(0);
-    address public constant tanOracle = address(0);
 
     function getKeepers() internal view returns (address[] memory) {
         address[] memory pegKeepers = new address[](0);
@@ -63,10 +62,10 @@ contract LandingChainView is USGInfo, RsTanInfo {
         revert LandingChainViewError(combinedInfo);
     }
 
-    function getUSGData() internal view returns (uint256[] memory) {
+    function getUSGData() internal returns (uint256[] memory) {
         uint256[] memory amounts = new uint256[](4);
         if (usg != address(0)) {
-            USGInfoOut memory usgInfo = getUSGInfo(usg, usgOracle, getKeepers(), sUSG);
+            USGInfoData memory usgInfo = getUSGInfo(usg, usgOracle, getKeepers(), sUSG);
             amounts[0] = usgInfo.circulatingUsg;
             amounts[1] = usgInfo.UsgPrice;
             amounts[2] = usgInfo.sUsgSupply;
@@ -78,7 +77,7 @@ contract LandingChainView is USGInfo, RsTanInfo {
     function getTanData() internal view returns (uint256[] memory) {
         uint256[] memory amounts = new uint256[](4);
         if (usg != address(0)) {
-            RsTanData memory tanInfo = getRsTanInfo(tan, tanPool, usg, tanOracle);
+            RsTanInfoData memory tanInfo = getRsTanInfo(tan, tanPool, usg);
             amounts[0] = tanInfo.tanPrice;
             amounts[1] = tanInfo.totalSupplyRsTan;
             amounts[2] = tanInfo.rewardRate;

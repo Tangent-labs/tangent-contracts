@@ -23,14 +23,17 @@ struct Reward {
 }
 
 abstract contract RsTanInfo {
-    struct RsTanData {
+    address oracleChainLinkEth = 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419;
+
+    struct RsTanInfoData {
         uint256 tanPrice;
         uint256 totalSupplyRsTan;
         uint256 rewardRate;
         uint256 apr;
     }
-    function getRsTanInfo(address rsTanAddress, address tanPoolAddress, address tgUSDAddress, address chainlinkEthOracleAddress) public view returns (RsTanData memory data) {
-        IChainlinkOracle ethOracle = IChainlinkOracle(chainlinkEthOracleAddress);
+
+    function getRsTanInfo(address rsTanAddress, address tanPoolAddress, address tgUSDAddress) public view returns (RsTanInfoData memory data) {
+        IChainlinkOracle ethOracle = IChainlinkOracle(oracleChainLinkEth);
         uint256 ethPrice = ethOracle.latestAnswer();
 
         // 1. TAN price
