@@ -16,7 +16,10 @@ export class MainSetup {
         this.userCount = userCount || 5;
     }
 
-    async setupTestUsers() {
+    async setupTestUsers(userCount?: number) {
+        if (userCount) {
+            this.userCount = userCount;
+        }
         this.users = (await ethers.getSigners()).slice(0, this.userCount);
     }
 

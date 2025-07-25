@@ -9,8 +9,9 @@
     "test": "test"
   },
   "scripts": {
-    "hh-node": "npx hardhat node --hostname 0.0.0.0",
-    "dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
+    "hh-node": "npx hardhat node --hostname 0.0.0.0 ",
+    "booster-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
+    "booster-distribute-rewards": "npx hardhat run js-scripts/hardhat/dappSetup/distributeRewardsAndPassCycle.ts --network localhost",
     "deploy-USG": "npx hardhat run js-scripts/hardhat/USG/scripts/deployUSG.ts --network localhost",
     "verify-contracts-blockscout": "npx hardhat run js-scripts/hardhat/USG/blockscout/verify-contracts.ts --network localhost",
     "distribute-rewards-vsTan": "npx hardhat run js-scripts/hardhat/USG/actions/distributeRewardsVsTan.ts --network localhost",

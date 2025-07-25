@@ -19,7 +19,7 @@ async function main() {
         [
             {...thiefConfig.THIEF_TOKEN_CONFIG.CRV, amount: 100000},
             {...thiefConfig.THIEF_TOKEN_CONFIG.sd_CRV, amount: 10000},
-            {...thiefConfig.THIEF_TOKEN_CONFIG.CRVUSD, amount: 10000},
+            {...thiefConfig.THIEF_TOKEN_CONFIG.crvUSD, amount: 100000},
         ]
     );
 
@@ -35,7 +35,7 @@ async function main() {
         [await ethers.getSigner(await boosterSetup.sdFxnBuffer.getAddress())],
         [
             {...thiefConfig.THIEF_TOKEN_CONFIG.sd_FXN, amount: 100000},
-            {...thiefConfig.THIEF_TOKEN_CONFIG.wstETH, amount: 10000},
+            {...thiefConfig.THIEF_TOKEN_CONFIG.wstETH, amount: 1},
         ]
     );
 
@@ -48,8 +48,20 @@ async function main() {
         ]
     );
 
+    await giveTokensToAddresses([await ethers.getSigner(await boosterSetup.cvgSDTBuffer.getAddress())], [{...thiefConfig.THIEF_TOKEN_CONFIG.cvgSDT, amount: 100000}]);
+
+    await giveTokensToAddresses([await ethers.getSigner(await boosterSetup.cvgCVX.getAddress())], [{...thiefConfig.THIEF_TOKEN_CONFIG.cvgCVX, amount: 100000}]);
+    console.log("cvgCVX balance of cvgCVX ", await boosterSetup.cvgCVX.balanceOf(await boosterSetup.cvgCVX.getAddress()));
+
     await time.increaseTo(nextTimestamp);
 
-    await boosterSetup.cycleProcessor.cycleProcess(3, [boosterSetup.SD_CRV_STAKING, boosterSetup.SD_PENDLE_STAKING, boosterSetup.SD_FXN_STAKING, boosterSetup.SD_BAL_STAKING]);
+    await boosterSetup.cycleProcessor.cycleProcess(3, [
+        boosterSetup.SD_CRV_STAKING,
+        boosterSetup.SD_PENDLE_STAKING,
+        boosterSetup.SD_FXN_STAKING,
+        boosterSetup.SD_BAL_STAKING,
+        boosterSetup.CVG_SDT_STAKING,
+    ]);
+    await boosterSetup.CVG_CVX_STAKING.processCvxRewards();
 }
 main();
