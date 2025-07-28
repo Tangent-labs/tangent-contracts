@@ -2,7 +2,6 @@
 pragma solidity ^0.8.22;
 
 import {ERC721, ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
 import {IERC4626, IERC20} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -16,6 +15,7 @@ import {Reward, TokenAmount} from "../../interfaces/internals/USG/IRewardAccumul
 
 import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 import {ZappingUtil} from "../Utilities/abstract/ZappingUtil.sol";
+import {LightReentrancyGuardTransient} from "../Utilities/abstract/LightReentrancyGuardTransient.sol";
 
 /// @dev Struct representing a locked position.
 /// @param endLockTime The timestamp when the lock ends.
@@ -35,7 +35,7 @@ struct KickParams {
 
 /// @title VsTan
 /// @notice Locking NFT contract of TAN.
-contract VsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, ZappingUtil {
+contract VsTan is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable, ZappingUtil {
     using SafeERC20 for IERC20;
     /// @notice Duration for which tokens are locked (13 weeks).
     uint256 public constant LOCK_DURATION = 13 weeks;

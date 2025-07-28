@@ -29,7 +29,7 @@ contract ZappingProxy is IZappingProxy {
      * @param zap          Struct containing the router and the raw bytes data that will be executed
      * @return Amount of tokenOut received
      */
-    function zapProxy(IERC20 tokenIn, IERC20 tokenOut, uint256 minAmountOut, address receiver, ZapStruct calldata zap) external payable returns (uint256) {
+    function zapProxy(IERC20 tokenIn, IERC20 tokenOut, uint256 minAmountOut, address receiver, ZapStruct calldata zap) public payable returns (uint256) {
         address router = zap.router;
         require(tokenIn != tokenOut, TokenInOutMustBeDifferent());
         if (msg.value == 0) {

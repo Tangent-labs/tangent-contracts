@@ -177,7 +177,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         verifyReceiveERC20(collatToken, usr1, 5_000 ether, "Collat sent to liquidator");
 
         // Liquidation doesn't pass because 0 collat is passed in param
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(Collateral.ZeroCollatAmount.selector));
         market.liquidate(usr1, 0, 0, ZapStruct({router: address(0), routerCall: ""}));
 
         // Liquidation passes after EMA of price_oralce passed
@@ -212,7 +212,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Try to liquidate and leave a loan with less than the minimumLoan
 
         uint256 collatBalances = market.collateralBalances(usr1);
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooLow.selector));
+        vm.expectRevert(abi.encodeWithSelector(DebtIR.UserDebtTooLow.selector));
         market.liquidate(usr1, collatBalances - 1 ether, 0, ZapStruct({router: address(0), routerCall: ""}));
 
         market.liquidate(usr1, collatBalances, 0, ZapStruct({router: address(0), routerCall: ""}));

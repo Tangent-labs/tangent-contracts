@@ -1,12 +1,13 @@
 import {ethers} from "hardhat";
-import {AddressLike, parseEther} from "ethers";
+import {AddressLike, MaxUint256, parseEther} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import {IERC20Metadata} from "../../../../typechain-types";
 
-export async function safeApprove(token: any, user: HardhatEthersSigner, spender: string, amount: bigint) {
+export async function safeApprove(token: IERC20Metadata, user: HardhatEthersSigner, spender: string, amount: bigint) {
     const symbol = await token.symbol();
 
     try {
-        const tx = await token.connect(user).approve(spender, amount);
+        const tx = await token.connect(user).approve(spender, MaxUint256);
         await tx.wait();
     } catch (err) {
         console.warn(`Standard approve failed for ${symbol}, trying raw tx...`);
@@ -19,8 +20,14 @@ export async function safeApprove(token: any, user: HardhatEthersSigner, spender
 
             await user.sendTransaction({
                 to: token.target,
-                data: token.interface.encodeFunctionData("approve", [spender, amount]),
+                data: token.interface.encodeFunctionData("approve", [spender, MaxUint256]),
             });
+            try {
+                await token.connect(user).approve(spender, 0);
+                await token.connect(user).approve(spender, MaxUint256);
+            } catch (rawErr) {
+                throw new Error(`Fallback raw approve failed for ${symbol}: ${rawErr}`);
+            }
         } catch (rawErr) {
             throw new Error(`Fallback raw approve failed for ${symbol}: ${rawErr}`);
         }

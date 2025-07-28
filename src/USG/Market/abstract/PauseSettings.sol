@@ -2,8 +2,11 @@
 pragma solidity ^0.8.22;
 
 import {LightOwnable} from "../../Utilities/abstract/LightOwnable.sol";
+import {IControlTower} from "../../../interfaces/internals/USG/IControlTower.sol";
+
 abstract contract PauseSettings is LightOwnable {
-    address public pauser;
+    /// @notice Reference to the ControlTower contract managing market governance and treasury.
+    IControlTower controlTower;
 
     bool public isInitialized;
 
@@ -13,20 +16,35 @@ abstract contract PauseSettings is LightOwnable {
 
     bool public isLeveragePaused;
 
-    function setIsDepositPaused(bool _isDepositPaused) external {
-        require(msg.sender == pauser);
-        isDepositPaused = _isDepositPaused;
-    }
-    function setIsBorrowPaused(bool _isBorrowPaused) external {
-        require(msg.sender == pauser);
-        isBorrowPaused = _isBorrowPaused;
-    }
-    function setIsLeveragePaused(bool _isLeveragePaused) external {
-        require(msg.sender == pauser);
-        isLeveragePaused = _isLeveragePaused;
+    error DepositPaused();
+    error BorrowPaused();
+    error LeveragePaused();
+    error CallerNotPauser();
+
+    modifier isCallerPauser() {
+        _verifyIsCallerPauser();
+        _;
     }
 
-    function setPauser(address _newPauser) external onlyOwner {
-        pauser = _newPauser;
+    function _verifyIsCallerPauser() internal view {
+        require(controlTower.isPauser(msg.sender), CallerNotPauser());
+    }
+
+    function _verifyIsDepositNotPaused() internal view {
+        require(!isDepositPaused, DepositPaused());
+    }
+
+    function _verifyIsBorrowNotPaused() internal view {
+        require(!isBorrowPaused, BorrowPaused());
+    }
+
+    function setIsDepositPaused(bool _isDepositPaused) external isCallerPauser {
+        isDepositPaused = _isDepositPaused;
+    }
+    function setIsBorrowPaused(bool _isBorrowPaused) external isCallerPauser {
+        isBorrowPaused = _isBorrowPaused;
+    }
+    function setIsLeveragePaused(bool _isLeveragePaused) external isCallerPauser {
+        isLeveragePaused = _isLeveragePaused;
     }
 }

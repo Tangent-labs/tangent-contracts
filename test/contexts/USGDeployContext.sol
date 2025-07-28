@@ -5,7 +5,6 @@ pragma solidity ^0.8.22;
 import {StdCheats} from "forge-std/StdCheats.sol";
 import {StdUtils} from "forge-std/StdUtils.sol";
 
-import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "../../src/libs/Resources/ResourcesConvex.sol";
@@ -21,6 +20,8 @@ import "../../src/USG/Utilities/RewardAccumulator.sol";
 import "../../src/USG/Utilities/ControlTower.sol";
 import "../../src/USG/Utilities/MarketCreator.sol";
 import "../../src/USG/Utilities/ZappingProxy.sol";
+import "../../src/USG/Utilities/Migratoor.sol";
+import "../../src/USG/Utilities/abstract/LightReentrancyGuardTransient.sol";
 
 import "../mocks/MockRouter.sol";
 
@@ -79,6 +80,8 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     USG public USGBase;
     IYearnV3Vault public sUSG;
     RewardAccumulator public rewardAccumulator;
+    Migratoor public migratoor;
+
     MockRouter public mockRouter;
     EnsoUtils public ensoUtils;
     Labeliser public labeliser;
@@ -116,6 +119,11 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         // assertEq(address(USGBase), address(USG), "Should be equals with CREATE3");
 
         zappingProxy = new ZappingProxy();
+
+        migratoor = new Migratoor(controlTower, usg, zappingProxy);
+
+        controlTower.togglePositionMigrator(address(migratoor));
+        controlTower.togglePauser(pauser);
 
         sUSG = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(usg), "Staked USG", "sUSG", owner, 7 days));
 

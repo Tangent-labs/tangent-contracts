@@ -46,17 +46,17 @@ contract RepayAndWithdraw is MarketDeploymentContext {
     }
 
     function test_repayAndWithdraw_fails_when_0_amount_to_withdraw_in_parameter() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(Collateral.ZeroCollatAmount.selector));
         market.repayAndWithdraw(0, debtBorrow / 2);
     }
 
     function test_repayAndWithdraw_fails_when_LTV_is_too_small() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(Collateral.OverMaxLTV.selector));
         market.repayAndWithdraw(depositedAmount - 1, debtBorrow / 2);
     }
 
     function test_repayAndWithdraw_fails_when_debt_is_left_with_less_than_minimum() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(Collateral.OverMaxLTV.selector));
         market.repayAndWithdraw(depositedAmount - 1, debtBorrow / 2);
     }
 }

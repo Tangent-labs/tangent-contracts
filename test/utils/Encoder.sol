@@ -5,6 +5,8 @@ import {CurveRouterSwap} from "../../src/interfaces/internals/USG/ICurveLPLiquid
 import {ZapStruct} from "../../src/interfaces/internals/ICommonStruct.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+import "forge-std/console.sol";
+
 contract Encoder {
     function encodeSwapToMockRouter(address router, IERC20 tokenIn, uint256 amountIn, IERC20 tokenOut, address receiver, uint256 amountOut) public pure returns (ZapStruct memory) {
         return

@@ -19,23 +19,15 @@ import {GlobalMarketInitParams, MarketInit, LiquidateInput, SelfLiquidateInput, 
 /// Includes core logic for deposits, withdrawals, borrowing, repayment, liquidation, and leverage.
 abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
     using SafeERC20 for IERC20;
-    /// @notice Reference to the ControlTower contract managing market governance and treasury.
-    IControlTower public controlTower;
 
     /// @notice Errors to signal specific failure conditions in market operations.
-    error DepositPaused();
-    error BorrowPaused();
-    error LeveragePaused();
 
     error AlreadyInitialized();
-    error TotalDebtTooHigh();
-    error UserDebtTooHigh();
-    error UserDebtTooLow();
-    error UserDebtZero();
-    error ZeroCollatAmount();
-    error ZeroDebtAmount();
+
     error NotLiquidablePosition();
     error PositionWithoutBadDebt();
+    error NotAMigratoor();
+    error DebtToRepayTooBig();
 
     /// @notice Constructor marks the contract as initialized.
     constructor() {
@@ -62,7 +54,6 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         irCalculator = _globalParams._irCalculator;
         rewardAccumulator = _globalParams._rewardAccumulator;
         zappingProxy = _globalParams._zappingProxy;
-        pauser = _globalParams._pauser;
 
         collatToken = _marketInit.collatToken;
         collatOracle = _marketInit.collatOracle;
@@ -79,6 +70,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         liquidationFee = _marketInit.liquidationFee;
         maxMarketDebt = _marketInit.maxMarketDebt;
         minimumLoan = _marketInit.minimumLoan;
+
+        collatDecimals = collatToken.decimals();
 
         // Transfer ownership to the DAO
         _transferOwnership(_globalParams._owner);
@@ -116,11 +109,11 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      */
     function _deposit(address _for, uint256 amountDeposited, IERC20 _collatToken) internal {
         // Cannot deposit on a market with paused deposits
-        require(!isDepositPaused, DepositPaused());
+        _verifyIsDepositNotPaused();
         // Cannot deposit 0
-        require(amountDeposited != 0, ZeroCollatAmount());
+        _verifyCollatInputNotZero(amountDeposited);
         // Checkpoint the IR and indexes
-        irCalculator.checkpointIR(address(this));
+        _checkpointIR();
         // Increase collateral balance of the position and update total debt
         _updateCollateral(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited);
 
@@ -144,12 +137,12 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      */
     function _withdraw(uint256 amountToWithdraw) internal {
         // Checkpoint the IR and indexes
-        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
+        uint256 newDebtIndex = _checkpointIR();
 
         // Increase collateral deposited by the user
         _updateCollateral(
             msg.sender,
-            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _userDebt(userDebtShares[msg.sender], newDebtIndex)),
+            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _convertToAmount(userDebtShares[msg.sender], newDebtIndex)),
             totalCollateral - amountToWithdraw
         );
 
@@ -164,12 +157,12 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      */
     function _getBalanceAfterWithdrawAndCheckMaxBorrowable(uint256 amountToWithdraw, uint256 newUserDebt) internal view returns (uint256) {
         // Prevent to withdraw 0 collateral from the market
-        require(amountToWithdraw != 0, ZeroCollatAmount());
+        _verifyCollatInputNotZero(amountToWithdraw);
         // Computes the decremented collateral balance of the user after the withdraw
         uint256 newCollatAmount = collateralBalances[msg.sender] - amountToWithdraw;
 
         // Verify that the newDebt of the loan is not over the maximum borrrowable regarding the LTV of the position
-        require(_maxBorrowable(newCollatAmount) >= newUserDebt, UserDebtTooHigh());
+        _verifyMaxLTV(newCollatAmount, newUserDebt);
         return newCollatAmount;
     }
 
@@ -197,31 +190,31 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @return Updated total debt shares for the market.
      */
     function _borrow(address receiver, uint256 USGToBorrow, uint256 collatAmount, bool isLeverage) internal returns (uint256, uint256) {
-        require(!isBorrowPaused, BorrowPaused());
-        require(USGToBorrow != 0, ZeroDebtAmount());
-        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
+        _verifyIsBorrowNotPaused();
+        _verifyDebtInputNotZero(USGToBorrow);
+        uint256 newDebtIndex = _checkpointIR();
 
         uint256 _userDebtShares = userDebtShares[msg.sender];
 
-        uint256 newUserDebt = USGToBorrow + _userDebt(_userDebtShares, newDebtIndex);
+        uint256 newUserDebt = USGToBorrow + _convertToAmount(_userDebtShares, newDebtIndex);
 
         //  Cache the new value in USG of the debt
-        uint256 newUserDebtShares = (USGToBorrow * RAY) / newDebtIndex;
+        uint256 newUserDebtShares = _convertToShares(USGToBorrow, newDebtIndex);
 
         uint256 newTotalDebtShares = totalDebtShares + newUserDebtShares;
 
-        //  Verify that the new total debt is not bigger the max debt
-        require(_totalDebt(badDebt, newTotalDebtShares, newDebtIndex) <= maxMarketDebt, TotalDebtTooHigh());
+        _verifyDebtCap(badDebt, newTotalDebtShares, newDebtIndex);
+
         //  Verify that newDebt is over the minimum loan
-        require(newUserDebt >= minimumLoan, UserDebtTooLow());
+        _verifyMinimumDebt(newUserDebt);
 
         // Verify that the newDebt of the loan is not over the maximum borrrowable
-        require(_maxBorrowable(collatAmount) >= newUserDebt, UserDebtTooHigh());
+        _verifyMaxLTV(collatAmount, newUserDebt);
 
         // If it's a leverage transaction, USG is already minted before
         if (!isLeverage) {
             // Mint USG to the receiver
-            usg.mint(receiver, USGToBorrow);
+            _mintUSG(usg, receiver, USGToBorrow);
         }
 
         return (_userDebtShares + newUserDebtShares, newTotalDebtShares);
@@ -234,9 +227,9 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @param isLeverage      Whether this borrow is part of a leverage transaction.
      */
     function _depositAndBorrow(uint256 amountDeposited, uint256 USGToBorrow, IERC20 _collatToken, bool isLeverage) internal returns (uint256) {
-        require(!isDepositPaused, DepositPaused());
+        _verifyIsDepositNotPaused();
         // Cannot deposit 0
-        require(amountDeposited != 0, ZeroCollatAmount());
+        _verifyCollatInputNotZero(amountDeposited);
         // Collat amount after the deposit
         uint256 newCollatAmount = collateralBalances[msg.sender] + amountDeposited;
 
@@ -264,14 +257,14 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      */
     function _repay(address account, uint256 USGToRepay) internal returns (uint256, uint256, uint256, uint256) {
         // Cannot repay 0 debt
-        require(USGToRepay != 0, ZeroDebtAmount());
+        _verifyDebtInputNotZero(USGToRepay);
 
         // Update interests rate, computes new debt index and total debt.
-        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
+        uint256 newDebtIndex = _checkpointIR();
 
         uint256 _userDebtShares = userDebtShares[account];
 
-        uint256 oldUserDebt = _userDebt(_userDebtShares, newDebtIndex);
+        uint256 oldUserDebt = _convertToAmount(_userDebtShares, newDebtIndex);
 
         // Cannot repay an empty position
         require(_userDebtShares != 0, UserDebtZero());
@@ -297,15 +290,15 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             // Retrieve the real debt of the user
             newUserDebt = oldUserDebt - USGToRepay;
 
-            sharesToRemove = (USGToRepay * RAY) / newDebtIndex;
+            sharesToRemove = _convertToShares(USGToRepay, newDebtIndex);
 
             newUserDebtShares = _userDebtShares - sharesToRemove;
 
             // We need to verify that the partial repay is not decreasing the debt lower than the minimum loan.
-            require(newUserDebt >= minimumLoan, UserDebtTooLow());
+            _verifyMinimumDebt(newUserDebt);
         }
 
-        usg.burnFrom(msg.sender, USGToRepay);
+        _burnUSG(msg.sender, USGToRepay);
 
         return (USGToRepay, newUserDebtShares, totalDebtShares - sharesToRemove, newUserDebt);
     }
@@ -347,9 +340,9 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @return Debt updated with the new index of the 'account'
      */
     function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256) {
-        uint256 newDebtIndex = irCalculator.checkpointIR(address(this));
+        uint256 newDebtIndex = _checkpointIR();
         uint256 userDebtShares_ = userDebtShares[account];
-        return (newDebtIndex, collateralBalances[account], userDebtShares_, _userDebt(userDebtShares_, newDebtIndex));
+        return (newDebtIndex, collateralBalances[account], userDebtShares_, _convertToAmount(userDebtShares_, newDebtIndex));
     }
 
     /**
@@ -360,7 +353,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      */
     function _selfLiquidate(SelfLiquidateInput memory selfLiquidateCall, ZapStruct calldata liquidateCall) internal returns (uint256, uint256) {
         // Need to some collateral
-        require(selfLiquidateCall.collatAmountToLiquidate != 0, ZeroCollatAmount());
+        _verifyCollatInputNotZero(selfLiquidateCall.collatAmountToLiquidate);
+
         // Computes the new collat balance after liquidating the collateral
         uint256 newCollatBalance = selfLiquidateCall._collateralBalance - selfLiquidateCall.collatAmountToLiquidate;
         uint256 debtSharesToRemove;
@@ -376,13 +370,14 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Liquidate partial
         else {
             // As it's a partial liquidation, we have to compute the amount of shares to remove that match with the USG amount to repay.
-            debtSharesToRemove = (USGToRepay * RAY) / selfLiquidateCall.newDebtIndex;
+            debtSharesToRemove = _convertToShares(USGToRepay, selfLiquidateCall.newDebtIndex);
 
             uint256 newUserDebt = selfLiquidateCall.userDebt - USGToRepay;
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
-            require(newUserDebt >= minimumLoan, UserDebtTooLow());
+
+            _verifyMinimumDebt(newUserDebt);
             // Verify that maxLTV condition is still respected
-            require(newUserDebt <= _maxBorrowable(newCollatBalance), UserDebtTooHigh());
+            _verifyMaxLTV(newCollatBalance, newUserDebt);
         }
 
         uint256 newUserDebtShares = selfLiquidateCall._userDebtShares - debtSharesToRemove;
@@ -411,7 +406,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      */
     function _liquidate(LiquidateInput memory liquidateInput, ZapStruct calldata liquidateCall) internal returns (uint256, uint256, uint256, uint256) {
         uint256 collatAmountToLiquidate = liquidateInput.collatToLiquidate;
-        require(liquidateInput.collatToLiquidate != 0, ZeroCollatAmount());
+
+        _verifyCollatInputNotZero(liquidateInput.collatToLiquidate);
 
         uint256 debtSharesToRemove;
         uint256 USGToRepay;
@@ -425,10 +421,10 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Liquidate partial
         else {
             USGToRepay = (collatAmountToLiquidate * liquidateInput.userDebt) / liquidateInput._collateralBalance;
-            debtSharesToRemove = (USGToRepay * RAY) / liquidateInput.newDebtIndex;
+            debtSharesToRemove = _convertToShares(USGToRepay, liquidateInput.newDebtIndex);
 
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
-            require(liquidateInput.userDebt - USGToRepay >= minimumLoan, UserDebtTooLow());
+            _verifyMinimumDebt(liquidateInput.userDebt - USGToRepay);
         }
 
         uint256 newUserDebtShares = liquidateInput._userDebtShares - debtSharesToRemove;
@@ -441,12 +437,12 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             liquidateInput._totalDebtShares - debtSharesToRemove
         );
 
-        uint256 fee = (USGToRepay * liquidationFee) / DENOMINATOR;
+        uint256 fee = _mulDiv(USGToRepay, liquidationFee, DENOMINATOR);
 
         _postLiquidate(collatAmountToLiquidate, USGToRepay + fee, liquidateInput.minUSGOut, liquidateCall);
 
         if (fee != 0) {
-            usg.mint(controlTower.feeTreasury(), fee);
+            _mintUSG(usg, controlTower.feeTreasury(), fee);
         }
 
         return (collatAmountToLiquidate, USGToRepay, fee, newUserDebtShares);
@@ -458,8 +454,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      *       Transfer the collateral to the caller or to the zapping proxy
      *       When the collateral is sent to the zapping proxy, the 'liquidationCall' handles the selling of the collateral
      * @param collatAmountToLiquidate  Amount of collateral to sell during the liquidation
-     * @param USGToBurn              Amount of USG to burn from the sender
-     * @param minUSGOut              Slippage, Minimum amount of USG to receive after the selling of the collateral
+     * @param USGToBurn                Amount of USG to burn from the sender
+     * @param minUSGOut                Slippage, Minimum amount of USG to receive after the selling of the collateral
      * @param liquidationCall          Contains address and bytes of the contract selling the collateral for USG
      */
     function _postLiquidate(uint256 collatAmountToLiquidate, uint256 USGToBurn, uint256 minUSGOut, ZapStruct calldata liquidationCall) internal {
@@ -477,7 +473,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Burns USG from the sender.
         // The debt has to be on the caller of the transaction.
         // In case a liquidator is passed in parameter, it needs to send it back to the sender of the tx.
-        usg.burnFrom(msg.sender, USGToBurn);
+        _burnUSG(msg.sender, USGToBurn);
     }
 
     /**
@@ -529,7 +525,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         uint256 minCollatAmountOut,
         ZapStruct calldata dumpUSGCall
     ) internal returns (uint256, uint256, uint256) {
-        require(!isDepositPaused, DepositPaused());
+        _verifyIsDepositNotPaused();
         require(!isLeveragePaused, LeveragePaused());
 
         IUSG _usg = usg;
@@ -537,7 +533,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         IZappingProxy _zappingProxy = zappingProxy;
 
         // Mint the USG on the Zapper, ready to be exchanged through the router
-        _usg.mint(address(_zappingProxy), USGToFlashMint);
+        _mintUSG(_usg, address(_zappingProxy), USGToFlashMint);
+
         // Exchange the USG that has just been minted on the Zapper for the collateral of the market
         uint256 collatBought = _zappingProxy.zapProxy(_usg, collatToken, minCollatAmountOut, address(this), dumpUSGCall);
 
@@ -587,5 +584,97 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         }
 
         return rewardAmounts;
+    }
+
+    /* --------
+                        MIGRATE
+                                                    ------ */
+
+    function _verifySenderMigrator(IControlTower _controlTower) internal view {
+        require(_controlTower.isPositionMigrator(msg.sender), NotAMigratoor());
+    }
+
+    function _migrateFrom(
+        IControlTower _controlTower,
+        address account,
+        uint256 collateralToRemove,
+        uint256 debtToRemove,
+        uint256 debtToRepay,
+        address receiver
+    ) internal returns (uint256, uint256) {
+        _verifySenderMigrator(_controlTower);
+        uint256 newDebtIndex = _checkpointIR();
+
+        uint256 uDebtShares = userDebtShares[account];
+        uint256 debtUser = _convertToAmount(uDebtShares, newDebtIndex);
+        uint256 newCollatBalance = collateralBalances[account] - collateralToRemove;
+        uint256 sharesToRemove;
+        uint256 newUserDebt;
+
+        // Debt to remove from source market is bigger than the one to repay
+        require(debtToRemove >= debtToRepay, DebtToRepayTooBig());
+
+        // All the debt is removed from marketFrom
+        if (debtToRemove >= debtUser) {
+            sharesToRemove = uDebtShares;
+            debtToRemove = debtUser;
+
+            // All the user debt is repaid from marketFrom
+            if (debtToRepay >= debtUser) {
+                debtToRepay = debtUser;
+            }
+        }
+        // Only a part of the debt is removed from marketFrom
+        else {
+            sharesToRemove = _convertToShares(debtToRemove, newDebtIndex);
+            newUserDebt = debtUser - debtToRemove;
+            // We check both condition on minimum loan and maxLTV
+            // Dont need to check them when the new user debt is equal to 0
+            _verifyMinimumDebt(newUserDebt);
+            _verifyMaxLTV(newCollatBalance, newUserDebt);
+        }
+
+        uint256 newUDebtShares = uDebtShares - sharesToRemove;
+        // Update user and total debts and collaterals.
+        _updateCollatAndDebts(account, newCollatBalance, totalCollateral - collateralToRemove, newUDebtShares, totalDebtShares - sharesToRemove);
+        // Transfer the collateral :
+        //      - Zapping proxy, if collats are different
+        //      OR
+        //      - Market to, if collats are the same
+        _transferCollateralWithdraw(receiver, collateralToRemove);
+
+        // If some debt are to repay, burn it from the caller of the migrator
+        if (debtToRepay != 0) {
+            _burnUSG(account, debtToRepay);
+        }
+
+        return (debtToRemove - debtToRepay, newUDebtShares);
+    }
+
+    function _migrateTo(IControlTower _controlTower, address account, uint256 collatToAdd, uint256 debtToAdd) internal returns (uint256) {
+        _verifySenderMigrator(_controlTower);
+        _verifyIsDepositNotPaused();
+        _verifyIsBorrowNotPaused();
+        uint256 debtIndex = _checkpointIR();
+
+        uint256 uDebtShares = userDebtShares[account];
+        uint256 newUserDebt = _convertToAmount(uDebtShares, debtIndex) + debtToAdd;
+        uint256 newCollatBalance = collateralBalances[account] + collatToAdd;
+        uint256 sharesToAdd = _convertToShares(debtToAdd, debtIndex);
+        uint256 newTotalDebtShares = totalDebtShares + sharesToAdd;
+        uint256 newUserDebtShares = uDebtShares + sharesToAdd;
+
+        // We check both condition on minimum loan and maxLTV
+        // Dont need to check them when the new user debt is equal to 0
+        if (newUserDebt != 0) {
+            _verifyMinimumDebt(newUserDebt);
+            _verifyMaxLTV(newCollatBalance, newUserDebt);
+            _verifyDebtCap(badDebt, newTotalDebtShares, debtIndex);
+        }
+
+        _updateCollatAndDebts(account, newCollatBalance, totalCollateral + collatToAdd, newUserDebtShares, newTotalDebtShares);
+        _postDeposit(collatToken);
+
+        return newUserDebtShares;
     }
 }

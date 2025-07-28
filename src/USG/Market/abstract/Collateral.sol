@@ -38,6 +38,8 @@ abstract contract Collateral is DebtIR, ICollateral {
     /// @notice Total collateral deposited across all users
     uint256 public totalCollateral;
 
+    uint256 public collatDecimals;
+
     /// @notice Mapping of user address to their collateral balance
     mapping(address => uint256) public collateralBalances;
 
@@ -48,6 +50,8 @@ abstract contract Collateral is DebtIR, ICollateral {
     error LiquidationFeeTooHigh();
     error MaxLTVTooHigh();
     error MaxLTVTooLow();
+    error OverMaxLTV();
+    error ZeroCollatAmount();
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     OWNER ACTIONS 
@@ -140,15 +144,6 @@ abstract contract Collateral is DebtIR, ICollateral {
     }
 
     /**
-     * @notice Returns the price at which the user's position would be liquidated
-     * @param account Address of the user
-     * @return Liquidation price in USD (1e18 base)
-     */
-    function liquidationPrice(address account) public view returns (uint256) {
-        return ((userDebt(account) * DENOMINATOR) * 1e18) / (collateralBalances[account] * liquidationThreshold);
-    }
-
-    /**
      * @notice Returns both user collateral balance and total system collateral
      * @param account Address of the user
      * @return balance User's collateral balance
@@ -168,7 +163,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Borrow limit in USG
      */
     function _maxBorrowable(uint256 collatAmount) internal view returns (uint256) {
-        return (maxLTV * _positionValue(collatAmount)) / DENOMINATOR;
+        return _mulDiv(maxLTV, _positionValue(collatAmount), DENOMINATOR);
     }
 
     /**
@@ -184,7 +179,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Value in USD (1e18 base)
      */
     function _positionValue(uint256 collatAmount) internal view returns (uint256) {
-        return (collatAmount * _collateralPrice()) / 1 ether;
+        return _mulDiv(collatAmount, _collateralPrice(), 1 ether);
     }
 
     /**
@@ -206,7 +201,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Max borrowable amount
      */
     function _maxBorrowable(address account) internal view returns (uint256) {
-        return (maxLTV * _positionValue(account)) / DENOMINATOR;
+        return _mulDiv(maxLTV, _positionValue(account), DENOMINATOR);
     }
 
     /**
@@ -215,6 +210,14 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Value in USD (1e18 base)
      */
     function _positionValue(address account) internal view returns (uint256) {
-        return (collateralBalances[account] * _collateralPrice()) / 1 ether;
+        return _mulDiv(collateralBalances[account], _collateralPrice(), 10 ** collatDecimals);
+    }
+
+    function _verifyMaxLTV(uint256 collatAmount, uint256 debt) internal view {
+        require(_maxBorrowable(collatAmount) >= debt, OverMaxLTV());
+    }
+
+    function _verifyCollatInputNotZero(uint256 collatAmount) internal pure {
+        require(collatAmount != 0, ZeroCollatAmount());
     }
 }

@@ -11,7 +11,10 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
 
     function setUp() public {
         vm.startPrank(usr1);
-        ZapCallErrorReentrancy = abi.encodeWithSelector(ZappingProxy.ZapCallError.selector, abi.encodeWithSelector(ReentrancyGuardTransient.ReentrancyGuardReentrantCall.selector));
+        ZapCallErrorReentrancy = abi.encodeWithSelector(
+            ZappingProxy.ZapCallError.selector,
+            abi.encodeWithSelector(LightReentrancyGuardTransient.ReentrancyGuardReentrantCall.selector)
+        );
 
         deal(address(AddrClassicERC20.USDT), usr1, amountIn);
         AddrClassicERC20.USDT.forceApprove(address(vsTan), MAX_UINT);
