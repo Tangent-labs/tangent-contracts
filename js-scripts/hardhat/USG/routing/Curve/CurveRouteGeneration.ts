@@ -66,7 +66,7 @@ export class CurveRouteGeneration {
                 });
             }
             liquidationAssets["USG*"] = addressesData.tokens.USG;
-            liquidationAssets["TAN*"] = addressesData.tokens.USG;
+            liquidationAssets["TAN*"] = addressesData.tokens.TAN;
 
             console.log("Dynamic assets loaded successfully");
         } catch (error) {
