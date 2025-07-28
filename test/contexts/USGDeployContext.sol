@@ -12,8 +12,8 @@ import "../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../src/libs/Resources/ResourcesPendle.sol";
 import "../../src/libs/Resources/ResourcesYearn.sol";
 
-import "../../src/USG/Tokens/VsTan.sol";
-import "../../src/USG/Tokens/Tan.sol";
+import "../../src/USG/Tokens/VsTAN.sol";
+import "../../src/USG/Tokens/TAN.sol";
 import "../../src/USG/Tokens/USG.sol";
 import "../../src/USG/Tokens/WStable.sol";
 import "../../src/USG/Utilities/RewardAccumulator.sol";
@@ -75,8 +75,8 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public marketBasicERC20Implem;
 
     USG public usg;
-    Tan public tan;
-    VsTan public vsTan;
+    TAN public tan;
+    VsTAN public vsTan;
     USG public USGBase;
     IYearnV3Vault public sUSG;
     RewardAccumulator public rewardAccumulator;
@@ -109,7 +109,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         controlTower = new ControlTower(owner, feeTreasury);
 
-        tan = new Tan(owner);
+        tan = new TAN(owner);
 
         // Deploy USG on Base
         // USGBase = deployUSG(baseFork, l0EndpointBase);
@@ -141,7 +141,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         usg.transfer(address(sUSG), 500 ether);
         sUSG.process_report(address(sUSG));
 
-        vsTan = new VsTan(owner, controlTower, tan, usg, sUSG, zappingProxy);
+        vsTan = new VsTAN(owner, controlTower, tan, usg, sUSG, zappingProxy);
         vsTan.addNewReward(usg);
 
         mockRouter = new MockRouter();
@@ -154,8 +154,8 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(usg), "USG");
         vm.label(address(sUSG), "sUSG");
         vm.label(address(controlTower), "ControlTower");
-        vm.label(address(tan), "Tan");
-        vm.label(address(vsTan), "VsTan");
+        vm.label(address(tan), "TAN");
+        vm.label(address(vsTan), "VsTAN");
 
         vm.label(address(AddrRouter.ENSO_ROUTER_V1), "Enso Router V1");
         vm.label(address(AddrRouter.ENSO_ROUTER_V2), "Enso Router V2");
@@ -171,7 +171,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         vm.stopPrank();
 
-        lpDeploymentContext = new LpDeploymentContext(owner, usg);
+        lpDeploymentContext = new LpDeploymentContext(owner, usg, tan);
     }
 
     function getBytecodeWithConstructorArgs() public view returns (bytes memory) {

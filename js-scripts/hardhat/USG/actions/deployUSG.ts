@@ -22,7 +22,7 @@ export async function deployUSG(userCount: number = 5) {
 
     await wStableContext.deployWStables(baseContext);
     // Create USG LP
-    await lpDeployContext.deployAllUSGLps(baseContext, wStableContext);
+    await lpDeployContext.deployAllTangentLps(baseContext, wStableContext);
 
     // Setup and create all oracles
     await oracleContext.deployAndSetupOracles(baseContext, lpDeployContext);

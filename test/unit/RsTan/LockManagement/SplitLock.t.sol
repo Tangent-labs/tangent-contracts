@@ -58,21 +58,21 @@ contract SplitLock is MarketDeploymentContext {
     function test_split_fails_bcs_token_not_owned() external {
         vm.startPrank(usr2);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.NotTokenOwner.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.NotTokenOwner.selector));
         vsTan.split(2, 100);
     }
 
     function test_split_fails_bcs_split_more_than_balance() external {
         vm.startPrank(usr1);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.BiggerThanInitialPosition.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.BiggerThanInitialPosition.selector));
         vsTan.split(2, amount1);
     }
 
     function test_split_fails_bcs_split_and_remove_zero() external {
         vm.startPrank(usr1);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.ZeroAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.ZeroAmount.selector));
         vsTan.split(2, 0);
     }
 
@@ -81,7 +81,7 @@ contract SplitLock is MarketDeploymentContext {
 
         skip(vsTan.LOCK_DURATION());
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.LockExpired.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.LockExpired.selector));
         vsTan.split(2, 1 ether);
     }
 }

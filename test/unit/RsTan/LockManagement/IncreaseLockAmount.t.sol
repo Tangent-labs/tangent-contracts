@@ -109,7 +109,7 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         vm.stopPrank();
 
         vm.startPrank(usr2);
-        vm.expectRevert(abi.encodeWithSelector(VsTan.NotTokenOwner.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.NotTokenOwner.selector));
         vsTan.increaseLockAmount(1, 1);
     }
 
@@ -119,7 +119,7 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         tan.approve(address(vsTan), 1 ether);
         vsTan.createLock(1 ether, true);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.ZeroAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.ZeroAmount.selector));
         vsTan.increaseLockAmount(1, 0);
     }
 
@@ -130,7 +130,7 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         vsTan.createLock(1 ether, false);
 
         skip(vsTan.LOCK_DURATION());
-        vm.expectRevert(abi.encodeWithSelector(VsTan.LockExpired.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.LockExpired.selector));
         vsTan.increaseLockAmount(1, 1);
     }
 }

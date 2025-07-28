@@ -45,14 +45,14 @@ contract TogglePermaLock is MarketDeploymentContext {
         vm.startPrank(usr1);
         skip(13 weeks);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.LockExpired.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.LockExpired.selector));
         vsTan.togglePermaLock(2);
     }
 
     function test_togglePermaLock_fails_bcs_token_not_owned() external {
         vm.startPrank(usr2);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.NotTokenOwner.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.NotTokenOwner.selector));
         vsTan.togglePermaLock(2);
     }
 }

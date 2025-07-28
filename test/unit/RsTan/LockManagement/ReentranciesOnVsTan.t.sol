@@ -29,7 +29,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.createLock.selector, amountIn, true)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.createLock.selector, amountIn, true)})
             })
         );
     }
@@ -45,7 +45,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 zap: ZapStruct({
                     router: address(vsTan),
                     routerCall: abi.encodeWithSelector(
-                        VsTan.zapCreateLock.selector,
+                        VsTAN.zapCreateLock.selector,
                         true,
                         ZapStructDeposit({tokenIn: AddrClassicERC20.USDT, amountIn: amountIn, minAmountOut: 0, zap: ZapStruct({router: address(vsTan), routerCall: ""})})
                     )
@@ -63,7 +63,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.increaseLockAmount.selector, 1, amountIn)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.increaseLockAmount.selector, 1, amountIn)})
             })
         );
     }
@@ -79,7 +79,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 zap: ZapStruct({
                     router: address(vsTan),
                     routerCall: abi.encodeWithSelector(
-                        VsTan.zapIncreaseLockAmount.selector,
+                        VsTAN.zapIncreaseLockAmount.selector,
                         1,
                         ZapStructDeposit({tokenIn: AddrClassicERC20.USDT, amountIn: amountIn, minAmountOut: 0, zap: ZapStruct({router: address(vsTan), routerCall: ""})})
                     )
@@ -97,7 +97,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.increaseLockTime.selector, 1)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.increaseLockTime.selector, 1)})
             })
         );
     }
@@ -111,7 +111,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.togglePermaLock.selector, 1)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.togglePermaLock.selector, 1)})
             })
         );
     }
@@ -125,7 +125,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.unlock.selector, 1, false)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.unlock.selector, 1, false)})
             })
         );
     }
@@ -139,7 +139,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.rageQuit.selector, 1, false)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.rageQuit.selector, 1, false)})
             })
         );
     }
@@ -153,7 +153,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.kickPosition.selector, 1, usr1)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.kickPosition.selector, 1, usr1)})
             })
         );
     }
@@ -167,7 +167,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.split.selector, 1, 100 ether)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.split.selector, 1, 100 ether)})
             })
         );
     }
@@ -181,7 +181,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.merge.selector, 1, 2, true)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.merge.selector, 1, 2, true)})
             })
         );
     }
@@ -195,7 +195,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.claimSimple.selector, 1, true)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.claimSimple.selector, 1, true)})
             })
         );
     }
@@ -210,7 +210,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.claimMultiple.selector, tokens, true)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.claimMultiple.selector, tokens, true)})
             })
         );
     }
@@ -224,7 +224,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.getRewardData.selector, usg)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.getRewardData.selector, usg)})
             })
         );
     }
@@ -238,7 +238,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.lastTimeRewardApplicable.selector, usg)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.lastTimeRewardApplicable.selector, usg)})
             })
         );
     }
@@ -252,7 +252,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.rewardPerToken.selector, usg)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.rewardPerToken.selector, usg)})
             })
         );
     }
@@ -266,7 +266,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.nextEndLockTime.selector)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.nextEndLockTime.selector)})
             })
         );
     }
@@ -280,7 +280,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.getLock.selector, 1)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.getLock.selector, 1)})
             })
         );
     }
@@ -294,7 +294,7 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.USDT,
                 amountIn: amountIn,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTan.claimableRewards.selector, 1)})
+                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.claimableRewards.selector, 1)})
             })
         );
     }

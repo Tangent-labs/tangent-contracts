@@ -11,7 +11,7 @@ contract CreateLock is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(tan), usr1, amount1);
 
-        verifyReceiveERC20(tan, address(vsTan), amount1, "Rs Tan receive TAN");
+        verifyReceiveERC20(tan, address(vsTan), amount1, "Rs TAN receive TAN");
         verifyLostERC20(tan, usr1, amount1, "User 1 lost TAN");
 
         tan.approve(address(vsTan), amount1);
@@ -36,7 +36,7 @@ contract CreateLock is MarketDeploymentContext {
         vm.startPrank(usr2);
         deal(address(tan), usr2, amount2);
 
-        verifyReceiveERC20(tan, address(vsTan), amount2, "Rs Tan receive TAN");
+        verifyReceiveERC20(tan, address(vsTan), amount2, "Rs TAN receive TAN");
         verifyLostERC20(tan, usr2, amount2, "User 2 lost TAN");
 
         uint256 expectedEndTime = ((block.timestamp + vsTan.LOCK_DURATION()) / 1 weeks) * 1 weeks;
@@ -59,7 +59,7 @@ contract CreateLock is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(tan), usr1, amount2);
 
-        verifyReceiveERC20(tan, address(vsTan), amount2, "Rs Tan receive TAN");
+        verifyReceiveERC20(tan, address(vsTan), amount2, "Rs TAN receive TAN");
         verifyLostERC20(tan, usr1, amount2, "User 1 lost TAN");
 
         expectedEndTime = ((block.timestamp + vsTan.LOCK_DURATION()) / 1 weeks) * 1 weeks;
@@ -82,7 +82,7 @@ contract CreateLock is MarketDeploymentContext {
         deal(address(tan), usr1, 1 ether);
         tan.approve(address(vsTan), 1 ether);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.ZeroAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.ZeroAmount.selector));
         vsTan.createLock(0, true);
     }
 }

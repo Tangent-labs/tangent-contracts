@@ -4,9 +4,12 @@ pragma solidity ^0.8.24;
 import "../../interfaces/externals/Curve/ICurveStable.sol";
 import "../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../interfaces/externals/Curve/ICurveStableSwapFactoryNG.sol";
+import "../../interfaces/externals/Curve/ICurveCryptoSwapFactoryNG.sol";
+
 import "../../interfaces/externals/Curve/ICurveTriStable.sol";
 
 import "../../interfaces/externals/Curve/ICurveTriCryptoSwap.sol";
+
 import "../../interfaces/externals/Curve/ICurveCryptoSwap.sol";
 
 library AddrCurveStableLP {
@@ -39,6 +42,8 @@ library AddrCurveStableLP {
 }
 
 library AddrCryptoSwapLP {
+    ICurveCryptoSwapFactoryNG constant CRYPTO_SWAP_FACTORY = ICurveCryptoSwapFactoryNG(0x98EE851a00abeE0d95D08cF4CA2BdCE32aeaAF7F);
+
     // TRI
     ICurveTriCryptoSwap constant USDT_WBTC_ETH = ICurveTriCryptoSwap(0xf5f5B97624542D72A9E06f04804Bf81baA15e2B4);
     ICurveTriCryptoSwap constant USDC_WBTC_ETH = ICurveTriCryptoSwap(0x7F86Bf177Dd4F3494b841a37e810A34dD56c829B);

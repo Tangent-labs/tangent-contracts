@@ -18,8 +18,8 @@ ignored_error_codes = [
     2072, # Unuesed local variable
 ]
 
-optimizer = true
-optimizer-runs = 10_000_000
+# optimizer = true
+# optimizer-runs = 10_000_000
 # dynamic_test_linking=true
 fs_permissions = [{ access = "read-write", path = "./" }]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
