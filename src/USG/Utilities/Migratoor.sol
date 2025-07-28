@@ -14,9 +14,9 @@ import {IZappingProxy} from "../../interfaces/internals/USG/IZappingProxy.sol";
 import {ZapStruct} from "../../interfaces/internals/ICommonStruct.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-/// @title Migratoor
-/// @notice This contract is used to zap tokens in and out of the system. Tokens are transiting to this contract and are pulled by the router passed in parameters.
-///         NO TOKENS SHOULD BE SEND DIRECTLY HERE OR THEY WILL BE POTENTIALLY IMMEDIATLY STOLEN
+/// @title  Migratoor
+/// @notice This contract is used fully or partially migrate a position to an other market.
+///         It prevent user to repay, withdraw, swap his collateral by himself etc.
 
 contract Migratoor is LightReentrancyGuardTransient {
     IUSG public usg;
