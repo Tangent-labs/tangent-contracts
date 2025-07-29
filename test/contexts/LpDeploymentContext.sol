@@ -13,8 +13,6 @@ import "../../src/interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../src/interfaces/externals/Curve/ICurveCryptoSwap.sol";
 import "../utils/Array.sol";
 
-import "forge-std/console.sol";
-
 contract LpDeploymentContext is StdCheats, StdUtils, Test {
     using SafeERC20 for IERC20Metadata;
     uint256 public constant MAX_UINT = uint256(int256(-1));
@@ -106,10 +104,8 @@ contract LpDeploymentContext is StdCheats, StdUtils, Test {
 
         otherToken.approve(address(_tanETHLp), MAX_UINT);
         tan.approve(address(_tanETHLp), MAX_UINT);
-        console.log("dava");
         _tanETHLp.add_liquidity([uint256(200 * 10 ** 18), uint256(3_330_000 * 10 ** 18)], uint256(0));
 
-        console.log("zaza");
         vm.label(address(_tanETHLp), "TAN-ETH LP");
         tanETHLp = _tanETHLp;
 

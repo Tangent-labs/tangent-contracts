@@ -20,6 +20,10 @@ contract Encoder {
         return abi.encodeWithSelector(bytes4(keccak256("exchange(address[11],uint256[5][5],uint256,uint256,address[5],address)")), curveRouterSwap);
     }
 
+    function encodeLiquidateCallForPendlePT(address market, uint256 amountIn) public pure returns (bytes memory) {
+        return abi.encodeWithSelector(bytes4(keccak256("swapPtForUSG(uint256,uint256)")), market, amountIn);
+    }
+
     function createCurveRouterStruct(
         address[] calldata route,
         uint256[][] calldata swapParams,

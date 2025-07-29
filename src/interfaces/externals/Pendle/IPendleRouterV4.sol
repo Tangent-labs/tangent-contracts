@@ -1,79 +1,79 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+struct TokenOutput {
+    address tokenOut;
+    uint256 minTokenOut;
+    address tokenRedeemSy;
+    address pendleSwap;
+    SwapData swapData;
+}
+
+enum OrderType {
+    Ask,
+    Bid
+}
+
+enum SwapType {
+    NONE,
+    KYBERSWAP,
+    ONEINCH,
+    OTHER
+}
+
+struct Order {
+    uint256 salt;
+    uint256 expiry;
+    uint256 nonce;
+    OrderType orderType;
+    address token;
+    address YT;
+    address maker;
+    address receiver;
+    uint256 makingAmount;
+    uint256 lnImpliedRate;
+    uint256 failSafeRate;
+    bytes permit;
+}
+
+struct FillOrderParams {
+    Order order;
+    bytes signature;
+    uint256 makingAmount;
+}
+
+struct LimitOrderData {
+    address limitRouter;
+    uint256 epsSkipMarket;
+    FillOrderParams[] normalFills;
+    FillOrderParams[] flashFills;
+    bytes optData;
+}
+
+struct SwapData {
+    SwapType swapType;
+    address extRouter;
+    bytes extCalldata;
+    bool needScale;
+}
+
+struct TokenInput {
+    address tokenIn;
+    uint256 netTokenIn;
+    address tokenMintSy;
+    address pendleSwap;
+    SwapData swapData;
+}
+
+struct ApproxParams {
+    uint256 guessMin;
+    uint256 guessMax;
+    uint256 guessOffchain;
+    uint256 maxIteration;
+    uint256 eps;
+}
+
 interface IPendleRouterV4 {
-    enum OrderType {
-        Ask,
-        Bid
-    }
-
-    enum SwapType {
-        NONE,
-        KYBERSWAP,
-        ONEINCH,
-        OTHER
-    }
-
-    struct Order {
-        uint256 salt;
-        uint256 expiry;
-        uint256 nonce;
-        OrderType orderType;
-        address token;
-        address YT;
-        address maker;
-        address receiver;
-        uint256 makingAmount;
-        uint256 lnImpliedRate;
-        uint256 failSafeRate;
-        bytes permit;
-    }
-
-    struct FillOrderParams {
-        Order order;
-        bytes signature;
-        uint256 makingAmount;
-    }
-
-    struct LimitOrderData {
-        address limitRouter;
-        uint256 epsSkipMarket;
-        FillOrderParams[] normalFills;
-        FillOrderParams[] flashFills;
-        bytes optData;
-    }
-
-    struct SwapData {
-        SwapType swapType;
-        address extRouter;
-        bytes extCalldata;
-        bool needScale;
-    }
-
-    struct TokenOutput {
-        address tokenOut;
-        uint256 minTokenOut;
-        address tokenRedeemSy;
-        address pendleSwap;
-        SwapData swapData;
-    }
-
-    struct TokenInput {
-        address tokenIn;
-        uint256 netTokenIn;
-        address tokenMintSy;
-        address pendleSwap;
-        SwapData swapData;
-    }
-
-    struct ApproxParams {
-        uint256 guessMin;
-        uint256 guessMax;
-        uint256 guessOffchain;
-        uint256 maxIteration;
-        uint256 eps;
-    }
-
     error MarketExchangeRateBelowOne(int256 exchangeRate);
     error MarketExpired();
     error MarketProportionMustNotEqualOne();
