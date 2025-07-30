@@ -11,8 +11,6 @@ struct PendlePTToSY {
     IPendleSYToken sy;
     address tokenOut;
     uint256 ptAmount;
-    uint256 minSYOut;
-    uint256 minTokenOutOut;
 }
 
 struct PendleSYToPT {
@@ -20,12 +18,12 @@ struct PendleSYToPT {
     IERC20 pt;
     IPendleSYToken sy;
     address tokenIn;
-    uint256 syAmount;
+    address receiver;
+    uint256 tokenInAmount;
     uint256 minPTOut;
-    uint256 minTokenOutOut;
 }
 
-struct CurveRouterExchange {
+struct CurveRouterSwapNoAmount {
     address[11] _route;
     uint256[5][5] _swap_params;
     uint256 _min_dy;
@@ -33,4 +31,7 @@ struct CurveRouterExchange {
     address _receiver;
 }
 
-interface IPendleCurveRouter {}
+interface IPendleCurveRouter {
+    function swapPTForToken(PendlePTToSY calldata PTToSY, CurveRouterSwapNoAmount calldata crvRouterData) external returns (uint256);
+    function swapTokenForPT(PendleSYToPT calldata SYToPT, CurveRouterSwapNoAmount calldata crvRouterData) external returns (uint256);
+}

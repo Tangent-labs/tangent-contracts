@@ -59,6 +59,14 @@ library Array {
         return array;
     }
 
+    function memoryAddress(address[9] memory addresses) public pure returns (address[] memory) {
+        address[] memory array = new address[](addresses.length);
+        for (uint i = 0; i < addresses.length; i++) {
+            array[i] = addresses[i];
+        }
+        return array;
+    }
+
     function memoryIERC20(IERC20Metadata[1] memory addresses) public pure returns (IERC20Metadata[] memory) {
         IERC20Metadata[] memory array = new IERC20Metadata[](addresses.length);
         for (uint i = 0; i < addresses.length; i++) {

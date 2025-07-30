@@ -3,6 +3,8 @@ pragma solidity ^0.8.24;
 
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {IPendleMarketV3} from "../../interfaces/externals/Pendle/IPendleMarketV3.sol";
+import {IPendlePTToken} from "../../interfaces/externals/Pendle/IPendlePTToken.sol";
+import {IPendleSYToken} from "../../interfaces/externals/Pendle/IPendleSYToken.sol";
 
 library AddrMarketPendle {
     IPendleMarketV3 constant eUSDe_29_05_25 = IPendleMarketV3(0x85667e484a32d884010Cf16427D90049CCf46e97);
@@ -16,4 +18,8 @@ library AddrPTPendle {
     IERC20Metadata constant eBTC_26_06_25 = IERC20Metadata(0xc653F79de1274eE65674BeFda54986020d6f8FC1);
     IERC20Metadata constant sUSDe_31_07_25 = IERC20Metadata(0x3b3fB9C57858EF816833dC91565EFcd85D96f634);
     IERC20Metadata constant wstUSR_25_07_25 = IERC20Metadata(0x23E60d1488525bf4685f53b3aa8E676c30321066);
+}
+
+library AddrSYPendle {
+    IPendleSYToken constant sUSDe_31_07_25 = IPendleSYToken(0xF541AA4d6f29ec2423A0D306dBc677021A02DBC0);
 }

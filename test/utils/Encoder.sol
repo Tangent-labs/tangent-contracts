@@ -2,6 +2,9 @@
 pragma solidity ^0.8.0;
 
 import {CurveRouterSwap} from "../../src/interfaces/internals/USG/ICurveLPLiquidator.sol";
+import {IPendleCurveRouter, CurveRouterSwapNoAmount, PendlePTToSY, PendleSYToPT} from "../../src/interfaces/internals/USG/IPendleCurveRouter.sol";
+
+import {ICurveRouter} from "../../src/interfaces/externals/Curve/ICurveRouter.sol";
 import {ZapStruct} from "../../src/interfaces/internals/ICommonStruct.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -17,11 +20,15 @@ contract Encoder {
     }
 
     function encodeLiquidateCallForCurveLP(CurveRouterSwap calldata curveRouterSwap) public pure returns (bytes memory) {
-        return abi.encodeWithSelector(bytes4(keccak256("exchange(address[11],uint256[5][5],uint256,uint256,address[5],address)")), curveRouterSwap);
+        return abi.encodeWithSelector(ICurveRouter.exchange.selector, curveRouterSwap);
     }
 
-    function encodeLiquidateCallForPendlePT(address market, uint256 amountIn) public pure returns (bytes memory) {
-        return abi.encodeWithSelector(bytes4(keccak256("swapPtForUSG(uint256,uint256)")), market, amountIn);
+    function encodeLiquidateCallForPendlePT(PendlePTToSY calldata pendlePTToSY, CurveRouterSwapNoAmount calldata curveSwapParams) public pure returns (bytes memory) {
+        return abi.encodeWithSelector(IPendleCurveRouter.swapPTForToken.selector, pendlePTToSY, curveSwapParams);
+    }
+
+    function encodeLeverageCallForPendlePT(PendleSYToPT calldata pendleSYToPT, CurveRouterSwapNoAmount calldata curveSwapParams) public pure returns (bytes memory) {
+        return abi.encodeWithSelector(IPendleCurveRouter.swapTokenForPT.selector, pendleSYToPT, curveSwapParams);
     }
 
     function createCurveRouterStruct(
@@ -31,6 +38,24 @@ contract Encoder {
         uint256 minDy,
         address receiver
     ) public pure returns (CurveRouterSwap memory) {
+        (address[11] memory _route, uint256[5][5] memory _swapParams) = _prepareCurveRouterArrays(route, swapParams);
+        address[5] memory pools;
+        return CurveRouterSwap({_route: _route, _swap_params: _swapParams, _amount: amount, _min_dy: minDy, _pools: pools, _receiver: receiver});
+    }
+
+    function createCurveRouterNoAmountStruct(
+        address[] calldata route,
+        uint256[][] calldata swapParams,
+        uint256 minDy,
+        address receiver
+    ) public pure returns (CurveRouterSwapNoAmount memory) {
+        (address[11] memory _route, uint256[5][5] memory _swapParams) = _prepareCurveRouterArrays(route, swapParams);
+        address[5] memory pools;
+
+        return CurveRouterSwapNoAmount({_route: _route, _swap_params: _swapParams, _min_dy: minDy, _pools: pools, _receiver: receiver});
+    }
+
+    function _prepareCurveRouterArrays(address[] calldata route, uint256[][] calldata swapParams) internal pure returns (address[11] memory, uint256[5][5] memory) {
         uint256 ZERO = 0;
         address[11] memory _route = [address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0), address(0)];
 
@@ -50,7 +75,7 @@ contract Encoder {
                 _swapParams[i][j] = swapParams[i][j];
             }
         }
-        address[5] memory pools;
-        return CurveRouterSwap({_route: _route, _swap_params: _swapParams, _amount: amount, _min_dy: minDy, _pools: pools, _receiver: receiver});
+
+        return (_route, _swapParams);
     }
 }

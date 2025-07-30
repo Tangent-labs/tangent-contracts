@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IPendleSYToken {
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+interface IPendleSYToken is IERC20 {
     // Errors
     error SYInsufficientSharesOut(uint256 actualSharesOut, uint256 requiredSharesOut);
     error SYInsufficientTokenOut(uint256 actualTokenOut, uint256 requiredTokenOut);
@@ -11,7 +13,6 @@ interface IPendleSYToken {
     error SYZeroRedeem();
 
     // Events
-    event Approval(address indexed owner, address indexed spender, uint256 value);
     event ClaimRewards(address indexed user, address[] rewardTokens, uint256[] rewardAmounts);
     event Deposit(address indexed caller, address indexed receiver, address indexed tokenIn, uint256 amountDeposited, uint256 amountSyOut);
     event EIP712DomainChanged();
@@ -20,7 +21,6 @@ interface IPendleSYToken {
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
     event Paused(address account);
     event Redeem(address indexed caller, address indexed receiver, address indexed tokenOut, uint256 amountSyToRedeem, uint256 amountTokenOut);
-    event Transfer(address indexed from, address indexed to, uint256 value);
     event Unpaused(address account);
 
     // Functions

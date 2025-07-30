@@ -2,44 +2,69 @@
 pragma solidity ^0.8.24;
 import "../../../../contexts/MarketDeploymentContext.sol";
 
-import "../../../../handler/Features/BorrowRepay/HBorrow.sol";
-import "../../../../handler/Curve/HLPManipulator.sol";
-import "../../../../handler/Features/HProcessRewards.sol";
-import "../../../../handler/Features/ConvexCrv/HDepositConvexCrvLP.sol";
-import "../../../../handler/Features/ConvexFxn/HDepositConvexFxnLP.sol";
-
-import "../../../../../src/USG/Utilities/PendleCurveRouter.sol";
 contract PTLiquidations is MarketDeploymentContext {
-    BasicERC20Market public marketGho;
+    BasicERC20Market public marketSUSDe;
 
     IERC20Metadata public collatToken;
 
-    PendleCurveRouter public pendleCurveRouter;
+    uint256 constant ptAmount = 100_000 ether;
 
     function setUp() public {
         collatToken = AddrPTPendle.sUSDe_31_07_25;
 
-        marketGho = deployBasicERC20Market(collatToken);
+        marketSUSDe = deployBasicERC20Market(collatToken);
 
-        pendleCurveRouter = new PendleCurveRouter();
+        deal(address(collatToken), address(usr1), ptAmount);
+
+        vm.startPrank(usr1);
+
+        collatToken.approve(address(marketSUSDe), MAX_UINT);
+        marketSUSDe.depositAndBorrow(ptAmount, 50_000 ether);
     }
 
-    function test_secondaryLiquidator_liquidate_PT() external {
-        // Liquidation passes after IR increased the user debt over the liquidation threshold
+    function test_liquidate_PT() external {
+        uint256[][] memory swapParams = new uint256[][](4);
+        swapParams[0] = Array.memoryUint256([uint256(1), uint256(0), uint256(1), uint256(10), uint256(2)]);
+        swapParams[1] = Array.memoryUint256([uint256(1), uint256(0), uint256(9), uint256(0), uint256(0)]);
+        swapParams[2] = Array.memoryUint256([uint256(0), uint256(1), uint256(1), uint256(1), uint256(3)]);
+        swapParams[3] = Array.memoryUint256([uint256(0), uint256(1), uint256(1), uint256(1), uint256(2)]);
 
-        deal(address(collatToken), address(pendleCurveRouter), 100 ether);
+        marketSUSDe.selfLiquidate(
+            50_000 ether,
+            20_000 ether,
+            0,
+            ZapStruct({
+                router: address(pendleCurveRouter),
+                routerCall: encoder.encodeLiquidateCallForPendlePT(
+                    PendlePTToSY({
+                        market: address(AddrMarketPendle.sUSDe_31_07_25),
+                        pt: AddrPTPendle.sUSDe_31_07_25,
+                        sy: AddrSYPendle.sUSDe_31_07_25,
+                        tokenOut: address(AddrERC4626.sUSDe),
+                        ptAmount: 50_000 ether
+                    }),
+                    encoder.createCurveRouterNoAmountStruct(
+                        Array.memoryAddress(
+                            [
+                                address(AddrERC4626.sUSDe),
+                                address(AddrCurveStableLP.sDAI_sUSDe),
+                                address(AddrERC4626.sDAI),
+                                address(AddrERC4626.sDAI),
+                                address(AddrClassicERC20.DAI),
+                                address(AddrCurveStableLP.TRI_USD_POOL),
+                                address(AddrClassicERC20.USDC),
+                                address(lpDeploymentContext.USGLPs("USG-USDC")),
+                                address(usg)
+                            ]
+                        ),
+                        swapParams,
+                        0,
+                        usr1
+                    )
+                )
+            })
+        );
 
-        (address sy, address pt, address yt) = AddrMarketPendle.sUSDe_31_07_25.readTokens();
-
-        pendleCurveRouter.swapPtForToken(PendlePTToSY({market: address(AddrMarketPendle.sUSDe_31_07_25), pt: address(AddrPTPendle.sUSDe_31_07_25)  sy :}));
-
-        AddrClassicERC20.USDe.balanceOf(address(pendleCurveRouter));
-        AddrERC4626.sUSDe.balanceOf(address(pendleCurveRouter));
-
-        // assertEq(market_crvUSD_USDC.userDebt(usr1), 0);
-        // assertEq(market_crvUSD_USDC.totalDebt(), 0);
-        // assertEq(market_crvUSD_USDC.totalCollateral(), 0);
-        // assertEq(market_crvUSD_USDC.collateralBalances(usr1), 0);
         vm.stopPrank();
     }
 }
