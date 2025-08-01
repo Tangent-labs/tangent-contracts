@@ -118,7 +118,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Amount of USG borrowable
      */
     function maxBorrowable(address account) external view returns (uint256) {
-        return _maxBorrowable(account);
+        return _maxBorrowable(account, true);
     }
 
     /**
@@ -127,7 +127,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Value in USD (1e18 precision)
      */
     function positionValue(address account) external view returns (uint256) {
-        return _positionValue(account);
+        return _positionValue(account, true);
     }
 
     /**
@@ -136,7 +136,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Health ratio (1e18 base); higher is safer
      */
     function healthRatio(address account) public view returns (uint256) {
-        return _healthRatio(userDebt(account), collateralBalances[account]);
+        return _healthRatio(userDebt(account), collateralBalances[account], true);
     }
 
     /**
@@ -167,15 +167,15 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @param collatAmount Amount of collateral
      * @return Borrow limit in USG
      */
-    function _maxBorrowable(uint256 collatAmount) internal view returns (uint256) {
-        return (maxLTV * _positionValue(collatAmount)) / DENOMINATOR;
+    function _maxBorrowable(uint256 collatAmount, bool isNoFailMode) internal view returns (uint256) {
+        return (maxLTV * _positionValue(collatAmount, isNoFailMode)) / DENOMINATOR;
     }
 
     /**
      * @dev Returns the current price of 1 unit of collateral in USD (1e18 precision)
      */
-    function _collateralPrice() internal view returns (uint256) {
-        return collatOracle.latestAnswer();
+    function _collateralPrice(bool isNoFailMode) internal view returns (uint256) {
+        return collatOracle.latestAnswer(isNoFailMode);
     }
 
     /**
@@ -183,8 +183,8 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @param collatAmount Amount of collateral
      * @return Value in USD (1e18 base)
      */
-    function _positionValue(uint256 collatAmount) internal view returns (uint256) {
-        return (collatAmount * _collateralPrice()) / 1 ether;
+    function _positionValue(uint256 collatAmount, bool isNoFailMode) internal view returns (uint256) {
+        return (collatAmount * _collateralPrice(isNoFailMode)) / 1 ether;
     }
 
     /**
@@ -193,9 +193,9 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @param collateralBalance Amount of collateral
      * @return Health ratio (1e18 base)
      */
-    function _healthRatio(uint256 userDebt_, uint256 collateralBalance) internal view returns (uint256) {
+    function _healthRatio(uint256 userDebt_, uint256 collateralBalance, bool isNoFailMode) internal view returns (uint256) {
         if (userDebt_ != 0) {
-            return (collateralBalance * _collateralPrice() * liquidationThreshold) / (userDebt_ * DENOMINATOR);
+            return (collateralBalance * _collateralPrice(isNoFailMode) * liquidationThreshold) / (userDebt_ * DENOMINATOR);
         }
         return MAX_UINT; // Fully healthy if no debt
     }
@@ -205,8 +205,8 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @param account Address of the user
      * @return Max borrowable amount
      */
-    function _maxBorrowable(address account) internal view returns (uint256) {
-        return (maxLTV * _positionValue(account)) / DENOMINATOR;
+    function _maxBorrowable(address account, bool isNoFailMode) internal view returns (uint256) {
+        return (maxLTV * _positionValue(account, isNoFailMode)) / DENOMINATOR;
     }
 
     /**
@@ -214,7 +214,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @param account Address of the user
      * @return Value in USD (1e18 base)
      */
-    function _positionValue(address account) internal view returns (uint256) {
-        return (collateralBalances[account] * _collateralPrice()) / 1 ether;
+    function _positionValue(address account, bool isNoFailMode) internal view returns (uint256) {
+        return (collateralBalances[account] * _collateralPrice(isNoFailMode)) / 1 ether;
     }
 }

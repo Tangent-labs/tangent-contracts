@@ -69,7 +69,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         IERC20Metadata collatToken = marketCollateral.collatToken();
         uint256 totalCollateral = marketCollateral.totalCollateral();
         IPriceOracle priceOracle = marketCollateral.collatOracle();
-        uint256 collateralUSDPrice = priceOracle.latestAnswer();
+        uint256 collateralUSDPrice = priceOracle.latestAnswer(true);
 
         return
             CollateralInfos({

@@ -40,7 +40,7 @@ contract StableSwapOracleTest is MarketDeploymentContext {
 
             IPriceOracle oracle = oracles[coin];
             assertNotEq(address(oracle), address(0), "Coin oracle not setup");
-            uint256 price = oracle.latestAnswer() * 10 ** (18 - oracle.decimals());
+            uint256 price = oracle.latestAnswer(true) * 10 ** (18 - oracle.decimals());
 
             usdValue += (price * lp.balances(i) * (10 ** (18 - coin.decimals()))) / 1e18;
         }
@@ -54,7 +54,7 @@ contract StableSwapOracleTest is MarketDeploymentContext {
 
             IPriceOracle lpOracle = oracles[lp];
             assertNotEq(address(lpOracle), address(0), "LP Oracle not setup");
-            uint256 lpOraclePrice = oracles[lp].latestAnswer();
+            uint256 lpOraclePrice = oracles[lp].latestAnswer(true);
             assertApproxEqRel(approx, lpOraclePrice, 10e15); // 1% maximum
         }
     }

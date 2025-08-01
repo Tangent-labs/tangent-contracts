@@ -48,10 +48,11 @@ contract OracleDuoPoolStable is OracleBase {
      * @notice Returns the latest price from the oracle
      * @return The price of the stable pool, adjusted to 18 decimals
      */
-    function latestAnswer() external view override returns (uint256) {
+    function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OracleDuoPoolStruct memory _params = params;
         return
-            (_params.lp.get_virtual_price() * min(_coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals), _coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals))) /
+            (_params.lp.get_virtual_price() *
+                min(_coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals, isNoFailMode), _coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals, isNoFailMode))) /
             10 ** 18;
     }
 

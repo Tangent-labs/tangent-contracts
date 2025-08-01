@@ -8,31 +8,31 @@ contract GetEthStableLPPrice is MarketDeploymentContext {
     uint256 pxETHDollarPrice;
     uint256 frxETHDollarPrice;
     function setUp() public {
-        ethPrice = IPriceOracle(address(AddrChainlinkOracle.ETH)).latestAnswer() * 10 ** 10;
+        ethPrice = IPriceOracle(address(AddrChainlinkOracle.ETH)).latestAnswer(true) * 10 ** 10;
 
         frxETHDollarPrice = (AddrCurveStableLP.WETH_frxETH.price_oracle() * ethPrice) / 10 ** 18;
         pxETHDollarPrice = (AddrCurveStableLP.WETH_pxETH.price_oracle(0) * ethPrice) / 10 ** 18;
     }
 
     function test_pxETH_price() external view {
-        assertEq(pxETHDollarPrice, oracles[AddrClassicERC20.pxETH].latestAnswer());
+        assertEq(pxETHDollarPrice, oracles[AddrClassicERC20.pxETH].latestAnswer(true));
         assertLt(pxETHDollarPrice, ethPrice, "Almost always true as its liquidStaking");
     }
 
     function test_frxETH_price() external view {
-        assertEq(frxETHDollarPrice, oracles[AddrClassicERC20.frxETH].latestAnswer());
+        assertEq(frxETHDollarPrice, oracles[AddrClassicERC20.frxETH].latestAnswer(true));
         assertLt(frxETHDollarPrice, ethPrice, "Almost always true as its liquidStaking");
     }
 
     function test_frxeth_ETH_oracle() external view {
         uint256 vp = AddrCurveStableLP.WETH_frxETH.get_virtual_price();
         uint256 min = ethPrice < frxETHDollarPrice ? ethPrice : frxETHDollarPrice;
-        assertEq(oracles[AddrCurveStableLP.WETH_frxETH].latestAnswer(), (min * vp) / 10 ** 18);
+        assertEq(oracles[AddrCurveStableLP.WETH_frxETH].latestAnswer(true), (min * vp) / 10 ** 18);
     }
 
     function test_pxETH_ETH_oracle() external view {
         uint256 vp = AddrCurveStableLP.WETH_pxETH.get_virtual_price();
         uint256 min = ethPrice < pxETHDollarPrice ? ethPrice : pxETHDollarPrice;
-        assertEq(oracles[AddrCurveStableLP.WETH_pxETH].latestAnswer(), (min * vp) / 10 ** 18);
+        assertEq(oracles[AddrCurveStableLP.WETH_pxETH].latestAnswer(true), (min * vp) / 10 ** 18);
     }
 }

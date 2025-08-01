@@ -38,10 +38,10 @@ contract OracleCoinFromCurveLP is OracleBase {
      * @dev    Using the price_oracle, we can are protected from flash attacks.
      * @return The price of the token from the pool.
      */
-    function latestAnswer() external view override returns (uint256) {
+    function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OracleCoinFromCurveLPStruct memory params = oracleParams;
 
-        uint256 priceOtherStable = _coinPrice(params.otherStableOracle, params.otherStableDecimals);
+        uint256 priceOtherStable = _coinPrice(params.otherStableOracle, params.otherStableDecimals, isNoFailMode);
 
         uint256 priceOracle = params.isReversed ? 1e36 / _priceOracle(params.lp, params.isParamsForPriceOracle) : _priceOracle(params.lp, params.isParamsForPriceOracle);
 

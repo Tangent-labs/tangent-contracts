@@ -29,7 +29,7 @@ contract BorrowCvxMarket is MarketDeploymentContext {
         minimumLoan = market.minimumLoan();
     }
     function minimumCollatForDebt(uint256 userDebt) internal view returns (uint256) {
-        return 2 + (userDebt * 1 ether * 100_000) / (market.collatOracle().latestAnswer() * market.maxLTV());
+        return 2 + (userDebt * 1 ether * 100_000) / (market.collatOracle().latestAnswer(true) * market.maxLTV());
     }
 
     //TODO Test here

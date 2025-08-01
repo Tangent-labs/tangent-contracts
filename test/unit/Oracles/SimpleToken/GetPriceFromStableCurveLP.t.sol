@@ -25,30 +25,30 @@ contract GetPriceFromStableCurveLP is MarketDeploymentContext {
             IPriceOracle oracle = oracles[stable];
             assertNotEq(address(oracle), address(0), "Oracle not config");
 
-            assertApproxEqRel(1e18, oracle.latestAnswer(), 7e14); // 0.05% from 1$
+            assertApproxEqRel(1e18, oracle.latestAnswer(true), 7e14); // 0.05% from 1$
         }
     }
 
     function test_verify_liquidETH_price_through_crv_lp() external view {
-        uint256 ethPrice = oracles[AddrClassicERC20.WETH].latestAnswer() * 10 ** (18 - oracles[AddrClassicERC20.WETH].decimals());
+        uint256 ethPrice = oracles[AddrClassicERC20.WETH].latestAnswer(true) * 10 ** (18 - oracles[AddrClassicERC20.WETH].decimals());
         for (uint256 i = 0; i < ethsLike.length; i++) {
             IERC20Metadata ethLike = ethsLike[i];
             IPriceOracle oracle = oracles[ethLike];
             assertNotEq(address(oracle), address(0), "Oracle not config");
 
-            uint256 ethLikePrice = oracle.latestAnswer();
+            uint256 ethLikePrice = oracle.latestAnswer(true);
             assertApproxEqRel(ethPrice, ethLikePrice, 3e15); // 0.3% from ethPrice
             assertLt(ethLikePrice, ethPrice, "Almost always true as its liquidStaking");
         }
     }
 
     function test_verify_BTC_price_through_crv_lp() external view {
-        uint256 btcPrice = oracles[AddrClassicERC20.WBTC].latestAnswer() * 10 ** (18 - oracles[AddrClassicERC20.WBTC].decimals());
+        uint256 btcPrice = oracles[AddrClassicERC20.WBTC].latestAnswer(true) * 10 ** (18 - oracles[AddrClassicERC20.WBTC].decimals());
         for (uint256 i = 0; i < btcsLike.length; i++) {
             IPriceOracle oracle = oracles[btcsLike[i]];
             assertNotEq(address(oracle), address(0), "Oracle not config");
 
-            uint256 btcLikePrice = oracle.latestAnswer();
+            uint256 btcLikePrice = oracle.latestAnswer(true);
             assertApproxEqRel(btcPrice, btcLikePrice, 3e15); // 0.3% from btc price
             assertLt(btcLikePrice, btcPrice, "Almost always true as its liquidStaking");
         }

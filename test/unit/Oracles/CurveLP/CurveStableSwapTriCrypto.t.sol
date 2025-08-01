@@ -21,16 +21,16 @@ contract CurveStableSwapTriCrypto is MarketDeploymentContext {
     }
 
     function test_pricing_tripool_first_price_is_taken() external view {
-        assertEq((vp * daiOracle.latestAnswer() * 10 ** (18 - daiOracle.decimals())) / 1e18, oracleTriUSDC.latestAnswer());
+        assertEq((vp * daiOracle.latestAnswer(true) * 10 ** (18 - daiOracle.decimals())) / 1e18, oracleTriUSDC.latestAnswer(true));
     }
 
     function test_pricing_tripool_second_price_is_taken() external {
         usdcOracle.setLastAnswer(9404);
-        assertEq((vp * usdcOracle.latestAnswer() * 10 ** (18 - usdcOracle.decimals())) / 1e18, oracleTriUSDC.latestAnswer());
+        assertEq((vp * usdcOracle.latestAnswer(true) * 10 ** (18 - usdcOracle.decimals())) / 1e18, oracleTriUSDC.latestAnswer(true));
     }
 
     function test_pricing_tripool_third_price_is_taken() external {
         usdtOracle.setLastAnswer(981236148444);
-        assertEq((vp * usdtOracle.latestAnswer() * 10 ** (18 - usdtOracle.decimals())) / 1e18, oracleTriUSDC.latestAnswer());
+        assertEq((vp * usdtOracle.latestAnswer(true) * 10 ** (18 - usdtOracle.decimals())) / 1e18, oracleTriUSDC.latestAnswer(true));
     }
 }

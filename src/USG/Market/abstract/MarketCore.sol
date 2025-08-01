@@ -169,7 +169,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         uint256 newCollatAmount = collateralBalances[msg.sender] - amountToWithdraw;
 
         // Verify that the newDebt of the loan is not over the maximum borrrowable regarding the LTV of the position
-        require(_maxBorrowable(newCollatAmount) >= newUserDebt, UserDebtTooHigh());
+        require(_maxBorrowable(newCollatAmount, false) >= newUserDebt, UserDebtTooHigh());
         return newCollatAmount;
     }
 
@@ -216,7 +216,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         require(newUserDebt >= minimumLoan, UserDebtTooLow());
 
         // Verify that the newDebt of the loan is not over the maximum borrrowable
-        require(_maxBorrowable(collatAmount) >= newUserDebt, UserDebtTooHigh());
+        require(_maxBorrowable(collatAmount, false) >= newUserDebt, UserDebtTooHigh());
 
         // If it's a leverage transaction, USG is already minted before
         if (!isLeverage) {
@@ -382,7 +382,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
             require(newUserDebt >= minimumLoan, UserDebtTooLow());
             // Verify that maxLTV condition is still respected
-            require(newUserDebt <= _maxBorrowable(newCollatBalance), UserDebtTooHigh());
+            require(newUserDebt <= _maxBorrowable(newCollatBalance, false), UserDebtTooHigh());
         }
 
         uint256 newUserDebtShares = selfLiquidateCall._userDebtShares - debtSharesToRemove;
