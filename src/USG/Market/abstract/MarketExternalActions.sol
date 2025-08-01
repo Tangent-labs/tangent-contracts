@@ -377,7 +377,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  collatToAdd    Amount of collateral to add to the contract
      * @param  debtToAdd      Amount of debt to add to the contract
      */
-    function migrateTo(IControlTower _controlTower, address account, uint256 collatToAdd, uint256 debtToAdd) external nonReentrant updateRewards(account) returns (uint256) {
+    function migrateTo(IControlTower _controlTower, address account, uint256 collatToAdd, uint256 debtToAdd) external nonReentrant updateRewards(account) {
         uint256 newUserDebtShares = _migrateTo(_controlTower, account, collatToAdd, debtToAdd);
         emit MigrateTo(account, collatToAdd, debtToAdd, newUserDebtShares);
     }

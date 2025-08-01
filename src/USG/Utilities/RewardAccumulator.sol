@@ -384,15 +384,6 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         }
     }
 
-    /**
-     * @notice Set the percentage of rewards on the rewards streamed to borrowers to send to the processor.
-     * @param _harvestFeePercentage Percentage fee of the rewards streamed to borrowers.
-     */
-    function setHarvesterFeePercentage(address market, uint16 _harvestFeePercentage) external onlyOwner {
-        require(_harvestFeePercentage <= 2_000, HarvesterFeeTooHigh());
-        rcParams[market].harvestFeePercentage = _harvestFeePercentage;
-    }
-
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                             VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -584,8 +575,8 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
 
     function updateRCParams(address market, RCParams calldata _rcParam) external onlyOwner {
         _verifyRCParams(_rcParam);
-        rcParams[market] = _rcParam;
         processRewards(market, controlTower.feeTreasury());
+        rcParams[market] = _rcParam;
     }
 
     /**

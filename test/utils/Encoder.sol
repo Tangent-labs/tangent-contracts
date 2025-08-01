@@ -2,13 +2,11 @@
 pragma solidity ^0.8.0;
 
 import {CurveRouterSwap} from "../../src/interfaces/internals/USG/ICurveLPLiquidator.sol";
-import {IPendleCurveRouter, CurveRouterSwapNoAmount, PendlePTToSY, PendleSYToPT} from "../../src/interfaces/internals/USG/IPendleCurveRouter.sol";
+import {IPendlePTRouter, CurveRouterSwapNoAmount, PendlePTToSY, PendleSYToPT} from "../../src/interfaces/internals/USG/IPendlePTRouter.sol";
 
 import {ICurveRouter} from "../../src/interfaces/externals/Curve/ICurveRouter.sol";
 import {ZapStruct} from "../../src/interfaces/internals/ICommonStruct.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
-import "forge-std/console.sol";
 
 contract Encoder {
     function encodeSwapToMockRouter(address router, IERC20 tokenIn, uint256 amountIn, IERC20 tokenOut, address receiver, uint256 amountOut) public pure returns (ZapStruct memory) {
@@ -24,11 +22,11 @@ contract Encoder {
     }
 
     function encodeLiquidateCallForPendlePT(PendlePTToSY calldata pendlePTToSY, CurveRouterSwapNoAmount calldata curveSwapParams) public pure returns (bytes memory) {
-        return abi.encodeWithSelector(IPendleCurveRouter.swapPTForToken.selector, pendlePTToSY, curveSwapParams);
+        return abi.encodeWithSelector(IPendlePTRouter.swapPTForToken.selector, pendlePTToSY, curveSwapParams);
     }
 
     function encodeLeverageCallForPendlePT(PendleSYToPT calldata pendleSYToPT, CurveRouterSwapNoAmount calldata curveSwapParams) public pure returns (bytes memory) {
-        return abi.encodeWithSelector(IPendleCurveRouter.swapTokenForPT.selector, pendleSYToPT, curveSwapParams);
+        return abi.encodeWithSelector(IPendlePTRouter.swapTokenForPT.selector, pendleSYToPT, curveSwapParams);
     }
 
     function createCurveRouterStruct(

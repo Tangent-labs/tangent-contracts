@@ -22,7 +22,7 @@ import "../../src/USG/Utilities/MarketCreator.sol";
 import "../../src/USG/Utilities/ZappingProxy.sol";
 import "../../src/USG/Utilities/Migratoor.sol";
 import "../../src/USG/Utilities/abstract/LightReentrancyGuardTransient.sol";
-import "../../src/USG/Routers/PendleCurveRouter.sol";
+import "../../src/USG/Routers/PendlePTRouter.sol";
 
 import "../mocks/MockRouter.sol";
 
@@ -91,7 +91,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     LpDeploymentContext public lpDeploymentContext;
 
-    PendleCurveRouter public pendleCurveRouter;
+    PendlePTRouter public pendlePTRouter;
 
     constructor() {
         // baseFork = vm.createSelectFork("base", 24379193);
@@ -110,7 +110,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         labeliser.labelizeERC20();
         labeliser.labelizeERC4626();
 
-        pendleCurveRouter = new PendleCurveRouter();
+        pendlePTRouter = new PendlePTRouter();
 
         controlTower = new ControlTower(owner, feeTreasury);
 

@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-interface IPendlePTToken {
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
+interface IPendlePTToken is IERC20Metadata {
     function SY() external view returns (address);
     function YT() external view returns (address);
     function allowance(address owner, address spender) external view returns (uint256);

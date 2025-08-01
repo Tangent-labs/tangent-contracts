@@ -30,7 +30,7 @@ interface IMarketExternalActions {
         address collatReceiver
     ) external returns (uint256);
 
-    function migrateTo(IControlTower _controlTower, address account, uint256 collatToAdd, uint256 debtToAdd) external returns (uint256);
+    function migrateTo(IControlTower _controlTower, address account, uint256 collatToAdd, uint256 debtToAdd) external;
 
     function reeantrancyOn(IControlTower _controlTower) external returns (IERC20);
 

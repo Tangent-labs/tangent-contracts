@@ -17,7 +17,6 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 /// @title  Migratoor
 /// @notice This contract is used fully or partially migrate a position to an other market.
 ///         It prevent user to repay, withdraw, swap his collateral by himself etc.
-
 contract Migratoor is LightReentrancyGuardTransient {
     IUSG public usg;
     IControlTower public controlTower;
