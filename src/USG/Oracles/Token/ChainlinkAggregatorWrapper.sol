@@ -7,23 +7,27 @@ import {OracleBase} from "../OracleBase.sol";
 
 struct ChainlinkAggregatorWrapperStruct {
     IAggregatorV3 chainlinkOracle;
-    uint oracleDecimals;
-    uint heartbeat;
+    uint48 oracleDecimals;
+    uint48 heartbeat;
 }
-/// @title OracleCoinFromCurveLP
-/// @notice This contract provides price oracle functionality for an ERC20, from a pool of Curve
+/// @title ChainlinkAggregatorWrapper
+/// @notice This contract is a wrapper of a Chainlink aggregator checking if the last price is stale or invalid.
 contract ChainlinkAggregatorWrapper is OracleBase {
     error NegativePrice();
     error StalePrice();
+    error IncompleteRound();
+    error InvalidRound();
+
     ChainlinkAggregatorWrapperStruct public oracleParams;
-    constructor(IAggregatorV3 _chainlinkOracle) {
-        oracleParams = ChainlinkAggregatorWrapperStruct({chainlinkOracle: _chainlinkOracle, oracleDecimals: _chainlinkOracle.decimals(), heartbeat: 100});
+    constructor(IAggregatorV3 _chainlinkOracle, uint48 heartbeat) {
+        oracleParams = ChainlinkAggregatorWrapperStruct({chainlinkOracle: _chainlinkOracle, oracleDecimals: _chainlinkOracle.decimals(), heartbeat: heartbeat});
     }
 
     /**
-     * @notice Returns a time weighted price of a token present in a Curve pool
-     * @dev    Using the price_oracle, we can are protected from flash attacks.
-     * @return The price of the token from the pool.
+     * @notice Fetch and verify the price provided by a Chainlink Aggregator.
+     *         Fails when roundId is incorrect or when the updateTime is stale.
+     * @dev    Adjust the decimals to 18 if needed.
+     * @return The price of the token from chainlink
      */
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         ChainlinkAggregatorWrapperStruct memory _params = oracleParams;
@@ -35,12 +39,12 @@ contract ChainlinkAggregatorWrapper is OracleBase {
             price = uint256(rawPrice);
         } else {
             require(rawPrice > 0, NegativePrice());
-            require(updateTime != 0, "Incomplete round");
-            require(answeredInRound >= roundId, "Stale price");
-            require(updateTime <= block.timestamp, StalePrice());
+            require(updateTime != 0, IncompleteRound());
+            require(answeredInRound >= roundId, InvalidRound());
+            require(updateTime + _params.heartbeat >= block.timestamp, StalePrice());
             price = uint256(rawPrice);
         }
 
-        return uint256(rawPrice);
+        return uint256(rawPrice) * 10 ** (18 - _params.oracleDecimals);
     }
 }

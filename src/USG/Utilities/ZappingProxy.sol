@@ -13,6 +13,7 @@ contract ZappingProxy is IZappingProxy {
 
     uint256 constant MAX_UINT = type(uint256).max;
     address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    address payable public dao;
 
     error ZapCallError(bytes);
     error MinAmountOutNotReached();
@@ -49,6 +50,21 @@ contract ZappingProxy is IZappingProxy {
         require(isRouterCallSuccess, ZapCallError(data));
         bal = tokenOut.balanceOf(receiver) - bal;
         require(minAmountOut <= bal, MinAmountOutNotReached());
+
+        uint256 balanceTokenInLeft;
+
+        // In case some tokenIn are left, we send it back to the DAO.
+        if (msg.value == 0) {
+            balanceTokenInLeft = tokenIn.balanceOf(address(this));
+            if (0 != balanceTokenInLeft) {
+                dao.send(balanceTokenInLeft);
+            }
+        } else {
+            balanceTokenInLeft = address(this).balance;
+            if (0 != balanceTokenInLeft) {
+                tokenIn.transfer(dao, balanceTokenInLeft);
+            }
+        }
 
         return bal;
     }

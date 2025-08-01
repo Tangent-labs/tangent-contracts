@@ -539,8 +539,7 @@ contract VsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
             Reward memory rData = rewardData[rewardToken];
 
             require(0 != rData.lastUpdateTime, RewardNotAdded(rewardToken));
-            //TODO This require is not enough as check. We cannot distributes less than a certain amount because we are loosing a lot of precision by dividing by ONE week to get the rate
-            require(0 != amount, ZeroAmount());
+            require(0 != amount / ONE_WEEK, ZeroAmount());
 
             if (timestamp >= rData.periodFinish) {
                 rewardData[rewardToken].rewardRate = amount / ONE_WEEK;

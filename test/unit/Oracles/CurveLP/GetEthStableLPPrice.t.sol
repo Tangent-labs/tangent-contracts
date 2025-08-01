@@ -8,7 +8,7 @@ contract GetEthStableLPPrice is MarketDeploymentContext {
     uint256 pxETHDollarPrice;
     uint256 frxETHDollarPrice;
     function setUp() public {
-        ethPrice = IPriceOracle(address(AddrChainlinkOracle.ETH)).latestAnswer(true) * 10 ** 10;
+        ethPrice = oracles[AddrClassicERC20.WETH].latestAnswer(true);
 
         frxETHDollarPrice = (AddrCurveStableLP.WETH_frxETH.price_oracle() * ethPrice) / 10 ** 18;
         pxETHDollarPrice = (AddrCurveStableLP.WETH_pxETH.price_oracle(0) * ethPrice) / 10 ** 18;
