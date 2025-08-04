@@ -80,6 +80,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         maxMarketDebt = _marketInit.maxMarketDebt;
         minimumLoan = _marketInit.minimumLoan;
 
+        collatDecimals = collatToken.decimals();
+
         // Transfer ownership to the DAO
         _transferOwnership(_globalParams._owner);
     }
