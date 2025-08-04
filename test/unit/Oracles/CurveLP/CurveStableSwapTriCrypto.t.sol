@@ -12,9 +12,9 @@ contract CurveStableSwapTriCrypto is MarketDeploymentContext {
 
     uint256 vp;
     function setUp() public {
-        daiOracle = new MockChainlinkOracle(9978941, 7);
-        usdcOracle = new MockChainlinkOracle(10045, 4);
-        usdtOracle = new MockChainlinkOracle(1001236148444, 12);
+        daiOracle = new MockChainlinkOracle(997 * 1e15, 18);
+        usdcOracle = new MockChainlinkOracle(1004 * 1e15, 18);
+        usdtOracle = new MockChainlinkOracle(1001 * 1e15, 18);
 
         oracleTriUSDC = new OracleTriPoolStable(address(AddrCurveStableLP.TRI_USD_POOL), daiOracle, usdcOracle, usdtOracle);
         vp = AddrCurveStableLP.TRI_USD_POOL.get_virtual_price();
@@ -25,12 +25,12 @@ contract CurveStableSwapTriCrypto is MarketDeploymentContext {
     }
 
     function test_pricing_tripool_second_price_is_taken() external {
-        usdcOracle.setLastAnswer(9404);
+        usdcOracle.setLastAnswer(940 * 1e15);
         assertEq((vp * usdcOracle.latestAnswer(true) * 10 ** (18 - usdcOracle.decimals())) / 1e18, oracleTriUSDC.latestAnswer(true));
     }
 
     function test_pricing_tripool_third_price_is_taken() external {
-        usdtOracle.setLastAnswer(981236148444);
+        usdtOracle.setLastAnswer(981 * 1e15);
         assertEq((vp * usdtOracle.latestAnswer(true) * 10 ** (18 - usdtOracle.decimals())) / 1e18, oracleTriUSDC.latestAnswer(true));
     }
 }

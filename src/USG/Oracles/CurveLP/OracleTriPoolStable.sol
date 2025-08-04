@@ -39,9 +39,9 @@ contract OracleTriPoolStable is OracleBase {
 
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OracleTriPoolStruct memory _params = params;
-        uint256 answer0 = _coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals, isNoFailMode);
-        uint256 answer1 = _coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals, isNoFailMode);
-        uint256 answer2 = _coinPrice(_params.coin2Oracle, _params.coin2OracleDecimals, isNoFailMode);
+        uint256 answer0 = _params.coin0Oracle.latestAnswer(isNoFailMode);
+        uint256 answer1 = _params.coin1Oracle.latestAnswer(isNoFailMode);
+        uint256 answer2 = _params.coin2Oracle.latestAnswer(isNoFailMode);
 
         return (_params.lp.get_virtual_price() * min(answer0, min(answer1, answer2))) / 10 ** 18;
     }

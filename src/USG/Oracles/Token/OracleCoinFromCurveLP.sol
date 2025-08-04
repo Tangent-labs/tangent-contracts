@@ -41,7 +41,7 @@ contract OracleCoinFromCurveLP is OracleBase {
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OracleCoinFromCurveLPStruct memory params = oracleParams;
 
-        uint256 priceOtherStable = _coinPrice(params.otherStableOracle, params.otherStableDecimals, isNoFailMode);
+        uint256 priceOtherStable = params.otherStableOracle.latestAnswer(isNoFailMode);
 
         uint256 priceOracle = params.isReversed ? 1e36 / _priceOracle(params.lp, params.isParamsForPriceOracle) : _priceOracle(params.lp, params.isParamsForPriceOracle);
 

@@ -25,7 +25,7 @@ contract OracleERC4626 is OracleBase {
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OracleERC4626Struct memory _params = params;
         // Find the price of the underlying asset in $
-        uint256 underlyingPrice = _coinPrice(_params.underlyingOracle, _params.underlyingOracleDecimals, isNoFailMode);
+        uint256 underlyingPrice = _params.underlyingOracle.latestAnswer(isNoFailMode);
         // Find the ratio shares/assets, multiplied by the underlying price gives us the price of 1 share.
         return (_params.erc4626.convertToAssets(1e18) * underlyingPrice) / 1e18;
     }

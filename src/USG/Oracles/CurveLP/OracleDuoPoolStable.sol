@@ -50,10 +50,7 @@ contract OracleDuoPoolStable is OracleBase {
      */
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OracleDuoPoolStruct memory _params = params;
-        return
-            (_params.lp.get_virtual_price() *
-                min(_coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals, isNoFailMode), _coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals, isNoFailMode))) /
-            10 ** 18;
+        return (_params.lp.get_virtual_price() * min(_params.coin0Oracle.latestAnswer(isNoFailMode), _params.coin1Oracle.latestAnswer(isNoFailMode))) / 10 ** 18;
     }
 
     /// @dev Internal function to get the minimum of two numbers
