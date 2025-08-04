@@ -44,6 +44,7 @@ contract ConvexCrvLPMarket is MarketExternalActions {
         require(_pid != 0, PidNull());
         pid = _pid;
         cvxRewardToken = _cvxRewardToken;
+        CVX_BOOSTER.deposit(_pid, collatToken.balanceOf(address(this)), true);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
