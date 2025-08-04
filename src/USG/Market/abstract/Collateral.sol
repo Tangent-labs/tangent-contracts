@@ -179,7 +179,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Value in USD (1e18 base)
      */
     function _positionValue(uint256 collatAmount) internal view returns (uint256) {
-        return _mulDiv(collatAmount, _collateralPrice(), 1 ether);
+        return _mulDiv(collatAmount, _collateralPrice(), 10 ** collatDecimals);
     }
 
     /**

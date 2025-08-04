@@ -86,8 +86,8 @@ contract LpDeploymentContext is StdCheats, StdUtils, Test {
 
         ICurveCryptoSwap _tanETHLp = ICurveCryptoSwap(
             AddrCryptoSwapLP.CRYPTO_SWAP_FACTORY.deploy_pool(
-                "TANA",
-                "TANA",
+                "TANETH",
+                "TANETH",
                 [address(otherToken), address(tan)],
                 0,
                 400000,

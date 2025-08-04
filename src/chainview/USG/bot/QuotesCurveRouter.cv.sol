@@ -11,10 +11,10 @@ struct CurveQuote {
     address[5] _pools;
 }
 
-contract QuoteLiquidationRouter {
+contract QuotesCurveRouter {
     ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
 
-    error QuoteLiquidationRouterError(uint256[] quotes);
+    error QuotesCurveRouterError(uint256[] quotes);
 
     constructor(CurveQuote[] memory routes) {
         uint256 routesLen = routes.length;
@@ -32,6 +32,6 @@ contract QuoteLiquidationRouter {
                 ++i;
             }
         }
-        revert QuoteLiquidationRouterError(quotes);
+        revert QuotesCurveRouterError(quotes);
     }
 }

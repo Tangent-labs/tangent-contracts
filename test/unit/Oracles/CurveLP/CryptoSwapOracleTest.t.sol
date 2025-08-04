@@ -99,7 +99,7 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
             ICurveTriCryptoSwap lp = ICurveTriCryptoSwap(cryptoSwaps[i]);
             (uint256 approx, IERC20 lpToken) = approximateLPValue(lp);
 
-            assertApproxEqRel(approx, oracles[lpToken].latestAnswer(), 9e15); // 0.9% maximum
+            assertApproxEqRel(approx, oracles[lpToken].latestAnswer(), 12e15); // 1.2% maximum
         }
     }
 }

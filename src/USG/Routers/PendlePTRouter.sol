@@ -15,6 +15,7 @@ contract PendlePTRouter {
     uint256 constant MAX_UINT = type(uint256).max;
     IPendleRouterV4 public constant pendleRouter = IPendleRouterV4(0x888888888889758F76e7103c6CbF23ABbF58F946);
     ICurveRouter public constant curveRouter = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
+    address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /**
      * @notice Swaps a PT from Pendle to an other ERC20 using the router of Pendle and Curve.
@@ -28,18 +29,20 @@ contract PendlePTRouter {
      *                          - ptAmount : Amount of PT to sell
      * @param  crvRouterData  Struct containing data to perform a swap through the Curve Router
      */
-    function swapPTForToken(PendlePTToSY calldata PTToSY, CurveRouterSwapNoAmount calldata crvRouterData) external returns (uint256) {
+    function swapPTForToken(PendlePTToSY calldata PTToSY, CurveRouterSwapNoAmount calldata crvRouterData) external payable returns (uint256) {
         uint256 syOut;
 
         // When a market is expired
         if (PTToSY.market.isExpired()) {
             // Transfers directly the PT to the YT prior to burn
-            PTToSY.pt.transferFrom(msg.sender, address(PTToSY.yt), PTToSY.ptAmount);
+            _transferFrom(PTToSY.pt, msg.sender, address(PTToSY.yt), PTToSY.ptAmount);
+
             // Burn the PT for the SY
             syOut = PTToSY.yt.redeemPY(address(this));
         } else {
             // Transfers the PT here before calling the router
-            PTToSY.pt.transferFrom(msg.sender, address(this), PTToSY.ptAmount);
+            _transferFrom(PTToSY.pt, msg.sender, address(this), PTToSY.ptAmount);
+
             // Allow the PendleRouter to spend the PT
             _approveIfNotAllowed(PTToSY.pt, address(pendleRouter));
             // Swap the PT for SY in the LP through the pendle router
@@ -68,10 +71,10 @@ contract PendlePTRouter {
      *                          - minPTOut : Slippage parameter on the minimum amount of PT to get
      * @param  crvRouterData  Struct containing data to perform a swap through the Curve Router
      */
-    function swapTokenForPT(PendleSYToPT calldata SYToPT, CurveRouterSwapNoAmount calldata crvRouterData) external returns (uint256) {
+    function swapTokenForPT(PendleSYToPT calldata SYToPT, CurveRouterSwapNoAmount calldata crvRouterData) external payable returns (uint256) {
         IERC20 tokenIn = IERC20(crvRouterData._route[0]);
         // Transfers the tokenIn here
-        tokenIn.transferFrom(msg.sender, address(this), SYToPT.tokenInAmount);
+        _transferFrom(tokenIn, msg.sender, address(this), SYToPT.tokenInAmount);
 
         // Allows the Curve router to spend the tokenIn
         _approveIfNotAllowed(tokenIn, address(curveRouter));
@@ -86,19 +89,40 @@ contract PendlePTRouter {
         // Allows the pendle router to spend the SY
         _approveIfNotAllowed(SYToPT.sy, address(pendleRouter));
         // Exchange the SY for some PT through the Pendle Router
-        (uint256 ptOut, ) = pendleRouter.swapExactSyForPt(SYToPT.receiver, SYToPT.market, syAmount, SYToPT.minPTOut, createDefaultApproxParams(), createEmptyLimitOrderData());
+        (uint256 ptOut, ) = pendleRouter.swapExactSyForPt(
+            SYToPT.receiver,
+            address(SYToPT.market),
+            syAmount,
+            SYToPT.minPTOut,
+            createDefaultApproxParams(),
+            createEmptyLimitOrderData()
+        );
 
         return ptOut;
     }
 
     function _approveIfNotAllowed(IERC20 token, address spender) internal {
-        if (token.allowance(address(this), address(spender)) != MAX_UINT) {
+        if (CHAIN_COIN != address(token) && token.allowance(address(this), address(spender)) != MAX_UINT) {
             token.approve(address(spender), MAX_UINT);
         }
     }
 
+    function _transferFrom(IERC20 token, address from, address to, uint256 amount) internal {
+        if (CHAIN_COIN != address(token)) {
+            token.transferFrom(from, to, amount);
+        }
+    }
+
     function _curveExchange(CurveRouterSwapNoAmount calldata crvRouterData, uint256 amountIn) internal returns (uint256) {
-        return curveRouter.exchange(crvRouterData._route, crvRouterData._swap_params, amountIn, crvRouterData._min_dy, crvRouterData._pools, crvRouterData._receiver);
+        return
+            curveRouter.exchange{value: msg.value}(
+                crvRouterData._route,
+                crvRouterData._swap_params,
+                amountIn,
+                crvRouterData._min_dy,
+                crvRouterData._pools,
+                crvRouterData._receiver
+            );
     }
 
     function createEmptyLimitOrderData() internal pure returns (LimitOrderData memory) {}

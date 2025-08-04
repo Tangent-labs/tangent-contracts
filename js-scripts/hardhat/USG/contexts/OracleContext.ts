@@ -68,6 +68,11 @@ export class OracleContext {
     oraclePendlePTParams = [
         {key: "sUSDe 07/31/25", underlyingOracle: "USDe"},
         {key: "wstUSR 07/25/25", underlyingOracle: "USR"},
+
+        {key: "sUSDe 09/25/25", underlyingOracle: "sUSDe"},
+        {key: "USDe 09/25/25", underlyingOracle: "USDe"},
+        {key: "wstUSR 09/25/25", underlyingOracle: "wstUSR"},
+        {key: "USR 09/04/25", underlyingOracle: "USR"},
     ];
     async fetchChainlinkOracle() {
         for (let index = 0; index < this.chainlinkOracleParams.length; index++) {

@@ -36,6 +36,8 @@ library AddrCurveStableLP {
     ICurveStableSwapNG constant sDAI_sUSDe = ICurveStableSwapNG(0x167478921b907422F8E88B43C4Af2B8BEa278d3A);
     ICurveStableSwapNG constant scrvUSD_sDOLA = ICurveStableSwapNG(0x76A962BA6770068bCF454D34dDE17175611e6637);
     ICurveStableSwapNG constant sUSDS_USDT = ICurveStableSwapNG(0x00836Fe54625BE242BcFA286207795405ca4fD10);
+    ICurveStableSwapNG constant sUSDe_crvUSD = ICurveStableSwapNG(0x57064F49Ad7123C92560882a45518374ad982e85);
+    ICurveStableSwapNG constant USDe_USDC = ICurveStableSwapNG(0x02950460E2b9529D0E00284A5fA2d7bDF3fA4d72);
 
     ICurveStable constant ETH_stETH_POOL = ICurveStable(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
     IERC20Metadata constant ETH_stETH_LP = IERC20Metadata(0x06325440D014e39736583c165C2963BA99fAf14E);

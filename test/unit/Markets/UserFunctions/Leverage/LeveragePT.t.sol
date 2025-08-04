@@ -10,18 +10,18 @@ contract LeveragePT is MarketDeploymentContext {
     uint256 constant ptAmount = 100_000 ether;
 
     function setUp() public {
-        collatToken = AddrPTPendle.sUSDe_31_07_25;
+        collatToken = AddrPTPendle.sUSDe_25_09_25;
 
         marketSUSDe = deployBasicERC20Market(collatToken);
 
         deal(address(collatToken), address(usr1), ptAmount);
 
         vm.startPrank(usr1);
-
+        deal(usr1, 10 ether);
         collatToken.approve(address(marketSUSDe), MAX_UINT);
     }
 
-    function test_leverage_PT_not_expired() external {
+    function test_leverage_PT() external {
         uint256[][] memory swapParams = new uint256[][](4);
         swapParams[0] = Array.memoryUint256([uint256(1), uint256(0), uint256(1), uint256(1), uint256(2)]);
         swapParams[1] = Array.memoryUint256([uint256(1), uint256(0), uint256(1), uint256(1), uint256(3)]);
@@ -36,9 +36,9 @@ contract LeveragePT is MarketDeploymentContext {
                 router: address(pendlePTRouter),
                 routerCall: encoder.encodeLeverageCallForPendlePT(
                     PendleSYToPT({
-                        market: address(AddrMarketPendle.sUSDe_31_07_25),
-                        pt: AddrPTPendle.sUSDe_31_07_25,
-                        sy: AddrSYPendle.sUSDe_31_07_25,
+                        market: AddrMarketPendle.sUSDe_25_09_25,
+                        pt: AddrPTPendle.sUSDe_25_09_25,
+                        sy: AddrSYPendle.sUSDe_25_09_25,
                         underlyingIn: address(AddrERC4626.sUSDe),
                         tokenInAmount: 50_000 ether,
                         receiver: address(marketSUSDe),
@@ -63,6 +63,54 @@ contract LeveragePT is MarketDeploymentContext {
                         address(pendlePTRouter)
                     )
                 )
+            })
+        );
+
+        vm.stopPrank();
+    }
+
+    function test_zapDeposit_ETH_to_PT() external {
+        uint256[][] memory swapParams = new uint256[][](3);
+        swapParams[0] = Array.memoryUint256([uint256(2), uint256(0), uint256(1), uint256(3), uint256(3)]);
+        swapParams[1] = Array.memoryUint256([uint256(0), uint256(1), uint256(1), uint256(10), uint256(2)]);
+        swapParams[2] = Array.memoryUint256([uint256(0), uint256(1), uint256(1), uint256(10), uint256(2)]);
+
+        marketSUSDe.zapDeposit{value: 10 ether}(
+            usr1,
+            ZapStructDeposit({
+                tokenIn: ETH_NAKED,
+                amountIn: 10 ether,
+                minAmountOut: 0,
+                zap: ZapStruct({
+                    router: address(pendlePTRouter),
+                    routerCall: encoder.encodeLeverageCallForPendlePT(
+                        PendleSYToPT({
+                            market: AddrMarketPendle.sUSDe_25_09_25,
+                            pt: AddrPTPendle.sUSDe_25_09_25,
+                            sy: AddrSYPendle.sUSDe_25_09_25,
+                            underlyingIn: address(AddrERC4626.sUSDe),
+                            tokenInAmount: 10 ether,
+                            receiver: address(marketSUSDe),
+                            minPTOut: 0
+                        }),
+                        encoder.createCurveRouterNoAmountStruct(
+                            Array.memoryAddress(
+                                [
+                                    address(ETH_NAKED),
+                                    address(AddrCryptoSwapLP.USDT_WBTC_ETH),
+                                    address(AddrClassicERC20.USDT),
+                                    address(AddrCurveStableLP.USDT_crvUSD),
+                                    address(AddrClassicERC20.crvUSD),
+                                    address(AddrCurveStableLP.sUSDe_crvUSD),
+                                    address(AddrERC4626.sUSDe)
+                                ]
+                            ),
+                            swapParams,
+                            0,
+                            address(pendlePTRouter)
+                        )
+                    )
+                })
             })
         );
 

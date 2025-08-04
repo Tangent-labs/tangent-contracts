@@ -17,7 +17,7 @@ struct PendlePTToSY {
 }
 
 struct PendleSYToPT {
-    address market;
+    IPendleMarketV3 market;
     IPendlePTToken pt;
     IPendleSYToken sy;
     address underlyingIn;

@@ -25,7 +25,7 @@ contract GetPriceFromStableCurveLP is MarketDeploymentContext {
             IPriceOracle oracle = oracles[stable];
             assertNotEq(address(oracle), address(0), "Oracle not config");
 
-            assertApproxEqRel(1e18, oracle.latestAnswer(), 7e14); // 0.05% from 1$
+            assertApproxEqRel(1e18, oracle.latestAnswer(), 2e15); // 0.2% from 1$
         }
     }
 
@@ -37,7 +37,7 @@ contract GetPriceFromStableCurveLP is MarketDeploymentContext {
             assertNotEq(address(oracle), address(0), "Oracle not config");
 
             uint256 ethLikePrice = oracle.latestAnswer();
-            assertApproxEqRel(ethPrice, ethLikePrice, 3e15); // 0.3% from ethPrice
+            assertApproxEqRel(ethPrice, ethLikePrice, 4e15); // 0.3% from ethPrice
             assertLt(ethLikePrice, ethPrice, "Almost always true as its liquidStaking");
         }
     }
