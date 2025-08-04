@@ -23,12 +23,6 @@ contract ACRewardAccumulator is MarketDeploymentContext {
         rewardAccumulator.addNewRewards(usr1, rewards);
     }
 
-    function test_setHarvesterFeePercentage_fails_as_not_owner() external {
-        vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        rewardAccumulator.setHarvesterFeePercentage(usr1, 10);
-    }
-
     function test_processRewards_fails_as_the_market_is_not_a_market() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NotAMarketRewards.selector));

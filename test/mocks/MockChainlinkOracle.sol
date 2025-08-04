@@ -19,7 +19,7 @@ contract MockChainlinkOracle is IPriceOracle {
         dec = _decimals;
     }
 
-    function latestAnswer() external view returns (uint256) {
+    function latestAnswer(bool isNoFailMode) external view returns (uint256) {
         return lastAns;
     }
 

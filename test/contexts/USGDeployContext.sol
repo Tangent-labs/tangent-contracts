@@ -115,7 +115,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         // assertEq(address(USGBase), address(USG), "Should be equals with CREATE3");
 
-        zappingProxy = new ZappingProxy();
+        zappingProxy = new ZappingProxy(controlTower);
 
         sUSG = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(usg), "Staked USG", "sUSG", owner, 7 days));
 

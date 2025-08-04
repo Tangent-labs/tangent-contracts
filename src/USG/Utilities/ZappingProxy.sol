@@ -2,6 +2,8 @@
 pragma solidity ^0.8.22;
 
 import {IZappingProxy} from "../../interfaces/internals/USG/IZappingProxy.sol";
+import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
+
 import {ZapStruct} from "../../interfaces/internals/ICommonStruct.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -13,12 +15,17 @@ contract ZappingProxy is IZappingProxy {
 
     uint256 constant MAX_UINT = type(uint256).max;
     address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+    IControlTower public controlTower;
 
     error ZapCallError(bytes);
     error MinAmountOutNotReached();
     error TokenInOutMustBeDifferent();
     error TokenInMustNotBeETH();
     error TokenInMustBeETH();
+
+    constructor(IControlTower _controlTower) {
+        controlTower = _controlTower;
+    }
 
     /**
      * @notice Allow a tokenIn to be spend by a router, call the router and ensure that the router returned a minimum amount of tokenOut afterwards.
@@ -49,6 +56,21 @@ contract ZappingProxy is IZappingProxy {
         require(isRouterCallSuccess, ZapCallError(data));
         bal = tokenOut.balanceOf(receiver) - bal;
         require(minAmountOut <= bal, MinAmountOutNotReached());
+
+        uint256 balanceTokenInLeft;
+
+        // In case some tokenIn are left, we send it back to the DAO.
+        if (msg.value == 0) {
+            balanceTokenInLeft = tokenIn.balanceOf(address(this));
+            if (0 != balanceTokenInLeft) {
+                tokenIn.transfer(controlTower.feeTreasury(), balanceTokenInLeft);
+            }
+        } else {
+            balanceTokenInLeft = address(this).balance;
+            if (0 != balanceTokenInLeft) {
+                payable(controlTower.feeTreasury()).transfer(balanceTokenInLeft);
+            }
+        }
 
         return bal;
     }

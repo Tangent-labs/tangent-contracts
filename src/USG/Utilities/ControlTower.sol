@@ -44,6 +44,10 @@ contract ControlTower is LightOwnable, IControlTower {
         return (feeTreasury, isIRCalculator[irCalculator]);
     }
 
+    function setFeeTreasury(address _feeTreasury) external onlyOwner {
+        feeTreasury = _feeTreasury;
+    }
+
     /**
      *  @notice Toggle boolean linked to an address to flag it as market or no.
      *  @dev    Callable only by the owner or a MarketCreator.

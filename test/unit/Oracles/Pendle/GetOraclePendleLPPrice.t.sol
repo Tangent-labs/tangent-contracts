@@ -15,7 +15,7 @@ contract GetOraclePendleLPPrice is MarketDeploymentContext {
     function test_determine_LP_price() external {
         for (uint256 i = 0; i < pendleLPs.length; i++) {
             IERC20Metadata lp = pendleLPs[i];
-            uint256 oracleValue = oracles[lp].latestAnswer();
+            uint256 oracleValue = oracles[lp].latestAnswer(true);
 
             console.log(pendleLPs[i].symbol(), oracleValue);
         }
@@ -24,7 +24,7 @@ contract GetOraclePendleLPPrice is MarketDeploymentContext {
 
         for (uint256 i = 0; i < pendleLPs.length; i++) {
             IERC20Metadata lp = pendleLPs[i];
-            uint256 oracleValue = oracles[lp].latestAnswer();
+            uint256 oracleValue = oracles[lp].latestAnswer(true);
 
             console.log(pendleLPs[i].symbol(), oracleValue);
         }

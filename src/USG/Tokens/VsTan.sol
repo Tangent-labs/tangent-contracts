@@ -425,21 +425,23 @@ contract VsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
      * @param tokenId Position ID
      */
     function _updateReward(uint256 tokenId) internal {
-        uint256 positionBal = locks[tokenId].amount;
-        uint256 rewardLength = rewardTokens.length;
-        for (uint256 i; i < rewardLength; ) {
-            IERC20 token = rewardTokens[i];
+        if (totalSupplyVsTan != 0) {
+            uint256 positionBal = locks[tokenId].amount;
+            uint256 rewardLength = rewardTokens.length;
+            for (uint256 i; i < rewardLength; ) {
+                IERC20 token = rewardTokens[i];
 
-            rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
-            rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
+                rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
+                rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
 
-            if (tokenId != 0) {
-                rewards[tokenId][token] = _earned(tokenId, token, positionBal);
-                userRewardPerTokenPaid[tokenId][token] = rewardData[token].rewardPerTokenStored;
-            }
+                if (tokenId != 0) {
+                    rewards[tokenId][token] = _earned(tokenId, token, positionBal);
+                    userRewardPerTokenPaid[tokenId][token] = rewardData[token].rewardPerTokenStored;
+                }
 
-            unchecked {
-                ++i;
+                unchecked {
+                    ++i;
+                }
             }
         }
     }
@@ -539,8 +541,7 @@ contract VsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
             Reward memory rData = rewardData[rewardToken];
 
             require(0 != rData.lastUpdateTime, RewardNotAdded(rewardToken));
-            //TODO This require is not enough as check. We cannot distributes less than a certain amount because we are loosing a lot of precision by dividing by ONE week to get the rate
-            require(0 != amount, ZeroAmount());
+            require(0 != amount / ONE_WEEK, ZeroAmount());
 
             if (timestamp >= rData.periodFinish) {
                 rewardData[rewardToken].rewardRate = amount / ONE_WEEK;

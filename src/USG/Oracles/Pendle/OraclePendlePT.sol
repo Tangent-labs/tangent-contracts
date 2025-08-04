@@ -34,9 +34,9 @@ contract OraclePendlePT is OracleBase {
      * @dev    When the PT is expired, 1PT is redeemable 1:1 against the underlying.
      * @return The price of the PT.
      */
-    function latestAnswer() external view override returns (uint256) {
+    function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OraclePendlePTStruct memory _params = params;
-        uint256 underlyingPrice = _coinPrice(_params.underlyingOracle, _params.underlyingOracleDecimals);
+        uint256 underlyingPrice = _params.underlyingOracle.latestAnswer(isNoFailMode);
 
         if (_params.pendleMarket.isExpired()) {
             return underlyingPrice;

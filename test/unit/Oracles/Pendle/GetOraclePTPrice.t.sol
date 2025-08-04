@@ -14,18 +14,18 @@ contract GetOraclePTPrice is MarketDeploymentContext {
     function test_determine_PT_price() external {
         for (uint256 i = 0; i < pendlePTs.length; i++) {
             IERC20Metadata pt = pendlePTs[i];
-            uint256 oracleValue = oracles[pt].latestAnswer();
+            uint256 oracleValue = oracles[pt].latestAnswer(true);
         }
 
         skip(365 days);
 
         for (uint256 i = 0; i < pendlePTs.length; i++) {
             IERC20Metadata pt = pendlePTs[i];
-            uint256 oracleValueBeforeSwap = oracles[pt].latestAnswer();
+            uint256 oracleValueBeforeSwap = oracles[pt].latestAnswer(true);
 
             (, uint96 decimals, IPriceOracle underlyingOracle, ) = OraclePendlePT(address(oracles[pt])).params();
 
-            assertEq(underlyingOracle.latestAnswer() * 10 ** (18 - decimals), oracleValueBeforeSwap);
+            assertEq(underlyingOracle.latestAnswer(true) * 10 ** (18 - decimals), oracleValueBeforeSwap);
         }
     }
 }
