@@ -17,6 +17,9 @@ abstract contract Collateral is DebtIR, ICollateral {
     /// @notice Denominator used for percentage calculations (e.g. 100% = 100_000)
     uint256 public constant DENOMINATOR = 100_000;
 
+    /// @notice The amount of decimals of the collateral
+    uint256 public collatDecimals;
+
     /// @notice Collateral token
     IERC20Metadata public collatToken;
 
@@ -184,7 +187,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Value in USD (1e18 base)
      */
     function _positionValue(uint256 collatAmount, bool isNoFailMode) internal view returns (uint256) {
-        return (collatAmount * _collateralPrice(isNoFailMode)) / 1 ether;
+        return (collatAmount * _collateralPrice(isNoFailMode)) / 10 ** collatDecimals;
     }
 
     /**
@@ -215,6 +218,6 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Value in USD (1e18 base)
      */
     function _positionValue(address account, bool isNoFailMode) internal view returns (uint256) {
-        return (collateralBalances[account] * _collateralPrice(isNoFailMode)) / 1 ether;
+        return (collateralBalances[account] * _collateralPrice(isNoFailMode)) / 10 ** collatDecimals;
     }
 }
