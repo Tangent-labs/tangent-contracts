@@ -18,9 +18,9 @@ contract OracleCryptoSwap is OracleBase {
         params = OracleCryptoSwapStruct({lp: _lp, coin0Oracle: coin0Oracle, coin0OracleDecimals: uint192(coin0Oracle.decimals())});
     }
 
-    function latestAnswer() external view override returns (uint256) {
+    function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OracleCryptoSwapStruct memory _params = params;
 
-        return (ICurveTriCryptoSwap(_params.lp).lp_price() * _coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals)) / 1e18;
+        return (ICurveTriCryptoSwap(_params.lp).lp_price() * _params.coin0Oracle.latestAnswer(isNoFailMode)) / 1e18;
     }
 }

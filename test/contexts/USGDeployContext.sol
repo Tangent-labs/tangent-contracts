@@ -123,7 +123,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         // assertEq(address(USGBase), address(USG), "Should be equals with CREATE3");
 
-        zappingProxy = new ZappingProxy();
+        zappingProxy = new ZappingProxy(controlTower);
 
         migratoor = new Migratoor(controlTower, usg, zappingProxy);
 

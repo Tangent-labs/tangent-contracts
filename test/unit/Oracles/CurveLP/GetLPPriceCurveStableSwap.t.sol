@@ -22,7 +22,7 @@ contract GetLPPriceCurveStableSwap is MarketDeploymentContext {
         amount0Lp = bound(amount0Lp, 1_000_000 * 10 ** coin0.decimals(), 1_000_000_000 * 10 ** coin0.decimals());
         amount1Lp = bound(amount1Lp, 1_000_000 * 10 ** coin1.decimals(), 1_000_000_000 * 10 ** coin1.decimals());
 
-        uint256 lpPriceStart = oracles[lp].latestAnswer();
+        uint256 lpPriceStart = oracles[lp].latestAnswer(true);
 
         console.log("Initial lpPrice : ", lpPriceStart);
 
@@ -39,7 +39,7 @@ contract GetLPPriceCurveStableSwap is MarketDeploymentContext {
 
         uint256 received1 = lp.exchange(0, 1, received0, 0, usr1);
 
-        uint256 lastLPPrice = oracles[lp].latestAnswer();
+        uint256 lastLPPrice = oracles[lp].latestAnswer(true);
 
         uint256 collateralValue = (loanAmount * lastLPPrice) / 10 ** 18;
         uint256 loanMax = (85 * collateralValue) / (100 * 10 ** 18);

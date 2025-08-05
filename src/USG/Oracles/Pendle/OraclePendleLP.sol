@@ -27,9 +27,9 @@ contract OraclePendleLP is OracleBase {
      * @notice Returns the latest price from the oracle
      * @return The price of the stable pool, adjusted to 18 decimals
      */
-    function latestAnswer() external view override returns (uint256) {
+    function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OraclePendlePTStruct memory _params = params;
-        uint256 underlyingPrice = _coinPrice(_params.underlyingOracle, _params.underlyingOracleDecimals);
+        uint256 underlyingPrice = _params.underlyingOracle.latestAnswer(isNoFailMode);
 
         //TODO We need to find what to do after expiration
         // if (_params.pendleMarket.isExpired()) {

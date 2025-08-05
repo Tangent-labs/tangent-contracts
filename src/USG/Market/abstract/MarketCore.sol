@@ -162,7 +162,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         uint256 newCollatAmount = collateralBalances[msg.sender] - amountToWithdraw;
 
         // Verify that the newDebt of the loan is not over the maximum borrrowable regarding the LTV of the position
-        _verifyMaxLTV(newCollatAmount, newUserDebt);
+        _verifyMaxLTV(newCollatAmount, newUserDebt, false);
+
         return newCollatAmount;
     }
 
@@ -209,7 +210,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         _verifyMinimumDebt(newUserDebt);
 
         // Verify that the newDebt of the loan is not over the maximum borrrowable
-        _verifyMaxLTV(collatAmount, newUserDebt);
+        _verifyMaxLTV(collatAmount, newUserDebt, false);
 
         // If it's a leverage transaction, USG is already minted before
         if (!isLeverage) {
@@ -377,7 +378,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
             _verifyMinimumDebt(newUserDebt);
             // Verify that maxLTV condition is still respected
-            _verifyMaxLTV(newCollatBalance, newUserDebt);
+            _verifyMaxLTV(newCollatBalance, newUserDebt, false);
         }
 
         uint256 newUserDebtShares = selfLiquidateCall._userDebtShares - debtSharesToRemove;
@@ -631,7 +632,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             // We check both condition on minimum loan and maxLTV
             // Dont need to check them when the new user debt is equal to 0
             _verifyMinimumDebt(newUserDebt);
-            _verifyMaxLTV(newCollatBalance, newUserDebt);
+            _verifyMaxLTV(newCollatBalance, newUserDebt, false);
         }
 
         uint256 newUDebtShares = uDebtShares - sharesToRemove;
@@ -668,7 +669,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Dont need to check them when the new user debt is equal to 0
         if (newUserDebt != 0) {
             _verifyMinimumDebt(newUserDebt);
-            _verifyMaxLTV(newCollatBalance, newUserDebt);
+            _verifyMaxLTV(newCollatBalance, newUserDebt, false);
             _verifyDebtCap(badDebt, newTotalDebtShares, debtIndex);
         }
 

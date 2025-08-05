@@ -214,7 +214,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function liquidate(address account, uint256 collatToLiquidate, uint256 minUSGOut, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(account) {
         (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
         // Can liquidate only if the health ratio is below 1
-        require(_healthRatio(userDebt_, collatBalance) < 1 ether, NotLiquidablePosition());
+        require(_healthRatio(userDebt_, collatBalance, true) < 1 ether, NotLiquidablePosition());
 
         (uint256 collatLiquidated, uint256 debtRepaid, uint256 fee, uint256 newUserDebtShares) = _liquidate(
             LiquidateInput({
@@ -278,7 +278,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         (, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
 
         // Can liquidate bad debt only if the value of the collateral is below the debt
-        require(_positionValue(collatBalance) < userDebt_, PositionWithoutBadDebt());
+        require(_positionValue(collatBalance, true) < userDebt_, PositionWithoutBadDebt());
 
         _seizeCollateral(account, collatBalance, totalCollateral, _userDebtShares, totalDebtShares, userDebt_);
 
