@@ -40,7 +40,23 @@ contract MigratoorReentrancy is MarketDeploymentContext {
     }
 
     //TODO
-    function test_reenter_in_migrate() external {}
+    function test_reenter_in_migrate() external {
+        MigrateStruct memory migrateStruct = MigrateStruct({
+            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            collatToWithdraw: 0,
+            debtToRemove: 3_000 ether,
+            debtToRepay: 0
+        });
+
+        ZapMigrateStruct memory zapCall = ZapMigrateStruct({
+            zap: ZapStruct({router: address(migratoor), routerCall: abi.encodeWithSelector(Migratoor.migrate.selector, migrateStruct, _getBlankZapMigrateStruct())}),
+            minCollatToOut: 0
+        });
+        vm.expectRevert(ZapCallErrorReentrancy);
+        migratoor.migrate(migrateStruct, zapCall);
+    }
+
+    function _getBlankZapMigrateStruct() internal view returns (ZapMigrateStruct memory zapCall1) {}
 
     function test_zapProxy_calls_deposit_marketTo() external {
         vm.startPrank(usr1);
