@@ -107,26 +107,60 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
         return _badDebt + _convertToAmount(_totalDebtShares, newDebtIndex);
     }
 
+    /**
+     * @dev   Convert a debt amount to a debt shares
+     * @param debt  Debt amount
+     * @param index Debt index of the market
+     * @return Debt shares
+     */
     function _convertToShares(uint256 debt, uint256 index) internal pure returns (uint256) {
         return _mulDiv(debt, RAY, index);
     }
 
+    /**
+     * @dev   Convert a debt shares to a debt amount
+     * @param debtShares  Debt shares
+     * @param index       Debt index of the market
+     * @return Debt amount
+     */
     function _convertToAmount(uint256 debtShares, uint256 index) internal pure returns (uint256) {
         return _mulDiv(debtShares, index, RAY);
     }
 
+    /**
+     * @dev   Multiply two numbers `a` and `b`then divide the result by `d`
+     * @param a  First number of the product
+     * @param b  Second number of the product
+     * @param d  Denominator
+     * @return Result of the operation
+     */
     function _mulDiv(uint256 a, uint256 b, uint256 d) internal pure returns (uint256) {
         return (a * b) / d;
     }
 
+    /**
+     * @dev   Burns some USG from an account
+     * @param account Account from where to burn USG
+     * @param amount  Amount of USG to burn
+     */
     function _burnUSG(address account, uint256 amount) internal {
         usg.burnFrom(account, amount);
     }
 
+    /**
+     * @dev   Mints some USG on an amount
+     * @param _usg    USG token
+     * @param account Account to mint USG on
+     * @param amount  Amount of USG to mint
+     */
     function _mintUSG(IUSG _usg, address account, uint256 amount) internal {
         _usg.mint(account, amount);
     }
 
+    /**
+     * @dev  Computes and update the debtIndex on the IRCalculator and returns the new one
+     * @return The new debt index of the market
+     */
     function _checkpointIR() internal returns (uint256) {
         return irCalculator.checkpointIR(address(this));
     }
@@ -166,14 +200,29 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
                         VERIFIERS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    /**
+     * @dev Fails if the new amount of total debt is over the maximum debt of the market
+     * @param _badDebt    Collat amount to deposit or withdraw
+     * @param totalShares Collat amount to deposit or withdraw
+     * @param debtIndex   Collat amount to deposit or withdraw
+
+     */
     function _verifyDebtCap(uint256 _badDebt, uint256 totalShares, uint256 debtIndex) internal view {
         require(_totalDebt(_badDebt, totalShares, debtIndex) <= maxMarketDebt, TotalDebtTooHigh());
     }
 
+    /**
+     * @dev Fails if the amount of debt for an account is under the minimum loan allowed
+     * @param debt  Debt amount of the user
+     */
     function _verifyMinimumDebt(uint256 debt) internal view {
         require(debt >= minimumLoan, UserDebtTooLow());
     }
 
+    /**
+     * @dev Fails if the amount of debt in input is null
+     * @param debt  Debt amount to borrow or repay
+     */
     function _verifyDebtInputNotZero(uint256 debt) internal pure {
         require(debt != 0, ZeroDebtAmount());
     }

@@ -125,7 +125,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         zappingProxy = new ZappingProxy(controlTower);
 
-        migratoor = new Migratoor(controlTower, usg, zappingProxy);
+        migratoor = new Migratoor(controlTower, zappingProxy);
 
         controlTower.togglePositionMigrator(address(migratoor));
         controlTower.togglePauser(pauser);

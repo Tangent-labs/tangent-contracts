@@ -2,7 +2,7 @@
 pragma solidity ^0.8.27;
 
 import "../UsgInfo.sol";
-import "../RsTanInfo.sol";
+import "../VsTANInfo.sol";
 
 interface ICurvePool {
     function get_dy(
@@ -22,7 +22,7 @@ interface IStakingPositionService {
     function cycleInfo(uint256 cycle) external view returns (CycleInfo memory);
 }
 
-contract LandingChainView is USGInfo, RsTanInfo {
+contract LandingChainView is USGInfo, VsTANInfo {
     error LandingChainViewError(uint256[] output);
 
     // Booster addresses
@@ -34,14 +34,15 @@ contract LandingChainView is USGInfo, RsTanInfo {
     address public constant sdBalStaking = 0xAf5b3f4A0b4dc334dB7137E5584E0e971E5e4962;
 
     // USG/TAN addresses
-    address public constant usg = address(0);
-    address public constant usgOracle = address(0);
-    address public constant sUSG = address(0);
-    address public constant tan = address(0);
-    address public constant tanPool = address(0);
-    address public constant tanOracle = address(0);
+    IERC20 public constant usg = IERC20(address(0));
+    IAggregatorStablePriceV3 public constant usgOracle = IAggregatorStablePriceV3(address(0));
+    IERC4626 public constant sUSG = IERC4626(address(0));
+    address public constant TAN = address(0);
+    IVsTan public constant vsTAN = IVsTan(address(0));
+    ICurveCryptoSwap public constant tanPool = ICurveCryptoSwap(address(0));
+    IAggregatorV3 public constant ethOracle = IAggregatorV3(address(0));
 
-    function getKeepers() internal view returns (address[] memory) {
+    function getKeepers() internal pure returns (address[] memory) {
         address[] memory pegKeepers = new address[](0);
         return pegKeepers;
     }
@@ -63,10 +64,10 @@ contract LandingChainView is USGInfo, RsTanInfo {
         revert LandingChainViewError(combinedInfo);
     }
 
-    function getUSGData() internal view returns (uint256[] memory) {
+    function getUSGData() internal returns (uint256[] memory) {
         uint256[] memory amounts = new uint256[](4);
-        if (usg != address(0)) {
-            USGInfoOut memory usgInfo = getUSGInfo(usg, usgOracle, getKeepers(), sUSG);
+        if (address(usg) != address(0)) {
+            USGInfoOut memory usgInfo = getUSGInfo(usg, sUSG, getKeepers(), usgOracle);
             amounts[0] = usgInfo.circulatingUsg;
             amounts[1] = usgInfo.UsgPrice;
             amounts[2] = usgInfo.sUsgSupply;
@@ -75,12 +76,12 @@ contract LandingChainView is USGInfo, RsTanInfo {
         return amounts;
     }
 
-    function getTanData() internal view returns (uint256[] memory) {
+    function getTanData() internal returns (uint256[] memory) {
         uint256[] memory amounts = new uint256[](4);
-        if (usg != address(0)) {
-            RsTanData memory tanInfo = getRsTanInfo(tan, tanPool, usg, tanOracle);
+        if (address(vsTAN) != address(0)) {
+            RsTanData memory tanInfo = getVsTanInfo(vsTAN, tanPool, usg, ethOracle, usgOracle);
             amounts[0] = tanInfo.tanPrice;
-            amounts[1] = tanInfo.totalSupplyRsTan;
+            amounts[1] = tanInfo.totalSupplyVsTan;
             amounts[2] = tanInfo.rewardRate;
             amounts[3] = tanInfo.apr;
         }

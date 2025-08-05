@@ -214,10 +214,21 @@ abstract contract Collateral is DebtIR, ICollateral {
         return _mulDiv(collateralBalances[account], _collateralPrice(isNoFailMode), 10 ** collatDecimals);
     }
 
+    /**
+     * @dev Compare the value of an amount of collateral with an amount of debt to the maxLTV of the market
+     *      and fails if it's not respected
+     * @param collatAmount Amount of collateral
+     * @param debt         Amount of debt
+     * @param isNoFailMode If true, will fail if the oracle is stale
+     */
     function _verifyMaxLTV(uint256 collatAmount, uint256 debt, bool isNoFailMode) internal view {
         require(_maxBorrowable(collatAmount, isNoFailMode) >= debt, OverMaxLTV());
     }
 
+    /**
+     * @dev Fails if the amount of collateral to deposit or withdraw is null
+     * @param collatAmount Collat amount to deposit or withdraw
+     */
     function _verifyCollatInputNotZero(uint256 collatAmount) internal pure {
         require(collatAmount != 0, ZeroCollatAmount());
     }

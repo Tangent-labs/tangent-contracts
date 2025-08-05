@@ -1,19 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-interface IUSG {
-    function totalSupply() external view returns (uint256);
-    function balanceOf(address account) external view returns (uint256);
-}
+import {IERC4626, IERC20} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 
-interface IsUSG {
-    function totalSupply() external view returns (uint256);
-    function totalAssets() external view returns (uint256);
-}
-
-interface IAggregatorStablePriceV3 {
-    function price_w() external view returns (uint256);
-}
+import {IAggregatorStablePriceV3} from "../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 
 abstract contract USGInfo {
     struct USGInfoOut {
@@ -23,9 +13,8 @@ abstract contract USGInfo {
         uint256 usgStakedOnSgUsd;
     }
 
-    function getUSGInfo(address usgAddress, address usgOracleAddress, address[] memory pegKeepers, address sgUSDAddress) public view returns (USGInfoOut memory info) {
+    function getUSGInfo(IERC20 usg, IERC4626 sUSG, address[] memory pegKeepers, IAggregatorStablePriceV3 usgOracle) public returns (USGInfoOut memory info) {
         // 1. Supply of USG (excluding pegKeepers)
-        IUSG usg = IUSG(usgAddress);
         uint256 totalSupply = usg.totalSupply();
         uint256 totalPegKeeperBalance = 0;
 
@@ -36,14 +25,12 @@ abstract contract USGInfo {
         info.circulatingUsg = totalSupply - totalPegKeeperBalance;
 
         // 2. USG Price
-        IAggregatorStablePriceV3 usgOracle = IAggregatorStablePriceV3(usgOracleAddress);
         info.UsgPrice = usgOracle.price_w();
 
-        // 3. Supply of sgUSD
-        IsUSG sgUSD = IsUSG(sgUSDAddress);
-        info.sUsgSupply = sgUSD.totalSupply();
+        // 3. Supply of sUSG
+        info.sUsgSupply = sUSG.totalSupply();
 
-        // 4. Amount of tgUSD staked on sgUSD
-        info.usgStakedOnSgUsd = sgUSD.totalAssets();
+        // 4. Amount of tgUSD staked on sUSG
+        info.usgStakedOnSgUsd = sUSG.totalAssets();
     }
 }

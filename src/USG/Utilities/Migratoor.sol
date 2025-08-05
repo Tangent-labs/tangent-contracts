@@ -7,7 +7,6 @@ import {IMarketExternalActions} from "../../interfaces/internals/USG/IMarketExte
 import {ICollateral} from "../../interfaces/internals/USG/ICollateral.sol";
 
 import {MigrateStruct, ZapMigrateStruct} from "../../interfaces/internals/USG/IMigratoor.sol";
-import {IUSG} from "../../interfaces/internals/USG/IUSG.sol";
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 import {IZappingProxy} from "../../interfaces/internals/USG/IZappingProxy.sol";
 
@@ -18,15 +17,13 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 /// @notice This contract is used fully or partially migrate a position to an other market.
 ///         It prevent user to repay, withdraw, swap his collateral by himself etc.
 contract Migratoor is LightReentrancyGuardTransient {
-    IUSG public usg;
     IControlTower public controlTower;
     IZappingProxy public zappingProxy;
 
     error NotAMarket();
     error IdenticalMarkets();
-    constructor(IControlTower _controlTower, IUSG _usg, IZappingProxy _zappingProxy) {
+    constructor(IControlTower _controlTower, IZappingProxy _zappingProxy) {
         controlTower = _controlTower;
-        usg = _usg;
         zappingProxy = _zappingProxy;
     }
 
