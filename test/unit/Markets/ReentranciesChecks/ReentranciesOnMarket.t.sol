@@ -17,7 +17,10 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
     function setUp() public {
         market = deployConvexCurveLPMarket(collatToken, true);
 
-        ZapCallErrorReentrancy = abi.encodeWithSelector(ZappingProxy.ZapCallError.selector, abi.encodeWithSelector(ReentrancyGuardTransient.ReentrancyGuardReentrantCall.selector));
+        ZapCallErrorReentrancy = abi.encodeWithSelector(
+            ZappingProxy.ZapCallError.selector,
+            abi.encodeWithSelector(LightReentrancyGuardTransient.ReentrancyGuardReentrantCall.selector)
+        );
 
         vm.startPrank(usr1);
         deal(address(AddrClassicERC20.CRV), usr1, amountIn);

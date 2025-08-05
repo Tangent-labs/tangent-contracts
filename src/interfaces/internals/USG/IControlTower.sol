@@ -14,7 +14,11 @@ interface IControlTower {
 
     function isPegKeeper(address pegKeeper) external view returns (bool);
 
+    function isPositionMigrator(address migrator) external view returns (bool);
+
     function isIRCalculator(address irCalculator) external view returns (bool);
+
+    function isPauser(address pauser) external view returns (bool);
 
     function feeTreasury() external view returns (address);
 

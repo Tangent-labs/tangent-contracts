@@ -49,4 +49,22 @@ contract AdminFunctionsControlTower is MarketDeploymentContext {
         controlTower.toggleIRCalculator(usr2);
         assertEq(controlTower.isIRCalculator(usr2), false);
     }
+
+    function test_togglePositionMigrator_success() external {
+        vm.startPrank(owner);
+        controlTower.togglePositionMigrator(usr2);
+        assertEq(controlTower.isPositionMigrator(usr2), true);
+
+        controlTower.togglePositionMigrator(usr2);
+        assertEq(controlTower.isPositionMigrator(usr2), false);
+    }
+
+    function test_togglePauser_success() external {
+        vm.startPrank(owner);
+        controlTower.togglePauser(usr2);
+        assertEq(controlTower.isPauser(usr2), true);
+
+        controlTower.togglePauser(usr2);
+        assertEq(controlTower.isPauser(usr2), false);
+    }
 }

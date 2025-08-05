@@ -19,7 +19,7 @@ contract AddNewLockReward is MarketDeploymentContext {
         vm.startPrank(owner);
         skip(7 days);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.RewardAlreadyAdded.selector, address(usg)));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.RewardAlreadyAdded.selector, address(usg)));
         vsTan.addNewReward(usg);
     }
 }

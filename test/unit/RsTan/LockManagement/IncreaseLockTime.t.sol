@@ -33,26 +33,26 @@ contract IncreaseLockTime is MarketDeploymentContext {
 
     function test_increase_time_position_not_owned() external {
         vm.startPrank(usr2);
-        vm.expectRevert(abi.encodeWithSelector(VsTan.NotTokenOwner.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.NotTokenOwner.selector));
         vsTan.increaseLockTime(1);
     }
 
     function test_increase_on_expired_position() external {
         skip(13 weeks);
         vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(VsTan.LockExpired.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.LockExpired.selector));
         vsTan.increaseLockTime(2);
     }
 
     function test_increase_time_on_perma_lock() external {
         vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(VsTan.CantIncreaseTimePermaLock.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.CantIncreaseTimePermaLock.selector));
         vsTan.increaseLockTime(1);
     }
 
     function test_increase_time_on_already_max_lock() external {
         vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(VsTan.AlreadyMaxLock.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.AlreadyMaxLock.selector));
         vsTan.increaseLockTime(2);
     }
 }

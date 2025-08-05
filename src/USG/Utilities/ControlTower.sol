@@ -18,6 +18,10 @@ contract ControlTower is LightOwnable, IControlTower {
 
     mapping(address => bool) public isPegKeeper;
 
+    mapping(address => bool) public isPositionMigrator;
+
+    mapping(address => bool) public isPauser;
+
     error NotIRProducer(address irProducer);
 
     error CallerNotOwnerOrMarketCreator(address caller);
@@ -68,5 +72,13 @@ contract ControlTower is LightOwnable, IControlTower {
 
     function toggleIRCalculator(address irCalculator) external onlyOwner {
         isIRCalculator[irCalculator] = !isIRCalculator[irCalculator];
+    }
+
+    function togglePositionMigrator(address positionMigrator) external onlyOwner {
+        isPositionMigrator[positionMigrator] = !isPositionMigrator[positionMigrator];
+    }
+
+    function togglePauser(address _pauser) external onlyOwner {
+        isPauser[_pauser] = !isPauser[_pauser];
     }
 }

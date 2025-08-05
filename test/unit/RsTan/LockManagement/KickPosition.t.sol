@@ -37,11 +37,11 @@ contract KickPosition is MarketDeploymentContext {
         // TAN fluxes
         verifyReceiveERC20(tan, usr1, amountToLock - kickIncentivization, "Locker received his tan back, minus the kick penality");
         verifyReceiveERC20(tan, usr2, kickIncentivization, "Kicker received the penality");
-        verifyLostERC20(tan, address(vsTan), amountToLock, "VsTan sends TAN to Locker and Kicker");
+        verifyLostERC20(tan, address(vsTan), amountToLock, "VsTAN sends TAN to Locker and Kicker");
 
         // usg fluxes
         verifyReceiveDeltaRelERC20(usg, usr1, rewardAmount, 1e14, "Claims the rewards in usg for the positionOwner");
-        verifyLostDeltaRelERC20(usg, address(vsTan), rewardAmount, 1e14, "VsTan looses the usg rewards");
+        verifyLostDeltaRelERC20(usg, address(vsTan), rewardAmount, 1e14, "VsTAN looses the usg rewards");
 
         vm.startPrank(usr2);
         vsTan.kickPosition(1, usr2);
@@ -63,7 +63,7 @@ contract KickPosition is MarketDeploymentContext {
     function test_fails_kick_non_expired() external {
         skip(vsTan.LOCK_DURATION());
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.KickDelayIsNotPassed.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.KickDelayIsNotPassed.selector));
         vsTan.kickPosition(1, usr2);
     }
 }

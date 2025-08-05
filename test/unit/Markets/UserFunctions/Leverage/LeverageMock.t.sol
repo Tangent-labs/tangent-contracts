@@ -38,7 +38,7 @@ contract LeverageMock is MarketDeploymentContext {
         deal(address(collatToken), address(zappingProxy), minCollatOut);
 
         // Revert beaucause LTV is too low
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(Collateral.OverMaxLTV.selector));
         market.leverage(
             collatToDeposit,
             USGToFlashMint,

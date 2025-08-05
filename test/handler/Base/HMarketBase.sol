@@ -96,8 +96,7 @@ abstract contract HMarketBase is HandlerBase {
         uint256 newDebtIndex,
         uint256 userDebt
     ) internal view {
-        //TODO Check this assert
-        // assertApproxEqAbs(oldTotalDebt + interests - (_market.totalDebtShares() * newDebtIndex) / RAY, repayedAmount, 1, "Total new debt didn't decrease");
+        assertApproxEqAbs(oldTotalDebt + interests - (_market.totalDebtShares() * newDebtIndex) / RAY, repayedAmount, 1, "Total new debt didn't decrease");
         assertApproxEqAbs(_market.userDebtShares(account), ((userDebt - repayedAmount) * RAY) / newDebtIndex, 2, "New position debt index updated");
     }
 }

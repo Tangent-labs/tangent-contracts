@@ -96,8 +96,7 @@ contract MarketCreator is LightOwnable {
                 _controlTower: controlTower,
                 _irCalculator: irCalculator,
                 _rewardAccumulator: rewardAccumulator,
-                _zappingProxy: zappingProxy,
-                _pauser: pauser
+                _zappingProxy: zappingProxy
             });
     }
 

@@ -137,7 +137,5 @@ contract MarketCurrentAPR {
         return TVLStreamingData({totalSupplyUnderlying: cvxRewardToken.totalSupply(), streamingData: streamData});
     }
 
-    function _getProjectedAPRBlank() internal view returns (TVLStreamingData memory) {
-        return TVLStreamingData({totalSupplyUnderlying: 0, streamingData: new StreamingData[](0)});
-    }
+    function _getProjectedAPRBlank() internal pure returns (TVLStreamingData memory) {}
 }

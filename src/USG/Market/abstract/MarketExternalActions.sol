@@ -5,7 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {MarketCore, LiquidateInput, SelfLiquidateInput, ZapStructDeposit, IZappingProxy} from "./MarketCore.sol";
 
-import {IMarketExternalActions} from "../../../interfaces/internals/USG/IMarketExternalActions.sol";
+import {IMarketExternalActions, IControlTower} from "../../../interfaces/internals/USG/IMarketExternalActions.sol";
 
 import {IZapper} from "../../../interfaces/internals/USG/IZapper.sol";
 import {IUSG} from "../../../interfaces/internals/USG/IUSG.sol";
@@ -14,7 +14,7 @@ import {TokenAmount, ZapStruct} from "../../../interfaces/internals/ICommonStruc
 
 /// @notice Abstract base contract exposing external user functions
 /// @dev Inherits MarketCore
-/// Expose deposits, withdrawals, borrowing, repayment, liquidation, and leverage functions
+/// Expose deposits, withdrawals, borrowing, repayment, liquidation, leverage and migrate functions
 abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     event Deposit(address indexed account, uint256 stakedAmount);
     event ZapDeposit(address indexed account, uint256 stakedAmount, IERC20 tokenIn, uint256 amountIn);
@@ -47,6 +47,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     event Liquidate(address indexed account, uint256 repaidAmount, uint256 debtShares, uint256 fee, uint256 collateralLiquidated, address liquidator);
     event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 debtShares, uint256 collateralLiquidated, address liquidator);
     event SeizeCollateral(address indexed account, uint256 newBadDebt, uint256 collateralSeized);
+
+    event MigrateFrom(address indexed account, uint256 collatRemoved, uint256 debtRemoved, uint256 debtRepaid, uint256 newUserDebtShares);
+    event MigrateTo(address indexed account, uint256 collatAdded, uint256 debtAdded, uint256 newUserDebtShares);
 
     error NotRewardAccumulator();
 
@@ -235,8 +238,8 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @notice Liquidate a part or the full collateral of the position of the caller.
      * @dev
      * @param  collatAmountToLiquidate   Amount of collateral to liquidate from the position.
-     * @param  USGToRepay              Amount of debt to repay in USG after the selling of the position.
-     * @param  minUSGOut               Minimum amount of USG to receive on the sell of the collateral.
+     * @param  USGToRepay                Amount of debt to repay in USG after the selling of the position.
+     * @param  minUSGOut                 Minimum amount of USG to receive on the sell of the collateral.
      * @param  liquidationCall           Contract and data allowing to sell the collateral for USG.
      */
     function selfLiquidate(
@@ -341,5 +344,62 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external virtual nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
         require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
         return _claimUnderlyingRewards(_rewardTokens);
+    }
+
+    /**
+     * @dev Callable only by a verified Migrator.
+     *      Remove and if wanted, repay a part of the debt and withdraw a part of the collateral.
+     * @param  _controlTower      Control Tower passed by the Migrator so save gas
+     * @param  account            Account that will be affected by the modifications
+     * @param  collatToRemove     Amount of collateral to remove from the contract
+     * @param  debtToRemove       Amount of debt to remove from the contract
+     * @param  debtToRepay        Amount of USG to burn that will be removed from the debt transfered to the `TO` market
+     * @param  receiver           Receiver of the colllateral
+     */
+    function migrateFrom(
+        IControlTower _controlTower,
+        address account,
+        uint256 collatToRemove,
+        uint256 debtToRemove,
+        uint256 debtToRepay,
+        address receiver
+    ) external nonReentrant updateRewards(account) returns (uint256) {
+        (uint256 debtRepaid, uint256 newUserDebtShares) = _migrateFrom(_controlTower, account, collatToRemove, debtToRemove, debtToRepay, receiver);
+        emit MigrateFrom(account, collatToRemove, debtToRemove, debtToRepay, newUserDebtShares);
+        return debtRepaid;
+    }
+
+    /**
+     * @dev Callable only by a verified Migrator.
+     *      Received the debt from the `FROM` market and the zapped collateral.
+     * @param  _controlTower  Control Tower passed by the Migrator so save gas
+     * @param  account        Account that will be affected by the modifications
+     * @param  collatToAdd    Amount of collateral to add to the contract
+     * @param  debtToAdd      Amount of debt to add to the contract
+     */
+    function migrateTo(IControlTower _controlTower, address account, uint256 collatToAdd, uint256 debtToAdd) external nonReentrant updateRewards(account) {
+        uint256 newUserDebtShares = _migrateTo(_controlTower, account, collatToAdd, debtToAdd);
+        emit MigrateTo(account, collatToAdd, debtToAdd, newUserDebtShares);
+    }
+
+    /**
+     * @dev Callable only by a verified Migrator.
+     *      Block all the actions of the contract to prevent reentrancy exploits
+     * @param  _controlTower  Control Tower passed by the Migrator so save gas
+     */
+    function reeantrancyOn(IControlTower _controlTower) external returns (IERC20) {
+        _nonReentrantBefore();
+        _verifySenderMigrator(_controlTower);
+        return collatToken;
+    }
+
+    /**
+     * @dev Callable only by a verified Migrator.
+     *      Unlock all the actions of the contract.
+     * @param  _controlTower  Control Tower passed by the Migrator so save gas
+     */
+    function reeantrancyOff(IControlTower _controlTower) external {
+        _verifySenderMigrator(_controlTower);
+        _nonReentrantAfter();
     }
 }

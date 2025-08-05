@@ -2,7 +2,7 @@
 pragma solidity ^0.8.22;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 /// @notice
-contract Tan is ERC20 {
+contract TAN is ERC20 {
     error ZeroAmount();
 
     /**

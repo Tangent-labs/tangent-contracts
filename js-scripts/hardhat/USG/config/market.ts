@@ -233,9 +233,40 @@ export const STATIC_CONFIG_PT_PENDLE = {
         minimumLoan: parseEther("3000"),
         rewards: [],
     },
-    wstUSR_25_07_25: {
-        collatName: "wstUSR 07/25/25",
-        collatToken: PendlePools["wstUSR 07/25/25"].PT,
+
+    sUSDe_25_09_25: {
+        collatName: "sUSDe 09/25/25",
+        collatToken: PendlePools["sUSDe 09/25/25"].PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [],
+    },
+
+    USDe_25_09_25: {
+        collatName: "USDe 09/25/25",
+        collatToken: PendlePools["USDe 09/25/25"].PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [],
+    },
+
+    wstUSR_25_09_25: {
+        collatName: "wstUSR 09/25/25",
+        collatToken: PendlePools["wstUSR 09/25/25"].PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [],
+    },
+
+    USR_04_09_25: {
+        collatName: "USR 09/04/25",
+        collatToken: PendlePools["USR 09/04/25"].PT,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),

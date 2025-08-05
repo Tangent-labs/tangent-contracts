@@ -61,12 +61,12 @@ export async function verifyContracts() {
     await forceAbi(client, addresses.tokens.USG, USG, false, (await artifacts.readArtifact(USG)).abi);
     const sUSG = "sUSG";
     await forceAbi(client, addresses.tokens.sUSG, sUSG, true, (await artifacts.readArtifact("IYearnV3Vault")).abi);
-    const tan = "Tan";
-    await forceAbi(client, addresses.tokens.tan, tan, false, (await artifacts.readArtifact(tan)).abi);
+    const tan = "TAN";
+    await forceAbi(client, addresses.tokens.TAN, tan, false, (await artifacts.readArtifact(tan)).abi);
 
     // Lock
-    const vsTan = "VsTan";
-    await forceAbi(client, addresses.tokens.vsTan, vsTan, false, (await artifacts.readArtifact(vsTan)).abi);
+    const vsTan = "VsTAN";
+    await forceAbi(client, addresses.tokens.vsTAN, vsTan, false, (await artifacts.readArtifact(vsTan)).abi);
     // Oracles
     await forceAbi(client, addresses.oracles.USDC, "Oracle USDC", false, (await artifacts.readArtifact("IAggregatorV3")).abi);
 

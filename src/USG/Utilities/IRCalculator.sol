@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
-import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
+import {LightReentrancyGuardTransient} from "../Utilities/abstract/LightReentrancyGuardTransient.sol";
 
 import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 
@@ -15,7 +15,7 @@ import {ABDKMath64x64} from "../../libs/ABDKMath64x64.sol";
 
 /// @title IRCalculator
 /// @notice Calculates and stores interest rates for all markets.
-contract IRCalculator is IIRCalculator, LightOwnable, ReentrancyGuardTransient {
+contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransient {
     uint256 public constant DENOMINATOR = 100_000;
 
     uint256 constant RAY = 1e27;

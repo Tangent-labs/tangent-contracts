@@ -4,9 +4,12 @@ pragma solidity ^0.8.24;
 import "../../interfaces/externals/Curve/ICurveStable.sol";
 import "../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../interfaces/externals/Curve/ICurveStableSwapFactoryNG.sol";
+import "../../interfaces/externals/Curve/ICurveCryptoSwapFactoryNG.sol";
+
 import "../../interfaces/externals/Curve/ICurveTriStable.sol";
 
 import "../../interfaces/externals/Curve/ICurveTriCryptoSwap.sol";
+
 import "../../interfaces/externals/Curve/ICurveCryptoSwap.sol";
 
 library AddrCurveStableLP {
@@ -33,12 +36,16 @@ library AddrCurveStableLP {
     ICurveStableSwapNG constant sDAI_sUSDe = ICurveStableSwapNG(0x167478921b907422F8E88B43C4Af2B8BEa278d3A);
     ICurveStableSwapNG constant scrvUSD_sDOLA = ICurveStableSwapNG(0x76A962BA6770068bCF454D34dDE17175611e6637);
     ICurveStableSwapNG constant sUSDS_USDT = ICurveStableSwapNG(0x00836Fe54625BE242BcFA286207795405ca4fD10);
+    ICurveStableSwapNG constant sUSDe_crvUSD = ICurveStableSwapNG(0x57064F49Ad7123C92560882a45518374ad982e85);
+    ICurveStableSwapNG constant USDe_USDC = ICurveStableSwapNG(0x02950460E2b9529D0E00284A5fA2d7bDF3fA4d72);
 
     ICurveStable constant ETH_stETH_POOL = ICurveStable(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
     IERC20Metadata constant ETH_stETH_LP = IERC20Metadata(0x06325440D014e39736583c165C2963BA99fAf14E);
 }
 
 library AddrCryptoSwapLP {
+    ICurveCryptoSwapFactoryNG constant CRYPTO_SWAP_FACTORY = ICurveCryptoSwapFactoryNG(0x98EE851a00abeE0d95D08cF4CA2BdCE32aeaAF7F);
+
     // TRI
     ICurveTriCryptoSwap constant USDT_WBTC_ETH = ICurveTriCryptoSwap(0xf5f5B97624542D72A9E06f04804Bf81baA15e2B4);
     ICurveTriCryptoSwap constant USDC_WBTC_ETH = ICurveTriCryptoSwap(0x7F86Bf177Dd4F3494b841a37e810A34dD56c829B);

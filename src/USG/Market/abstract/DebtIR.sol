@@ -5,12 +5,12 @@ import {IUSG} from "../../../interfaces/internals/USG/IUSG.sol";
 import {IDebtIR} from "../../../interfaces/internals/USG/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/USG/IIRCalculator.sol";
 import {LightOwnable} from "../../Utilities/abstract/LightOwnable.sol";
-import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
+import {LightReentrancyGuardTransient} from "../../Utilities/abstract/LightReentrancyGuardTransient.sol";
 
 /// @title DebtIR - Computes debts for a market
 /// @notice Abstract contract to track debt issuance and bad debt
 /// @dev Inherits access control (LightOwnable) and reentrancy protection
-abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
+abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient {
     /// @notice Precision factor (10^27)
     uint256 public constant RAY = 1e27;
 
@@ -37,6 +37,11 @@ abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
 
     /// @notice Error raised when attempting to repay more bad debt than exists
     error RepayMoreThanBadDebt();
+    error TotalDebtTooHigh();
+    error UserDebtTooLow();
+    error UserDebtZero();
+    error ZeroDebtAmount();
+
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         OWNER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
@@ -68,7 +73,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
         uint256 _badDebt = badDebt;
         require(amount <= _badDebt, RepayMoreThanBadDebt());
         badDebt = _badDebt - amount;
-        usg.burnFrom(msg.sender, amount);
+        _burnUSG(msg.sender, amount);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -99,17 +104,65 @@ abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
      * @return Calculated total debt
      */
     function _totalDebt(uint256 _badDebt, uint256 _totalDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
-        return _badDebt + (_totalDebtShares * newDebtIndex) / RAY;
+        return _badDebt + _convertToAmount(_totalDebtShares, newDebtIndex);
     }
 
     /**
-     * @notice Internal helper to compute user's debt from shares and index
-     * @param _userDebtShares User's debt shares
-     * @param newDebtIndex Current debt index (with interest)
-     * @return User's actual USG debt
+     * @dev   Convert a debt amount to a debt shares
+     * @param debt  Debt amount
+     * @param index Debt index of the market
+     * @return Debt shares
      */
-    function _userDebt(uint256 _userDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
-        return (_userDebtShares * newDebtIndex) / RAY;
+    function _convertToShares(uint256 debt, uint256 index) internal pure returns (uint256) {
+        return _mulDiv(debt, RAY, index);
+    }
+
+    /**
+     * @dev   Convert a debt shares to a debt amount
+     * @param debtShares  Debt shares
+     * @param index       Debt index of the market
+     * @return Debt amount
+     */
+    function _convertToAmount(uint256 debtShares, uint256 index) internal pure returns (uint256) {
+        return _mulDiv(debtShares, index, RAY);
+    }
+
+    /**
+     * @dev   Multiply two numbers `a` and `b`then divide the result by `d`
+     * @param a  First number of the product
+     * @param b  Second number of the product
+     * @param d  Denominator
+     * @return Result of the operation
+     */
+    function _mulDiv(uint256 a, uint256 b, uint256 d) internal pure returns (uint256) {
+        return (a * b) / d;
+    }
+
+    /**
+     * @dev   Burns some USG from an account
+     * @param account Account from where to burn USG
+     * @param amount  Amount of USG to burn
+     */
+    function _burnUSG(address account, uint256 amount) internal {
+        usg.burnFrom(account, amount);
+    }
+
+    /**
+     * @dev   Mints some USG on an amount
+     * @param _usg    USG token
+     * @param account Account to mint USG on
+     * @param amount  Amount of USG to mint
+     */
+    function _mintUSG(IUSG _usg, address account, uint256 amount) internal {
+        _usg.mint(account, amount);
+    }
+
+    /**
+     * @dev  Computes and update the debtIndex on the IRCalculator and returns the new one
+     * @return The new debt index of the market
+     */
+    function _checkpointIR() internal returns (uint256) {
+        return irCalculator.checkpointIR(address(this));
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -132,7 +185,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
      * @return The total debt the user owes in USG
      */
     function userDebt(address account) public view returns (uint256) {
-        return _userDebt(userDebtShares[account], irCalculator.newDebtIndex(address(this)));
+        return _convertToAmount(userDebtShares[account], irCalculator.newDebtIndex(address(this)));
     }
 
     /**
@@ -140,6 +193,37 @@ abstract contract DebtIR is LightOwnable, IDebtIR, ReentrancyGuardTransient {
      * @return Interest amount in USG accrued but not yet reflected in totalDebtShares
      */
     function pendingInterests() external view returns (uint256) {
-        return (totalDebtShares * irCalculator.indexDelta(address(this))) / RAY;
+        return _convertToAmount(totalDebtShares, irCalculator.indexDelta(address(this)));
+    }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                        VERIFIERS 
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    /**
+     * @dev Fails if the new amount of total debt is over the maximum debt of the market
+     * @param _badDebt    Collat amount to deposit or withdraw
+     * @param totalShares Collat amount to deposit or withdraw
+     * @param debtIndex   Collat amount to deposit or withdraw
+
+     */
+    function _verifyDebtCap(uint256 _badDebt, uint256 totalShares, uint256 debtIndex) internal view {
+        require(_totalDebt(_badDebt, totalShares, debtIndex) <= maxMarketDebt, TotalDebtTooHigh());
+    }
+
+    /**
+     * @dev Fails if the amount of debt for an account is under the minimum loan allowed
+     * @param debt  Debt amount of the user
+     */
+    function _verifyMinimumDebt(uint256 debt) internal view {
+        require(debt >= minimumLoan, UserDebtTooLow());
+    }
+
+    /**
+     * @dev Fails if the amount of debt in input is null
+     * @param debt  Debt amount to borrow or repay
+     */
+    function _verifyDebtInputNotZero(uint256 debt) internal pure {
+        require(debt != 0, ZeroDebtAmount());
     }
 }

@@ -48,5 +48,9 @@ export function TOKENS_TO_GIVE_WITHOUT_LP(mintedAmount: number) {
             ...obj.frxETH,
             amount: mintedAmount,
         },
+        {
+            ...obj.WETH,
+            amount: mintedAmount,
+        },
     ];
 }

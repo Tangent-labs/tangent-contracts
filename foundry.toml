@@ -6,7 +6,7 @@ ast = true
 build_info = true
 libs = ["lib"]
 extra_output = ["storageLayout"]
-solc = "0.8.27"
+solc = "0.8.28"
 evm_version = "cancun"
 ignored_error_codes = [
     3420, # pragma-solidity
@@ -19,7 +19,7 @@ ignored_error_codes = [
 ]
 
 # optimizer = true
-# optimizer-runs = 1_000_000
+# optimizer-runs = 10_000_000
 # dynamic_test_linking=true
 fs_permissions = [{ access = "read-write", path = "./" }]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

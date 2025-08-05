@@ -51,6 +51,8 @@ abstract contract Collateral is DebtIR, ICollateral {
     error LiquidationFeeTooHigh();
     error MaxLTVTooHigh();
     error MaxLTVTooLow();
+    error OverMaxLTV();
+    error ZeroCollatAmount();
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     OWNER ACTIONS 
@@ -143,15 +145,6 @@ abstract contract Collateral is DebtIR, ICollateral {
     }
 
     /**
-     * @notice Returns the price at which the user's position would be liquidated
-     * @param account Address of the user
-     * @return Liquidation price in USD (1e18 base)
-     */
-    function liquidationPrice(address account) public view returns (uint256) {
-        return ((userDebt(account) * DENOMINATOR) * 1e18) / (collateralBalances[account] * liquidationThreshold);
-    }
-
-    /**
      * @notice Returns both user collateral balance and total system collateral
      * @param account Address of the user
      * @return balance User's collateral balance
@@ -171,7 +164,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Borrow limit in USG
      */
     function _maxBorrowable(uint256 collatAmount, bool isNoFailMode) internal view returns (uint256) {
-        return (maxLTV * _positionValue(collatAmount, isNoFailMode)) / DENOMINATOR;
+        return _mulDiv(maxLTV, _positionValue(collatAmount, isNoFailMode), DENOMINATOR);
     }
 
     /**
@@ -187,7 +180,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Value in USD (1e18 base)
      */
     function _positionValue(uint256 collatAmount, bool isNoFailMode) internal view returns (uint256) {
-        return (collatAmount * _collateralPrice(isNoFailMode)) / 10 ** collatDecimals;
+        return _mulDiv(collatAmount, _collateralPrice(isNoFailMode), 10 ** collatDecimals);
     }
 
     /**
@@ -209,7 +202,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Max borrowable amount
      */
     function _maxBorrowable(address account, bool isNoFailMode) internal view returns (uint256) {
-        return (maxLTV * _positionValue(account, isNoFailMode)) / DENOMINATOR;
+        return _mulDiv(maxLTV, _positionValue(account, isNoFailMode), DENOMINATOR);
     }
 
     /**
@@ -218,6 +211,25 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Value in USD (1e18 base)
      */
     function _positionValue(address account, bool isNoFailMode) internal view returns (uint256) {
-        return (collateralBalances[account] * _collateralPrice(isNoFailMode)) / 10 ** collatDecimals;
+        return _mulDiv(collateralBalances[account], _collateralPrice(isNoFailMode), 10 ** collatDecimals);
+    }
+
+    /**
+     * @dev Compare the value of an amount of collateral with an amount of debt to the maxLTV of the market
+     *      and fails if it's not respected
+     * @param collatAmount Amount of collateral
+     * @param debt         Amount of debt
+     * @param isNoFailMode If true, will fail if the oracle is stale
+     */
+    function _verifyMaxLTV(uint256 collatAmount, uint256 debt, bool isNoFailMode) internal view {
+        require(_maxBorrowable(collatAmount, isNoFailMode) >= debt, OverMaxLTV());
+    }
+
+    /**
+     * @dev Fails if the amount of collateral to deposit or withdraw is null
+     * @param collatAmount Collat amount to deposit or withdraw
+     */
+    function _verifyCollatInputNotZero(uint256 collatAmount) internal pure {
+        require(collatAmount != 0, ZeroCollatAmount());
     }
 }

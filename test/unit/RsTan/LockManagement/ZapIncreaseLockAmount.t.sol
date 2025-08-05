@@ -28,7 +28,7 @@ contract ZapIncreaseLockAmount is MarketDeploymentContext {
         verifyLostERC20(ETH_NAKED, usr1, amountIn, "ETH is sent by user");
         verifyReceiveERC20(ETH_NAKED, address(mockRouter), amountIn, "Router received ETH");
 
-        verifyReceiveERC20(tan, address(vsTan), amountOutTan, "Tan receives by VsTan");
+        verifyReceiveERC20(tan, address(vsTan), amountOutTan, "TAN receives by VsTAN");
 
         vsTan.zapIncreaseLockAmount{value: amountIn}(
             1,
@@ -58,7 +58,7 @@ contract ZapIncreaseLockAmount is MarketDeploymentContext {
         verifyLostERC20(AddrClassicERC20.USDT, usr1, amountIn, "USDT is sent by user");
         verifyReceiveERC20(AddrClassicERC20.USDT, address(mockRouter), amountIn, "Router received USDT");
 
-        verifyReceiveERC20(tan, address(vsTan), amountOutTan, "Tan receives by VsTan");
+        verifyReceiveERC20(tan, address(vsTan), amountOutTan, "TAN receives by VsTAN");
 
         vsTan.zapIncreaseLockAmount(
             1,
