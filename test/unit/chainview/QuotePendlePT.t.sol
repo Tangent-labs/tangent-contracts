@@ -72,7 +72,7 @@ contract QuotePendlePT is MarketDeploymentContext {
         try new QuotesPendlePT(quoteInParams, new PendlePTOutQuoteParams[](0)) {} catch (bytes memory reason) {
             (uint256[] memory quotesIn, uint256[] memory quotesOut) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
             assertApproxEqRel(realUSDCReturned, quotesIn[0], 5e15);
-            assertApproxEqRel(oracles[AddrPTPendle.sUSDe_25_09_25].latestAnswer(), quotesIn[0] * 1e12, 5e15);
+            assertApproxEqRel(oracles[AddrPTPendle.sUSDe_25_09_25].latestAnswer(true), quotesIn[0] * 1e12, 5e15);
         }
     }
 
@@ -117,7 +117,7 @@ contract QuotePendlePT is MarketDeploymentContext {
         try new QuotesPendlePT(new PendlePTInQuoteParams[](0), quoteOutParams) {} catch (bytes memory reason) {
             (uint256[] memory quotesIn, uint256[] memory quotesOut) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
             assertApproxEqRel(realPTReturned, quotesOut[0], 5e15);
-            assertApproxEqRel(10 ** 36 / oracles[AddrPTPendle.sUSDe_25_09_25].latestAnswer(), quotesOut[0], 5e15);
+            assertApproxEqRel(10 ** 36 / oracles[AddrPTPendle.sUSDe_25_09_25].latestAnswer(true), quotesOut[0], 5e15);
         }
     }
 
@@ -160,7 +160,7 @@ contract QuotePendlePT is MarketDeploymentContext {
         try new QuotesPendlePT(quoteInParams, new PendlePTOutQuoteParams[](0)) {} catch (bytes memory reason) {
             (uint256[] memory quotesIn, uint256[] memory quotesOut) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
             assertApproxEqRel(realUSDCReturned, quotesIn[0], 5e15);
-            assertApproxEqRel(oracles[AddrPTPendle.USDe_25_09_25].latestAnswer(), quotesIn[0] * 1e12, 5e15);
+            assertApproxEqRel(oracles[AddrPTPendle.USDe_25_09_25].latestAnswer(true), quotesIn[0] * 1e12, 5e15);
         }
     }
 
@@ -206,7 +206,7 @@ contract QuotePendlePT is MarketDeploymentContext {
         try new QuotesPendlePT(quoteInParams, new PendlePTOutQuoteParams[](0)) {} catch (bytes memory reason) {
             (uint256[] memory quotesIn, uint256[] memory quotesOut) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
             assertApproxEqRel(realUSDCReturned, quotesIn[0], 5e15);
-            assertApproxEqRel(oracles[AddrPTPendle.wstUSR_25_09_25].latestAnswer(), quotesIn[0] * 1e12, 5e15);
+            assertApproxEqRel(oracles[AddrPTPendle.wstUSR_25_09_25].latestAnswer(true), quotesIn[0] * 1e12, 5e15);
         }
     }
     function test_quote_pendle_PT_with_USR() public {
@@ -249,7 +249,7 @@ contract QuotePendlePT is MarketDeploymentContext {
             (uint256[] memory quotesIn, uint256[] memory quotesOut) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
 
             assertApproxEqRel(realUSDCReturned, quotesIn[0], 5e15);
-            assertApproxEqRel(oracles[AddrPTPendle.USR_04_09_25].latestAnswer(), quotesIn[0] * 1e12, 5e15);
+            assertApproxEqRel(oracles[AddrPTPendle.USR_04_09_25].latestAnswer(true), quotesIn[0] * 1e12, 5e15);
         }
     }
 }
