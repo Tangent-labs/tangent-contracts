@@ -74,10 +74,12 @@ export class OracleContext {
         {key: "wstUSR 09/25/25", underlyingOracle: "wstUSR"},
         {key: "USR 09/04/25", underlyingOracle: "USR"},
     ];
-    async fetchChainlinkOracle() {
+    async deployChainlinkWrappers() {
+        const ChainlinkWrapperFactory = await ethers.getContractFactory("ChainlinkAggregatorWrapper");
+
         for (let index = 0; index < this.chainlinkOracleParams.length; index++) {
             const item = this.chainlinkOracleParams[index];
-            this.oracles[item.key] = await ethers.getContractAt("IPriceOracle", PRICE_FEEDS[item.oracleName]);
+            this.oracles[item.key] = await ChainlinkWrapperFactory.deploy(await ethers.getContractAt("IPriceOracle", PRICE_FEEDS[item.oracleName]), 10000000000);
         }
     }
 
@@ -128,7 +130,7 @@ export class OracleContext {
     }
 
     async deployAndSetupOracles(baseContext: BaseContext, lpDeployContext: LpDeployContext) {
-        await this.fetchChainlinkOracle();
+        await this.deployChainlinkWrappers();
         await this.deployOracleCoinFromCurveLP();
         await this.deployOracleDuoPoolStable();
         await this.deployOracleCryptoSwap();

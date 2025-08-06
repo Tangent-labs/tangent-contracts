@@ -65,7 +65,7 @@ export class BaseContext extends MainSetup {
         this.USG = await (await ethers.getContractFactory("USG")).deploy(this.owner, this.controlTower);
         await this.USG.waitForDeployment();
 
-        this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy();
+        this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy(this.controlTower);
         await this.zappingProxy.waitForDeployment();
 
         await this.deploysUSG();
