@@ -35,6 +35,8 @@ contract LandingChainView is UsgInfo, VsTANInfo {
     address public constant sdPendleStaking = 0x508f0E1b565b40AeB94671BeD228083203330882;
     address public constant sdFxnStaking = 0x35e30Bc815935Bb5EC1743f772331864D780cc26;
     address public constant sdBalStaking = 0xAf5b3f4A0b4dc334dB7137E5584E0e971E5e4962;
+    address public constant cvgSdtStaking = 0xF941BC649Ef0B20ABd7f6dC78CA8f8E225337933;
+    address public constant cvgSdtPool = 0xC6628f00F29cc89a87BBeE7554C4725611200fD7;
 
     // USG/TAN addresses
     address public constant usg = address(0);
@@ -98,29 +100,36 @@ contract LandingChainView is UsgInfo, VsTANInfo {
 
         // Get the stake DAO part
         address[] memory lpAssets = new address[](5);
-        lpAssets[0] = sdCrvStaking;
+        lpAssets[0] = sdCRVStaking;
         lpAssets[1] = sdPendleStaking;
         lpAssets[2] = sdFxnStaking;
         lpAssets[3] = sdBalStaking;
         lpAssets[4] = cvgSdtStaking;
-
+        uint256 cvgSdtTotalStaked = 0;
         uint256 i = 0;
         for (i; i < lpAssets.length; i++) {
             IStakingPositionService sdtService = IStakingPositionService(lpAssets[i]);
             uint256 cycle = sdtService.stakingCycle();
-            amounts[i] = sdtService.cycleInfo(cycle + 1).totalStaked;
+            if (i == 4) {
+                cvgSdtTotalStaked = sdtService.cycleInfo(cycle + 1).totalStaked;
+            } else {
+                amounts[i] = sdtService.cycleInfo(cycle + 1).totalStaked;
+            }
         }
         // for cvgSDT check the peg and return the amount in SDT equivalent
         ICurvePool cvgSdtPoolContract = ICurvePool(cvgSdtPool);
         uint256 peggedSdtAmount = cvgSdtPoolContract.get_dy(1, 0, 1 ether);
         amounts[4] = (peggedSdtAmount * amounts[4]) / 1 ether; // SDT amount
 
-        // Get the amount of cvgCVX
-        IStakingPositionService cvgCvxPositionService = IStakingPositionService(cvgCvxStaking);
+        // Get the Convex part
+        ICurvePool cvgSdtPoolContract = ICurvePool(cvgSdtPool);
+        uint256 cvgSdtAmount = cvgSdtPoolContract.get_dy(1, 0, 1 ether);
+        amounts[i - 1] = (cvgSdtAmount * cvgSdtTotalStaked) / 1 ether; // CVX amount
+
+        // check the CVX1 amount ( pegged 1:1 to CVX )
+        IStakingPositionService cvgCvxPositionService = IStakingPositionService(cvgCvxstaking);
         uint256 currentCycle = cvgCvxPositionService.stakingCycle();
         uint256 totalStaked = cvgCvxPositionService.cycleInfo(currentCycle + 1).totalStaked;
-
-        // for cvgCVX check the peg and return the amount in CVX(1) equivalent
         ICurvePool cvgCvxCvx1PoolContract = ICurvePool(cvgCvxCvx1Pool);
         uint256 peggedCvxAmount = cvgCvxCvx1PoolContract.get_dy(1, 0, 1 ether);
         amounts[i] = (peggedCvxAmount * totalStaked) / 1 ether; // CVX amount
