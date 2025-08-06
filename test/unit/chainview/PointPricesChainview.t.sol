@@ -21,9 +21,25 @@ contract PointPricesChainviewTest is MarketDeploymentContext {
 
         PointPrices.AddressesInput memory addresses = PointPrices.AddressesInput({usg: address(usg), usgOracle: address(USGOracle), sUsg: address(sUSG), pegKeepers: pegKeepers});
 
-        try new PointPrices(erc4626s, addresses) {} catch (bytes memory reason) {
+        MarketExternalActions m1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+        MarketExternalActions m2 = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
+
+        address[] memory markets = new address[](2);
+        markets[0] = address(m1);
+        markets[1] = address(m2);
+
+        try new PointPrices(erc4626s, addresses, markets) {} catch (bytes memory reason) {
             console.logBytes(reason);
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }
 }
+
+/*
+ MarketExternalActions[] public markets;
+
+    BorrowInvariantHandler public borrowInvariantHandler;
+    function setUp() public {
+        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true));
+        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, true));
+        markets.push(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD));*/
