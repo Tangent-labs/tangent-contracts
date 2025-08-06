@@ -71,9 +71,9 @@ Distribute rewards into markets in order to be processed. We are transfering rew
 npm run distribute-rewards-markets
 ```
 
-### Distribute and streams USG rewards into VsTan
+### Distribute and streams USG rewards into VsTAN
 
-Distribute rewards USG into VsTan and start the streaming process.
+Distribute rewards USG into VsTAN and start the streaming process.
 
 ```
 npm run distribute-rewards-vsTan

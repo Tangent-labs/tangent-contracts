@@ -98,7 +98,7 @@ contract LeverageMaxUI {
             uint256 valueUSG = (lp.balances(_USGIndex) * USGPrice) / 1e18;
             uint256 valueOtherStable = (lp.balances(_otherStableIndex) *
                 10 ** (18 - otherCoin.decimals()) *
-                oracles[otherCoin].latestAnswer() *
+                oracles[otherCoin].latestAnswer(true) *
                 10 ** (18 - oracles[otherCoin].decimals())) / 1e18;
 
             uint256 totalStable = valueUSG + valueOtherStable;

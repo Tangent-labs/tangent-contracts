@@ -24,7 +24,7 @@ contract ProcessRewardsCvxFxnMarket is MarketDeploymentContext {
     }
 
     function minimumCollatForDebt(uint256 userDebt) internal view returns (uint256) {
-        return 2 + (userDebt * 1 ether * 100_000) / (market.collatOracle().latestAnswer() * 85_000);
+        return 2 + (userDebt * 1 ether * 100_000) / (market.collatOracle().latestAnswer(true) * 85_000);
     }
 
     function test_processRewards_claim(uint256 collatDeposited, uint256 borrowedAmount) external {

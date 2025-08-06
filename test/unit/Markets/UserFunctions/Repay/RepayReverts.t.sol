@@ -23,7 +23,7 @@ contract RepayReverts is MarketDeploymentContext {
     }
 
     function test_repay_0_debt() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroDebtAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(DebtIR.ZeroDebtAmount.selector));
         market.repay(usr1, 0);
     }
 
@@ -31,7 +31,7 @@ contract RepayReverts is MarketDeploymentContext {
         deal(address(usg), usr1, 1000);
         vm.startPrank(usr1);
 
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtZero.selector));
+        vm.expectRevert(abi.encodeWithSelector(DebtIR.UserDebtZero.selector));
         market.repay(usr1, 1000);
     }
 
@@ -40,7 +40,7 @@ contract RepayReverts is MarketDeploymentContext {
         hDeposit.depositAndBorrow(10_000 ether, 3_000 ether);
 
         vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooLow.selector));
+        vm.expectRevert(abi.encodeWithSelector(DebtIR.UserDebtTooLow.selector));
         market.repay(usr1, 1);
     }
 }

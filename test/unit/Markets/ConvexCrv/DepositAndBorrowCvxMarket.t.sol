@@ -57,12 +57,10 @@ contract DepositAndBorrowCvxMarket is MarketDeploymentContext {
         assertEq(market.collateralBalances(usr2), collatDeposited2, "Collateral deposited must be equal to collateralBalances");
         assertEq(market.totalCollateral(), collatDeposited1 + collatDeposited2, "Total collateral is not right");
 
-        // TODO See if it's possible to get closer
         assertApproxEqAbs(market.userDebt(usr2), borrowedAmount2, 1, "Position debt displays the real debt for a user");
 
         assertEq(market.totalDebtShares(), market.userDebtShares(usr1) + market.userDebtShares(usr2), "Total Debt shares equals sum of all user debt shares");
 
-        // TODO See if it's possible to get closer
         assertApproxEqAbs(market.totalDebt(), market.userDebt(usr1) + market.userDebt(usr2), 1, "Total Debt equals sum of all debt");
 
         skip(1 days);

@@ -50,7 +50,7 @@ contract MergeLock is MarketDeploymentContext {
 
         skip(vsTan.LOCK_DURATION());
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.LockExpired.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.LockExpired.selector));
         vsTan.merge(1, 3, false);
     }
 
@@ -59,14 +59,14 @@ contract MergeLock is MarketDeploymentContext {
 
         skip(vsTan.LOCK_DURATION());
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.LockExpired.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.LockExpired.selector));
         vsTan.merge(3, 1, false);
     }
 
     function test_merge_fails_tokenA_is_tokenB() external {
         vm.startPrank(usr1);
         (uint48 endLock2, uint208 amount2Before) = vsTan.locks(2);
-        vm.expectRevert(abi.encodeWithSelector(VsTan.CantMerge2SamePosition.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.CantMerge2SamePosition.selector));
         vsTan.merge(2, 2, false);
     }
 }

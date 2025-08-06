@@ -1,22 +1,24 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {IVsTan} from "../../../interfaces/internals/USG/IVsTan.sol";
-import {IVsTanERC721} from "../../../interfaces/internals/USG/IVsTanERC721.sol";
-
 import {ERC20Infos, IERC20, TokenAmount} from "../../ERC20Infos.sol";
 
-contract LockUI {
+import {VsTANInfo, IVsTan, ICurveCryptoSwap, IAggregatorV3, IAggregatorStablePriceV3} from "../../VsTANInfo.sol";
+
+contract LockUI is VsTANInfo {
     error LockUIOutError(LockUIOut output);
 
-    constructor(address user, IVsTan vsTan, IERC20 tan) {
+    constructor(address user, IERC20 tan, IVsTan vsTan, ICurveCryptoSwap tanLP, IERC20 usg, IAggregatorV3 ethOracle, IAggregatorStablePriceV3 usgOracle) {
         uint256 positionOwned = vsTan.balanceOf(user);
+
+        RsTanData memory rsTanGlobalData = getVsTanInfo(vsTan, tanLP, usg, ethOracle, usgOracle);
 
         LockUIOut memory output;
         output.totalSupply = tan.totalSupply();
-        output.totalLocked = vsTan.totalSupplyVsTan();
+        output.totalLocked = rsTanGlobalData.totalSupplyVsTan;
         output.percentageLocked = output.totalSupply != 0 ? (output.totalLocked * 10 ** 6) / output.totalSupply : 0;
-        output.tanAPR = 10 ** 19;
+        output.tanPrice = rsTanGlobalData.tanPrice;
+        output.tanAPR = rsTanGlobalData.apr;
 
         if (user != address(0)) {
             positionOwned = vsTan.balanceOf(user);
@@ -55,5 +57,6 @@ struct LockUIOut {
     uint256 totalLocked;
     uint256 percentageLocked;
     uint256 tanAPR;
+    uint256 tanPrice;
     LockedPosition[] positions;
 }

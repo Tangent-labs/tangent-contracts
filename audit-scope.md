@@ -25,9 +25,9 @@ And the abstract contracts :
 
 ## Tokens
 
-- Tan
+- TAN
 - USG
-- VsTan
+- VsTAN
 - WStable
 
 ## Utililities

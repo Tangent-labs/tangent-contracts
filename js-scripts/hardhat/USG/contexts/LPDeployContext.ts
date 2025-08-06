@@ -1,8 +1,9 @@
 import {ethers} from "hardhat";
-import {IERC20Metadata, ICurveStableSwapNG} from "../../../../typechain-types";
+import {IERC20Metadata, ICurveStableSwapNG, ICurveCryptoSwap} from "../../../../typechain-types";
 import {BaseContext} from "./BaseContext";
-import {BigNumberish, MaxUint256, parseUnits, ZeroAddress} from "ethers";
+import {AddressLike, BigNumberish, MaxUint256, parseUnits, ZeroAddress} from "ethers";
 import {WStablesContext} from "./WStableContext";
+import {commonERC20} from "defi-resources";
 
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;
@@ -10,8 +11,9 @@ export type StableLP = {
 
 export class LpDeployContext {
     stableLp: StableLP = {};
+    tanLP?: ICurveCryptoSwap;
 
-    async deployAllUSGLps(baseContext: BaseContext, wStableContext: WStablesContext) {
+    async deployAllTangentLps(baseContext: BaseContext, wStableContext: WStablesContext) {
         const amount = 500_000;
         const USG_USDC = "USG-USDC";
         const USGC = "USGC";
@@ -43,6 +45,8 @@ export class LpDeployContext {
             "866",
             "0"
         );
+
+        this.tanLP = await this.deploy_TAN_ETH_LP(baseContext);
 
         // const USG_wcrvUSD = "USG-wcrvUSD";
         // const tgCrvUSD = "tgCrvUSD";
@@ -140,7 +144,42 @@ export class LpDeployContext {
         return lp;
     }
 
-    async _usersApproveLp(baseContext: BaseContext, coins: IERC20Metadata[], lp: ICurveStableSwapNG) {
+    async deploy_TAN_ETH_LP(baseContext: BaseContext) {
+        const deployer = baseContext.owner;
+        const curveStableSwapFactory = await ethers.getContractAt("ICurveCryptoSwapFactoryNG", "0x98EE851a00abeE0d95D08cF4CA2BdCE32aeaAF7F");
+
+        const poolCount = await curveStableSwapFactory.pool_count();
+        const lpCreationTx = await curveStableSwapFactory
+            .connect(deployer)
+            .deploy_pool(
+                "TAN",
+                "TAN",
+                [commonERC20.WETH, baseContext.TAN],
+                0,
+                400000,
+                145000000000000,
+                26000000,
+                45000000,
+                230000000000000,
+                2000000000000,
+                146000000000000,
+                866,
+                6006006006000
+            );
+        await lpCreationTx.wait();
+
+        const lp = await ethers.getContractAt("ICurveCryptoSwap", await curveStableSwapFactory.pool_list(poolCount));
+        const coin0 = await ethers.getContractAt("ERC20", commonERC20.WETH);
+        const coin1 = await ethers.getContractAt("ERC20", baseContext.TAN);
+        await coin0.connect(deployer).approve(lp, MaxUint256);
+        await coin1.connect(deployer).approve(lp, MaxUint256);
+
+        await lp.connect(deployer)["add_liquidity(uint256[2],uint256)"]([parseUnits("200", await coin0.decimals()), parseUnits("3330000", await coin1.decimals())], 0);
+
+        return lp;
+    }
+
+    async _usersApproveLp(baseContext: BaseContext, coins: IERC20Metadata[], lp: AddressLike) {
         const users = baseContext.users;
 
         for (let i = 0; i < users.length; i++) {

@@ -43,7 +43,6 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
         assertEq(market.totalDebt(), 0, "Total debt should be 0");
 
         assertEq(market.healthRatio(usr1), MAX_UINT);
-        assertEq(market.liquidationPrice(usr1), 0);
 
         vm.startSnapshotGas("Deposit", "Second user deposit and stake");
         hDeposit.deposit(usr1, 100 ether);

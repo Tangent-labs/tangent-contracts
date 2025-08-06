@@ -24,8 +24,8 @@ contract Unlock is MarketDeploymentContext {
         assertEq(vsTan.totalSupplyVsTan(), 2 * amount);
         skip(1 weeks);
 
-        verifyLostERC20(tan, address(vsTan), amount, "Tan are unlocked and sent back to user from the vsTan");
-        verifyReceiveERC20(tan, usr1, amount, "Tan received by user");
+        verifyLostERC20(tan, address(vsTan), amount, "TAN are unlocked and sent back to user from the vsTan");
+        verifyReceiveERC20(tan, usr1, amount, "TAN received by user");
 
         assertEq(vsTan.balanceOf(usr1), 2);
         assertEq(vsTan.ownerOf(1), usr1);
@@ -48,14 +48,14 @@ contract Unlock is MarketDeploymentContext {
         vm.startPrank(usr2);
         skip(13 weeks);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.NotTokenOwner.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.NotTokenOwner.selector));
         vsTan.unlock(2, false);
     }
 
     function test_unlock_fails_bcs_lock_not_finished() external {
         vm.startPrank(usr1);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.LockNotOver.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.LockNotOver.selector));
         vsTan.unlock(2, false);
     }
 }

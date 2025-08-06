@@ -21,29 +21,29 @@ contract BorrowReverts is MarketDeploymentContext {
     }
 
     function test_borrow_0_debt() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroDebtAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(DebtIR.ZeroDebtAmount.selector));
         market.borrow(usr1, 0);
     }
 
     function test_borrow_fails_when_borrow_is_paused() external {
         vm.startPrank(pauser);
         market.setIsBorrowPaused(true);
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.BorrowPaused.selector));
+        vm.expectRevert(abi.encodeWithSelector(PauseSettings.BorrowPaused.selector));
         market.borrow(usr1, 0);
     }
 
     function test_borrow_more_than_max_total_debt() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.TotalDebtTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(DebtIR.TotalDebtTooHigh.selector));
         market.borrow(usr1, maxMarketDebt + 1);
     }
 
     function test_borrow_less_than_minimum_loan() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooLow.selector));
+        vm.expectRevert(abi.encodeWithSelector(DebtIR.UserDebtTooLow.selector));
         market.borrow(usr1, minimumLoan - 1);
     }
 
     function test_borrow_with_0_collateral() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(Collateral.OverMaxLTV.selector));
         market.borrow(usr1, minimumLoan);
     }
 
@@ -52,7 +52,7 @@ contract BorrowReverts is MarketDeploymentContext {
         uint256 maxBorrow = market.maxBorrowable(usr1);
 
         vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.UserDebtTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(Collateral.OverMaxLTV.selector));
         market.borrow(usr1, maxBorrow + 1);
         vm.stopPrank();
     }

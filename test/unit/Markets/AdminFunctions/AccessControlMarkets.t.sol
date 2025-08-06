@@ -51,7 +51,7 @@ contract AccessControlMarkets is MarketDeploymentContext {
     }
 
     function test_initialize_alreadyInit_market() external {
-        GlobalMarketInitParams memory _marketConstants = GlobalMarketInitParams(address(0), usg, controlTower, irCalculator, rewardAccumulator, zappingProxy, pauser);
+        GlobalMarketInitParams memory _marketConstants = GlobalMarketInitParams(address(0), usg, controlTower, irCalculator, rewardAccumulator, zappingProxy);
         MarketInit memory _marketInit = MarketInit(AddrClassicERC20.CRV, IPriceOracle(address(0)), 0, 0, 0, 0, 0, "");
         vm.expectRevert(abi.encodeWithSelector(MarketCore.AlreadyInitialized.selector));
         marketCrv.initialize(_marketConstants, _marketInit, ICvxRewardToken(address(0)), 0);
@@ -79,5 +79,41 @@ contract AccessControlMarkets is MarketDeploymentContext {
 
         vm.expectRevert(abi.encodeWithSelector(MarketExternalActions.NotRewardAccumulator.selector));
         marketBasicERC20.claimUnderlyingRewards(rTokens);
+    }
+
+    function test_setDepositPaused_success() external {
+        vm.stopPrank();
+        vm.startPrank(pauser);
+        marketCrv.setIsDepositPaused(true);
+        assertEq(marketCrv.isDepositPaused(), true);
+    }
+
+    function test_setBorrowPaused_success() external {
+        vm.stopPrank();
+        vm.startPrank(pauser);
+        marketCrv.setIsBorrowPaused(true);
+        assertEq(marketCrv.isBorrowPaused(), true);
+    }
+
+    function test_setLeveragePaused_success() external {
+        vm.stopPrank();
+        vm.startPrank(pauser);
+        marketCrv.setIsLeveragePaused(true);
+        assertEq(marketCrv.isLeveragePaused(), true);
+    }
+
+    function test_setDepositPaused_fails_as_not_pauser() external {
+        vm.expectRevert(abi.encodeWithSelector(PauseSettings.CallerNotPauser.selector));
+        marketCrv.setIsDepositPaused(true);
+    }
+
+    function test_setBorrowPaused_fails_as_not_pauser() external {
+        vm.expectRevert(abi.encodeWithSelector(PauseSettings.CallerNotPauser.selector));
+        marketCrv.setIsBorrowPaused(true);
+    }
+
+    function test_setLeveragePaused_fails_as_not_pauser() external {
+        vm.expectRevert(abi.encodeWithSelector(PauseSettings.CallerNotPauser.selector));
+        marketCrv.setIsLeveragePaused(true);
     }
 }

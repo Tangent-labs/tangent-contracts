@@ -74,7 +74,7 @@ contract MarketCurrentAPR {
     function _getGlobalData(address market, IRewardAccumulator rewardAccumulator, IIRCalculator irCalculator) internal view returns (GlobalData memory) {
         uint256 totalStakedAmount = ICollateral(market).totalCollateral();
         IPriceOracle oracle = ICollateral(market).collatOracle();
-        uint256 oraclePrice = oracle.latestAnswer() * 10 ** (18 - oracle.decimals());
+        uint256 oraclePrice = oracle.latestAnswer(true) * 10 ** (18 - oracle.decimals());
 
         return
             GlobalData({
@@ -137,7 +137,5 @@ contract MarketCurrentAPR {
         return TVLStreamingData({totalSupplyUnderlying: cvxRewardToken.totalSupply(), streamingData: streamData});
     }
 
-    function _getProjectedAPRBlank() internal view returns (TVLStreamingData memory) {
-        return TVLStreamingData({totalSupplyUnderlying: 0, streamingData: new StreamingData[](0)});
-    }
+    function _getProjectedAPRBlank() internal pure returns (TVLStreamingData memory) {}
 }

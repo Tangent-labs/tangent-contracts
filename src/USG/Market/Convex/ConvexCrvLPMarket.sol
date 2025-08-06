@@ -44,6 +44,8 @@ contract ConvexCrvLPMarket is MarketExternalActions {
         require(_pid != 0, PidNull());
         pid = _pid;
         cvxRewardToken = _cvxRewardToken;
+        // Stakes everything into Convex
+        CVX_BOOSTER.deposit(_pid, collatToken.balanceOf(address(this)), true);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -83,7 +85,7 @@ contract ConvexCrvLPMarket is MarketExternalActions {
 
         if (address(_cvxRewardToken) != address(0)) {
             // Claim rewards on behalf
-            cvxRewardToken.getReward();
+            _cvxRewardToken.getReward();
         }
 
         return _claimUnderlyingRewards(_rewardTokens);

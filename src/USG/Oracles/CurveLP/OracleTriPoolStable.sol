@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
-import "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
+import "../../../interfaces/internals/USG/IPriceOracle.sol";
 
 import {OracleBase} from "../OracleBase.sol";
 
@@ -37,11 +37,11 @@ contract OracleTriPoolStable is OracleBase {
         return a;
     }
 
-    function latestAnswer() external view override returns (uint256) {
+    function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OracleTriPoolStruct memory _params = params;
-        uint256 answer0 = _coinPrice(_params.coin0Oracle, _params.coin0OracleDecimals);
-        uint256 answer1 = _coinPrice(_params.coin1Oracle, _params.coin1OracleDecimals);
-        uint256 answer2 = _coinPrice(_params.coin2Oracle, _params.coin2OracleDecimals);
+        uint256 answer0 = _params.coin0Oracle.latestAnswer(isNoFailMode);
+        uint256 answer1 = _params.coin1Oracle.latestAnswer(isNoFailMode);
+        uint256 answer2 = _params.coin2Oracle.latestAnswer(isNoFailMode);
 
         return (_params.lp.get_virtual_price() * min(answer0, min(answer1, answer2))) / 10 ** 18;
     }

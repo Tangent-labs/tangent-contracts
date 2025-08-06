@@ -1,5 +1,3 @@
-// TODO remove this comment when the test is ready
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 

@@ -16,3 +16,9 @@ struct ZapStructDeposit {
     uint256 minAmountOut;
     ZapStruct zap;
 }
+
+struct ZapStructDepositNoMinAmount {
+    IERC20 tokenIn;
+    uint256 amountIn;
+    ZapStruct zap;
+}

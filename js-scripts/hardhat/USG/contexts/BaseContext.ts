@@ -17,8 +17,8 @@ import {
     MarketCreator,
     BasicERC20Market,
     RewardAccumulator,
-    VsTan,
-    Tan,
+    VsTAN,
+    TAN,
     USG,
     ZappingProxy,
 } from "../../../../typechain-types";
@@ -37,8 +37,8 @@ export class BaseContext extends MainSetup {
     controlTower!: ControlTower;
     USG!: USG;
     sUSG!: IYearnV3Vault;
-    tan!: Tan;
-    vsTan!: VsTan;
+    TAN!: TAN;
+    vsTAN!: VsTAN;
     rewardAccumulator!: RewardAccumulator;
     irCalculator!: IRCalculator;
     marketCreator!: MarketCreator;
@@ -65,17 +65,17 @@ export class BaseContext extends MainSetup {
         this.USG = await (await ethers.getContractFactory("USG")).deploy(this.owner, this.controlTower);
         await this.USG.waitForDeployment();
 
-        this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy();
+        this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy(this.controlTower);
         await this.zappingProxy.waitForDeployment();
 
         await this.deploysUSG();
 
-        this.tan = await (await ethers.getContractFactory("Tan")).deploy(this.owner);
-        await this.tan.waitForDeployment();
+        this.TAN = await (await ethers.getContractFactory("TAN")).deploy(this.owner);
+        await this.TAN.waitForDeployment();
 
-        this.vsTan = await (await ethers.getContractFactory("VsTan")).deploy(this.owner, this.controlTower, this.tan, this.USG, this.sUSG, this.zappingProxy);
-        await this.vsTan.waitForDeployment();
-        await this.vsTan.addNewReward(this.USG);
+        this.vsTAN = await (await ethers.getContractFactory("VsTAN")).deploy(this.owner, this.controlTower, this.TAN, this.USG, this.sUSG, this.zappingProxy);
+        await this.vsTAN.waitForDeployment();
+        await this.vsTAN.addNewReward(this.USG);
 
         this.marketCvxCrvImplem = await (await ethers.getContractFactory("ConvexCrvLPMarket")).deploy();
         await this.marketCvxCrvImplem.waitForDeployment();
@@ -245,6 +245,8 @@ export async function createJSONAddress(
         lps[prop] = lp;
     }
 
+    lps["TAN-WETH"] = await lpDeployContext.tanLP?.getAddress()!;
+
     const wStables: {[key: string]: string} = {};
     for (const prop in wStableContext.wStable) {
         const wStable = await wStableContext.wStable[prop].getAddress();
@@ -264,8 +266,8 @@ export async function createJSONAddress(
         tokens: {
             USG: await baseContext.USG.getAddress(),
             sUSG: await baseContext.sUSG.getAddress(),
-            tan: await baseContext.tan.getAddress(),
-            vsTan: await baseContext.vsTan.getAddress(),
+            TAN: await baseContext.TAN.getAddress(),
+            vsTAN: await baseContext.vsTAN.getAddress(),
         },
         implementations: {
             convexCrvMarket: await baseContext.marketCvxCrvImplem.getAddress(),

@@ -2,7 +2,7 @@ import {AddressLike, MaxUint256, ZeroAddress} from "ethers";
 import fs from "fs";
 import {ethers} from "hardhat";
 import path from "path";
-import {giveTokenToAddresss} from "../../../thief";
+import {giveTokenToAddresss} from "../../../thief/thief";
 import {commonERC20, routers, thiefConfig, curveLp} from "defi-resources";
 import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
 
@@ -50,7 +50,7 @@ export class CurveRouteGeneration {
         fs.writeFileSync(this.PATHS[type], JSON.stringify(data));
     }
 
-    async loadDynamicAssets(addressesData: {lps: Record<string, string>; wStables: Record<string, string>; tokens: {USG: string}}) {
+    async loadDynamicAssets(addressesData: {lps: Record<string, string>; wStables: Record<string, string>; tokens: {USG: string; TAN: string}}) {
         try {
             // Add LP tokens
             if (addressesData.lps) {
@@ -66,6 +66,7 @@ export class CurveRouteGeneration {
                 });
             }
             liquidationAssets["USG*"] = addressesData.tokens.USG;
+            liquidationAssets["TAN*"] = addressesData.tokens.TAN;
 
             console.log("Dynamic assets loaded successfully");
         } catch (error) {

@@ -31,7 +31,7 @@ contract GetMarketLiquidation {
                 collatToken: address(marketCollateral.collatToken()),
                 maxLTV: marketCollateral.maxLTV(),
                 liquidationThreshold: marketCollateral.liquidationThreshold(),
-                collateralUSDPrice: priceOracle.latestAnswer(),
+                collateralUSDPrice: priceOracle.latestAnswer(true),
                 oracleDecimals: priceOracle.decimals()
             });
     }

@@ -1,5 +1,5 @@
 import {setStorageAt} from "@nomicfoundation/hardhat-network-helpers";
-import {GlobalHelper} from "./GlobalHelper";
+import {GlobalHelper} from "../GlobalHelper";
 
 import {parseUnits, Signer} from "ethers";
 

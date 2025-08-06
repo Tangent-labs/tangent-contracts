@@ -5,7 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {MarketCore, LiquidateInput, SelfLiquidateInput, ZapStructDeposit, IZappingProxy} from "./MarketCore.sol";
 
-import {IMarketExternalActions} from "../../../interfaces/internals/USG/IMarketExternalActions.sol";
+import {IMarketExternalActions, IControlTower} from "../../../interfaces/internals/USG/IMarketExternalActions.sol";
 
 import {IZapper} from "../../../interfaces/internals/USG/IZapper.sol";
 import {IUSG} from "../../../interfaces/internals/USG/IUSG.sol";
@@ -14,30 +14,42 @@ import {TokenAmount, ZapStruct} from "../../../interfaces/internals/ICommonStruc
 
 /// @notice Abstract base contract exposing external user functions
 /// @dev Inherits MarketCore
-/// Expose deposits, withdrawals, borrowing, repayment, liquidation, and leverage functions
+/// Expose deposits, withdrawals, borrowing, repayment, liquidation, leverage and migrate functions
 abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     event Deposit(address indexed account, uint256 stakedAmount);
     event ZapDeposit(address indexed account, uint256 stakedAmount, IERC20 tokenIn, uint256 amountIn);
 
-    event DepositAndBorrow(address indexed account, uint256 stakedAmount, uint256 borrowedAmount);
-    event ZapDepositAndBorrow(address indexed account, uint256 stakedAmount, uint256 borrowedAmount, IERC20 tokenIn, uint256 amountIn);
+    event DepositAndBorrow(address indexed account, uint256 stakedAmount, uint256 borrowedAmount, uint256 debtShares);
+    event ZapDepositAndBorrow(address indexed account, uint256 stakedAmount, uint256 borrowedAmount, uint256 debtShares, IERC20 tokenIn, uint256 amountIn);
 
     event Withdraw(address indexed account, uint256 amount);
 
-    event RepayAndWithdraw(address indexed account, uint256 withdrawnAmount, uint256 repaidAmount, bool isRepayAll);
-    event ZapRepayAndWithdraw(address indexed account, uint256 withdrawnAmount, uint256 repaidAmount, bool isRepayAll, IERC20 tokenIn, uint256 amountIn);
+    event RepayAndWithdraw(address indexed account, uint256 withdrawnAmount, uint256 repaidAmount, uint256 debtShares);
+    event ZapRepayAndWithdraw(address indexed account, uint256 withdrawnAmount, uint256 repaidAmount, uint256 debtShares, IERC20 tokenIn, uint256 amountIn);
 
-    event Borrow(address indexed account, address receiver, uint256 borrowedAmount);
+    event Borrow(address indexed account, address receiver, uint256 borrowedAmount, uint256 debtShares);
 
-    event Repay(address indexed account, address repayer, uint256 repaidAmount, bool isRepayAll);
-    event ZapRepay(address indexed account, address repayer, uint256 repaidAmount, bool isRepayAll, IERC20 tokenIn, uint256 amountIn);
+    event Repay(address indexed account, address repayer, uint256 repaidAmount, uint256 debtShares);
+    event ZapRepay(address indexed account, address repayer, uint256 repaidAmount, uint256 debtShares, IERC20 tokenIn, uint256 amountIn);
 
-    event Leverage(address indexed account, uint256 stakedAmount, uint256 collatBought, uint256 borrowedAmount);
-    event ZapLeverage(address indexed account, uint256 stakedAmount, uint256 collatZapDeposit, uint256 collatLeverage, uint256 borrowedAmount, IERC20 tokenIn, uint256 amountIn);
+    event Leverage(address indexed account, uint256 stakedAmount, uint256 collatBought, uint256 borrowedAmount, uint256 debtShares);
+    event ZapLeverage(
+        address indexed account,
+        uint256 stakedAmount,
+        uint256 collatZapDeposit,
+        uint256 collatLeverage,
+        uint256 borrowedAmount,
+        uint256 debtShares,
+        IERC20 tokenIn,
+        uint256 amountIn
+    );
 
-    event Liquidate(address indexed account, uint256 repaidAmount, uint256 fee, uint256 collateralLiquidated, address liquidator, bool isRepayAll);
-    event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 collateralLiquidated, address liquidator, bool isRepayAll);
+    event Liquidate(address indexed account, uint256 repaidAmount, uint256 debtShares, uint256 fee, uint256 collateralLiquidated, address liquidator);
+    event SelfLiquidate(address indexed account, uint256 repaidAmount, uint256 debtShares, uint256 collateralLiquidated, address liquidator);
     event SeizeCollateral(address indexed account, uint256 newBadDebt, uint256 collateralSeized);
+
+    event MigrateFrom(address indexed account, uint256 collatRemoved, uint256 debtRemoved, uint256 debtRepaid, uint256 newUserDebtShares);
+    event MigrateTo(address indexed account, uint256 collatAdded, uint256 debtAdded, uint256 newUserDebtShares);
 
     error NotRewardAccumulator();
 
@@ -85,9 +97,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         IERC20 _collatToken = collatToken;
         _collatToken.transferFrom(msg.sender, address(this), depositedAmount);
 
-        _depositAndBorrow(depositedAmount, debtBorrow, _collatToken, false);
+        uint256 debtShares = _depositAndBorrow(depositedAmount, debtBorrow, _collatToken, false);
 
-        emit DepositAndBorrow(msg.sender, depositedAmount, debtBorrow);
+        emit DepositAndBorrow(msg.sender, depositedAmount, debtBorrow, debtShares);
     }
 
     /**
@@ -100,9 +112,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         IERC20 _collatToken = collatToken;
         uint256 collatReceived = _zapDeposit(zapCall, _collatToken, address(this));
 
-        _depositAndBorrow(collatReceived, debtBorrow, _collatToken, false);
+        uint256 debtShares = _depositAndBorrow(collatReceived, debtBorrow, _collatToken, false);
 
-        emit ZapDepositAndBorrow(msg.sender, collatReceived, debtBorrow, zapCall.tokenIn, zapCall.amountIn);
+        emit ZapDepositAndBorrow(msg.sender, collatReceived, debtBorrow, debtShares, zapCall.tokenIn, zapCall.amountIn);
     }
 
     /**
@@ -115,7 +127,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         (uint256 newUserDebtShares, uint256 newTotalDebtShares) = _borrow(receiver, USGToBorrow, collateralBalances[msg.sender], false);
         _updateDebts(msg.sender, newUserDebtShares, newTotalDebtShares);
 
-        emit Borrow(msg.sender, receiver, USGToBorrow);
+        emit Borrow(msg.sender, receiver, USGToBorrow, newUserDebtShares);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -139,9 +151,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  USGToRepay   Amount of debt to repay. This amount will be burnt.
      */
     function repayAndWithdraw(uint256 withdrawAmount, uint256 USGToRepay) external nonReentrant updateRewards(msg.sender) {
-        (uint256 USGToBurn, bool isRepayAll) = _repayAndWithdraw(withdrawAmount, USGToRepay);
+        (uint256 USGToBurn, uint256 newUserDebtShares) = _repayAndWithdraw(withdrawAmount, USGToRepay);
 
-        emit RepayAndWithdraw(msg.sender, withdrawAmount, USGToBurn, isRepayAll);
+        emit RepayAndWithdraw(msg.sender, withdrawAmount, USGToBurn, newUserDebtShares);
     }
 
     /**
@@ -152,9 +164,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      */
     function zapRepayAndWithdraw(uint256 withdrawAmount, ZapStructDeposit calldata zapCall) external payable nonReentrant updateRewards(msg.sender) {
         uint256 USGToRepay = _zapDeposit(zapCall, usg, msg.sender);
-        (uint256 USGToBurn, bool isRepayAll) = _repayAndWithdraw(withdrawAmount, USGToRepay);
+        (uint256 USGToBurn, uint256 newUserDebtShares) = _repayAndWithdraw(withdrawAmount, USGToRepay);
 
-        emit ZapRepayAndWithdraw(msg.sender, withdrawAmount, USGToBurn, isRepayAll, zapCall.tokenIn, zapCall.amountIn);
+        emit ZapRepayAndWithdraw(msg.sender, withdrawAmount, USGToBurn, newUserDebtShares, zapCall.tokenIn, zapCall.amountIn);
     }
 
     /**
@@ -163,11 +175,11 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  USGToRepay   Amount of USG to repay
      */
     function repay(address account, uint256 USGToRepay) external nonReentrant {
-        (uint256 USGToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares, , bool isRepayAll) = _repay(account, USGToRepay);
+        (uint256 USGToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares, ) = _repay(account, USGToRepay);
 
         _updateDebts(account, newUserDebtShares, newTotalDebtShares);
 
-        emit Repay(account, msg.sender, USGToBurn, isRepayAll);
+        emit Repay(account, msg.sender, USGToBurn, newUserDebtShares);
     }
 
     /**
@@ -178,11 +190,11 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function zapRepay(address account, ZapStructDeposit calldata zapCall) external payable nonReentrant {
         uint256 USGToRepay = _zapDeposit(zapCall, usg, msg.sender);
 
-        (uint256 USGToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares, , bool isRepayAll) = _repay(account, USGToRepay);
+        (uint256 USGToBurn, uint256 newUserDebtShares, uint256 newTotalDebtShares, ) = _repay(account, USGToRepay);
 
         _updateDebts(account, newUserDebtShares, newTotalDebtShares);
 
-        emit ZapRepay(account, msg.sender, USGToBurn, isRepayAll, zapCall.tokenIn, zapCall.amountIn);
+        emit ZapRepay(account, msg.sender, USGToBurn, newUserDebtShares, zapCall.tokenIn, zapCall.amountIn);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -202,9 +214,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function liquidate(address account, uint256 collatToLiquidate, uint256 minUSGOut, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(account) {
         (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
         // Can liquidate only if the health ratio is below 1
-        require(_healthRatio(userDebt_, collatBalance) < 1 ether, NotLiquidablePosition());
+        require(_healthRatio(userDebt_, collatBalance, true) < 1 ether, NotLiquidablePosition());
 
-        (uint256 collatLiquidated, uint256 debtRepaid, uint256 fee, bool isRepayAll) = _liquidate(
+        (uint256 collatLiquidated, uint256 debtRepaid, uint256 fee, uint256 newUserDebtShares) = _liquidate(
             LiquidateInput({
                 account: account,
                 collatToLiquidate: collatToLiquidate,
@@ -219,15 +231,15 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
             liquidationCall
         );
 
-        emit Liquidate(account, debtRepaid, fee, collatLiquidated, liquidationCall.router, isRepayAll);
+        emit Liquidate(account, debtRepaid, newUserDebtShares, fee, collatLiquidated, liquidationCall.router);
     }
 
     /**
      * @notice Liquidate a part or the full collateral of the position of the caller.
      * @dev
      * @param  collatAmountToLiquidate   Amount of collateral to liquidate from the position.
-     * @param  USGToRepay              Amount of debt to repay in USG after the selling of the position.
-     * @param  minUSGOut               Minimum amount of USG to receive on the sell of the collateral.
+     * @param  USGToRepay                Amount of debt to repay in USG after the selling of the position.
+     * @param  minUSGOut                 Minimum amount of USG to receive on the sell of the collateral.
      * @param  liquidationCall           Contract and data allowing to sell the collateral for USG.
      */
     function selfLiquidate(
@@ -238,7 +250,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     ) external nonReentrant updateRewards(msg.sender) {
         (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(msg.sender);
 
-        (uint256 debtRepaid, bool isRepayAll) = _selfLiquidate(
+        (uint256 debtRepaid, uint256 newUserDebtShares) = _selfLiquidate(
             SelfLiquidateInput({
                 collatAmountToLiquidate: collatAmountToLiquidate,
                 USGToRepay: USGToRepay,
@@ -253,7 +265,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
             liquidationCall
         );
 
-        emit SelfLiquidate(msg.sender, debtRepaid, collatAmountToLiquidate, liquidationCall.router, isRepayAll);
+        emit SelfLiquidate(msg.sender, debtRepaid, newUserDebtShares, collatAmountToLiquidate, liquidationCall.router);
     }
 
     /**
@@ -266,7 +278,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         (, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
 
         // Can liquidate bad debt only if the value of the collateral is below the debt
-        require(_positionValue(collatBalance) < userDebt_, PositionWithoutBadDebt());
+        require(_positionValue(collatBalance, true) < userDebt_, PositionWithoutBadDebt());
 
         _seizeCollateral(account, collatBalance, totalCollateral, _userDebtShares, totalDebtShares, userDebt_);
 
@@ -297,9 +309,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
             _collatToken.transferFrom(msg.sender, address(this), collatToDeposit);
         }
 
-        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, USGToFlashMint, minCollatAmountOut, leverageCall);
+        (uint256 collatBought, uint256 stakedAmount, uint256 newUserDebtShares) = _leverage(_collatToken, collatToDeposit, USGToFlashMint, minCollatAmountOut, leverageCall);
 
-        emit Leverage(msg.sender, stakedAmount, collatBought, USGToFlashMint);
+        emit Leverage(msg.sender, stakedAmount, collatBought, USGToFlashMint, newUserDebtShares);
     }
 
     /**
@@ -319,9 +331,9 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         IERC20 _collatToken = collatToken;
         uint256 collatToDeposit = _zapDeposit(zapDepositCall, _collatToken, address(this));
 
-        (uint256 collatBought, uint256 stakedAmount) = _leverage(_collatToken, collatToDeposit, USGToFlashMint, minCollatAmountOut, leverageCall);
+        (uint256 collatBought, uint256 stakedAmount, uint256 newUserDebtShares) = _leverage(_collatToken, collatToDeposit, USGToFlashMint, minCollatAmountOut, leverageCall);
 
-        emit ZapLeverage(msg.sender, stakedAmount, collatToDeposit, collatBought, USGToFlashMint, zapDepositCall.tokenIn, zapDepositCall.amountIn);
+        emit ZapLeverage(msg.sender, stakedAmount, collatToDeposit, collatBought, USGToFlashMint, newUserDebtShares, zapDepositCall.tokenIn, zapDepositCall.amountIn);
     }
 
     /**
@@ -332,5 +344,62 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external virtual nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
         require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
         return _claimUnderlyingRewards(_rewardTokens);
+    }
+
+    /**
+     * @dev Callable only by a verified Migrator.
+     *      Remove and if wanted, repay a part of the debt and withdraw a part of the collateral.
+     * @param  _controlTower      Control Tower passed by the Migrator so save gas
+     * @param  account            Account that will be affected by the modifications
+     * @param  collatToRemove     Amount of collateral to remove from the contract
+     * @param  debtToRemove       Amount of debt to remove from the contract
+     * @param  debtToRepay        Amount of USG to burn that will be removed from the debt transfered to the `TO` market
+     * @param  receiver           Receiver of the colllateral
+     */
+    function migrateFrom(
+        IControlTower _controlTower,
+        address account,
+        uint256 collatToRemove,
+        uint256 debtToRemove,
+        uint256 debtToRepay,
+        address receiver
+    ) external nonReentrant updateRewards(account) returns (uint256) {
+        (uint256 debtRepaid, uint256 newUserDebtShares) = _migrateFrom(_controlTower, account, collatToRemove, debtToRemove, debtToRepay, receiver);
+        emit MigrateFrom(account, collatToRemove, debtToRemove, debtToRepay, newUserDebtShares);
+        return debtRepaid;
+    }
+
+    /**
+     * @dev Callable only by a verified Migrator.
+     *      Received the debt from the `FROM` market and the zapped collateral.
+     * @param  _controlTower  Control Tower passed by the Migrator so save gas
+     * @param  account        Account that will be affected by the modifications
+     * @param  collatToAdd    Amount of collateral to add to the contract
+     * @param  debtToAdd      Amount of debt to add to the contract
+     */
+    function migrateTo(IControlTower _controlTower, address account, uint256 collatToAdd, uint256 debtToAdd) external nonReentrant updateRewards(account) {
+        uint256 newUserDebtShares = _migrateTo(_controlTower, account, collatToAdd, debtToAdd);
+        emit MigrateTo(account, collatToAdd, debtToAdd, newUserDebtShares);
+    }
+
+    /**
+     * @dev Callable only by a verified Migrator.
+     *      Block all the actions of the contract to prevent reentrancy exploits
+     * @param  _controlTower  Control Tower passed by the Migrator so save gas
+     */
+    function reeantrancyOn(IControlTower _controlTower) external returns (IERC20) {
+        _nonReentrantBefore();
+        _verifySenderMigrator(_controlTower);
+        return collatToken;
+    }
+
+    /**
+     * @dev Callable only by a verified Migrator.
+     *      Unlock all the actions of the contract.
+     * @param  _controlTower  Control Tower passed by the Migrator so save gas
+     */
+    function reeantrancyOff(IControlTower _controlTower) external {
+        _verifySenderMigrator(_controlTower);
+        _nonReentrantAfter();
     }
 }

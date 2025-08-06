@@ -121,7 +121,7 @@ contract ClaimMultipleLock is MarketDeploymentContext {
 
         vm.stopPrank();
 
-        assertApproxEqAbs(usg.balanceOf(address(vsTan)), 0, 3_000_000, "Almost nothing of usg left on VsTan");
+        assertApproxEqAbs(usg.balanceOf(address(vsTan)), 0, 3_000_000, "Almost nothing of usg left on VsTAN");
 
         vm.startPrank(owner);
         vsTan.addNewReward(AddrClassicERC20.CRV);
@@ -240,7 +240,7 @@ contract ClaimMultipleLock is MarketDeploymentContext {
 
         uint256[] memory ids = Array.memoryUint256([uint256(2), uint256(1), uint256(4)]);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.NothingToClaim.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.NothingToClaim.selector));
         vsTan.claimMultiple(ids, false);
     }
 
@@ -250,7 +250,7 @@ contract ClaimMultipleLock is MarketDeploymentContext {
 
         uint256[] memory ids = Array.memoryUint256([uint256(2), uint256(1), uint256(4)]);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.NotTokenOwner.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.NotTokenOwner.selector));
         vsTan.claimMultiple(ids, false);
     }
 }

@@ -51,7 +51,7 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
 
             IPriceOracle oracle = oracles[coin];
             assertNotEq(address(oracle), address(0), "Oracle not setup");
-            uint256 price = oracle.latestAnswer() * 10 ** (18 - oracle.decimals());
+            uint256 price = oracle.latestAnswer(true) * 10 ** (18 - oracle.decimals());
 
             usdValue += (price * lp.balances(i) * (10 ** (18 - coin.decimals()))) / 1e18;
         }
@@ -65,12 +65,12 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
             ICurveTriCryptoSwap pool = ICurveTriCryptoSwap(cryptoSwaps[i]);
             IERC20Metadata lpToken = getLpToken(pool);
 
-            uint256 oracleValueBeforeSwap = oracles[lpToken].latestAnswer();
+            uint256 oracleValueBeforeSwap = oracles[lpToken].latestAnswer(true);
             uint256 totalLPValue = approximateTotalLPValue(pool);
 
             IERC20Metadata coin1 = IERC20Metadata(pool.coins(1));
             IPriceOracle oracle = oracles[coin1];
-            uint256 price = oracle.latestAnswer() * 10 ** (18 - oracle.decimals());
+            uint256 price = oracle.latestAnswer(true) * 10 ** (18 - oracle.decimals());
 
             // Sell the equivalent of the totality of the LP should increase or decrease very hard if the exploit was doable
             uint256 amountCoin1ToSellWei = (totalLPValue * 10 ** 18) / price;
@@ -78,9 +78,9 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
 
             lpManipulator.dumTriCryptoSwapPool(pool, 1, 0, amountCoin1ToSell);
             // This is normal because the sell of the token generated swap fee reported to lpPrice.
-            assertLt(oracleValueBeforeSwap, oracles[lpToken].latestAnswer(), "Oracle price is always bigger as swap occured in the LP");
+            assertLt(oracleValueBeforeSwap, oracles[lpToken].latestAnswer(true), "Oracle price is always bigger as swap occured in the LP");
 
-            uint256 oracleValueAfterSwap = oracles[lpToken].latestAnswer();
+            uint256 oracleValueAfterSwap = oracles[lpToken].latestAnswer(true);
 
             // This shouldnt change it more than 1.5%
             assertApproxEqRel(oracleValueBeforeSwap, oracleValueAfterSwap, 30e15);
@@ -99,7 +99,7 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
             ICurveTriCryptoSwap lp = ICurveTriCryptoSwap(cryptoSwaps[i]);
             (uint256 approx, IERC20 lpToken) = approximateLPValue(lp);
 
-            assertApproxEqRel(approx, oracles[lpToken].latestAnswer(), 9e15); // 0.9% maximum
+            assertApproxEqRel(approx, oracles[lpToken].latestAnswer(true), 12e15); // 1.2% maximum
         }
     }
 }

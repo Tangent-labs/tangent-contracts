@@ -2,7 +2,6 @@
 pragma solidity ^0.8.22;
 
 import {ERC721, ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
-import {ReentrancyGuardTransient} from "@openzeppelin/contracts/utils/ReentrancyGuardTransient.sol";
 import {IERC4626, IERC20} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -16,6 +15,7 @@ import {Reward, TokenAmount} from "../../interfaces/internals/USG/IRewardAccumul
 
 import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 import {ZappingUtil} from "../Utilities/abstract/ZappingUtil.sol";
+import {LightReentrancyGuardTransient} from "../Utilities/abstract/LightReentrancyGuardTransient.sol";
 
 /// @dev Struct representing a locked position.
 /// @param endLockTime The timestamp when the lock ends.
@@ -33,9 +33,9 @@ struct KickParams {
     uint128 percentage;
 }
 
-/// @title VsTan
+/// @title VsTAN
 /// @notice Locking NFT contract of TAN.
-contract VsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, ZappingUtil {
+contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable, ZappingUtil {
     using SafeERC20 for IERC20;
     /// @notice Duration for which tokens are locked (13 weeks).
     uint256 public constant LOCK_DURATION = 13 weeks;
@@ -106,14 +106,14 @@ contract VsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
 
     /**
      * @dev   Constructor of the contract
-     * @param _owner        Owner of VsTan
+     * @param _owner        Owner of VsTAN
      * @param _controlTower Keep controlTower for fetching the fee treasury
-     * @param _tan          Tan token that is locked
+     * @param _tan          TAN token that is locked
      * @param _USG        USG token
      * @param _sUSG        sUSG token
      * @param _zappingProxy Zapping proxy contract used for zapping to TAN
      */
-    constructor(address _owner, IControlTower _controlTower, IERC20 _tan, IERC20 _USG, IERC4626 _sUSG, IZappingProxy _zappingProxy) ERC721("VsTan", "VsTan") {
+    constructor(address _owner, IControlTower _controlTower, IERC20 _tan, IERC20 _USG, IERC4626 _sUSG, IZappingProxy _zappingProxy) ERC721("VsTAN", "VsTAN") {
         _transferOwnership(_owner);
 
         controlTower = _controlTower;
@@ -425,21 +425,23 @@ contract VsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
      * @param tokenId Position ID
      */
     function _updateReward(uint256 tokenId) internal {
-        uint256 positionBal = locks[tokenId].amount;
-        uint256 rewardLength = rewardTokens.length;
-        for (uint256 i; i < rewardLength; ) {
-            IERC20 token = rewardTokens[i];
+        if (totalSupplyVsTan != 0) {
+            uint256 positionBal = locks[tokenId].amount;
+            uint256 rewardLength = rewardTokens.length;
+            for (uint256 i; i < rewardLength; ) {
+                IERC20 token = rewardTokens[i];
 
-            rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
-            rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
+                rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
+                rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
 
-            if (tokenId != 0) {
-                rewards[tokenId][token] = _earned(tokenId, token, positionBal);
-                userRewardPerTokenPaid[tokenId][token] = rewardData[token].rewardPerTokenStored;
-            }
+                if (tokenId != 0) {
+                    rewards[tokenId][token] = _earned(tokenId, token, positionBal);
+                    userRewardPerTokenPaid[tokenId][token] = rewardData[token].rewardPerTokenStored;
+                }
 
-            unchecked {
-                ++i;
+                unchecked {
+                    ++i;
+                }
             }
         }
     }
@@ -539,8 +541,7 @@ contract VsTan is LightOwnable, ReentrancyGuardTransient, ERC721Enumerable, Zapp
             Reward memory rData = rewardData[rewardToken];
 
             require(0 != rData.lastUpdateTime, RewardNotAdded(rewardToken));
-            //TODO This require is not enough as check. We cannot distributes less than a certain amount because we are loosing a lot of precision by dividing by ONE week to get the rate
-            require(0 != amount, ZeroAmount());
+            require(0 != amount / ONE_WEEK, ZeroAmount());
 
             if (timestamp >= rData.periodFinish) {
                 rewardData[rewardToken].rewardRate = amount / ONE_WEEK;

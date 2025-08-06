@@ -39,7 +39,7 @@ contract ProcessLockRewards is MarketDeploymentContext {
         vm.startPrank(owner);
 
         verifyLostERC20(usg, owner, USGToDistribute, "usg transfered by owner");
-        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTan");
+        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTAN");
 
         TokenAmount[] memory tokenAmounts = new TokenAmount[](1);
         tokenAmounts[0] = TokenAmount({token: usg, amount: USGToDistribute});
@@ -56,7 +56,7 @@ contract ProcessLockRewards is MarketDeploymentContext {
         skip(6 days);
 
         verifyLostERC20(usg, owner, USGToDistribute, "usg transfered by owner");
-        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTan");
+        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTAN");
 
         uint256 leftOver = (rDataUSG.periodFinish - block.timestamp) * rDataUSG.rewardRate;
         uint256 rateExpected = ((leftOver + USGToDistribute) / 1 weeks);
@@ -72,7 +72,7 @@ contract ProcessLockRewards is MarketDeploymentContext {
         skip(7 days);
 
         verifyLostERC20(usg, owner, USGToDistribute, "usg transfered by owner");
-        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTan");
+        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTAN");
 
         rateExpected = USGToDistribute / 1 weeks;
         vsTan.processRewards(tokenAmounts);
@@ -101,13 +101,13 @@ contract ProcessLockRewards is MarketDeploymentContext {
 
         // Do a processRewards with several tokens not in the same order of creation
         verifyLostERC20(usg, owner, USGToDistribute, "usg transfered by owner");
-        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTan");
+        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTAN");
 
         verifyLostERC20(AddrClassicERC20.USDT, owner, amount2ToDistribute, "USDT transfered by owner");
-        verifyReceiveERC20(AddrClassicERC20.USDT, address(vsTan), amount2ToDistribute, "USDT transfered to VsTan");
+        verifyReceiveERC20(AddrClassicERC20.USDT, address(vsTan), amount2ToDistribute, "USDT transfered to VsTAN");
 
         verifyLostERC20(AddrClassicERC20.CRV, owner, amount3ToDistribute, "CRV transfered by owner");
-        verifyReceiveERC20(AddrClassicERC20.CRV, address(vsTan), amount3ToDistribute, "CRV transfered to VsTan");
+        verifyReceiveERC20(AddrClassicERC20.CRV, address(vsTan), amount3ToDistribute, "CRV transfered to VsTAN");
 
         vsTan.processRewards(tokenAmounts2);
 
@@ -138,13 +138,13 @@ contract ProcessLockRewards is MarketDeploymentContext {
         uint256 USDTClaimExpected = (amount2ToDistribute * amountLocked1) / (amountLocked1 + amountLocked2);
         uint256 crvClaimExpected = (amount3ToDistribute * amountLocked1) / (amountLocked1 + amountLocked2);
 
-        verifyLostDeltaRelERC20(usg, address(vsTan), USGClaimExpected, 1e13, "usg claimed from VsTan");
+        verifyLostDeltaRelERC20(usg, address(vsTan), USGClaimExpected, 1e13, "usg claimed from VsTAN");
         verifyReceiveDeltaRelERC20(usg, usr1, USGClaimExpected, 1e13, "usg claimed and received by the user");
 
-        verifyLostDeltaRelERC20(AddrClassicERC20.USDT, address(vsTan), USDTClaimExpected, 5e13, "USDT claimed from VsTan");
+        verifyLostDeltaRelERC20(AddrClassicERC20.USDT, address(vsTan), USDTClaimExpected, 5e13, "USDT claimed from VsTAN");
         verifyReceiveDeltaRelERC20(AddrClassicERC20.USDT, usr1, USDTClaimExpected, 5e13, "USDT claimed and received by the user");
 
-        verifyLostDeltaRelERC20(AddrClassicERC20.CRV, address(vsTan), crvClaimExpected, 1e13, "CRV claimed from VsTan");
+        verifyLostDeltaRelERC20(AddrClassicERC20.CRV, address(vsTan), crvClaimExpected, 1e13, "CRV claimed from VsTAN");
         verifyReceiveDeltaRelERC20(AddrClassicERC20.CRV, usr1, crvClaimExpected, 1e13, "CRV claimed and received by the user");
 
         vm.prank(usr1);
@@ -156,13 +156,13 @@ contract ProcessLockRewards is MarketDeploymentContext {
         USDTClaimExpected = (amount2ToDistribute * amountLocked2) / (amountLocked1 + amountLocked2);
         crvClaimExpected = (amount3ToDistribute * amountLocked2) / (amountLocked1 + amountLocked2);
 
-        verifyLostDeltaRelERC20(usg, address(vsTan), USGClaimExpected, 1e13, "usg claimed from VsTan");
+        verifyLostDeltaRelERC20(usg, address(vsTan), USGClaimExpected, 1e13, "usg claimed from VsTAN");
         verifyReceiveDeltaRelERC20(usg, usr2, USGClaimExpected, 1e13, "usg claimed and received by the user");
 
-        verifyLostDeltaRelERC20(AddrClassicERC20.USDT, address(vsTan), USDTClaimExpected, 5e13, "USDT claimed from VsTan");
+        verifyLostDeltaRelERC20(AddrClassicERC20.USDT, address(vsTan), USDTClaimExpected, 5e13, "USDT claimed from VsTAN");
         verifyReceiveDeltaRelERC20(AddrClassicERC20.USDT, usr2, USDTClaimExpected, 5e13, "USDT claimed and received by the user");
 
-        verifyLostDeltaRelERC20(AddrClassicERC20.CRV, address(vsTan), crvClaimExpected, 1e13, "CRV claimed from VsTan");
+        verifyLostDeltaRelERC20(AddrClassicERC20.CRV, address(vsTan), crvClaimExpected, 1e13, "CRV claimed from VsTAN");
         verifyReceiveDeltaRelERC20(AddrClassicERC20.CRV, usr2, crvClaimExpected, 1e13, "CRV claimed and received by the user");
 
         vm.prank(usr2);
@@ -185,7 +185,7 @@ contract ProcessLockRewards is MarketDeploymentContext {
         TokenAmount[] memory tokenAmounts = new TokenAmount[](1);
         tokenAmounts[0] = TokenAmount({token: tan, amount: USGToDistribute});
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.RewardNotAdded.selector, address(tan)));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.RewardNotAdded.selector, address(tan)));
         vsTan.processRewards(tokenAmounts);
     }
 
@@ -194,7 +194,7 @@ contract ProcessLockRewards is MarketDeploymentContext {
         TokenAmount[] memory tokenAmounts = new TokenAmount[](1);
         tokenAmounts[0] = TokenAmount({token: usg, amount: 0});
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.ZeroAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.ZeroAmount.selector));
         vsTan.processRewards(tokenAmounts);
     }
 }

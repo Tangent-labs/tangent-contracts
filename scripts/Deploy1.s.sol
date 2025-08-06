@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import {Script, console} from "forge-std/Script.sol";
 import {stdStorage, StdStorage} from "forge-std/Test.sol";
 
-import {Tan} from "../src/USG/Tokens/Tan.sol";
+import {TAN} from "../src/USG/Tokens/TAN.sol";
 
 import "../src/USG/Market/Convex/ConvexCrvLPMarket.sol";
 import "../src/USG/Market/Convex/ConvexFxnLPMarket.sol";

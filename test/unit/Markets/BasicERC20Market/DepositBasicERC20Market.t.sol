@@ -52,7 +52,7 @@ contract DepositBasicERC20Market is MarketDeploymentContext {
     function test_deposit_fails_with_0() external {
         vm.startPrank(usr1);
 
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(Collateral.ZeroCollatAmount.selector));
         market.deposit(usr1, 0);
     }
 }

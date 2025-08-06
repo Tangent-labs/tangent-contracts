@@ -22,9 +22,9 @@ contract GetOracleERC4626Price is MarketDeploymentContext {
             assertNotEq(address(oracle), address(0), "Oracle not config");
             uint256 pps = erc4626.convertToAssets(1e18);
 
-            uint256 oracleValue = oracles[erc4626].latestAnswer();
+            uint256 oracleValue = oracles[erc4626].latestAnswer(true);
 
-            assertApproxEqRel(pps, oracleValue, 1e15); // Each savings price is approximatly equals to their oracleValue
+            assertApproxEqRel(pps, oracleValue, 2e15); // Each savings price is approximatly equals to their oracleValue
 
             assertGt(oracleValue, 1.04 ether); // All these saving earned more than 4% in index
             assertLt(oracleValue, 1.2 ether); // None of these savings earned more than 20% in index

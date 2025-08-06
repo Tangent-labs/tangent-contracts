@@ -19,13 +19,13 @@ struct IRParams {
     /// @dev Maximum price of USG where IR increases more significantly.
     ///      980_000 <=> 0.98$ / 1_000_000 <=> 1$
     uint32 pMax;
-    /// @dev TODO
+    /// @dev Convexity of the curve before pInf
     ///      2_000 <=> 2 / 4_500 <=> 4.5
     uint32 a1;
-    /// @dev TODO
+    /// @dev Convexity of the curve after pInf
     ///      2_000 <=> 2 / 4_500 <=> 4.5
     uint32 a2;
-    /// @dev TODO
+    /// @dev Velocity of the transition between a1 and a2
     ///      It's an integer. 250 <=> 250
     uint32 k;
 }

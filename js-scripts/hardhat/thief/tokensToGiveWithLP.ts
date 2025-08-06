@@ -1,6 +1,6 @@
 import {thiefConfig} from "defi-resources";
 
-export function TOKENS_TO_GIVE(mintedAmount: number) {
+export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;
     return [
         // USG
@@ -38,6 +38,10 @@ export function TOKENS_TO_GIVE(mintedAmount: number) {
         },
         {
             ...obj.fxUSD,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.GHO,
             amount: mintedAmount,
         },
         {

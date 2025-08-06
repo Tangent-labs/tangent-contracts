@@ -26,7 +26,7 @@ contract RageQuit is MarketDeploymentContext {
         uint256 delta = nextLockTime - block.timestamp;
         uint256 penalty = (delta * amount) / vsTan.LOCK_DURATION();
 
-        verifyLostERC20(tan, address(vsTan), amount, "All Tan of the positions are removed from the lock");
+        verifyLostERC20(tan, address(vsTan), amount, "All TAN of the positions are removed from the lock");
         verifyReceiveERC20(tan, feeTreasury, penalty, "Penalty received by FeeTreasury");
         verifyReceiveERC20(tan, usr1, amount - penalty, "The rest is claimed by the user");
 
@@ -54,7 +54,7 @@ contract RageQuit is MarketDeploymentContext {
 
         assertNotEq(penalty, 0);
 
-        verifyLostERC20(tan, address(vsTan), amount, "All Tan of the positions are removed from the lock");
+        verifyLostERC20(tan, address(vsTan), amount, "All TAN of the positions are removed from the lock");
         verifyReceiveERC20(tan, feeTreasury, penalty, "Penalty received by FeeTreasury");
         verifyReceiveERC20(tan, usr1, amount - penalty, "The rest is claimed by the user");
 
@@ -82,7 +82,7 @@ contract RageQuit is MarketDeploymentContext {
         uint256 delta = endLockTime - block.timestamp;
         uint256 penalty = (delta * amount) / vsTan.LOCK_DURATION();
 
-        verifyLostERC20(tan, address(vsTan), amount, "All Tan of the positions are removed from the lock");
+        verifyLostERC20(tan, address(vsTan), amount, "All TAN of the positions are removed from the lock");
         verifyReceiveERC20(tan, feeTreasury, penalty, "Penalty received by FeeTreasury");
         verifyReceiveERC20(tan, usr1, amount - penalty, "The rest is claimed by the user");
 
@@ -109,7 +109,7 @@ contract RageQuit is MarketDeploymentContext {
     function test_rageQuit_fails_bcs_token_not_owned() external {
         vm.startPrank(usr2);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.NotTokenOwner.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.NotTokenOwner.selector));
         vsTan.rageQuit(2, false);
     }
 
@@ -118,7 +118,7 @@ contract RageQuit is MarketDeploymentContext {
 
         skip(vsTan.LOCK_DURATION());
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.LockExpired.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.LockExpired.selector));
         vsTan.rageQuit(2, false);
     }
 }

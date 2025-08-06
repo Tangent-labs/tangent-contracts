@@ -136,7 +136,7 @@ contract ZapDeposit is MarketDeploymentContext {
         );
 
         // Verify that the call to the "router" returns an error about the reentrancy
-        vm.expectRevert(abi.encodeWithSelector(ZappingProxy.ZapCallError.selector, abi.encodeWithSelector(ReentrancyGuardTransient.ReentrancyGuardReentrantCall.selector)));
+        vm.expectRevert(abi.encodeWithSelector(ZappingProxy.ZapCallError.selector, abi.encodeWithSelector(LightReentrancyGuardTransient.ReentrancyGuardReentrantCall.selector)));
 
         market.zapDeposit(
             usr1,

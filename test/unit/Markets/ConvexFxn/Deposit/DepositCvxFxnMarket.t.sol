@@ -95,7 +95,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
     }
 
     function test_deposit_fails_when_0_collat_to_stake() external {
-        vm.expectRevert(abi.encodeWithSelector(MarketCore.ZeroCollatAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(Collateral.ZeroCollatAmount.selector));
         market.deposit(usr1, 0);
 
         vm.startPrank(usr1);

@@ -23,21 +23,21 @@ contract SetKick is MarketDeploymentContext {
     function test_setKick_fails_delay_too_short() external {
         vm.startPrank(owner);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.KickDelayTooShort.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.KickDelayTooShort.selector));
         vsTan.setKick(KickParams({delay: 1 days - 1, percentage: 1000}));
     }
 
     function test_setKick_fails_delay_too_long() external {
         vm.startPrank(owner);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.KickDelayTooLong.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.KickDelayTooLong.selector));
         vsTan.setKick(KickParams({delay: 4 weeks + 1, percentage: 1000}));
     }
 
     function test_setKick_fails_percentage_too_big() external {
         vm.startPrank(owner);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTan.KickPercentageTooHigh.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.KickPercentageTooHigh.selector));
         vsTan.setKick(KickParams({delay: 2 weeks, percentage: 20_001}));
     }
 }
