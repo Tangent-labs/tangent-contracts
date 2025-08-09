@@ -6,20 +6,23 @@ import {IPendleRouterV4, TokenOutput, LimitOrderData, ApproxParams} from "../../
 import {ICurveRouter} from "../../interfaces/externals/Curve/ICurveRouter.sol";
 
 import {CurveRouterSwapNoAmount, PendlePTToSY, PendleSYToPT} from "../../interfaces/internals/USG/IPendlePTRouter.sol";
+
 import {CurveRouterSwap} from "../../interfaces/internals/USG/ICurveLPLiquidator.sol";
+import {IPendlePTRouter} from "../../interfaces/internals/USG/IPendlePTRouter.sol";
+
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title  PendlePTRouter
 /// @notice Swaps ERC20 for PT and vice versa through Pendle and Curve Router.
-contract PendlePTRouter {
+contract PendlePTRouter is IPendlePTRouter {
     uint256 constant MAX_UINT = type(uint256).max;
     IPendleRouterV4 public constant pendleRouter = IPendleRouterV4(0x888888888889758F76e7103c6CbF23ABbF58F946);
     ICurveRouter public constant curveRouter = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
     address constant CHAIN_COIN = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     /**
-     * @notice Swaps a PT from Pendle to an other ERC20 using the router of Pendle and Curve.
-     * @dev    Used for doing liquidations ( PT => USG ) or migrations ( PT => Other collateral)
+     * @notice Swaps a PT from Pendle to an other PT from Pendle using the router of Pendle and Curve.
+     * @dev    Used for doing migrations ( PT-A => PT-B )
      * @param  PTToSY  Struct containing data to perform the swaps from PT to Underlying :
      *                          - market : Address of the Pendle LP market
      *                          - pt : Address of the Pendle PT
@@ -29,7 +32,25 @@ contract PendlePTRouter {
      *                          - ptAmount : Amount of PT to sell
      * @param  crvRouterData  Struct containing data to perform a swap through the Curve Router
      */
-    function swapPTForToken(PendlePTToSY calldata PTToSY, CurveRouterSwapNoAmount calldata crvRouterData) external payable returns (uint256) {
+    function swapPTForPT(PendlePTToSY calldata PTToSY, CurveRouterSwapNoAmount calldata crvRouterData, PendleSYToPT calldata SYToPT) public payable returns (uint256) {
+        uint256 underlyingOut = swapPTForToken(PTToSY, crvRouterData);
+
+        return _swapUnderlyingToPT(underlyingOut, SYToPT);
+    }
+
+    /**
+     * @notice Swaps a PT from Pendle to an other ERC20 using the router of Pendle and Curve.
+     * @dev    Used for doing liquidations ( PT => USG )
+     * @param  PTToSY  Struct containing data to perform the swaps from PT to Underlying :
+     *                          - market : Address of the Pendle LP market
+     *                          - pt : Address of the Pendle PT
+     *                          - sy : Address of the Pendle SY
+     *                          - yt : Address of the Pendle YT
+     *                          - underlyingOut : Address of the underlying out on SY => Underlying
+     *                          - ptAmount : Amount of PT to sell
+     * @param  crvRouterData  Struct containing data to perform a swap through the Curve Router
+     */
+    function swapPTForToken(PendlePTToSY calldata PTToSY, CurveRouterSwapNoAmount calldata crvRouterData) public returns (uint256) {
         uint256 syOut;
 
         // When a market is expired
@@ -52,10 +73,12 @@ contract PendlePTRouter {
         // Redeem the SY for the underlying
         uint256 amountUnderlyingOut = PTToSY.sy.redeem(address(this), syOut, PTToSY.underlyingOut, 0, false);
 
-        // Allows the Curve router to spend the underlying
-        _approveIfNotAllowed(IERC20(PTToSY.underlyingOut), address(curveRouter));
-        // Swaps the underlying for the tokenOut desired through the Curve Router
-        return _curveExchange(crvRouterData, amountUnderlyingOut);
+        if (crvRouterData._route[0] != address(0)) {
+            // Swaps the underlying for the tokenOut desired through the Curve Router
+            return _curveExchange(crvRouterData._route, crvRouterData._swap_params, amountUnderlyingOut, crvRouterData._min_dy, crvRouterData._pools, crvRouterData._receiver);
+        } else {
+            return amountUnderlyingOut;
+        }
     }
 
     /**
@@ -71,16 +94,25 @@ contract PendlePTRouter {
      *                          - minPTOut : Slippage parameter on the minimum amount of PT to get
      * @param  crvRouterData  Struct containing data to perform a swap through the Curve Router
      */
-    function swapTokenForPT(PendleSYToPT calldata SYToPT, CurveRouterSwapNoAmount calldata crvRouterData) external payable returns (uint256) {
+    function swapTokenForPT(CurveRouterSwap calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256) {
         IERC20 tokenIn = IERC20(crvRouterData._route[0]);
         // Transfers the tokenIn here
-        _transferFrom(tokenIn, msg.sender, address(this), SYToPT.tokenInAmount);
+        _transferFrom(tokenIn, msg.sender, address(this), crvRouterData._amount);
 
-        // Allows the Curve router to spend the tokenIn
-        _approveIfNotAllowed(tokenIn, address(curveRouter));
         // Exchanges the tokenIn for one of the pendle market underlying
-        uint256 underlyingAmount = _curveExchange(crvRouterData, SYToPT.tokenInAmount);
+        uint256 underlyingAmount = _curveExchange(
+            crvRouterData._route,
+            crvRouterData._swap_params,
+            crvRouterData._amount,
+            crvRouterData._min_dy,
+            crvRouterData._pools,
+            crvRouterData._receiver
+        );
 
+        return _swapUnderlyingToPT(underlyingAmount, SYToPT);
+    }
+
+    function _swapUnderlyingToPT(uint256 underlyingAmount, PendleSYToPT calldata SYToPT) internal returns (uint256) {
         // Allows the SY to spend the underlyingIn
         _approveIfNotAllowed(IERC20(SYToPT.underlyingIn), address(SYToPT.sy));
         // Deposits some underlying to get some SY
@@ -113,16 +145,18 @@ contract PendlePTRouter {
         }
     }
 
-    function _curveExchange(CurveRouterSwapNoAmount calldata crvRouterData, uint256 amountIn) internal returns (uint256) {
-        return
-            curveRouter.exchange{value: msg.value}(
-                crvRouterData._route,
-                crvRouterData._swap_params,
-                amountIn,
-                crvRouterData._min_dy,
-                crvRouterData._pools,
-                crvRouterData._receiver
-            );
+    function _curveExchange(
+        address[11] calldata route,
+        uint256[5][5] calldata swapParams,
+        uint256 amountIn,
+        uint256 minOut,
+        address[5] calldata pools,
+        address receiver
+    ) internal returns (uint256) {
+        // Allows the Curve router to spend the tokenIn
+        _approveIfNotAllowed(IERC20(route[0]), address(curveRouter));
+
+        return curveRouter.exchange{value: msg.value}(route, swapParams, amountIn, minOut, pools, receiver);
     }
 
     function createEmptyLimitOrderData() internal pure returns (LimitOrderData memory) {}

@@ -9,3 +9,24 @@ struct CurveRouterSwap {
     address[5] _pools;
     address _receiver;
 }
+
+struct CurveRouterSwapNoAmount {
+    address[11] _route;
+    uint256[5][5] _swap_params;
+    uint256 _min_dy;
+    address[5] _pools;
+    address _receiver;
+}
+
+struct CurveQuote {
+    address[11] _route;
+    uint256[5][5] _swap_params;
+    uint256 _amount;
+    address[5] _pools;
+}
+
+struct CurveRouteParamsOny {
+    address[11] _route;
+    uint256[5][5] _swap_params;
+    address[5] _pools;
+}

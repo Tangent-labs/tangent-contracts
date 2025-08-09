@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "../../contexts/MarketDeploymentContext.sol";
+import "../../../contexts/MarketDeploymentContext.sol";
 
-import {QuotesCurveRouter, CurveQuote} from "../../../src/chainview/USG/bot/QuotesCurveRouter.cv.sol";
+import {QuotesCurveRouter, CurveQuote} from "../../../../src/chainview/USG/bot/QuotesCurveRouter.cv.sol";
 
 contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
     uint256 constant ZERO = 0;

@@ -1,4 +1,4 @@
-import {liquidationAssets, CurveRouteGeneration, RouteParams, RouteResult} from "./CurveRouteGeneration";
+import {liquidationAssets, CurveRouteGeneration, RouteParams, RouteResult, SwapParamsAndDisplay} from "./CurveRouteGeneration";
 import liquidationAddresses from "../../../../../addresses.json";
 import {ZeroAddress} from "ethers";
 const svc = new CurveRouteGeneration();
@@ -8,22 +8,31 @@ main();
 
 async function main() {
     const finalRoutes = svc.loadFile<{
-        success: RouteResult[];
+        success: RouteResult;
         errors: string[];
     }>("finalRoutes");
     const rawRoutes = svc.loadFile<RouteParams[]>("rawRoutes");
 
-    const refreshedRoutes: RouteResult[] = [];
+    const refreshedRoutes: RouteResult = {};
+
+    const successedRoutes = finalRoutes.success;
 
     // Iterate through rawRoutes and find associated route in finalRoutes
     rawRoutes.forEach((rawRoute) => {
+        let swapParams: SwapParamsAndDisplay = null!;
         // Find associated route in finalRoutes
-        const finalRoute = finalRoutes.success.find((r) => {
-            return r.display === rawRoute.display;
+        Object.keys(successedRoutes).forEach((tokenInAddress) => {
+            Object.entries(successedRoutes[tokenInAddress]).forEach(([tokenOutAddress, routes]) => {
+                routes.forEach((route) => {
+                    if (route.display === rawRoute.display) {
+                        swapParams = route;
+                    }
+                });
+            });
         });
 
         // If we find a match, we can use the params from finalRoute to replace addresses
-        if (finalRoute) {
+        if (swapParams) {
             const routeAddresses = [];
             const singleSwaps = rawRoute.singleSwaps;
 
@@ -40,12 +49,26 @@ async function main() {
                 routeAddresses.push(ZeroAddress);
             }
 
-            refreshedRoutes.push({
-                display: rawRoute.display,
-                in: liquidationAssets[rawRoute.in],
-                out: liquidationAssets[rawRoute.out],
-                params: {routeAddresses, swapParamsFull: finalRoute.params.swapParamsFull},
-            });
+            const tokenInAddress = liquidationAssets[rawRoute.in].toLocaleLowerCase();
+            const tokenOutAddress = liquidationAssets[rawRoute.out].toLocaleLowerCase();
+
+            const paramsAndDisplay = {
+                params: {
+                    routeAddresses: routeAddresses,
+                    swapParamsFull: swapParams.params.swapParamsFull,
+                },
+                display: swapParams.display,
+            };
+
+            if (refreshedRoutes[tokenInAddress]) {
+                if (refreshedRoutes[tokenInAddress][tokenOutAddress]) {
+                    refreshedRoutes[tokenInAddress][tokenOutAddress].push(paramsAndDisplay);
+                } else {
+                    refreshedRoutes[tokenInAddress][tokenOutAddress] = [paramsAndDisplay];
+                }
+            } else {
+                refreshedRoutes[tokenInAddress] = {[tokenOutAddress]: [paramsAndDisplay]};
+            }
         }
     });
 

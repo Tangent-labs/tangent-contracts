@@ -17,8 +17,16 @@ enum OrderType {
 enum SwapType {
     NONE,
     KYBERSWAP,
-    ONEINCH,
-    OTHER
+    ODOS,
+    // ETH_WETH not used in Aggregator
+    ETH_WETH,
+    OKX,
+    ONE_INCH,
+    RESERVE_1,
+    RESERVE_2,
+    RESERVE_3,
+    RESERVE_4,
+    RESERVE_5
 }
 
 struct Order {
@@ -167,15 +175,6 @@ interface IPendleRouterV4 {
         LimitOrderData calldata limit
     ) external returns (uint256 netTokenOut, uint256 netSyFee, uint256 netSyInterm);
 
-    function swapExactSyForPt(
-        address receiver,
-        address market,
-        uint256 exactSyIn,
-        uint256 minPtOut,
-        ApproxParams calldata guessPtOut,
-        LimitOrderData calldata limit
-    ) external returns (uint256 netPtOut, uint256 netSyFee);
-
     function swapExactTokenForPt(
         address receiver,
         address market,
@@ -184,6 +183,15 @@ interface IPendleRouterV4 {
         TokenInput calldata input,
         LimitOrderData calldata limit
     ) external payable returns (uint256 netPtOut, uint256 netSyFee, uint256 netSyInterm);
+
+    function swapExactSyForPt(
+        address receiver,
+        address market,
+        uint256 exactSyIn,
+        uint256 minPtOut,
+        ApproxParams calldata guessPtOut,
+        LimitOrderData calldata limit
+    ) external returns (uint256 netPtOut, uint256 netSyFee);
 
     function removeLiquiditySingleToken(
         address receiver,

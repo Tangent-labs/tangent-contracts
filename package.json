@@ -28,6 +28,7 @@
   "author": "Trottoir",
   "license": "ISC",
   "devDependencies": {
+    "@tangent/defi-resources": "github:Tangent-labs/defi-resources#main",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-foundry": "^1.1.2",
     "@nomicfoundation/hardhat-ignition-ethers": "^0.15.9",
@@ -36,7 +37,6 @@
     "@types/pg": "^8.11.11",
     "chai": "4.3.7",
     "decimal.js": "^10.5.0",
-    "defi-resources": "github:Tangent-labs/defi-resources#main",
     "dotenv": "^16.4.7",
     "ethers": "^6.13.4",
     "hardhat": "^2.22.17",
