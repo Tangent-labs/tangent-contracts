@@ -191,7 +191,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      */
     function _healthRatio(uint256 userDebt_, uint256 collateralBalance, bool isNoFailMode) internal view returns (uint256) {
         if (userDebt_ != 0) {
-            return (collateralBalance * _collateralPrice(isNoFailMode) * liquidationThreshold) / (userDebt_ * DENOMINATOR);
+            return (collateralBalance * 10 ** (18 - collatDecimals) * _collateralPrice(isNoFailMode) * liquidationThreshold) / (userDebt_ * DENOMINATOR);
         }
         return MAX_UINT; // Fully healthy if no debt
     }

@@ -26,7 +26,7 @@ export class LpDeployContext {
             [amount, amount],
             "500",
             "1000000",
-            "0",
+            "50000000000",
             "866",
             "0"
         );
@@ -41,7 +41,7 @@ export class LpDeployContext {
             [amount, amount],
             "500",
             "1000000",
-            "0",
+            "50000000000",
             "866",
             "0"
         );
