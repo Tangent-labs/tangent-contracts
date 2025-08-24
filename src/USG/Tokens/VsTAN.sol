@@ -166,9 +166,14 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         tan.transferFrom(msg.sender, address(this), amountIn);
     }
 
-    function zapCreateLock(bool isPermalock, ZapStructDeposit calldata zapCall) external payable nonReentrant {
+    /**
+     * @notice Swaps an other token or ETH to TAN then creates a new lock with it.
+     * @param isPermaLock Boolean indicating if the lock is permanent
+     * @param zapCall     Contains tokenIn, amountIn, minAmountOut and the router with the associated raw call to execute on it to zap.
+     */
+    function zapCreateLock(bool isPermaLock, ZapStructDeposit calldata zapCall) external payable nonReentrant {
         uint256 amountIn = _zapDeposit(zapCall, tan, address(this));
-        _createLock(uint208(amountIn), isPermalock);
+        _createLock(uint208(amountIn), isPermaLock);
     }
 
     /**
@@ -183,9 +188,9 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     }
 
     /**
-     * @notice Increase the amount of an existing lock
+     * @notice Swaps an other token or ETH to TAN then increase the amount of an existing lock
      * @param tokenId ID of the locking position
-     * @param zapCall Packed struct with the zap parameters
+     * @param zapCall Contains tokenIn, amountIn, minAmountOut and the router with the associated raw call to execute on it to zap.
      */
     function zapIncreaseLockAmount(uint256 tokenId, ZapStructDeposit calldata zapCall) external payable nonReentrant {
         uint256 amountIn = _zapDeposit(zapCall, tan, address(this));
@@ -310,10 +315,12 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         uint256 tokenIdB,
         bool isClaimAssUSG
     ) external nonReentrant onlyTokenOwner(tokenIdA) onlyTokenOwner(tokenIdB) updateReward(tokenIdA) updateReward(tokenIdB) {
+        // Cant merge a same position together
         require(tokenIdA != tokenIdB, CantMerge2SamePosition());
         (uint48 endLockA, uint208 amountA) = _getLock(tokenIdA);
         (uint48 endLockB, uint208 amountB) = _getLock(tokenIdB);
 
+        // Cant merge expired positions
         require(endLockA > block.timestamp, LockExpired());
         require(endLockB > block.timestamp, LockExpired());
 
@@ -321,6 +328,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         delete locks[tokenIdB];
 
         _burn(tokenIdB);
+
+        // Claims the rewards of the burnt position or they will be lost for everÒ
         _claimSimple(tokenIdB, msg.sender, isClaimAssUSG);
     }
 
@@ -461,6 +470,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     function _increaseLockAmount(uint256 tokenId, uint208 amountIn) internal onlyTokenOwner(tokenId) updateReward(tokenId) {
         require(amountIn != 0, ZeroAmount());
         (uint48 oldLockTime, uint208 oldAmount) = _getLock(tokenId);
+        // Cant lock more on an expired position
         require(oldLockTime > block.timestamp, LockExpired());
 
         locks[tokenId] = Lock({endLockTime: oldLockTime != MAX_UINT48 ? _newEndLockTime() : MAX_UINT48, amount: oldAmount + amountIn});

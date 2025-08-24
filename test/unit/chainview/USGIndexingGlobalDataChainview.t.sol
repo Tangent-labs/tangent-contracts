@@ -2,9 +2,9 @@
 pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 
-import {MarketCurrentAPR, TVLAprs, MarketAPRInput} from "../../../src/chainview/USG/apr/MarketCurrentAPR.cv.sol";
+import {USGIndexingGlobalData, TVLAprs, MarketAPRInput, USGIndexingGlobalDataOut} from "../../../src/chainview/USG/apr/USGIndexingGlobalData.cv.sol";
 
-contract MarketCurrentAPRChainview is MarketDeploymentContext {
+contract USGIndexingGlobalDataChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market1;
     ConvexCrvLPMarket public market2;
     ConvexFxnLPMarket public market3;
@@ -39,12 +39,22 @@ contract MarketCurrentAPRChainview is MarketDeploymentContext {
         rewardAccumulator.processMultiRewards(markets, usr1, 3);
     }
 
-    function test_MarketCurrentAPR_Chainview() public {
-        try new MarketCurrentAPR(marketsInput, rewardAccumulator, irCalculator) {} catch (bytes memory reason) {
-            TVLAprs[] memory result = abi.decode(removeFirst4Bytes(reason), (TVLAprs[]));
+    function test_USGIndexingGlobalData_Chainview() public {
+        try
+            new USGIndexingGlobalData(
+                marketsInput,
+                rewardAccumulator,
+                irCalculator,
+                usg,
+                sUSG,
+                Array.memoryAddress([address(pegKeeperUSG_USDC), address(pegKeeperUSG_frxUSD)]),
+                USGOracle
+            )
+        {} catch (bytes memory reason) {
+            USGIndexingGlobalDataOut memory result = abi.decode(removeFirst4Bytes(reason), (USGIndexingGlobalDataOut));
 
-            for (uint256 i; i < result.length; i++) {
-                assertGt(result[i].currentAPR[0].amountPerYear, 0);
+            for (uint256 i; i < result.marketData.length; i++) {
+                assertGt(result.marketData[i].currentAPR[0].amountPerYear, 0);
             }
         }
     }

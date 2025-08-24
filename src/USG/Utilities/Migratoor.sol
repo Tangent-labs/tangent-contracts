@@ -57,6 +57,7 @@ contract Migratoor is LightReentrancyGuardTransient {
         bool isSameCollat = collatFrom == collatTo;
         IZappingProxy _zappingProxy = zappingProxy;
 
+        // Removes debt and collateral from source market.
         uint256 transferedDebt = marketFrom.migrateFrom(
             _controlTower,
             msg.sender,
@@ -68,12 +69,17 @@ contract Migratoor is LightReentrancyGuardTransient {
 
         uint256 collatReceived = migrationData.collatToWithdraw;
 
+        // Only needed if collatFrom is different from collatTo
         if (!isSameCollat) {
+            // Performs the zap from collatFrom to collatTo.
+            // CollatTo receiver is marketTo
             collatReceived = _zappingProxy.zapProxy(collatFrom, collatTo, zapCollatData.minCollatToOut, address(marketTo), zapCollatData.zap);
         }
 
+        // Shut down the reeantrancy guard on marketTo
         marketTo.reeantrancyOff(_controlTower);
 
+        // Add collateral balances and debt to marketTo
         marketTo.migrateTo(_controlTower, msg.sender, collatReceived, transferedDebt);
     }
 }

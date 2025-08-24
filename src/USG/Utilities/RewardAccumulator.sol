@@ -199,9 +199,10 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     }
 
     /**
-     *  @notice Claim rewards on one staking contract only
-     *  @param markets Array of contract to claim the rewards on
-     *  @param rewardLength Amount of different tokens to claim as a reward
+     *  @notice Claim rewards of caller on several markets.
+     *  @param markets Array of markets to claim the rewards on
+     *  @param rewardLength Amount of different tokens to claim as a reward. Will fail if not setup properly.
+     *                      Ex : Market A has CRV and CVX and Market B has FXN, hence the rewardLength is 3.
      */
     function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
         // Reverts if one of the market passed in parameter is not one.
@@ -209,6 +210,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         require(controlTower.areContractsMarkets(markets), NotAMarketRewards());
         // We save this length on his own variable, to not miss with the assembly manipulations
         uint256 marketsLen = markets.length;
+        // Initialize the final merged array containing the totals of rewards
         TokenAmount[] memory totals = new TokenAmount[](rewardLength);
         uint256 actualErc20Index;
 
@@ -226,10 +228,15 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
                 // If token is seen the first time (tokensToClaim[token] == 0)
                 uint256 index = _tLoadUintForAddress(address(rewardToken));
 
+                // If the index is known, we find it in the totals array and increment it.
                 if (index != 0) {
                     totals[index - 1].amount += tokenAmountsToClaim[tokenIndex].amount;
-                } else {
+                }
+                // Else, the index is not known;
+                else {
+                    // we create the entry in totals;
                     totals[actualErc20Index++] = TokenAmount({token: rewardToken, amount: tokenAmountsToClaim[tokenIndex].amount});
+                    // we create a transient entry linking the index of the new reward token in the totals array.
                     _tStoreUintForAddress(address(rewardToken), actualErc20Index);
                 }
 
@@ -249,6 +256,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         for (uint256 i; i < totals.length; ) {
             IERC20 token = totals[i].token;
             uint256 amount = totals[i].amount;
+            // If
             if (amount != 0) {
                 token.safeTransfer(msg.sender, amount);
             }
@@ -328,7 +336,6 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
 
     /**
      * @notice Increment dao fees that will be transferred in this contract during a process rewards.
-     *         This function is only callable by an updater (scvUSD or gUSD).
      * @param tokens array of token to claim
      */
     function claimCutFees(IERC20[] memory tokens) external {
@@ -414,29 +421,38 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
                     HARVEST REWARDS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    /**
+     * @notice Start the streaming of the reward to the stakers of a market.
+     * @param market             Market to process the rewards for
+     * @param harvestFeeReceiver Receiver of the harvester fee
+     */
     function processRewards(address market, address harvestFeeReceiver) public {
         require(controlTower.isMarket(market), NotAMarketRewards());
+        // Checkpoint the rewards
         _updateReward(market, address(0), 0, ICollateral(market).totalCollateral());
+
+        // Claim the rewards linked to the collateral from the underlying protocol
         TokenAmount[] memory rewardAmounts = IMarketExternalActions(market).claimUnderlyingRewards(rewardTokens[market]);
         uint256 rewardTokensLength = rewardAmounts.length;
-        // require(rewardTokensLength != 0, NothingToProcess()); TODO Cannot modify some RC params if no rewards ?
-
         uint256 rewardCutPercentage = lastRewardCuts[market];
 
         RCParams memory _rcParams = rcParams[market];
 
-        // Actualize reward cut
+        // Computes and actulize the new reward cut
         lastRewardCuts[market] = _calculateRC(USGOracle.price_w(), _rcParams);
 
         uint16 harvestFeePercentage = _rcParams.harvestFeePercentage;
 
+        // Stream rewards for every tokens
         for (uint256 tokenIndex; tokenIndex < rewardTokensLength; ) {
             IERC20 rewardToken = rewardAmounts[tokenIndex].token;
-
+            // Update streaming data for the current rewardToken
             (uint256 rewardCutAmount, uint256 harvesterAmount) = _processRewards(market, rewardToken, rewardAmounts[tokenIndex].amount, harvestFeePercentage, rewardCutPercentage);
+            // If there are cut rewards, increments it
             if (rewardCutAmount != 0) {
                 cutFeeForToken[rewardToken] += rewardCutAmount;
             }
+            // If there are harvest rewards, transfer them to the harvest fee receiver
             if (harvesterAmount != 0) {
                 rewardToken.safeTransfer(harvestFeeReceiver, harvesterAmount);
             }
@@ -452,20 +468,33 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         uint256 amountForFees;
         uint256 amountForHarvester;
     }
-
+    /**
+     * @notice Start the streaming of the reward to the stakers of several markets at the same time.
+     * @dev    This method optimize the gas cost of the reward processing by updating only once per reward token
+     *         the
+     * @param markets            Markets to process the rewards for
+     * @param harvestFeeReceiver Receiver of the harvester fee
+     * @param rewardLength       Amount of different tokens that will be processed. Will fail if not setup properly.
+     *                           Ex : Market A has CRV and CVX and Market B has FXN, hence the rewardLength is 3.
+     */
     function processMultiRewards(address[] calldata markets, address harvestFeeReceiver, uint256 rewardLength) external {
         // Reverts if one of the market passed in parameter is not one.
         // It protects us agains a malicious user input.
         require(controlTower.areContractsMarkets(markets), NotAMarketRewards());
 
+        // Retrive only once the usg price
         uint256 USGPrice = USGOracle.price_w();
 
+        // Final array containing the accumulated cutFees and harvesterFee for all reward tokens.
         ProcessableRewards[] memory processables = new ProcessableRewards[](rewardLength);
         uint256 actualErc20Index;
 
+        // For every markets
         for (uint256 i; i < markets.length; ) {
             address market = markets[i];
+            // Checkpoint the rewards
             _updateReward(market, address(0), 0, ICollateral(market).totalCollateral());
+            // Claim the rewards linked to the collateral from the underlying protocol
             TokenAmount[] memory rewardAmounts = IMarketExternalActions(market).claimUnderlyingRewards(rewardTokens[market]);
             uint256 rewardTokensLength = rewardAmounts.length;
 
@@ -476,13 +505,17 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
             // Actualize reward cut
             lastRewardCuts[market] = _calculateRC(USGPrice, _rcParams);
 
+            // For every reward token of the market
             for (uint256 j; j < rewardTokensLength; ) {
                 IERC20 rewardToken = rewardAmounts[j].token;
+
+                // Update streaming data for the current rewardToken
                 (uint256 rewardCutAmount, uint256 harvesterAmount) = _processRewards(market, rewardToken, rewardAmounts[j].amount, harvestFeePercentage, rewardCutPercentage);
 
                 // If token is seen the first time (tokensToClaim[token] == 0)
                 uint256 index = _tLoadUintForAddress(address(rewardToken));
 
+                // If the reward token e
                 if (index != 0) {
                     processables[index - 1].amountForFees += rewardCutAmount;
                     processables[index - 1].amountForHarvester += harvesterAmount;
@@ -575,24 +608,32 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         rcParams[market] = _rcParam;
     }
 
+    /**
+     * @notice Updates the RC params of a market
+     * @param  market   Address of the market to compute the new reward cut for.
+     * @param  _rcParam New RC params to apply to a market
+     */
     function updateRCParams(address market, RCParams calldata _rcParam) external onlyOwner {
+        // Verify if the new reward cut params are compliant
         _verifyRCParams(_rcParam);
+        // Process the rewards with the old RC params
         processRewards(market, controlTower.feeTreasury());
+        // Update the new RC Params
         rcParams[market] = _rcParam;
     }
 
     /**
-     * @notice TODO
-     * @param  market Address of the market to compute the reward cut for.
+     * @notice Computes and returns the next reward cut of a market without storing it.
+     * @param  market Address of the market to compute the new reward cut for.
      */
     function computeRCForMarket(address market) external view returns (uint256) {
         return _calculateRC(USGOracle.price(), rcParams[market]);
     }
 
     /**
-     * @notice TODO
-     * @param  USGPrice Price of USG in wei.
-     * @param  _rcParams  Reward cut parameters of the market.
+     * @notice Compute a reward cut with a given USG Price and some reward cut params
+     * @param  USGPrice   Price of USG in wei.
+     * @param  _rcParams  Reward cut parameters.
      */
     function simulateRC(uint256 USGPrice, RCParams memory _rcParams) external pure returns (uint256) {
         return _calculateRC(USGPrice, _rcParams);

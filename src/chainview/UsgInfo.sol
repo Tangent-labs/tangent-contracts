@@ -5,14 +5,13 @@ import {IERC4626, IERC20} from "@openzeppelin/contracts/interfaces/IERC4626.sol"
 
 import {IAggregatorStablePriceV3} from "../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 
-abstract contract USGInfo {
-    struct USGInfoOut {
-        uint256 circulatingUsg;
-        uint256 UsgPrice;
-        uint256 sUsgSupply;
-        uint256 usgStakedOnSgUsd;
-    }
-
+struct USGInfoOut {
+    uint256 circulatingUsg;
+    uint256 UsgPrice;
+    uint256 sUsgSupply;
+    uint256 usgStakedOnSgUsd;
+}
+abstract contract UsgInfo {
     function getUSGInfo(IERC20 usg, IERC4626 sUSG, address[] memory pegKeepers, IAggregatorStablePriceV3 usgOracle) public returns (USGInfoOut memory info) {
         // 1. Supply of USG (excluding pegKeepers)
         uint256 totalSupply = usg.totalSupply();

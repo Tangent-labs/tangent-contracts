@@ -10,10 +10,13 @@ abstract contract PauseSettings is LightOwnable {
 
     bool public isInitialized;
 
+    /// @notice Pauses new deposits on the market
     bool public isDepositPaused;
 
+    /// @notice Pauses new borrows on the market
     bool public isBorrowPaused;
 
+    /// @notice Pauses new leverages on the market
     bool public isLeveragePaused;
 
     error DepositPaused();

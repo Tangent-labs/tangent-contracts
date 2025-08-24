@@ -36,9 +36,9 @@ contract WStable is ERC20, LightOwnable {
     }
 
     /**
-     *  @notice Mints tgStable against corresponding stable. A
-     *  @param amountIn Amount of tgStable to deposit in exchange of tgStable
-     *  @param receiver Receiver of the tgStable
+     *  @notice Mints wStable against corresponding stable. A
+     *  @param amountIn Amount of wStable to deposit in exchange of wStable
+     *  @param receiver Receiver of the wStable
      *  @param isSaving For the sociabilization process
      */
     function mint(uint256 amountIn, address receiver, bool isSaving) public {
@@ -55,7 +55,7 @@ contract WStable is ERC20, LightOwnable {
             savingAccount.deposit(amountIn, address(this));
         }
 
-        // Mints the amount of tgStable for the receiver
+        // Mints the amount of WStable for the receiver
         _mint(receiver, amountToMint);
     }
 
@@ -72,9 +72,9 @@ contract WStable is ERC20, LightOwnable {
     }
 
     /**
-     *  @notice Burns the tgStable from the sender and transfer back stable to the receiver.
-     *  @dev    Pending stables on the tgStable contract are the first to be send back to the user.
-     *  @param amount    Amount of tgStable to burn in exchange of stable. Always at 1:1 ratio.
+     *  @notice Burns the wStable from the sender and transfer back stable to the receiver.
+     *  @dev    Pending stables on the wStable contract are the first to be send back to the user.
+     *  @param amount    Amount of wStable to burn in exchange of stable. Always at 1:1 ratio.
      *  @param receiver  Receiver of the stable
      */
     function burn(uint256 amount, address receiver, bool isSaving) public {
@@ -87,7 +87,7 @@ contract WStable is ERC20, LightOwnable {
             savingAccount.withdraw(amount, receiver, address(this));
         }
 
-        // Burn tgStable from the sender
+        // Burn wStable from the sender
         _burn(msg.sender, amount);
     }
 
