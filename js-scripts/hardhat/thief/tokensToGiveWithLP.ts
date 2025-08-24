@@ -4,6 +4,11 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;
     return [
         // USG
+
+        {
+            ...obj.WETH,
+            amount: mintedAmount,
+        },
         {
             ...obj.USDC,
             amount: mintedAmount,

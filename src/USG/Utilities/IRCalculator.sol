@@ -93,6 +93,14 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
         irCheckpoints[market] = IRCheckpoint({ir: _computeIR(USGOracle.price_w(), _irParam), timestamp: uint40(block.timestamp)});
     }
 
+    /**
+     *  @notice Updates the IRParameters for a
+     *  @dev    Example :
+     *                    - On a market with 2M debt with 10% interests on 6 month
+     *                    - IndexIncrease = 0.1 * 6 month / 1 year = 5%
+     *                    - Interest Generated = 2M * 5% = 100 000
+     *  @param market Market to checkpoint the index for
+     */
     function updateIRParams(address market, IRParams calldata _irParam) external nonReentrant onlyOwner {
         _verifyIRParams(_irParam);
         irParams[market] = _irParam;
@@ -106,6 +114,7 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
      *                    - On a market with 2M debt with 10% interests on 6 month
      *                    - IndexIncrease = 0.1 * 6 month / 1 year = 5%
      *                    - Interest Generated = 2M * 5% = 100 000
+     *  @param market Market to checkpoint the index for
      */
     function checkpointIR(address market) external nonReentrant returns (uint256) {
         return _checkpointIR(market);
@@ -134,12 +143,9 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
     }
 
     /**
-     *  @notice Computes and returns the new debt index regarding interests generated allowing to readjust the total debt of the market
-     *          If some interests are generated, it increments the value in USG to be able to mint them later.
-     *  @dev    Example :
-     *                    - On a market with 2M debt with 10% interests on 6 month
-     *                    - IndexIncrease = 0.1 * 6 month / 1 year = 5%
-     *                    - Interest Generated = 2M * 5% = 100 000
+     *  @notice Computes the new IR on several markets at the same time in an optimized way.
+     *  @dev    Retrive only one time the USG price, and increments only once the mintable interests
+     *  @param markets Markets to checkpoint the indexes for
      */
     function checkpointIRMulti(address[] calldata markets) external nonReentrant {
         require(controlTower.areContractsMarkets(markets), NotAMarket());

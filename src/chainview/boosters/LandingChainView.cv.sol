@@ -22,7 +22,7 @@ interface IStakingPositionService {
     function cycleInfo(uint256 cycle) external view returns (CycleInfo memory);
 }
 
-contract LandingChainView is USGInfo, VsTANInfo {
+contract LandingChainView is UsgInfo, VsTANInfo {
     error LandingChainViewError(uint256[] output);
 
     // Booster addresses

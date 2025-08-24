@@ -43,6 +43,7 @@ import "../../src/interfaces/externals/YearnFi/IYearnV3Vault.sol";
 import "../../src/interfaces/externals/ICREATE3Factory.sol";
 
 import "./LpDeploymentContext.sol";
+import "forge-std/console.sol";
 
 contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     using SafeERC20 for IERC20Metadata;
@@ -80,6 +81,8 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     VsTAN public vsTan;
     USG public USGBase;
     IYearnV3Vault public sUSG;
+    IYearnV3Vault public sTAN;
+
     RewardAccumulator public rewardAccumulator;
     Migratoor public migratoor;
 
@@ -146,6 +149,24 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         usg.transfer(address(sUSG), 500 ether);
         sUSG.process_report(address(sUSG));
 
+        sTAN = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(tan), "Staked TAN", "sTAN", owner, 7 days));
+
+        // Deposit Limit
+        sTAN.add_role(owner, 256);
+        // Set reward processor
+        sTAN.add_role(owner, 32);
+
+        sTAN.set_deposit_limit(MAX_UINT);
+
+        deal(address(tan), owner, 1_500 ether);
+        tan.approve(address(sTAN), MAX_UINT);
+        sTAN.deposit(1_000 ether, owner);
+
+        tan.transfer(address(sTAN), 500 ether);
+        sTAN.process_report(address(sTAN));
+
+        deal(address(tan), owner, 9_998_500 ether);
+
         vsTan = new VsTAN(owner, controlTower, tan, usg, sUSG, zappingProxy);
         vsTan.addNewReward(usg);
 
@@ -173,9 +194,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(convexCrvLPMarketImplem), "Implementation CvxCrvMarket");
         vm.label(address(convexFxnLPMarketImplem), "Implementation CvxFxnMarket");
         vm.label(address(marketBasicERC20Implem), "Implementation BasicERC20Market");
-
         vm.stopPrank();
-
         lpDeploymentContext = new LpDeploymentContext(owner, usg, tan);
     }
 

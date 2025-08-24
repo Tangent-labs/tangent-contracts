@@ -30,7 +30,7 @@ export class MainSetup {
             amount: number;
         }[]
     ) {
-        await giveTokensToAddresses(users, TOKENS_TO_GIVE_WITHOUT_LP(this.erc20Minted).concat(extraTokens));
+        await giveTokensToAddresses(users, TOKENS_TO_GIVE_WITH_LP(this.erc20Minted).concat(extraTokens));
         const erc4626 = [
             {saving: commonERC20.sfrxUSD, stable: commonERC20.frxUSD},
             // {saving: commonERC20.wstUSR, stable: "0x6c8984bc7DBBeDAf4F6b2FD766f16eBB7d10AAb4"},

@@ -35,7 +35,7 @@ contract PTLiquidations is MarketDeploymentContext {
             0,
             ZapStruct({
                 router: address(pendlePTRouter),
-                routerCall: encoder.encodeLiquidateCallForPendlePT(
+                routerCall: encoder.encodeSwapPTForToken(
                     PendlePTToSY({
                         market: AddrMarketPendle.sUSDe_31_07_25,
                         pt: AddrPTPendle.sUSDe_31_07_25,
@@ -83,7 +83,7 @@ contract PTLiquidations is MarketDeploymentContext {
             0,
             ZapStruct({
                 router: address(pendlePTRouter),
-                routerCall: encoder.encodeLiquidateCallForPendlePT(
+                routerCall: encoder.encodeSwapPTForToken(
                     PendlePTToSY({
                         market: AddrMarketPendle.sUSDe_31_07_25,
                         pt: AddrPTPendle.sUSDe_31_07_25,

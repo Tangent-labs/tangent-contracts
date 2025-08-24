@@ -7,7 +7,7 @@ import {IUSG} from "../../interfaces/internals/USG/IUSG.sol";
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 import {LightOwnable} from "../../USG/Utilities/abstract/LightOwnable.sol";
 
-/// @notice
+/// @notice Tangent Stablecoin - USG
 contract USG is ERC20, IUSG, LightOwnable {
     IControlTower public controlTower;
 

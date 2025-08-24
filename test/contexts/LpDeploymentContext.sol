@@ -12,6 +12,7 @@ import "../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../src/interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../src/interfaces/externals/Curve/ICurveCryptoSwap.sol";
 import "../utils/Array.sol";
+import "forge-std/console.sol";
 
 contract LpDeploymentContext is StdCheats, StdUtils, Test {
     using SafeERC20 for IERC20Metadata;
@@ -108,7 +109,6 @@ contract LpDeploymentContext is StdCheats, StdUtils, Test {
 
         vm.label(address(_tanETHLp), "TAN-ETH LP");
         tanETHLp = _tanETHLp;
-
         vm.stopPrank();
     }
 }

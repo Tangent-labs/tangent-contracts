@@ -100,6 +100,15 @@ contract MarketCreator is LightOwnable {
             });
     }
 
+    /**
+     *  @notice Creates a market with a Curve Convex LP as Collateral.
+     *  @dev    Only on callable by DAO
+     *  @param _marketInit     Market init parameter containing all data related to the market
+     *  @param _cvxRewardToken Cvx Reward token of the Curve Convex LP
+     *  @param _pid            Pool ID of Curve Convex LP
+     *  @param _irParams       Interest Rate parameters of the market
+     *  @param _rcParams       Reward Cut parameters of the market
+     */
     function createConvexCrvMarket(
         MarketInit memory _marketInit,
         ICvxRewardToken _cvxRewardToken,
@@ -118,6 +127,14 @@ contract MarketCreator is LightOwnable {
         return proxy;
     }
 
+    /**
+     *  @notice Creates a market with a FXN Convex LP as Collateral.
+     *  @dev    Only on callable by DAO
+     *  @param _marketInit     Market init parameter containing all data related to the market
+     *  @param _pid            Pool ID of FXN Convex LP
+     *  @param _irParams       Interest Rate parameters of the market
+     *  @param _rcParams       Reward Cut parameters of the market
+     */
     function createConvexFxnMarket(MarketInit memory _marketInit, uint256 _pid, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
         address proxy = marketConvexFxn.clone();
         IConvexFxnLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _pid);
@@ -130,6 +147,13 @@ contract MarketCreator is LightOwnable {
         return proxy;
     }
 
+    /**
+     *  @notice Creates a market with a basic ERC20 as collateral, without reward streaming coming from the collateral.
+     *  @dev    Only on callable by DAO
+     *  @param _marketInit     Market init parameter containing all data related to the market
+     *  @param _irParams       Interest Rate parameters of the market
+     *  @param _rcParams       Reward Cut parameters of the market
+     */
     function createBasicERC20Market(MarketInit memory _marketInit, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
         address proxy = marketBasicERC20.clone();
         IBasicERC20Market(proxy).initialize(_getGlobalParams(), _marketInit);

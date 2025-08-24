@@ -12,6 +12,14 @@ abstract contract ZappingUtil {
 
     error InvalidZapValue();
 
+    /**
+     *  @dev   Verify zap input and transfer ERC20 (if not ETH ) to the ZappingProxy before calling the zapProxy on it.  
+     *         
+     *  @param zapCall   Contains tokenIn, amountIn, minAmountOut and the router with the associated raw call to execute on it to zap.
+     *  @param tokenOut  Token received on the receiver and zapped for tokenIn
+     *  @param receiver  Receiver of the tokenOut.
+
+     */
     function _zapDeposit(ZapStructDeposit calldata zapCall, IERC20 tokenOut, address receiver) internal returns (uint256) {
         require(0 != zapCall.amountIn, InvalidZapValue());
         IZappingProxy _zappingProxy = zappingProxy;

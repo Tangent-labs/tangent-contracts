@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {CurveRouterSwap} from "../../src/interfaces/internals/USG/ICurveLPLiquidator.sol";
+import {CurveRouterSwap, CurveQuote} from "../../src/interfaces/internals/USG/ICurveLPLiquidator.sol";
 import {IPendlePTRouter, CurveRouterSwapNoAmount, PendlePTToSY, PendleSYToPT} from "../../src/interfaces/internals/USG/IPendlePTRouter.sol";
 
 import {ICurveRouter} from "../../src/interfaces/externals/Curve/ICurveRouter.sol";
+import {IPendleRouterV4, TokenOutput, LimitOrderData} from "../../src/interfaces/externals/Pendle/IPendleRouterV4.sol";
+
 import {ZapStruct} from "../../src/interfaces/internals/ICommonStruct.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -21,12 +23,36 @@ contract Encoder {
         return abi.encodeWithSelector(ICurveRouter.exchange.selector, curveRouterSwap);
     }
 
-    function encodeLiquidateCallForPendlePT(PendlePTToSY calldata pendlePTToSY, CurveRouterSwapNoAmount calldata curveSwapParams) public pure returns (bytes memory) {
+    function encodeSwapPTForToken(PendlePTToSY calldata pendlePTToSY, CurveRouterSwapNoAmount calldata curveSwapParams) public pure returns (bytes memory) {
         return abi.encodeWithSelector(IPendlePTRouter.swapPTForToken.selector, pendlePTToSY, curveSwapParams);
     }
 
-    function encodeLeverageCallForPendlePT(PendleSYToPT calldata pendleSYToPT, CurveRouterSwapNoAmount calldata curveSwapParams) public pure returns (bytes memory) {
-        return abi.encodeWithSelector(IPendlePTRouter.swapTokenForPT.selector, pendleSYToPT, curveSwapParams);
+    function encodeSwapTokenForPT(CurveRouterSwap calldata curveSwapParams, PendleSYToPT calldata pendleSYToPT) public pure returns (bytes memory) {
+        return abi.encodeWithSelector(IPendlePTRouter.swapTokenForPT.selector, curveSwapParams, pendleSYToPT);
+    }
+
+    function encodeSwapExactPtForToken(
+        address receiver,
+        address market,
+        uint256 exactPtIn,
+        TokenOutput calldata output,
+        LimitOrderData calldata limit
+    ) public pure returns (bytes memory) {
+        return abi.encodeWithSelector(IPendleRouterV4.swapExactPtForToken.selector, receiver, market, exactPtIn, output, limit);
+    }
+
+    function encodeSwapPTForPT(
+        PendlePTToSY calldata pendlePTToSY,
+        CurveRouterSwapNoAmount calldata curveSwapParams,
+        PendleSYToPT calldata pendleSYToPT
+    ) public pure returns (bytes memory) {
+        return abi.encodeWithSelector(IPendlePTRouter.swapPTForPT.selector, pendlePTToSY, curveSwapParams, pendleSYToPT);
+    }
+
+    function createCurveQuoteStruct(address[] calldata route, uint256[][] calldata swapParams, uint256 amount) public pure returns (CurveQuote memory) {
+        (address[11] memory _route, uint256[5][5] memory _swapParams) = _prepareCurveRouterArrays(route, swapParams);
+        address[5] memory pools;
+        return CurveQuote({_route: _route, _swap_params: _swapParams, _amount: amount, _pools: pools});
     }
 
     function createCurveRouterStruct(

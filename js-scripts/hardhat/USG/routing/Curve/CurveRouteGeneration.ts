@@ -3,7 +3,7 @@ import fs from "fs";
 import {ethers} from "hardhat";
 import path from "path";
 import {giveTokenToAddresss} from "../../../thief/thief";
-import {commonERC20, routers, thiefConfig, curveLp} from "defi-resources";
+import {commonERC20, routers, thiefConfig, curveLp, PendlePools} from "@tangent/defi-resources";
 import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
 
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
@@ -374,7 +374,7 @@ export class CurveRouteGeneration {
     }
 
     hydrateRawRoutes = (routes: RouteParams[], verifiedSingleSwaps: VerifiedSingleSwap[]) => {
-        const finalHydratedRoutes: RouteResult[] = [];
+        const finalHydratedRoutes: RouteResult = {};
         const errors: string[] = [];
         routes.forEach((route) => {
             const routeAddresses: string[] = [];
@@ -421,15 +421,26 @@ export class CurveRouteGeneration {
                     swapParamsFull.push([0, 0, 0, 0, 0]);
                 }
 
-                finalHydratedRoutes.push({
-                    in: liquidationAssets[route.in],
-                    out: liquidationAssets[route.out],
+                const tokenInAddress = liquidationAssets[route.in].toLocaleLowerCase();
+                const tokenOutAddress = liquidationAssets[route.out].toLocaleLowerCase();
+
+                const paramsAndDisplay = {
                     params: {
                         routeAddresses: routeAddresses,
                         swapParamsFull: swapParamsFull,
                     },
                     display: finalDisplay,
-                });
+                };
+
+                if (finalHydratedRoutes[tokenInAddress]) {
+                    if (finalHydratedRoutes[tokenInAddress][tokenOutAddress]) {
+                        finalHydratedRoutes[tokenInAddress][tokenOutAddress].push(paramsAndDisplay);
+                    } else {
+                        finalHydratedRoutes[tokenInAddress][tokenOutAddress] = [paramsAndDisplay];
+                    }
+                } else {
+                    finalHydratedRoutes[tokenInAddress] = {[tokenOutAddress]: [paramsAndDisplay]};
+                }
             }
         });
         return {success: finalHydratedRoutes, errors};
@@ -559,9 +570,13 @@ export type FinalRoute = {
 };
 
 export type RouteResult = {
+    [tokenIn: string]: {
+        [tokenOut: string]: SwapParamsAndDisplay[];
+    };
+};
+
+export type SwapParamsAndDisplay = {
     display: string;
-    in: string;
-    out: string;
     params: {
         routeAddresses: string[];
         swapParamsFull: number[][];

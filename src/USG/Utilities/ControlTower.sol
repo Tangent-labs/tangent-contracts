@@ -31,6 +31,11 @@ contract ControlTower is LightOwnable, IControlTower {
         _transferOwnership(_owner);
     }
 
+    /**
+     *  @notice Returns true if all markets passed in param are really market. Else returns false.
+     *  @param _markets  Market addresses to check.
+     *  @return True if all markets really markets.
+     */
     function areContractsMarkets(address[] calldata _markets) external view returns (bool) {
         uint256 len = _markets.length;
         for (uint256 i; i < len; ) {
@@ -44,10 +49,24 @@ contract ControlTower is LightOwnable, IControlTower {
         return true;
     }
 
+    /**
+     *  @notice Fetch the feeTreasury and verify if the address passed in parameter is an IRCalculator.
+     *  @param  irCalculator Address to verify if it's really an IRCalculator
+     *  @return The Fee Treasury address and a bool verifying the irCalculator.
+     */
     function getFeeTreasuryAndIsIRCalculator(address irCalculator) external view returns (address, bool) {
         return (feeTreasury, isIRCalculator[irCalculator]);
     }
 
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                        OWNER ACTIONS 
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    /**
+     *  @notice Sets the receiver of the protocol fees
+     *  @dev    Callable only by the owner.
+     *  @param  _feeTreasury  New feeTreasury to setup
+     */
     function setFeeTreasury(address _feeTreasury) external onlyOwner {
         feeTreasury = _feeTreasury;
     }
@@ -62,22 +81,47 @@ contract ControlTower is LightOwnable, IControlTower {
         isMarket[_market] = !isMarket[_market];
     }
 
+    /**
+     *  @notice Toggle boolean linked to an address to flag it as a MarketCreator.
+     *  @dev    Callable only by the owner.
+     *  @param  marketCreator  MarketCreator to toggle
+     */
     function toggleMarketCreator(address marketCreator) external onlyOwner {
         isMarketCreator[marketCreator] = !isMarketCreator[marketCreator];
     }
 
+    /**
+     *  @notice Toggle boolean linked to an address to flag it as a PegKeeper.
+     *  @dev    Callable only by the owner.
+     *  @param  pegKeeper  PegKeeper to toggle
+     */
     function togglePegKeeper(address pegKeeper) external onlyOwner {
         isPegKeeper[pegKeeper] = !isPegKeeper[pegKeeper];
     }
 
+    /**
+     *  @notice Toggle boolean linked to an address to flag it as an IRCalculator.
+     *  @dev    Callable only by the owner.
+     *  @param  irCalculator  IRCalculator to toggle
+     */
     function toggleIRCalculator(address irCalculator) external onlyOwner {
         isIRCalculator[irCalculator] = !isIRCalculator[irCalculator];
     }
 
+    /**
+     *  @notice Toggle boolean linked to an address to flag it as a Migrator.
+     *  @dev    Callable only by the owner.
+     *  @param  positionMigrator Migrator to toggle
+     */
     function togglePositionMigrator(address positionMigrator) external onlyOwner {
         isPositionMigrator[positionMigrator] = !isPositionMigrator[positionMigrator];
     }
 
+    /**
+     *  @notice Toggle boolean linked to an address to flag it as a Pauser.
+     *  @dev    Callable only by the owner.
+     *  @param  _pauser Pauser to toggle
+     */
     function togglePauser(address _pauser) external onlyOwner {
         isPauser[_pauser] = !isPauser[_pauser];
     }
