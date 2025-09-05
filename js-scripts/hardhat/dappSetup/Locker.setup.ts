@@ -1,6 +1,6 @@
 import {ethers} from "hardhat";
 
-import {commonERC20, convexContracts, convexERC20, stakeDaoERC20} from "defi-resources";
+import {commonERC20, convexContracts, convexERC20, stakeDaoERC20} from "@tangent/defi-resources";
 
 import {ICvgCVX, ICvgSDT, ICVX1, ICvxStaking, IERC20, IGauge, ISdtStaking, ISdtUtilities} from "../../typechain-types";
 import {MainSetup} from "../Main.setup";

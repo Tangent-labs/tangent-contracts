@@ -2,7 +2,7 @@ import {giveTokensToAddresses} from "./thief/thief";
 import {ethers} from "hardhat";
 
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {commonERC20} from "defi-resources";
+import {commonERC20} from "@tangent/defi-resources";
 import {MaxUint256} from "ethers";
 import {TOKENS_TO_GIVE_WITHOUT_LP} from "./thief/tokensToGiveWithoutLP";
 import {TOKENS_TO_GIVE_WITH_LP} from "./thief/tokensToGiveWithLP";

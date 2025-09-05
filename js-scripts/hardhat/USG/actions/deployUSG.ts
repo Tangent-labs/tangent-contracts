@@ -1,4 +1,4 @@
-import {curveLp} from "defi-resources";
+import {curveLp} from "@tangent/defi-resources";
 import {BaseContext} from "../contexts/BaseContext";
 import {MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys, PendlePTMarketsKeys} from "../contexts/MarketContext";
 import {OracleContext} from "../contexts/OracleContext";

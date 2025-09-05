@@ -62,7 +62,7 @@ const config: HardhatUserConfig = {
                 interval: 12_000,
             },
             forking: {
-                url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
+                url: `https://eth.drpc.org`,
                 blockNumber: forkBlock,
             },
             timeout: 100_000_000,
@@ -73,15 +73,11 @@ const config: HardhatUserConfig = {
                 interval: 12_000,
             },
             forking: {
-                url: `https://eth-mainnet.g.alchemy.com/v2/hDva-MsYmcDn3GhDTeMYHq4iKLiT1NYy`,
+                url: `https://eth.drpc.org`,
                 blockNumber: forkBlock,
             },
         },
-        // tangent: {
-        //     chainId: 31337, // Chain ID should match the hardhat network's chainid
-        //     url: "https://io.convergence-finance.network:8545",
-        //     timeout: 100_000_000,
-        // },
+
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "http://176.143.254.58:8545",

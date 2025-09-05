@@ -1,6 +1,6 @@
 import {ethers} from "hardhat";
 
-import {commonERC20, curveLp} from "defi-resources";
+import {commonERC20, curveLp} from "@tangent/defi-resources";
 
 import {MainSetup} from "../../Main.setup";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";

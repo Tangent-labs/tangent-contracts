@@ -2,7 +2,7 @@ import {Client} from "pg";
 import * as addresses from "../../../../addresses.json";
 import * as curveStableSwapNG from "../../../../artifacts/src/interfaces/externals/Curve/ICurveStableSwapNG.sol/ICurveStableSwapNG.json";
 
-import {commonERC20, curveLp, routers} from "defi-resources";
+import {commonERC20, curveLp, routers} from "@tangent/defi-resources";
 import {forceAbi, nameAddress} from "./insertContractInDb";
 import {artifacts, ethers} from "hardhat";
 

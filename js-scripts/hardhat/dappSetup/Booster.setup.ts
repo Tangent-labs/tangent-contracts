@@ -1,6 +1,6 @@
 import {ethers} from "hardhat";
 
-import {commonERC20, stakeDaoERC20} from "defi-resources";
+import {commonERC20, stakeDaoERC20} from "@tangent/defi-resources";
 
 import {IERC20, IGauge, ISdtStaking, ISdtUtilities} from "../../typechain-types";
 import {MainSetup} from "../Main.setup";
@@ -80,9 +80,7 @@ export class BoosterSetup extends MainSetup {
             await this.sdCRVGauge.connect(user).approve(this.SD_CRV_STAKING, erc20Minted);
 
             await this.SD_CRV_STAKING.connect(user).deposit(0, ethers.parseEther("500"), user);
-            await this.sdtUtilities
-                .connect(user)
-                .convertAndStakeSdAsset(0, this.SD_CRV_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
+            await this.sdtUtilities.connect(user).convertAndStakeSdAsset(0, this.SD_CRV_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
             // PENDLE
 
             await this.sdPENDLE.connect(user).approve(this.sdPENDLEGauge, ethers.parseEther("10000"));
@@ -90,9 +88,7 @@ export class BoosterSetup extends MainSetup {
 
             await this.PENDLE.connect(user).approve(this.sdtUtilities, erc20Minted);
 
-            await this.sdtUtilities
-                .connect(user)
-                .convertAndStakeSdAsset(0, this.SD_PENDLE_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
+            await this.sdtUtilities.connect(user).convertAndStakeSdAsset(0, this.SD_PENDLE_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
 
             // FXN
 
@@ -108,9 +104,7 @@ export class BoosterSetup extends MainSetup {
             await this.sdBALGauge.connect(user).deposit(ethers.parseEther("1000"));
 
             await this._80Bal_20ETH.connect(user).approve(this.sdtUtilities, erc20Minted);
-            await this.sdtUtilities
-                .connect(user)
-                .convertAndStakeSdAsset(0, this.SD_BAL_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
+            await this.sdtUtilities.connect(user).convertAndStakeSdAsset(0, this.SD_BAL_STAKING, 0, ethers.parseEther("500"), 0, ethers.parseEther("500"), false);
         }
     }
 }

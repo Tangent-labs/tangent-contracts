@@ -1,7 +1,7 @@
 import {CurveRouteGeneration, RouteResult, ThiefConfig} from "./CurveRouteGeneration";
 import liquidationAddresses from "../../../../../addresses.json";
 import {ethers} from "hardhat";
-import {routers} from "defi-resources";
+import {routers} from "@tangent/defi-resources";
 import {AddressLike, ZeroAddress} from "ethers";
 const svc = new CurveRouteGeneration();
 svc.loadDynamicAssets(liquidationAddresses);

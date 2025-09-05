@@ -1,4 +1,4 @@
-import {thiefConfig} from "defi-resources";
+import {thiefConfig} from "@tangent/defi-resources";
 import {giveTokensToAddresses} from "../thief/thief";
 import {BoosterSetup} from "./Booster.setup";
 import {ethers} from "hardhat";

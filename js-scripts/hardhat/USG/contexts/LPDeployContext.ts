@@ -3,7 +3,7 @@ import {IERC20Metadata, ICurveStableSwapNG, ICurveCryptoSwap} from "../../../../
 import {BaseContext} from "./BaseContext";
 import {AddressLike, BigNumberish, MaxUint256, parseUnits, ZeroAddress} from "ethers";
 import {WStablesContext} from "./WStableContext";
-import {commonERC20} from "defi-resources";
+import {commonERC20} from "@tangent/defi-resources";
 
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;

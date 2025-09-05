@@ -15,7 +15,7 @@ import {
 
 import * as MarketCreator from "../../../../artifacts/src/USG/Utilities/MarketCreator.sol/MarketCreator.json";
 import {MarketInitStruct} from "../../../../typechain-types/src/USG/Market/BasicERC20Market";
-import {commonERC20} from "defi-resources";
+import {commonERC20} from "@tangent/defi-resources";
 
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;

@@ -1,4 +1,4 @@
-import {thiefConfig} from "defi-resources";
+import {thiefConfig} from "@tangent/defi-resources";
 
 export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;

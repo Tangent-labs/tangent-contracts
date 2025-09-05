@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "hh-node": "npx hardhat node --hostname 0.0.0.0 ",
+    "hh-node": "npx hardhat node --hostname 0.0.0.0",
     "dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "deploy-USG": "npx hardhat run js-scripts/hardhat/USG/scripts/deployUSG.ts --network localhost",
     "verify-contracts-blockscout": "npx hardhat run js-scripts/hardhat/USG/blockscout/verify-contracts.ts --network localhost",

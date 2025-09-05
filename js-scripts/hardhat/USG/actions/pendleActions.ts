@@ -1,7 +1,7 @@
 import {AddressLike, formatEther, formatUnits, MaxUint256, parseEther, parseUnits, Signer, ZeroAddress} from "ethers";
 import {ethers} from "hardhat";
-import {PENDLE_ROUTER_V4} from "defi-resources/build/ressources/contracts/routers";
-import {PendlePools} from "defi-resources";
+import {PENDLE_ROUTER_V4} from "@tangent/defi-resources/build/ressources/contracts/routers";
+import {PendlePools} from "@tangent/defi-resources";
 import {IERC20Metadata, IPendleMarketV3, IPendleSYToken} from "../../../../typechain-types";
 
 export type PendleKeys = keyof typeof PendlePools;

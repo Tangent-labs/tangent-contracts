@@ -1,5 +1,5 @@
 import {ethers} from "hardhat";
-import {curveLp, PRICE_FEEDS, PendlePools, commonERC20} from "defi-resources";
+import {curveLp, PRICE_FEEDS, PendlePools, commonERC20} from "@tangent/defi-resources";
 import {IAggregatorStablePriceV3, IPriceOracle} from "../../../../typechain-types";
 import {BaseContext} from "./BaseContext";
 import {LpDeployContext} from "./LPDeployContext";

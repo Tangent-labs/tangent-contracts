@@ -4,7 +4,7 @@ import {pendleWithdrawYT, pendleWithdrawPT, pendleDepositPTAndYT, pendleDepositL
 import {formatEther, parseEther, Signer} from "ethers";
 import {giveTokenToAddresss} from "../../thief/thief";
 import {THIEF_TOKEN_CONFIG} from "defi-resources/build/ressources/erc20/thiefConfig";
-import {PendlePools} from "defi-resources";
+import {PendlePools} from "@tangent/defi-resources";
 
 const testAll = async (key: PendleKeys) => {
     const user = (await ethers.getSigners())[0] as unknown as Signer;

@@ -1,4 +1,4 @@
-import {commonERC20, ConvexCrvPools, ConvexFxnPools, PendlePools} from "defi-resources";
+import {commonERC20, ConvexCrvPools, ConvexFxnPools, PendlePools} from "@tangent/defi-resources";
 import {parseEther} from "ethers";
 import {IRParamsStruct, RCParamsStruct} from "../../../../typechain-types/src/chainview/USG/GetMarketDetails";
 
