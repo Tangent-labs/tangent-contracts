@@ -17,13 +17,14 @@ import {IRewardAccumulator} from "../../../interfaces/internals/USG/IRewardAccum
 import {IDebtIR} from "../../../interfaces/internals/USG/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/USG/IIRCalculator.sol";
 
-import {UsgInfo, USGInfoOut,IERC4626} from "../../UsgInfo.sol";
+import {UsgInfo, USGInfoOut, IERC4626} from "../../UsgInfo.sol";
 
 struct MarketAPRInput {
     address marketAddress;
     uint256 aprComputationType;
 }
 struct USGIndexingGlobalDataOut {
+    uint256 timestamp;
     TVLAprs[] marketData;
     USGInfoOut usgInfo;
 }
@@ -59,15 +60,22 @@ contract USGIndexingGlobalData is UsgInfo {
     uint256 constant ONE_YEAR = 365 days;
     error MarketCurrentAPRError(USGIndexingGlobalDataOut);
 
-    constructor(MarketAPRInput[] memory markets, IRewardAccumulator rewardAccumulator, IIRCalculator irCalculator, IERC20 usg, IERC4626 sUSG, address[] memory pegKeepers, IAggregatorStablePriceV3 usgOracle) {
-        (uint256 usgTotalSupply, uint256 sUSGTotalSupply) = getTotalSupplies(usg, sUSG);
+    constructor(
+        MarketAPRInput[] memory markets,
+        IRewardAccumulator rewardAccumulator,
+        IIRCalculator irCalculator,
+        IERC20 usg,
+        IERC4626 sUSG,
+        address[] memory pegKeepers,
+        IAggregatorStablePriceV3 usgOracle
+    ) {
         revert MarketCurrentAPRError(
-            USGIndexingGlobalDataOut({marketData: getMarketsData(markets, rewardAccumulator, irCalculator), usgInfo: getUSGInfo(usg, sUSG, pegKeepers, usgOracle)})
+            USGIndexingGlobalDataOut({
+                timestamp: block.timestamp,
+                marketData: getMarketsData(markets, rewardAccumulator, irCalculator),
+                usgInfo: getUSGInfo(usg, sUSG, pegKeepers, usgOracle)
+            })
         );
-    }
-
-    function getTotalSupplies(IERC20 usg, IERC20 sUSG) internal view returns (uint256, uint256) {
-        return (usg.totalSupply(), sUSG.totalSupply());
     }
 
     function getMarketsData(MarketAPRInput[] memory markets, IRewardAccumulator rewardAccumulator, IIRCalculator irCalculator) public view returns (TVLAprs[] memory) {
