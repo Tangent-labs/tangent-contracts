@@ -10,9 +10,9 @@ interface IVsTan is IERC721Enumerable {
 
     function locks(uint256 tokenId) external view returns (uint48, uint208);
 
-    function createLock(uint208 amountIn, bool isPermaLock, address callerZapper) external;
+    function createLock(uint208 amountIn, bool isPermaLock) external;
 
-    function increaseLockAmount(uint256 tokenId, uint208 amountIn, address callerZapper) external;
+    function increaseLockAmount(uint256 tokenId, uint208 amountIn) external;
 
     function claimableRewards(uint256 tokenId) external view returns (TokenAmount[] memory);
 

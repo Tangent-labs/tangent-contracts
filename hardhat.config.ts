@@ -62,7 +62,7 @@ const config: HardhatUserConfig = {
                 interval: 12_000,
             },
             forking: {
-                url: `https://eth.drpc.org`,
+                url: `https://rpc.ankr.com/eth/9d28188f09928056df3f715db1d84425eb0bd867da59418569e0901ad7d41061`,
                 blockNumber: forkBlock,
             },
             timeout: 100_000_000,
@@ -73,7 +73,7 @@ const config: HardhatUserConfig = {
                 interval: 12_000,
             },
             forking: {
-                url: `https://eth.drpc.org`,
+                url: `https://rpc.ankr.com/eth/9d28188f09928056df3f715db1d84425eb0bd867da59418569e0901ad7d41061`,
                 blockNumber: forkBlock,
             },
         },

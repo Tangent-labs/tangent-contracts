@@ -38,6 +38,7 @@ export class BaseContext extends MainSetup {
     USG!: USG;
     sUSG!: IYearnV3Vault;
     TAN!: TAN;
+    sTAN!: IYearnV3Vault;
     vsTAN!: VsTAN;
     rewardAccumulator!: RewardAccumulator;
     irCalculator!: IRCalculator;
@@ -68,10 +69,12 @@ export class BaseContext extends MainSetup {
         this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy(this.controlTower);
         await this.zappingProxy.waitForDeployment();
 
-        await this.deploysUSG();
+        await this.deploy_sUSG();
 
         this.TAN = await (await ethers.getContractFactory("TAN")).deploy(this.owner);
         await this.TAN.waitForDeployment();
+
+        await this.deploy_sTAN();
 
         this.vsTAN = await (await ethers.getContractFactory("VsTAN")).deploy(this.owner, this.controlTower, this.TAN, this.USG, this.sUSG, this.zappingProxy);
         await this.vsTAN.waitForDeployment();
@@ -87,7 +90,7 @@ export class BaseContext extends MainSetup {
         await this.marketBasicER20Implem.waitForDeployment();
     }
 
-    async deploysUSG() {
+    async deploy_sUSG() {
         const yearnVaultFactory = await ethers.getContractAt("IYearnVaultFactory", "0x770D0d1Fb036483Ed4AbB6d53c1C88fb277D812F");
         const tx = await yearnVaultFactory.deploy_new_vault(this.USG, "Staked USG", "sUSG", this.owner, 7 * 86400);
         await tx.wait();
@@ -102,6 +105,23 @@ export class BaseContext extends MainSetup {
         await this.sUSG.add_role(this.owner, 32);
         // Set max number as maximum to deposit
         await this.sUSG["set_deposit_limit(uint256)"](ethers.MaxUint256);
+    }
+
+    async deploy_sTAN() {
+        const yearnVaultFactory = await ethers.getContractAt("IYearnVaultFactory", "0x770D0d1Fb036483Ed4AbB6d53c1C88fb277D812F");
+        const tx = await yearnVaultFactory.deploy_new_vault(this.TAN, "Staked TAN", "sTAN", this.owner, 7 * 86400);
+        await tx.wait();
+        const actualBlock = (await ethers.provider.getBlock("latest"))!.number;
+        const createEvents = await yearnVaultFactory.queryFilter(yearnVaultFactory.filters.NewVault(), actualBlock - 1, actualBlock);
+
+        this.sTAN = await ethers.getContractAt("IYearnV3Vault", "0x" + createEvents[0].topics[1].slice(26));
+
+        // Set deposit limit
+        await this.sTAN.add_role(this.owner, 256);
+        // Set reward processor
+        await this.sTAN.add_role(this.owner, 32);
+        // Set max number as maximum to deposit
+        await this.sTAN["set_deposit_limit(uint256)"](ethers.MaxUint256);
     }
 
     async deployContracts2(USGOracle: AddressLike, lpDeployContext: LpDeployContext) {
@@ -267,6 +287,7 @@ export async function createJSONAddress(
             USG: await baseContext.USG.getAddress(),
             sUSG: await baseContext.sUSG.getAddress(),
             TAN: await baseContext.TAN.getAddress(),
+            sTAN: await baseContext.sTAN.getAddress(),
             vsTAN: await baseContext.vsTAN.getAddress(),
         },
         implementations: {
