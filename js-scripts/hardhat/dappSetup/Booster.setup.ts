@@ -9,13 +9,10 @@ import {parseEther, Signer} from "ethers";
 
 import {giveTokensToAddresses, giveTokenToAddresss} from "../thief/thief";
 
+import {TokenAmounts, giveTokenToAddresss, giveTokensToAddresses} from "../thief/thief";
+
 export class BoosterSetup extends MainSetup {
     private sdtUtilities!: ISdtUtilities;
-
-    private CRV!: IERC20;
-    private PENDLE!: IERC20;
-    private FXN!: IERC20;
-    private _80Bal_20ETH!: IERC20;
 
     private sdCRV!: IERC20;
     private sdPENDLE!: IERC20;
