@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
-import {IERC4626} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
-import {USGInfo} from "../../UsgInfo.sol";
+import {IERC4626, IERC20} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
+import {UsgInfo, USGInfoOut} from "../../UsgInfo.sol";
 import {IDebtIR} from "../../../interfaces/internals/USG/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/USG/IIRCalculator.sol";
+import {IAggregatorStablePriceV3} from "../../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 
 struct ERC2626 {
     address token;
@@ -14,7 +15,7 @@ struct DebtIndex {
     uint256 index;
 }
 
-contract PointPrices is USGInfo {
+contract PointPrices is UsgInfo {
     struct PointPricesData {
         ERC2626[] ervc4626shares;
         uint256 usgPrice;
@@ -54,12 +55,14 @@ contract PointPrices is USGInfo {
 
     function getInternalPrice(AddressesInput memory addresses) internal returns (uint256 usgPrice, uint256 sUsgPrice) {
         if (addresses.usg != address(0)) {
-            USGInfoData memory usgInfo = getUSGInfo(addresses.usg, addresses.usgOracle, addresses.pegKeepers, addresses.sUsg);
+            USGInfoOut memory usgInfo = getUSGInfo(IERC20(addresses.usg), IERC4626(addresses.sUsg), addresses.pegKeepers, IAggregatorStablePriceV3(addresses.usgOracle));
             usgPrice = usgInfo.UsgPrice;
-            sUsgPrice = usgInfo.sUsgPrice;
+            // Calculate sUsg price based on the exchange rate
+            IERC4626 sUsg = IERC4626(addresses.sUsg);
+            sUsgPrice = sUsg.totalAssets() > 0 ? (sUsg.convertToAssets(1 ether) * usgPrice) / 1 ether : 0;
         } else {
             usgPrice = 0;
-            sUsgPrice = 0;
+            sUsgPrice = usgPrice;
         }
     }
 
