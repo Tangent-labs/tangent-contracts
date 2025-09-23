@@ -28,7 +28,6 @@ contract WStableContext is OraclesContext {
         deal(address(AddrClassicERC20.USDe), owner, 100_000 ether);
         AddrClassicERC20.USDe.approve(address(wUSDE), MAX_UINT);
         wUSDE.mint(100_000 ether, owner, false);
-
         // wDOLA
         wDOLA = new WStable("wDOLA", "wDOLA", controlTower, AddrClassicERC20.DOLA, AddrERC4626.sDOLA, owner);
         deal(address(AddrClassicERC20.DOLA), owner, 100_000 ether);
@@ -57,5 +56,7 @@ contract WStableContext is OraclesContext {
         lpDeploymentContext.createUSGLps(owner, params);
 
         setupUSGOracle();
+
+        console.log("coucou");
     }
 }

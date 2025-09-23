@@ -98,7 +98,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     constructor() {
         // baseFork = vm.createSelectFork("base", 24379193);
-        mainnetFork = vm.createSelectFork("mainnet", 23066416);
+        mainnetFork = vm.createSelectFork("mainnet", 23383489);
 
         vm.startPrank(owner);
 
@@ -141,7 +141,6 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         sUSG.add_role(owner, 32);
 
         sUSG.set_deposit_limit(MAX_UINT);
-
         deal(address(usg), owner, 1_500 ether);
         usg.approve(address(sUSG), MAX_UINT);
         sUSG.deposit(1_000 ether, owner);
@@ -195,6 +194,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         vm.label(address(convexFxnLPMarketImplem), "Implementation CvxFxnMarket");
         vm.label(address(marketBasicERC20Implem), "Implementation BasicERC20Market");
         vm.stopPrank();
+
         lpDeploymentContext = new LpDeploymentContext(owner, usg, tan);
     }
 

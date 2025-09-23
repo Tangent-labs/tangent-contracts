@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 
-import {USGIndexingGlobalData, TVLAprs, MarketAPRInput, USGIndexingGlobalDataOut} from "../../../src/chainview/USG/apr/USGIndexingGlobalData.cv.sol";
+import {USGIndexingGlobalData, TVLAprs, MarketAPRInput, USGIndexingGlobalDataOut} from "../../../src/chainview/USG/bot/USGIndexingGlobalData.cv.sol";
 
 contract USGIndexingGlobalDataChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market1;

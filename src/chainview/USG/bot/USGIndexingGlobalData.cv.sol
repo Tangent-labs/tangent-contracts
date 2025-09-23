@@ -84,7 +84,6 @@ contract USGIndexingGlobalData is UsgInfo {
         for (uint256 i; i < markets.length; i++) {
             address market = markets[i].marketAddress;
             GlobalData memory globalData = _getMarketData(market, rewardAccumulator, irCalculator);
-
             output[i] = TVLAprs({
                 globalData: globalData,
                 currentAPR: _getCurrentAPR(market, globalData.rewardTokens, rewardAccumulator),
