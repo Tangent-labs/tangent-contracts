@@ -8,7 +8,6 @@ import {IConvexFxnLPMarket, IStakingProxyERC20} from "../../../interfaces/intern
 
 import {IVirtualBalanceRewardPool} from "../../../interfaces/externals/Convex/IVirtualBalanceRewardPool.sol";
 import {ISharedLiquidityGauge} from "../../../interfaces/externals/FXN/ISharedLiquidityGauge.sol";
-import {IGaugeController} from "../../../interfaces/externals/FXN/IGaugeController.sol";
 
 import {IStashTokenWrapper} from "../../../interfaces/externals/Convex/IStashTokenWrapper.sol";
 import {IAggregatorStablePriceV3} from "../../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
