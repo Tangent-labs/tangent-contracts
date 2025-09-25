@@ -47,7 +47,7 @@ contract USGIndexingGlobalDataChainview is MarketDeploymentContext {
                 irCalculator,
                 usg,
                 sUSG,
-                Array.memoryAddress([address(pegKeeperUSG_USDC), address(pegKeeperUSG_frxUSD)]),
+                Array.memoryAddress([address(pegKeeperUSG_USDC), address(pegKeeperUSG_wcrvUSD)]),
                 USGOracle
             )
         {} catch (bytes memory reason) {

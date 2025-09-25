@@ -1,6 +1,6 @@
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {parseEther} from "ethers";
-import {ethers} from "hardhat";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { parseEther, parseUnits } from "ethers";
+import { ethers } from "hardhat";
 
 export const CONTROLLER_MAPPING: {
     [gaugeControllerKey: string]: {
@@ -26,10 +26,10 @@ export const CONTROLLER_MAPPING: {
         },
     },
 };
-export async function voteOnGauge(gaugeKey: string, user: HardhatEthersSigner, voteAmount: number, gaugeControllerKey: "CRV" | "FXN") {
+export async function voteOnGauge(gaugeKey: string, user: HardhatEthersSigner, percentage: number, gaugeControllerKey: "CRV" | "FXN") {
     const gaugeControllerAddress = CONTROLLER_MAPPING[gaugeControllerKey].controller;
     const gaugeController = await ethers.getContractAt("IGaugeController", gaugeControllerAddress);
     const gauge = CONTROLLER_MAPPING[gaugeControllerKey].gauges[gaugeKey];
 
-    await gaugeController.connect(user).vote_for_gauge_weights(gauge, parseEther(voteAmount.toString()));
+    await gaugeController.connect(user).vote_for_gauge_weights(gauge, parseUnits(percentage.toString(), 2));
 }

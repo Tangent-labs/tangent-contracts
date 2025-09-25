@@ -1,9 +1,9 @@
-import {ethers} from "hardhat";
-import {IERC20Metadata, ICurveStableSwapNG, ICurveCryptoSwap} from "../../../../typechain-types";
-import {BaseContext} from "./BaseContext";
-import {AddressLike, BigNumberish, MaxUint256, parseUnits, ZeroAddress} from "ethers";
-import {WStablesContext} from "./WStableContext";
-import {commonERC20} from "@tangent/defi-resources";
+import { ethers } from "hardhat";
+import { IERC20Metadata, ICurveStableSwapNG, ICurveCryptoSwap } from "../../../../typechain-types";
+import { BaseContext } from "./BaseContext";
+import { AddressLike, BigNumberish, MaxUint256, parseUnits, ZeroAddress } from "ethers";
+import { WStablesContext } from "./WStableContext";
+import { commonERC20 } from "@tangent/defi-resources";
 
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;
@@ -31,7 +31,7 @@ export class LpDeployContext {
             "0"
         );
 
-        const USG_wfrxUSD = "USG-wfrxUSD";
+        const USG_wfrxUSD = "USG-wcrvUSD";
         const tgFrxUSD = "tgFrxUSD";
         this.stableLp[USG_wfrxUSD] = await this.deployStableLP(
             baseContext,
@@ -137,7 +137,7 @@ export class LpDeployContext {
 
         await lp
             .connect(deployer)
-            ["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
+        ["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
 
         await this._usersApproveLp(baseContext, coins, lp);
 

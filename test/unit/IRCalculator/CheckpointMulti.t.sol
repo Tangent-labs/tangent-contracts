@@ -30,7 +30,7 @@ contract CheckpointMulti is MarketDeploymentContext {
 
         // Depegs of the LPs
         lpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-USDC"), 1, 0, 350_000 ether);
-        lpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-wfrxUSD"), 1, 0, 350_000 ether);
+        lpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-wcrvUSD"), 1, 0, 350_000 ether);
 
         skip(1 weeks);
         vm.startPrank(usr4);

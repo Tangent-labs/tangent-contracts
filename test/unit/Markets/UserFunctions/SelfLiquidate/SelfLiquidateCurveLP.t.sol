@@ -24,7 +24,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
         lpUSG_USDC = lpDeploymentContext.USGLPs("USG-USDC");
-        lpUSG_wfrxUSD = lpDeploymentContext.USGLPs("USG-wfrxUSD");
+        lpUSG_wfrxUSD = lpDeploymentContext.USGLPs("USG-wcrvUSD");
 
         market = deployConvexCurveLPMarket(collatToken, true);
 

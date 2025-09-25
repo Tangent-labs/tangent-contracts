@@ -1,78 +1,78 @@
-import {ethers} from "hardhat";
-import {curveLp, PRICE_FEEDS, PendlePools, commonERC20} from "@tangent/defi-resources";
-import {IAggregatorStablePriceV3, IPriceOracle} from "../../../../typechain-types";
-import {BaseContext} from "./BaseContext";
-import {LpDeployContext} from "./LPDeployContext";
+import { ethers } from "hardhat";
+import { curveLp, PRICE_FEEDS, PendlePools, commonERC20 } from "@tangent/defi-resources";
+import { IAggregatorStablePriceV3, IPriceOracle } from "../../../../typechain-types";
+import { BaseContext } from "./BaseContext";
+import { LpDeployContext } from "./LPDeployContext";
 
 export class OracleContext {
     USGOracle!: IAggregatorStablePriceV3;
-    oracles: {[key: string]: IPriceOracle} = {};
+    oracles: { [key: string]: IPriceOracle } = {};
     chainlinkOracleParams: {
         key: string;
         oracleName: keyof typeof PRICE_FEEDS;
     }[] = [
-        // Stable USD
-        {key: "crvUSD", oracleName: "crvUSD_USD"},
-        {key: "USDC", oracleName: "USDC_USD"},
-        {key: "FRAX", oracleName: "FRAX_USD"},
-        {key: "USDT", oracleName: "USDT_USD"},
-        {key: "USR", oracleName: "USR_USD"},
-        {key: "GHO", oracleName: "GHO_USD"},
-        {key: "USDe", oracleName: "USDe_USD"},
-        // ETH
-        {key: "ETH", oracleName: "ETH_USD"},
-        {key: "stETH", oracleName: "stETH_USD"},
-        // BTC
-        {key: "BTC", oracleName: "BTC_USD"},
-        {key: "cbBTC", oracleName: "cbBTC_USD"},
-    ];
+            // Stable USD
+            { key: "crvUSD", oracleName: "crvUSD_USD" },
+            { key: "USDC", oracleName: "USDC_USD" },
+            { key: "FRAX", oracleName: "FRAX_USD" },
+            { key: "USDT", oracleName: "USDT_USD" },
+            { key: "USR", oracleName: "USR_USD" },
+            { key: "GHO", oracleName: "GHO_USD" },
+            { key: "USDe", oracleName: "USDe_USD" },
+            // ETH
+            { key: "ETH", oracleName: "ETH_USD" },
+            { key: "stETH", oracleName: "stETH_USD" },
+            // BTC
+            { key: "BTC", oracleName: "BTC_USD" },
+            { key: "cbBTC", oracleName: "cbBTC_USD" },
+        ];
 
     oracleERC4626Params = [
-        {erc4626: "sUSDe", underlyingOracle: "USDe"},
-        {erc4626: "wstUSR", underlyingOracle: "USR"},
+        { erc4626: "sUSDe", underlyingOracle: "USDe" },
+        { erc4626: "wstUSR", underlyingOracle: "USR" },
     ];
 
     oracleCoinFromCurveLPParams = [
-        {key: "frxUSD", lp: "CRV_DUO_FRAX_frxUSD", coin0Oracle: "FRAX", isReversed: false},
-        {key: "fxUSD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", isReversed: false},
-        {key: "frxETH", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", isReversed: false},
-        {key: "pxETH", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", isReversed: false},
+        { key: "frxUSD", lp: "CRV_DUO_FRAX_frxUSD", coin0Oracle: "FRAX", isReversed: false },
+        { key: "fxUSD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", isReversed: false },
+        { key: "frxETH", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", isReversed: false },
+        { key: "pxETH", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", isReversed: false },
     ];
 
     oracleDuoPoolStableParams = [
         // USD
-        {key: "crvUSD-USDC", lp: "crvUSD_USDC", coin0Oracle: "USDC", coin1Oracle: "crvUSD"},
-        {key: "crvUSD-USDT", lp: "crvUSD_USDT", coin0Oracle: "USDT", coin1Oracle: "crvUSD"},
-        {key: "USDC-fxUSD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", coin1Oracle: "fxUSD"},
-        {key: "USDC-USDT", lp: "CRV_DUO_USDC_USDT", coin0Oracle: "USDC", coin1Oracle: "USDT"},
-        {key: "frxUSD-USDe", lp: "CRV_DUO_frxUSD_USDe", coin0Oracle: "frxUSD", coin1Oracle: "USDe"},
+        { key: "crvUSD-USDC", lp: "crvUSD_USDC", coin0Oracle: "USDC", coin1Oracle: "crvUSD" },
+        { key: "crvUSD-USDT", lp: "crvUSD_USDT", coin0Oracle: "USDT", coin1Oracle: "crvUSD" },
+        { key: "USDC-fxUSD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", coin1Oracle: "fxUSD" },
+        { key: "USDC-USDT", lp: "CRV_DUO_USDC_USDT", coin0Oracle: "USDC", coin1Oracle: "USDT" },
+        { key: "frxUSD-USDe", lp: "CRV_DUO_frxUSD_USDe", coin0Oracle: "frxUSD", coin1Oracle: "USDe" },
         // ETH
-        {key: "frxETH-WETH", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", coin1Oracle: "frxETH"},
-        {key: "pxETH-WETH", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", coin1Oracle: "ETH"},
-        {key: "pxETH-stETH", lp: "CRV_LP_pxETH_stETH", coin0Oracle: "pxETH", coin1Oracle: "stETH"},
+        { key: "frxETH-WETH", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", coin1Oracle: "frxETH" },
+        { key: "pxETH-WETH", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", coin1Oracle: "ETH" },
+        { key: "pxETH-stETH", lp: "CRV_LP_pxETH_stETH", coin0Oracle: "pxETH", coin1Oracle: "stETH" },
         // BTC
-        {key: "cbBTC-WBTC", lp: "CRV_DUO_cbBTC_WBTC", coin0Oracle: "cbBTC", coin1Oracle: "BTC"},
+        { key: "cbBTC-WBTC", lp: "CRV_DUO_cbBTC_WBTC", coin0Oracle: "cbBTC", coin1Oracle: "BTC" },
     ];
 
     oracleCryptoSwapParams = [
         // TRI
-        {key: "USDT-WBTC-WETH", lp: "CRV_TRI_CRYPTO_USDT", coin0Oracle: "USDT"},
-        {key: "USDC-WBTC-WETH", lp: "CRV_TRI_CRYPTO_USDC", coin0Oracle: "USDC"},
-        {key: "crvUSD-ETH-CRV", lp: "CRV_TRI_CRYPTO_CRV", coin0Oracle: "crvUSD"},
-        {key: "GHO-cbBTC-WETH", lp: "CRV_TRI_GHO_cbBTC_ETH", coin0Oracle: "GHO"},
+        { key: "USDT-WBTC-WETH", lp: "CRV_TRI_CRYPTO_USDT", coin0Oracle: "USDT" },
+        { key: "USDC-WBTC-WETH", lp: "CRV_TRI_CRYPTO_USDC", coin0Oracle: "USDC" },
+        { key: "crvUSD-ETH-CRV", lp: "CRV_TRI_CRYPTO_CRV", coin0Oracle: "crvUSD" },
+        { key: "GHO-cbBTC-WETH", lp: "CRV_TRI_GHO_cbBTC_ETH", coin0Oracle: "GHO" },
         // DUO
-        {key: "CVX-ETH", lp: "CRV_DUO_ETH_CVX", coin0Oracle: "ETH"},
-        {key: "USR-RLP", lp: "CRV_DUO_USR_RLP", coin0Oracle: "USR"},
+        { key: "CVX-ETH", lp: "CRV_DUO_ETH_CVX", coin0Oracle: "ETH" },
+        { key: "USR-RLP", lp: "CRV_DUO_USR_RLP", coin0Oracle: "USR" },
     ];
 
     oraclePendlePTParams = [
-        {key: "sUSDe 07/31/25", underlyingOracle: "USDe"},
-        {key: "wstUSR 07/25/25", underlyingOracle: "USR"},
+        { key: "sUSDe 07/31/25", underlyingOracle: "USDe" },
+        { key: "wstUSR 07/25/25", underlyingOracle: "USR" },
 
-        {key: "sUSDe 09/25/25", underlyingOracle: "sUSDe"},
-        {key: "USDe 09/25/25", underlyingOracle: "USDe"},
-        {key: "wstUSR 09/25/25", underlyingOracle: "wstUSR"},
-        {key: "USR 09/04/25", underlyingOracle: "USR"},
+        { key: "sUSDe 09/25/25", underlyingOracle: "sUSDe" },
+        { key: "USDe 09/25/25", underlyingOracle: "USDe" },
+        { key: "wstUSR 09/25/25", underlyingOracle: "wstUSR" },
+        { key: "USR 09/04/25", underlyingOracle: "USR" },
     ];
     async deployChainlinkWrappers() {
         const ChainlinkWrapperFactory = await ethers.getContractFactory("ChainlinkAggregatorWrapper");
@@ -143,6 +143,6 @@ export class OracleContext {
         await this.USGOracle.waitForDeployment();
 
         await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-USDC"]);
-        await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-wfrxUSD"]);
+        await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-wcrvUSD"]);
     }
 }

@@ -98,7 +98,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     constructor() {
         // baseFork = vm.createSelectFork("base", 24379193);
-        mainnetFork = vm.createSelectFork("mainnet", 23383489);
+        mainnetFork = vm.createSelectFork("mainnet", 23439977);
 
         vm.startPrank(owner);
 
