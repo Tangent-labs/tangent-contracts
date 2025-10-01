@@ -11,7 +11,7 @@ import {CurveRouterSwap} from "../../interfaces/internals/USG/ICurveLPLiquidator
 import {IPendlePTRouter} from "../../interfaces/internals/USG/IPendlePTRouter.sol";
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "forge-std/console.sol";
+import "hardhat/console.sol";
 
 /// @title  PendlePTRouter
 /// @notice Swaps ERC20 for PT and vice versa through Pendle and Curve Router.
