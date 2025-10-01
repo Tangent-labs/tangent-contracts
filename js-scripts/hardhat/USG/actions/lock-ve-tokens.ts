@@ -17,8 +17,13 @@ export async function lockVeTokensForAllUsers() {
         const erc20 = await ethers.getContractAt("IERC20", locker.token);
         const veToken = await ethers.getContractAt("IVeToken", locker.locker);
 
+
         for (let j = 0; j < signers.length; j++) {
             const signer = signers[j];
+            if (await veToken["balanceOf(address)"](signer) >= parseEther("50000")) {
+                break;
+            }
+
 
             // Get the token
             await giveTokenToAddress(signer, locker.symbol, amountToLock);

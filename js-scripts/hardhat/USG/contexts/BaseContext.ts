@@ -21,6 +21,7 @@ import {
     TAN,
     USG,
     ZappingProxy,
+    PendlePTRouter,
 } from "../../../../typechain-types";
 import { LpDeployContext } from "./LPDeployContext";
 import { setStorageAt } from "@nomicfoundation/hardhat-toolbox/network-helpers";
@@ -45,6 +46,7 @@ export class BaseContext extends MainSetup {
     irCalculator!: IRCalculator;
     marketCreator!: MarketCreator;
     zappingProxy!: ZappingProxy;
+    pendlePTRouter!: PendlePTRouter
 
     pegKeeperRegulator!: IPegKeeperRegulator;
     pegKeeperUSG_USDC!: IPegKeeperV2;
@@ -169,6 +171,9 @@ export class BaseContext extends MainSetup {
         await this.controlTower.connect(this.owner).togglePegKeeper(this.pegKeeperUSG_USDC);
         await this.controlTower.connect(this.owner).togglePegKeeper(this.pegKeeperUSG_wfrxUSD);
         await this.controlTower.connect(this.owner).toggleMarketCreator(this.marketCreator);
+
+        this.pendlePTRouter = await (await ethers.getContractFactory("PendlePTRouter")).deploy();
+
     }
 
     async setUpERC20() {
@@ -285,6 +290,7 @@ export async function createJSONAddress(
             marketCreator: await baseContext.marketCreator.getAddress(),
             irCalculator: await baseContext.irCalculator.getAddress(),
             pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
+            pendlePTRouter: await baseContext.pendlePTRouter.getAddress()
         },
         tokens: {
             USG: await baseContext.USG.getAddress(),

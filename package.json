@@ -10,7 +10,8 @@
   },
   "scripts": {
     "hh-node": "npx hardhat node --hostname 0.0.0.0",
-    "deploy-USG": "npx hardhat run js-scripts/hardhat/USG/scripts/deployUSG.ts --network localhost",
+    "deploy:usg-local": "npx hardhat run js-scripts/hardhat/USG/scripts/deployUSG.ts --network localhost",
+    "deploy:usg-staging": "npx hardhat run js-scripts/hardhat/USG/scripts/deployUSG.ts --network staging",
     "full-USG": "npm run deploy-USG &  npm run distribute-rewards-USG & npm run deposit-markets-USG  & npm run borrow-markets-USG",
     "verify-contracts-blockscout": "npx hardhat run js-scripts/hardhat/USG/blockscout/verify-contracts.ts --network localhost",
     "liquidation-context": "npx hardhat run js-scripts/hardhat/USG/scripts/liquidationSetUp.ts --network localhost",
