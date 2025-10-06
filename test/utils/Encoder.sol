@@ -31,16 +31,6 @@ contract Encoder {
         return abi.encodeWithSelector(IPendlePTRouter.swapTokenForPT.selector, curveSwapParams, pendleSYToPT);
     }
 
-    function encodeSwapExactPtForToken(
-        address receiver,
-        address market,
-        uint256 exactPtIn,
-        TokenOutput calldata output,
-        LimitOrderData calldata limit
-    ) public pure returns (bytes memory) {
-        return abi.encodeWithSelector(IPendleRouterV4.swapExactPtForToken.selector, receiver, market, exactPtIn, output, limit);
-    }
-
     function encodeSwapPTForPT(
         PendlePTToSY calldata pendlePTToSY,
         CurveRouterSwapNoAmount calldata curveSwapParams,

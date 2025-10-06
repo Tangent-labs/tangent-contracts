@@ -8,7 +8,7 @@ import "hardhat-contract-sizer";
 
 import * as dotenv from "dotenv";
 dotenv.config();
-const forkBlock = 23046443;
+
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",
@@ -63,7 +63,7 @@ const config: HardhatUserConfig = {
             },
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
-                blockNumber: forkBlock,
+                blockNumber: Number(process.env.STARTING_BLOCK!),
             },
             timeout: 100_000_000,
         },
@@ -74,7 +74,7 @@ const config: HardhatUserConfig = {
             },
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
-                blockNumber: forkBlock,
+                blockNumber: Number(process.env.STARTING_BLOCK!),
             },
         },
 
