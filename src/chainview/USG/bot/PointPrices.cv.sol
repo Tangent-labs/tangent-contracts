@@ -21,6 +21,7 @@ contract PointPrices is UsgInfo {
         uint256 usgPrice;
         uint256 sUsgPrice;
         DebtIndex[] debtIndexes;
+        uint256 timestamp;
     }
     struct AddressesInput {
         address usg;
@@ -34,11 +35,14 @@ contract PointPrices is UsgInfo {
     constructor(address[] memory erc4626s, AddressesInput memory addresses, address[] memory markets) {
         (uint256 usgPrice, uint256 sUsgPrice) = getInternalPrice(addresses);
 
+        uint256 timestamp = block.timestamp;
+
         PointPricesData memory out = PointPricesData({
             ervc4626shares: erc4626SharesToAmounts(erc4626s),
             usgPrice: usgPrice,
             sUsgPrice: sUsgPrice,
-            debtIndexes: getMarketDebtIndexes(markets)
+            debtIndexes: getMarketDebtIndexes(markets),
+            timestamp: timestamp
         });
         revert PointPricesError(out);
     }
