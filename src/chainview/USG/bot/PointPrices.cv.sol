@@ -8,7 +8,7 @@ import {IAggregatorStablePriceV3} from "../../../interfaces/externals/LlamaLend/
 
 struct ERC2626 {
     address token;
-    uint256 shares;
+    uint256 index;
 }
 struct DebtIndex {
     address market;
@@ -17,7 +17,7 @@ struct DebtIndex {
 
 contract PointPrices is UsgInfo {
     struct PointPricesData {
-        ERC2626[] ervc4626shares;
+        ERC2626[] erc4626shares;
         uint256 usgPrice;
         uint256 sUsgPrice;
         DebtIndex[] debtIndexes;
@@ -38,7 +38,7 @@ contract PointPrices is UsgInfo {
         uint256 timestamp = block.timestamp;
 
         PointPricesData memory out = PointPricesData({
-            ervc4626shares: erc4626SharesToAmounts(erc4626s),
+            erc4626shares: erc4626SharesToAmounts(erc4626s),
             usgPrice: usgPrice,
             sUsgPrice: sUsgPrice,
             debtIndexes: getMarketDebtIndexes(markets),
@@ -63,7 +63,7 @@ contract PointPrices is UsgInfo {
             usgPrice = usgInfo.UsgPrice;
             // Calculate sUsg price based on the exchange rate
             IERC4626 sUsg = IERC4626(addresses.sUsg);
-            sUsgPrice = sUsg.totalAssets() > 0 ? (sUsg.convertToAssets(1 ether) * usgPrice) / 1 ether : 0;
+            sUsgPrice = sUsg.totalAssets() > 0 ? (sUsg.convertToAssets(1 ether) * usgPrice) / 1 ether : 1;
         } else {
             usgPrice = 0;
             sUsgPrice = usgPrice;
@@ -77,9 +77,9 @@ contract PointPrices is UsgInfo {
             IERC4626 erc4626 = IERC4626(erc4626s[i]);
             if (erc4626.totalAssets() > 0) {
                 uint256 assets = erc4626.convertToAssets(1 ether);
-                shares[i] = ERC2626({token: erc4626s[i], shares: assets});
+                shares[i] = ERC2626({token: erc4626s[i], index: assets});
             } else {
-                shares[i] = ERC2626({token: erc4626s[i], shares: 0});
+                shares[i] = ERC2626({token: erc4626s[i], index: 1});
             }
         }
         return shares;
