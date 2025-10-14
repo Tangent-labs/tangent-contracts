@@ -1,10 +1,10 @@
-import {ethers} from "hardhat";
+import { ethers } from "hardhat";
 
-import {commonERC20, curveLp} from "@tangent/defi-resources";
+import { commonERC20, curveLp } from "@tangent/defi-resources";
 
-import {MainSetup} from "../../Main.setup";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {AddressLike, MaxUint256, parseEther} from "ethers";
+import { MainSetup } from "../../Main.setup";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { AddressLike, MaxUint256, parseEther } from "ethers";
 import {
     ControlTower,
     ConvexCrvLPMarket,
@@ -21,13 +21,15 @@ import {
     TAN,
     USG,
     ZappingProxy,
+    PendlePTRouter,
 } from "../../../../typechain-types";
-import {LpDeployContext} from "./LPDeployContext";
-import {setStorageAt} from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import {ConvexCrvMarketKeys, ConvexFxnMarketKeys, MarketContext, PendlePTMarketsKeys} from "./MarketContext";
-import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_PT_PENDLE} from "../config/market";
-import {OracleContext} from "./OracleContext";
-import {WStablesContext} from "./WStableContext";
+import { LpDeployContext } from "./LPDeployContext";
+import { setStorageAt } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, MarketContext, PendlePTMarketsKeys } from "./MarketContext";
+import { STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_PT_PENDLE } from "../config/market";
+import { OracleContext } from "./OracleContext";
+import { WStablesContext } from "./WStableContext";
+import { lockVeTokensForAllUsers } from "../actions/lock-ve-tokens";
 
 export class BaseContext extends MainSetup {
     owner!: HardhatEthersSigner;
@@ -38,11 +40,13 @@ export class BaseContext extends MainSetup {
     USG!: USG;
     sUSG!: IYearnV3Vault;
     TAN!: TAN;
+    sTAN!: IYearnV3Vault;
     vsTAN!: VsTAN;
     rewardAccumulator!: RewardAccumulator;
     irCalculator!: IRCalculator;
     marketCreator!: MarketCreator;
     zappingProxy!: ZappingProxy;
+    pendlePTRouter!: PendlePTRouter
 
     pegKeeperRegulator!: IPegKeeperRegulator;
     pegKeeperUSG_USDC!: IPegKeeperV2;
@@ -52,7 +56,7 @@ export class BaseContext extends MainSetup {
     marketCvxFxnImplem!: ConvexFxnLPMarket;
     marketBasicER20Implem!: BasicERC20Market;
 
-    coins: {[name: string]: IERC20Metadata} = {};
+    coins: { [name: string]: IERC20Metadata } = {};
 
     async deployContracts1() {
         this.owner = this.users[0];
@@ -68,10 +72,12 @@ export class BaseContext extends MainSetup {
         this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy(this.controlTower);
         await this.zappingProxy.waitForDeployment();
 
-        await this.deploysUSG();
+        await this.deploy_sUSG();
 
         this.TAN = await (await ethers.getContractFactory("TAN")).deploy(this.owner);
         await this.TAN.waitForDeployment();
+
+        await this.deploy_sTAN();
 
         this.vsTAN = await (await ethers.getContractFactory("VsTAN")).deploy(this.owner, this.controlTower, this.TAN, this.USG, this.sUSG, this.zappingProxy);
         await this.vsTAN.waitForDeployment();
@@ -87,7 +93,7 @@ export class BaseContext extends MainSetup {
         await this.marketBasicER20Implem.waitForDeployment();
     }
 
-    async deploysUSG() {
+    async deploy_sUSG() {
         const yearnVaultFactory = await ethers.getContractAt("IYearnVaultFactory", "0x770D0d1Fb036483Ed4AbB6d53c1C88fb277D812F");
         const tx = await yearnVaultFactory.deploy_new_vault(this.USG, "Staked USG", "sUSG", this.owner, 7 * 86400);
         await tx.wait();
@@ -102,6 +108,23 @@ export class BaseContext extends MainSetup {
         await this.sUSG.add_role(this.owner, 32);
         // Set max number as maximum to deposit
         await this.sUSG["set_deposit_limit(uint256)"](ethers.MaxUint256);
+    }
+
+    async deploy_sTAN() {
+        const yearnVaultFactory = await ethers.getContractAt("IYearnVaultFactory", "0x770D0d1Fb036483Ed4AbB6d53c1C88fb277D812F");
+        const tx = await yearnVaultFactory.deploy_new_vault(this.TAN, "Staked TAN", "sTAN", this.owner, 7 * 86400);
+        await tx.wait();
+        const actualBlock = (await ethers.provider.getBlock("latest"))!.number;
+        const createEvents = await yearnVaultFactory.queryFilter(yearnVaultFactory.filters.NewVault(), actualBlock - 1, actualBlock);
+
+        this.sTAN = await ethers.getContractAt("IYearnV3Vault", "0x" + createEvents[0].topics[1].slice(26));
+
+        // Set deposit limit
+        await this.sTAN.add_role(this.owner, 256);
+        // Set reward processor
+        await this.sTAN.add_role(this.owner, 32);
+        // Set max number as maximum to deposit
+        await this.sTAN["set_deposit_limit(uint256)"](ethers.MaxUint256);
     }
 
     async deployContracts2(USGOracle: AddressLike, lpDeployContext: LpDeployContext) {
@@ -140,7 +163,7 @@ export class BaseContext extends MainSetup {
 
         this.pegKeeperUSG_wfrxUSD = (await (
             await ethers.getContractFactory("PegKeeperV2")
-        ).deploy(lpDeployContext.stableLp["USG-wfrxUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
+        ).deploy(lpDeployContext.stableLp["USG-wcrvUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
         await this.pegKeeperUSG_wfrxUSD.waitForDeployment();
 
         await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperUSG_USDC, this.pegKeeperUSG_wfrxUSD]);
@@ -148,6 +171,9 @@ export class BaseContext extends MainSetup {
         await this.controlTower.connect(this.owner).togglePegKeeper(this.pegKeeperUSG_USDC);
         await this.controlTower.connect(this.owner).togglePegKeeper(this.pegKeeperUSG_wfrxUSD);
         await this.controlTower.connect(this.owner).toggleMarketCreator(this.marketCreator);
+
+        this.pendlePTRouter = await (await ethers.getContractFactory("PendlePTRouter")).deploy();
+
     }
 
     async setUpERC20() {
@@ -172,9 +198,11 @@ export class BaseContext extends MainSetup {
 
         const USGToGivePerUser = 3_000_000;
 
-        await this.giveTokens(this.users, [{address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser}]);
+        await this.giveTokens(this.users, [{ address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser }]);
 
         await setStorageAt(await this.USG.getAddress(), 2, parseEther((USGToGivePerUser * this.users.length).toString()));
+
+        await lockVeTokensForAllUsers();
     }
 
     async approveCurveLP(lp: string) {
@@ -233,13 +261,13 @@ export async function createJSONAddress(
         });
     }
 
-    let oracles: {[key: string]: string} = {};
+    let oracles: { [key: string]: string } = {};
     for (const prop in oracleContext.oracles) {
         const oracle = await oracleContext.oracles[prop].getAddress();
         oracles[prop] = oracle;
     }
 
-    const lps: {[key: string]: string} = {};
+    const lps: { [key: string]: string } = {};
     for (const prop in lpDeployContext.stableLp) {
         const lp = await lpDeployContext.stableLp[prop].getAddress();
         lps[prop] = lp;
@@ -247,7 +275,7 @@ export async function createJSONAddress(
 
     lps["TAN-WETH"] = await lpDeployContext.tanLP?.getAddress()!;
 
-    const wStables: {[key: string]: string} = {};
+    const wStables: { [key: string]: string } = {};
     for (const prop in wStableContext.wStable) {
         const wStable = await wStableContext.wStable[prop].getAddress();
         wStables[prop] = wStable;
@@ -262,11 +290,13 @@ export async function createJSONAddress(
             marketCreator: await baseContext.marketCreator.getAddress(),
             irCalculator: await baseContext.irCalculator.getAddress(),
             pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
+            pendlePTRouter: await baseContext.pendlePTRouter.getAddress()
         },
         tokens: {
             USG: await baseContext.USG.getAddress(),
             sUSG: await baseContext.sUSG.getAddress(),
             TAN: await baseContext.TAN.getAddress(),
+            sTAN: await baseContext.sTAN.getAddress(),
             vsTAN: await baseContext.vsTAN.getAddress(),
         },
         implementations: {
@@ -280,7 +310,7 @@ export async function createJSONAddress(
         wStables,
         pegKeepers: {
             "USG-USDC": await baseContext.pegKeeperUSG_USDC.getAddress(),
-            "USG-wfrxUSD": await baseContext.pegKeeperUSG_wfrxUSD.getAddress(),
+            "USG-wcrvUSD": await baseContext.pegKeeperUSG_wfrxUSD.getAddress(),
         },
     };
 }

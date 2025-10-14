@@ -8,6 +8,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IZappingProxy} from "../../interfaces/internals/USG/IZappingProxy.sol";
 
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
+import {IVsTan} from "../../interfaces/internals/USG/IVsTan.sol";
 
 import {ZapStructDeposit} from "../../interfaces/internals/ICommonStruct.sol";
 
@@ -35,7 +36,7 @@ struct KickParams {
 
 /// @title VsTAN
 /// @notice Locking NFT contract of TAN.
-contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable, ZappingUtil {
+contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable, ZappingUtil, IVsTan {
     using SafeERC20 for IERC20;
     /// @notice Duration for which tokens are locked (13 weeks).
     uint256 public constant LOCK_DURATION = 13 weeks;

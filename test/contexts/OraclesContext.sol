@@ -29,7 +29,7 @@ contract OraclesContext is USGDeployContext {
     IPegKeeperRegulator public pegKeeperRegulator;
 
     IPegKeeperV2 public pegKeeperUSG_USDC;
-    IPegKeeperV2 public pegKeeperUSG_frxUSD;
+    IPegKeeperV2 public pegKeeperUSG_wcrvUSD;
 
     constructor() {
         vm.startPrank(owner);
@@ -73,18 +73,18 @@ contract OraclesContext is USGDeployContext {
     function setupUSGOracle() public {
         vm.startPrank(owner);
         USGOracle.add_price_pair(address(lpDeploymentContext.USGLPs("USG-USDC")));
-        USGOracle.add_price_pair(address(lpDeploymentContext.USGLPs("USG-wfrxUSD")));
+        USGOracle.add_price_pair(address(lpDeploymentContext.USGLPs("USG-wcrvUSD")));
 
         pegKeeperRegulator = IPegKeeperRegulator(deployCode("PegKeeperRegulator", abi.encode(usg, USGOracle, feeTreasury, owner, owner)));
         pegKeeperUSG_USDC = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.USGLPs("USG-USDC"), 20000, pegKeeperRegulator, owner)));
-        pegKeeperUSG_frxUSD = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.USGLPs("USG-wfrxUSD"), 20000, pegKeeperRegulator, owner)));
+        pegKeeperUSG_wcrvUSD = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.USGLPs("USG-wcrvUSD"), 20000, pegKeeperRegulator, owner)));
 
         controlTower.togglePegKeeper(address(pegKeeperUSG_USDC));
-        controlTower.togglePegKeeper(address(pegKeeperUSG_frxUSD));
+        controlTower.togglePegKeeper(address(pegKeeperUSG_wcrvUSD));
 
         address[] memory pairs = new address[](2);
         pairs[0] = address(pegKeeperUSG_USDC);
-        pairs[1] = address(pegKeeperUSG_frxUSD);
+        pairs[1] = address(pegKeeperUSG_wcrvUSD);
 
         pegKeeperRegulator.add_peg_keepers(pairs);
         vm.stopPrank();

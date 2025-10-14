@@ -1,8 +1,8 @@
-import {ethers} from "hardhat";
-import {MaxUint256, parseEther, parseUnits} from "ethers";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {CURVE_CONTEXT} from "defi-resources/build/ressources/mappings/curveContext";
-import {safeApprove, transfer} from "./safeApprove";
+import { ethers } from "hardhat";
+import { MaxUint256, parseEther, parseUnits } from "ethers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { CURVE_CONTEXT } from "@tangent/defi-resources/build/ressources/mappings/curveContext";
+import { safeApprove, transfer } from "./safeApprove";
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     CURVE LP 
@@ -139,12 +139,12 @@ export const depositStakeDao = async (lpKey: CurveLpKey, user: HardhatEthersSign
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
     const stakeVault = await ethers.getContractAt("IStakeDaoVault", context.stakeDaoVault);
     await lp.connect(user).approve(stakeVault, MaxUint256);
-    await stakeVault.connect(user).deposit(user, parseEther(amount.toString()), true);
+    await stakeVault.connect(user)["deposit(uint256,address)"](parseEther(amount.toString()), user);
 };
 export const withdrawStakeDao = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
     const context = CURVE_CONTEXT[lpKey];
     const stakeVault = await ethers.getContractAt("IStakeDaoVault", context.stakeDaoVault);
-    await stakeVault.connect(user).withdraw(parseEther(amount.toString()));
+    await stakeVault.connect(user).withdraw(parseEther(amount.toString()), user, user);
 };
 
 export async function transferStakeDaoGauge(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {

@@ -1,4 +1,4 @@
-import {writeFileSync} from "fs";
+import { writeFileSync } from "fs";
 
 interface ActionRow {
     actionType: string;
@@ -67,7 +67,7 @@ class BlockchainScriptGenerator {
             return `await ${actionType}(${transferParams});`;
         } else if (actionType === "timeTravel") {
             return `await timeTravel(${row.amount});`;
-        } else if (["depositAndBorrowUSG", "repayUSGAndWithdraw"].includes(actionType)) {
+        } else if (["depositAndBorrowUSG", "repayUSGAndWithdraw", "voteOnGauge"].includes(actionType)) {
             return `await ${actionType}(${compositBorrowParams});`;
         } else {
             return `await ${actionType}(${params});`;
@@ -77,14 +77,18 @@ class BlockchainScriptGenerator {
     generateScriptContent(actions: ActionRow[]): string {
         return `
 import { ethers } from "hardhat";
-import {giveTokensToAddresses} from "../../thief/thief";
+import { giveTokensToAddresses } from "../../thief/thief";
 import { timeTravel } from "../actions/time-travel";
 import { depositCurveLP, withdrawCurveLP, depositCurveGauge, withdrawCurveGauge, depositStakeDao, withdrawStakeDao, depositConvex, withdrawConvex, depositLlamaLend, withdrawLlamaLend, transferCurveLP, transferCurveGauge, transferStakeDaoGauge } from '../actions/curveEcoActions';
 import { pendleDepositPTAndYT, pendleDepositLP, pendleWithdrawLP, pendleWithdrawPT, pendleWithdrawYT, pendleDepositLPRouter, pendleDepositPTRouter, pendleDepositYTRouter, pendleWithdrawLPRouter} from "../actions/pendleActions";
 import { borrowUSG, repayUSG, depositAndBorrowUSG, repayUSGAndWithdraw } from "../actions/usgActions";
+import { voteOnGauge } from "../actions/vote-on-gauge";
 
 main();
 export async function main() {
+
+    const FXN = "FXN";
+    const CRV = "CRV";
     try {
         const [user0, user1, user2, user3, user4, user5, user6, user7, user8, user9] = await ethers.getSigners();
 
@@ -117,8 +121,6 @@ ${actions.map((action) => this.generateActionCode(action)).join("\n\n")}
 }
 
 async function main() {
-    console.log("CALL MAIN IN userActionGenerator.ts");
-
     const generator = new BlockchainScriptGenerator("14kY9R4FzMriJ_vo-rt5yISM0pFIMJdkklcEf-wAlG70", "0");
     await generator.generateScript();
 }

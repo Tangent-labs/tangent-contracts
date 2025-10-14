@@ -17,7 +17,7 @@ contract PointPricesChainviewTest is MarketDeploymentContext {
 
         address[] memory pegKeepers = new address[](2);
         pegKeepers[0] = address(pegKeeperUSG_USDC);
-        pegKeepers[1] = address(pegKeeperUSG_frxUSD);
+        pegKeepers[1] = address(pegKeeperUSG_wcrvUSD);
 
         PointPrices.AddressesInput memory addresses = PointPrices.AddressesInput({usg: address(usg), usgOracle: address(USGOracle), sUsg: address(sUSG), pegKeepers: pegKeepers});
 
@@ -34,12 +34,3 @@ contract PointPricesChainviewTest is MarketDeploymentContext {
         }
     }
 }
-
-/*
- MarketExternalActions[] public markets;
-
-    BorrowInvariantHandler public borrowInvariantHandler;
-    function setUp() public {
-        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true));
-        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, true));
-        markets.push(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD));*/

@@ -96,6 +96,7 @@ contract PendlePTRouter is IPendlePTRouter {
      */
     function swapTokenForPT(CurveRouterSwap calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256) {
         IERC20 tokenIn = IERC20(crvRouterData._route[0]);
+
         // Transfers the tokenIn here
         _transferFrom(tokenIn, msg.sender, address(this), crvRouterData._amount);
 
@@ -117,7 +118,6 @@ contract PendlePTRouter is IPendlePTRouter {
         _approveIfNotAllowed(IERC20(SYToPT.underlyingIn), address(SYToPT.sy));
         // Deposits some underlying to get some SY
         uint256 syAmount = SYToPT.sy.deposit(address(this), SYToPT.underlyingIn, underlyingAmount, 0);
-
         // Allows the pendle router to spend the SY
         _approveIfNotAllowed(SYToPT.sy, address(pendleRouter));
         // Exchange the SY for some PT through the Pendle Router
@@ -129,7 +129,6 @@ contract PendlePTRouter is IPendlePTRouter {
             createDefaultApproxParams(),
             createEmptyLimitOrderData()
         );
-
         return ptOut;
     }
 

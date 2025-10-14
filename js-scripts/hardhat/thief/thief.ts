@@ -2,6 +2,7 @@ import {setStorageAt} from "@nomicfoundation/hardhat-network-helpers";
 import {GlobalHelper} from "../GlobalHelper";
 
 import {parseUnits, Signer} from "ethers";
+import {THIEF_TOKEN_CONFIG} from "@tangent/defi-resources/build/ressources/erc20/thiefConfig";
 
 export interface TokenAmounts {
     slotBalance: number;
@@ -42,4 +43,21 @@ export async function giveTokenToAddresss(user: Signer, address: string, amount:
     }
 
     await setStorageAt(address, storageSlot, amount);
+}
+
+export async function giveTokenToAddress(user: Signer, tokenName: string, amount: bigint) {
+    const config = THIEF_TOKEN_CONFIG[tokenName];
+    const erc20 = config.address;
+    const userAddress = await user.getAddress();
+    const UpgradeableAddresses = ["0x15700b564ca08d9439c58ca5053166e8317aa138", "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110"];
+    let storageSlot = "";
+    if (config.isVyper) {
+        storageSlot = GlobalHelper.calculateStorageSlotEthersVyper(userAddress, config.slotBalance);
+    } else if (UpgradeableAddresses.includes(erc20)) {
+        storageSlot = GlobalHelper.calculateERC20OZUpgradeable(userAddress);
+    } else {
+        storageSlot = GlobalHelper.calculateStorageSlotEthersSolidity(userAddress, config.slotBalance);
+    }
+
+    await setStorageAt(erc20, storageSlot, amount);
 }

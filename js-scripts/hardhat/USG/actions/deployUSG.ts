@@ -1,9 +1,9 @@
-import {curveLp} from "@tangent/defi-resources";
-import {BaseContext} from "../contexts/BaseContext";
-import {MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys, PendlePTMarketsKeys} from "../contexts/MarketContext";
-import {OracleContext} from "../contexts/OracleContext";
-import {LpDeployContext} from "../contexts/LPDeployContext";
-import {WStablesContext} from "../contexts/WStableContext";
+import { curveLp } from "@tangent/defi-resources";
+import { BaseContext } from "../contexts/BaseContext";
+import { MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys, PendlePTMarketsKeys } from "../contexts/MarketContext";
+import { OracleContext } from "../contexts/OracleContext";
+import { LpDeployContext } from "../contexts/LPDeployContext";
+import { WStablesContext } from "../contexts/WStableContext";
 
 export async function deployUSG(userCount: number = 5) {
     const baseContext = new BaseContext(userCount);
@@ -12,21 +12,32 @@ export async function deployUSG(userCount: number = 5) {
     const lpDeployContext = new LpDeployContext();
     const wStableContext = new WStablesContext();
 
+    console.log("Setup Users")
     await baseContext.setupTestUsers();
 
+    console.log("Deploy first part of contracts")
     // Deploy all base contracts
     await baseContext.deployContracts1();
 
+    console.log("Give ERC20 to users")
     // Give ERC20 to users
     await baseContext.setUpERC20();
 
+    console.log("Deploy WStables")
     await wStableContext.deployWStables(baseContext);
+
+
+    console.log("Deploy LPs")
     // Create USG LP
     await lpDeployContext.deployAllTangentLps(baseContext, wStableContext);
 
+
+    console.log("Deploy and setup Oracles")
     // Setup and create all oracles
     await oracleContext.deployAndSetupOracles(baseContext, lpDeployContext);
 
+
+    console.log("Deploy the second part of contracts")
     // Deploy other contracts that needed oracles and LP
     await baseContext.deployContracts2(oracleContext.USGOracle, lpDeployContext);
 
@@ -59,6 +70,8 @@ export async function deployUSG(userCount: number = 5) {
     const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD"];
 
     const pendlePTMarkets: PendlePTMarketsKeys[] = ["sUSDe_25_09_25", "wstUSR_25_09_25", "USDe_25_09_25", "wstUSR_25_09_25"];
+
+    console.log("Deploy convex markets")
     // Deploy Convex CRV markets
     await marketContext.deployConvexCrvMarkets(convexCrvMarkets, baseContext, oracleContext);
 
@@ -75,5 +88,5 @@ export async function deployUSG(userCount: number = 5) {
     await baseContext.approveCurveLP(curveLp.CRV_LP_pxETH_WETH);
     await baseContext.approveCurveLP(curveLp.CRV_DUO_ETH_CVX);
 
-    return {baseContext, oracleContext, marketContext, lpDeployContext, wStableContext};
+    return { baseContext, oracleContext, marketContext, lpDeployContext, wStableContext };
 }

@@ -1,4 +1,4 @@
-import {HardhatUserConfig} from "hardhat/config";
+import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
@@ -8,7 +8,7 @@ import "hardhat-contract-sizer";
 
 import * as dotenv from "dotenv";
 dotenv.config();
-const forkBlock = 23046443;
+
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",
@@ -62,8 +62,8 @@ const config: HardhatUserConfig = {
                 interval: 12_000,
             },
             forking: {
-                url: `https://eth.drpc.org`,
-                blockNumber: forkBlock,
+                url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
+                blockNumber: Number(process.env.STARTING_BLOCK!),
             },
             timeout: 100_000_000,
         },
@@ -73,8 +73,8 @@ const config: HardhatUserConfig = {
                 interval: 12_000,
             },
             forking: {
-                url: `https://eth.drpc.org`,
-                blockNumber: forkBlock,
+                url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
+                blockNumber: Number(process.env.STARTING_BLOCK!),
             },
         },
 
@@ -83,6 +83,11 @@ const config: HardhatUserConfig = {
             url: "http://176.143.254.58:8545",
             timeout: 100_000_000,
         },
+        staging: {
+            chainId: 31337,
+            url: "https://io.convergence-finance.network:8545",
+            timeout: 100_000_000,
+        }
     },
 };
 

@@ -23,7 +23,7 @@ contract MarketListChainview is MarketDeploymentContext {
 
         address[] memory pegKeepers = new address[](2);
         pegKeepers[0] = address(pegKeeperUSG_USDC);
-        pegKeepers[1] = address(pegKeeperUSG_frxUSD);
+        pegKeepers[1] = address(pegKeeperUSG_wcrvUSD);
 
         try new MarketListUI(usr1, USGOracle, usg, sUSG, markets, pegKeepers) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
