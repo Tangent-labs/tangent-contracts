@@ -11,7 +11,6 @@ import {CurveRouterSwap} from "../../interfaces/internals/USG/ICurveLPLiquidator
 import {IPendlePTRouter} from "../../interfaces/internals/USG/IPendlePTRouter.sol";
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "hardhat/console.sol";
 
 /// @title  PendlePTRouter
 /// @notice Swaps ERC20 for PT and vice versa through Pendle and Curve Router.
@@ -98,10 +97,8 @@ contract PendlePTRouter is IPendlePTRouter {
     function swapTokenForPT(CurveRouterSwap calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256) {
         IERC20 tokenIn = IERC20(crvRouterData._route[0]);
 
-        console.log("A");
         // Transfers the tokenIn here
         _transferFrom(tokenIn, msg.sender, address(this), crvRouterData._amount);
-        console.log("B");
 
         // Exchanges the tokenIn for one of the pendle market underlying
         uint256 underlyingAmount = _curveExchange(
@@ -112,7 +109,6 @@ contract PendlePTRouter is IPendlePTRouter {
             crvRouterData._pools,
             crvRouterData._receiver
         );
-        console.log("C");
 
         return _swapUnderlyingToPT(underlyingAmount, SYToPT);
     }
@@ -120,13 +116,10 @@ contract PendlePTRouter is IPendlePTRouter {
     function _swapUnderlyingToPT(uint256 underlyingAmount, PendleSYToPT calldata SYToPT) internal returns (uint256) {
         // Allows the SY to spend the underlyingIn
         _approveIfNotAllowed(IERC20(SYToPT.underlyingIn), address(SYToPT.sy));
-        console.log("D");
         // Deposits some underlying to get some SY
         uint256 syAmount = SYToPT.sy.deposit(address(this), SYToPT.underlyingIn, underlyingAmount, 0);
-        console.log("E");
         // Allows the pendle router to spend the SY
         _approveIfNotAllowed(SYToPT.sy, address(pendleRouter));
-        console.log("F");
         // Exchange the SY for some PT through the Pendle Router
         (uint256 ptOut, ) = pendleRouter.swapExactSyForPt(
             SYToPT.receiver,
@@ -136,7 +129,6 @@ contract PendlePTRouter is IPendlePTRouter {
             createDefaultApproxParams(),
             createEmptyLimitOrderData()
         );
-        console.log("G");
         return ptOut;
     }
 
