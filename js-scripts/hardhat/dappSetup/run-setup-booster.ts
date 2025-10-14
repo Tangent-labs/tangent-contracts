@@ -12,7 +12,6 @@ async function main() {
 
     const lockerSetup = new LockerSetup();
     await lockerSetup.setupTestUsers();
-
     await lockerSetup.setupContracts();
     await lockerSetup.stake();
 }

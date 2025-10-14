@@ -14,6 +14,8 @@
     "deploy:usg-staging": "npx hardhat run js-scripts/hardhat/USG/scripts/deployUSG.ts --network staging",
     "full-USG": "npm run deploy-USG &  npm run distribute-rewards-USG & npm run deposit-markets-USG  & npm run borrow-markets-USG",
     "verify-contracts-blockscout": "npx hardhat run js-scripts/hardhat/USG/blockscout/verify-contracts.ts --network localhost",
+    "booster-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
+    "time-travel": "npx hardhat run js-scripts/hardhat/USG/actions/time-travel.ts --network localhost",
     "liquidation-context": "npx hardhat run js-scripts/hardhat/USG/scripts/liquidationSetUp.ts --network localhost",
     "routing:generate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/generateCurveRoutes.ts --network localhost",
     "routing:hydrate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/hydrateFinalRoutes.ts --network localhost",
