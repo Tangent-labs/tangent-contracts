@@ -26,7 +26,8 @@
     "action:time-travel": "npx hardhat run js-scripts/hardhat/USG/actions/time-travel.ts --network localhost",
     "liquidboost:dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "points:generate-context": "npx hardhat run js-scripts/hardhat/USG/scripts/userActionGenerator.ts",
-    "points:run-context": "npx hardhat run js-scripts/hardhat/USG/scripts/campaignActions.ts --network localhost",
+    "points:run-context-local": "npx hardhat run js-scripts/hardhat/USG/scripts/campaignActions.ts --network localhost",
+    "points:run-context-staging": "npx hardhat run js-scripts/hardhat/USG/scripts/campaignActions.ts --network staging",
     "routing:test-curve-routes": "npx hardhat run js-scripts/hardhat/USG/routing/Curve/testFinalRoutes.ts --network localhost",
     "test:coverage": "forge coverage --report lcov --no-match-coverage '(test|src/chainview|src/Upgradeable|src/libs)' && genhtml lcov.info --branch-coverage --output-dir coverage --rc derive_function_end_line=0"
   },
