@@ -20,8 +20,8 @@ contract MigratoorCurveLPToCurveLP is MarketDeploymentContext {
     ZapMigrateStruct zapCall;
 
     function setUp() public {
-        marketFrom = deployConvexCurveLPMarket(collatTokenFrom, false);
-        marketTo = deployConvexCurveLPMarket(collatTokenTo, false);
+        marketFrom = deployConvexCurveLPMarket(collatTokenFrom, true);
+        marketTo = deployConvexCurveLPMarket(collatTokenTo, true);
 
         vm.startPrank(usr1);
         deal(address(collatTokenFrom), usr1, collatIn);
@@ -164,5 +164,80 @@ contract MigratoorCurveLPToCurveLP is MarketDeploymentContext {
 
         assertEq(collatTokenFrom.balanceOf(address(marketFrom)), collatIn - collatToWithdraw);
         assertApproxEqAbs(collatTokenTo.balanceOf(address(marketTo)), collatToWithdraw, 50 ether);
+    }
+
+    function test_migrate_only_collateral() external {
+        uint256 collatToWithdraww = 10 ether;
+        MigrateStruct memory migrateStruct = MigrateStruct({
+            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            collatToWithdraw: collatToWithdraww,
+            debtToRemove: 0,
+            debtToRepay: 0
+        });
+
+        zapCall = ZapMigrateStruct({
+            zap: ZapStruct({
+                router: address(AddrRouter.ROUTER_CURVE),
+                routerCall: encoder.encodeLiquidateCallForCurveLP(
+                    encoder.createCurveRouterStruct(
+                        Array.memoryAddress([address(collatTokenFrom), address(collatTokenFrom), address(AddrClassicERC20.crvUSD), address(collatTokenTo), address(collatTokenTo)]),
+                        swapParams,
+                        collatToWithdraww,
+                        0,
+                        address(marketTo)
+                    )
+                )
+            }),
+            minCollatToOut: 0
+        });
+
+        vm.startPrank(usr1);
+        migratoor.migrate(migrateStruct, zapCall);
+
+        assertEq(marketFrom.collateralBalances(usr1), collatIn - collatToWithdraww);
+        assertApproxEqAbs(marketTo.collateralBalances(usr1), collatToWithdraww, 50 ether);
+
+        assertEq(marketFrom.userDebt(usr1), debtIn - debtToRemove);
+        assertEq(marketTo.userDebt(usr1), debtToRemove - debtToRepay);
+
+        assertEq(marketFrom.totalCollateral(), collatIn - collatToWithdraww);
+        assertApproxEqAbs(marketTo.totalCollateral(), collatToWithdraww, 50 ether);
+
+        assertEq(marketFrom.totalDebt(), debtIn - debtToRemove);
+        assertEq(marketTo.totalDebt(), debtToRemove - debtToRepay);
+
+        assertEq(collatTokenFrom.balanceOf(address(marketFrom)), collatIn - collatToWithdraww);
+        assertApproxEqAbs(collatTokenTo.balanceOf(address(marketTo)), collatToWithdraww, 50 ether);
+    }
+
+    function test_migrate_only_debt() external {
+        vm.startPrank(usr1);
+        deal(address(collatTokenTo), usr1, 100_000 ether);
+        collatTokenTo.approve(address(marketTo), MAX_UINT);
+        marketTo.depositAndBorrow(100_000 ether, 80_000 ether);
+
+        MigrateStruct memory migrateStruct = MigrateStruct({
+            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            collatToWithdraw: 0,
+            debtToRemove: 3000 ether,
+            debtToRepay: 0
+        });
+
+        migratoor.migrate(migrateStruct, zapCall);
+
+        // assertEq(marketFrom.collateralBalances(usr1), collatIn - 0);
+        // assertApproxEqAbs(marketTo.collateralBalances(usr1), 0, 50 ether);
+
+        // assertEq(marketFrom.userDebt(usr1), debtIn - debtToRemove);
+        // assertEq(marketTo.userDebt(usr1), debtToRemove - debtToRepay);
+
+        // assertEq(marketFrom.totalCollateral(), collatIn - 0);
+        // assertApproxEqAbs(marketTo.totalCollateral(), 0, 50 ether);
+
+        // assertEq(marketFrom.totalDebt(), debtIn - debtToRemove);
+        // assertEq(marketTo.totalDebt(), debtToRemove - debtToRepay);
+
+        // assertEq(collatTokenFrom.balanceOf(address(marketFrom)), collatIn - 0);
+        // assertApproxEqAbs(collatTokenTo.balanceOf(address(marketTo)), 0, 50 ether);
     }
 }

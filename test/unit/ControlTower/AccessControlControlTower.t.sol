@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "../../contexts/MarketDeploymentContext.sol";
+import {MarketDeploymentContext, ControlTower, LightOwnable} from "../../contexts/MarketDeploymentContext.sol";
 contract AccessControlControlTower is MarketDeploymentContext {
     function test_toggleMarket_fails_as_not_owner_or_market_creator() external {
         vm.startPrank(usr1);

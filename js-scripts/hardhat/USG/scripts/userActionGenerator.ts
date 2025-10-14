@@ -1,4 +1,4 @@
-import {writeFileSync} from "fs";
+import { writeFileSync } from "fs";
 
 interface ActionRow {
     actionType: string;
@@ -121,7 +121,7 @@ ${actions.map((action) => this.generateActionCode(action)).join("\n\n")}
 }
 
 async function main() {
-    const generator = new BlockchainScriptGenerator("14kY9R4FzMriJ_vo-rt5yISM0pFIMJdkklcEf-wAlG70", "1786646586");
+    const generator = new BlockchainScriptGenerator("14kY9R4FzMriJ_vo-rt5yISM0pFIMJdkklcEf-wAlG70", "0");
     await generator.generateScript();
 }
 

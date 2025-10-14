@@ -1,4 +1,4 @@
-import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 const days = process.env.DAYS;
 export async function timeTravel(facultativeDays?: number) {
@@ -8,7 +8,8 @@ export async function timeTravel(facultativeDays?: number) {
     } else {
         seconds = Number(facultativeDays) * 86400;
     }
-    await time.increase(seconds);
+    const secondsToIncrease = Math.floor(seconds)
+    await time.increase(secondsToIncrease);
 
-    console.info("\x1b[32m%s\x1b[0m", "Time has been incresed by " + seconds + " seconds on the test node !");
+    console.info("\x1b[32m%s\x1b[0m", "Time has been incresed by " + secondsToIncrease + " seconds on the test node !");
 }

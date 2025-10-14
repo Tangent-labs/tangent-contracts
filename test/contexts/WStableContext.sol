@@ -38,7 +38,6 @@ contract WStableContext is OraclesContext {
         vm.label(address(wUSDE), "wUSDE");
         vm.label(address(wDOLA), "wDOLA");
         vm.label(address(wUSR), "wUSR");
-        console.log("caaaa");
 
         LpDeploymentContext.CreateUSGLpStruct[] memory params = new LpDeploymentContext.CreateUSGLpStruct[](4);
         params[0] = LpDeploymentContext.CreateUSGLpStruct({otherStable: wcrvUSD, name: "USG-wcrvUSD", symbol: "wcrvUSD", initialAmount: 500_000});
