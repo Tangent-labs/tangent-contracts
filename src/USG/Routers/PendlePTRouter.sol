@@ -5,12 +5,14 @@ import {IPendleRouterV4, TokenOutput, LimitOrderData, ApproxParams} from "../../
 
 import {ICurveRouter} from "../../interfaces/externals/Curve/ICurveRouter.sol";
 
-import {CurveRouterSwapNoAmount, PendlePTToSY, PendleSYToPT} from "../../interfaces/internals/USG/IPendlePTRouter.sol";
+import {CurveRouterSwapNoAmount, CurveRouterSwapNoReceiver, PendlePTToSY, PendleSYToPT} from "../../interfaces/internals/USG/IPendlePTRouter.sol";
 
 import {CurveRouterSwap} from "../../interfaces/internals/USG/ICurveLPLiquidator.sol";
 import {IPendlePTRouter} from "../../interfaces/internals/USG/IPendlePTRouter.sol";
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+import "hardhat/console.sol";
 
 /// @title  PendlePTRouter
 /// @notice Swaps ERC20 for PT and vice versa through Pendle and Curve Router.
@@ -94,21 +96,14 @@ contract PendlePTRouter is IPendlePTRouter {
      *                          - minPTOut : Slippage parameter on the minimum amount of PT to get
      * @param  crvRouterData  Struct containing data to perform a swap through the Curve Router
      */
-    function swapTokenForPT(CurveRouterSwap calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256) {
+    function swapTokenForPT(CurveRouterSwapNoReceiver calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256) {
         IERC20 tokenIn = IERC20(crvRouterData._route[0]);
 
         // Transfers the tokenIn here
         _transferFrom(tokenIn, msg.sender, address(this), crvRouterData._amount);
 
         // Exchanges the tokenIn for one of the pendle market underlying
-        uint256 underlyingAmount = _curveExchange(
-            crvRouterData._route,
-            crvRouterData._swap_params,
-            crvRouterData._amount,
-            crvRouterData._min_dy,
-            crvRouterData._pools,
-            crvRouterData._receiver
-        );
+        uint256 underlyingAmount = _curveExchange(crvRouterData._route, crvRouterData._swap_params, crvRouterData._amount, 0, crvRouterData._pools, address(this));
 
         return _swapUnderlyingToPT(underlyingAmount, SYToPT);
     }
@@ -120,6 +115,8 @@ contract PendlePTRouter is IPendlePTRouter {
         uint256 syAmount = SYToPT.sy.deposit(address(this), SYToPT.underlyingIn, underlyingAmount, 0);
         // Allows the pendle router to spend the SY
         _approveIfNotAllowed(SYToPT.sy, address(pendleRouter));
+
+        console.log("BITE");
         // Exchange the SY for some PT through the Pendle Router
         (uint256 ptOut, ) = pendleRouter.swapExactSyForPt(
             SYToPT.receiver,
@@ -129,6 +126,11 @@ contract PendlePTRouter is IPendlePTRouter {
             createDefaultApproxParams(),
             createEmptyLimitOrderData()
         );
+        console.log("CHATTE");
+        console.log("SYToPT.receiver", SYToPT.receiver);
+        console.log("ptOut", ptOut);
+        console.log("PENDLE MARKET", address(SYToPT.market));
+
         return ptOut;
     }
 

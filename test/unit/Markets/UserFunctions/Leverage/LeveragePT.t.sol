@@ -35,7 +35,7 @@ contract LeveragePT is MarketDeploymentContext {
             ZapStruct({
                 router: address(pendlePTRouter),
                 routerCall: encoder.encodeSwapTokenForPT(
-                    encoder.createCurveRouterStruct(
+                    encoder.createCurveRouterNoReceiverNoMinDyStruct(
                         Array.memoryAddress(
                             [
                                 address(usg),
@@ -50,9 +50,7 @@ contract LeveragePT is MarketDeploymentContext {
                             ]
                         ),
                         swapParams,
-                        50_000 ether,
-                        0,
-                        address(pendlePTRouter)
+                        50_000 ether
                     ),
                     PendleSYToPT({
                         market: AddrMarketPendle.sUSDe_25_09_25,
@@ -84,7 +82,7 @@ contract LeveragePT is MarketDeploymentContext {
                 zap: ZapStruct({
                     router: address(pendlePTRouter),
                     routerCall: encoder.encodeSwapTokenForPT(
-                        encoder.createCurveRouterStruct(
+                        encoder.createCurveRouterNoReceiverNoMinDyStruct(
                             Array.memoryAddress(
                                 [
                                     address(ETH_NAKED),
@@ -97,9 +95,7 @@ contract LeveragePT is MarketDeploymentContext {
                                 ]
                             ),
                             swapParams,
-                            10 ether,
-                            0,
-                            address(pendlePTRouter)
+                            10 ether
                         ),
                         PendleSYToPT({
                             market: AddrMarketPendle.sUSDe_25_09_25,

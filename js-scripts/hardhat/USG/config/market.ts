@@ -1,6 +1,6 @@
-import {commonERC20, ConvexCrvPools, ConvexFxnPools, PendlePools} from "@tangent/defi-resources";
-import {parseEther} from "ethers";
-import {IRParamsStruct, RCParamsStruct} from "../../../../typechain-types/src/chainview/USG/GetMarketDetails";
+import { commonERC20, ConvexCrvPools, ConvexFxnPools, PendlePools } from "@tangent/defi-resources";
+import { parseEther } from "ethers";
+import { IRParamsStruct, RCParamsStruct } from "../../../../typechain-types/src/chainview/USG/GetMarketDetails";
 
 // HEC
 export const HEC_CONFIG_IR_PARAMS: IRParamsStruct = {
@@ -224,16 +224,6 @@ export const STATIC_CONFIG_CONVEX_FXN = {
 };
 
 export const STATIC_CONFIG_PT_PENDLE = {
-    sUSDe_31_07_25: {
-        collatName: "sUSDe 07/31/25",
-        collatToken: PendlePools["sUSDe 07/31/25"].PT,
-        liquidationThreshold: 94_000,
-        maxLTV: 90_000,
-        maxMarketDebt: parseEther("1000000"),
-        minimumLoan: parseEther("3000"),
-        rewards: [],
-    },
-
     sUSDe_25_09_25: {
         collatName: "sUSDe 09/25/25",
         collatToken: PendlePools["sUSDe 09/25/25"].PT,
@@ -273,4 +263,32 @@ export const STATIC_CONFIG_PT_PENDLE = {
         minimumLoan: parseEther("3000"),
         rewards: [],
     },
+    sUSDe_27_11_25: {
+        collatName: "sUSDe 27/11/25",
+        collatToken: PendlePools["sUSDe 27/11/25"].PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [],
+    },
+    sUSDf_29_01_26: {
+        collatName: "sUSDf 29/01/26",
+        collatToken: PendlePools["sUSDf 29/01/26"].PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [],
+    },
+    USDe_27_11_25: {
+        collatName: "USDe 27/11/25",
+        collatToken: PendlePools["USDe 27/11/25"].PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [],
+    },
+
 };

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import {CurveRouterSwap, CurveQuote} from "../../src/interfaces/internals/USG/ICurveLPLiquidator.sol";
-import {IPendlePTRouter, CurveRouterSwapNoAmount, PendlePTToSY, PendleSYToPT} from "../../src/interfaces/internals/USG/IPendlePTRouter.sol";
+import {IPendlePTRouter, CurveRouterSwapNoAmount, PendlePTToSY, PendleSYToPT, CurveRouterSwapNoReceiver} from "../../src/interfaces/internals/USG/IPendlePTRouter.sol";
 
 import {ICurveRouter} from "../../src/interfaces/externals/Curve/ICurveRouter.sol";
 import {IPendleRouterV4, TokenOutput, LimitOrderData} from "../../src/interfaces/externals/Pendle/IPendleRouterV4.sol";
@@ -27,7 +27,7 @@ contract Encoder {
         return abi.encodeWithSelector(IPendlePTRouter.swapPTForToken.selector, pendlePTToSY, curveSwapParams);
     }
 
-    function encodeSwapTokenForPT(CurveRouterSwap calldata curveSwapParams, PendleSYToPT calldata pendleSYToPT) public pure returns (bytes memory) {
+    function encodeSwapTokenForPT(CurveRouterSwapNoReceiver calldata curveSwapParams, PendleSYToPT calldata pendleSYToPT) public pure returns (bytes memory) {
         return abi.encodeWithSelector(IPendlePTRouter.swapTokenForPT.selector, curveSwapParams, pendleSYToPT);
     }
 
@@ -55,6 +55,16 @@ contract Encoder {
         (address[11] memory _route, uint256[5][5] memory _swapParams) = _prepareCurveRouterArrays(route, swapParams);
         address[5] memory pools;
         return CurveRouterSwap({_route: _route, _swap_params: _swapParams, _amount: amount, _min_dy: minDy, _pools: pools, _receiver: receiver});
+    }
+
+    function createCurveRouterNoReceiverNoMinDyStruct(
+        address[] calldata route,
+        uint256[][] calldata swapParams,
+        uint256 amount
+    ) public pure returns (CurveRouterSwapNoReceiver memory) {
+        (address[11] memory _route, uint256[5][5] memory _swapParams) = _prepareCurveRouterArrays(route, swapParams);
+        address[5] memory pools;
+        return CurveRouterSwapNoReceiver({_route: _route, _swap_params: _swapParams, _amount: amount, _pools: pools});
     }
 
     function createCurveRouterNoAmountStruct(

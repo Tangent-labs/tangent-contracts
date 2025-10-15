@@ -1,8 +1,8 @@
-import {ethers} from "hardhat";
-import {AddressLike, ContractTransactionReceipt, Interface, InterfaceAbi, LogDescription, MaxUint256} from "ethers";
-import {ConvexCrvLPMarket, ConvexFxnLPMarket, BasicERC20Market} from "../../../../typechain-types";
-import {BaseContext} from "./BaseContext";
-import {OracleContext} from "./OracleContext";
+import { ethers } from "hardhat";
+import { AddressLike, ContractTransactionReceipt, Interface, InterfaceAbi, LogDescription, MaxUint256 } from "ethers";
+import { ConvexCrvLPMarket, ConvexFxnLPMarket, BasicERC20Market } from "../../../../typechain-types";
+import { BaseContext } from "./BaseContext";
+import { OracleContext } from "./OracleContext";
 import {
     HEC_CONFIG_IR_PARAMS,
     HEC_CONFIG_RC_PARAMS,
@@ -14,17 +14,17 @@ import {
 } from "../config/market";
 
 import * as MarketCreator from "../../../../artifacts/src/USG/Utilities/MarketCreator.sol/MarketCreator.json";
-import {MarketInitStruct} from "../../../../typechain-types/src/USG/Market/BasicERC20Market";
-import {commonERC20} from "@tangent/defi-resources";
+import { MarketInitStruct } from "../../../../typechain-types/src/USG/Market/BasicERC20Market";
+import { commonERC20 } from "@tangent/defi-resources";
 
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;
 export type PendlePTMarketsKeys = keyof typeof STATIC_CONFIG_PT_PENDLE;
 
 export class MarketContext {
-    convexCrvMarkets: {[key: string]: ConvexCrvLPMarket} = {};
-    convexFxnMarkets: {[key: string]: ConvexFxnLPMarket} = {};
-    pendlePTMarkets: {[key: string]: BasicERC20Market} = {};
+    convexCrvMarkets: { [key: string]: ConvexCrvLPMarket } = {};
+    convexFxnMarkets: { [key: string]: ConvexFxnLPMarket } = {};
+    pendlePTMarkets: { [key: string]: BasicERC20Market } = {};
 
     marketInit(staticConfig: any, oracle: AddressLike, name: string): MarketInitStruct {
         return {

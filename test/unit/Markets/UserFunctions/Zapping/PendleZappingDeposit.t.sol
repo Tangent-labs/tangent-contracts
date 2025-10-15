@@ -31,7 +31,7 @@ contract PendleZappingDeposit is MarketDeploymentContext {
                 zap: ZapStruct({
                     router: address(pendlePTRouter),
                     routerCall: encoder.encodeSwapTokenForPT(
-                        encoder.createCurveRouterStruct(
+                        encoder.createCurveRouterNoReceiverNoMinDyStruct(
                             Array.memoryAddress(
                                 [
                                     address(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48),
@@ -46,9 +46,7 @@ contract PendleZappingDeposit is MarketDeploymentContext {
                                 ]
                             ),
                             swapParams,
-                            10 ** 6,
-                            0,
-                            address(pendlePTRouter)
+                            10 ** 6
                         ),
                         PendleSYToPT({
                             market: AddrMarketPendle.USDe_25_09_25,

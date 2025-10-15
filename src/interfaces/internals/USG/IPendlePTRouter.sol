@@ -6,7 +6,7 @@ import {IPendleYTToken} from "../../externals/Pendle/IPendleYTToken.sol";
 import {IPendlePTToken} from "../../externals/Pendle/IPendlePTToken.sol";
 import {IPendleMarketV3} from "../../externals/Pendle/IPendleMarketV3.sol";
 
-import {CurveRouterSwap, CurveRouterSwapNoAmount} from "./ICurveLPLiquidator.sol";
+import {CurveRouterSwap, CurveRouterSwapNoAmount, CurveRouterSwapNoReceiver} from "./ICurveLPLiquidator.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -31,5 +31,5 @@ struct PendleSYToPT {
 interface IPendlePTRouter {
     function swapPTForPT(PendlePTToSY calldata PTToSY, CurveRouterSwapNoAmount calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256);
     function swapPTForToken(PendlePTToSY calldata PTToSY, CurveRouterSwapNoAmount calldata crvRouterData) external returns (uint256);
-    function swapTokenForPT(CurveRouterSwap calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256);
+    function swapTokenForPT(CurveRouterSwapNoReceiver calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256);
 }
