@@ -14,6 +14,5 @@ export const sendRewardSavingAccount = async (contractAddress: string, user: Har
     const contract = await ethers.getContractAt("IYearnV3Vault", contractAddress);
     const tokenAddress = await contract.asset();
     const token = await ethers.getContractAt("IERC20", tokenAddress);
-    await token.connect(user).approve(contractAddress, amount);
-    await token.connect(user).transferFrom(user, contractAddress, amount);
+    await token.connect(user).transfer(contractAddress, amount);
 };

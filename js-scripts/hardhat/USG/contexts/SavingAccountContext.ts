@@ -5,16 +5,21 @@ import fs from "fs";
 import {parseEther} from "ethers";
 import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import {IYearnV3Vault} from "../../../../typechain-types";
+import path from "path";
 
 export class SavingAccountContext {
     userCount: number = 1;
     user?: HardhatEthersSigner;
 
     async doDeploy() {
-        const addresses = JSON.parse(fs.readFileSync("../addresses.json", "utf8"));
+        const addresses = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../../../../addresses.json"), "utf8"));
 
-        const sTAN = await ethers.getContractAt("IYearnV3Vault", addresses.sTAN);
-        const sUSG = await ethers.getContractAt("IYearnV3Vault", addresses.sUSG);
+        const sTANAddress = addresses.tokens.sTAN;
+        const sUSGAddress = addresses.tokens.sUSG;
+        console.log(sTANAddress, sUSGAddress, addresses);
+
+        const sTAN = await ethers.getContractAt("IYearnV3Vault", addresses.tokens.sTAN);
+        const sUSG = await ethers.getContractAt("IYearnV3Vault", addresses.tokens.sUSG);
         this.user = (await ethers.getSigners())[0];
         if (!sTAN || !sUSG) {
             throw new Error("Deploy must be done : npm run deploy:usg-local");
