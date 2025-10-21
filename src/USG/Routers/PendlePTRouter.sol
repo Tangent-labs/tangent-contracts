@@ -12,8 +12,6 @@ import {IPendlePTRouter} from "../../interfaces/internals/USG/IPendlePTRouter.so
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "hardhat/console.sol";
-
 /// @title  PendlePTRouter
 /// @notice Swaps ERC20 for PT and vice versa through Pendle and Curve Router.
 contract PendlePTRouter is IPendlePTRouter {
@@ -116,7 +114,7 @@ contract PendlePTRouter is IPendlePTRouter {
         // Allows the pendle router to spend the SY
         _approveIfNotAllowed(SYToPT.sy, address(pendleRouter));
 
-        console.log("BITE");
+        // console.log("BITE");
         // Exchange the SY for some PT through the Pendle Router
         (uint256 ptOut, ) = pendleRouter.swapExactSyForPt(
             SYToPT.receiver,
@@ -126,10 +124,10 @@ contract PendlePTRouter is IPendlePTRouter {
             createDefaultApproxParams(),
             createEmptyLimitOrderData()
         );
-        console.log("CHATTE");
-        console.log("SYToPT.receiver", SYToPT.receiver);
-        console.log("ptOut", ptOut);
-        console.log("PENDLE MARKET", address(SYToPT.market));
+        // console.log("CHATTE");
+        // console.log("SYToPT.receiver", SYToPT.receiver);
+        // console.log("ptOut", ptOut);
+        // console.log("PENDLE MARKET", address(SYToPT.market));
 
         return ptOut;
     }

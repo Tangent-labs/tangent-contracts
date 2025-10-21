@@ -9,7 +9,7 @@ contract LockUI is VsTANInfo {
     error LockUIOutError(LockUIOut output);
 
     constructor(address user, IERC20 tan, IVsTan vsTan, ICurveCryptoSwap tanLP, IERC20 usg, IAggregatorV3 ethOracle, IAggregatorStablePriceV3 usgOracle, address dao) {
-        uint256 positionOwned = vsTan.balanceOf(user);
+        uint256 positionOwned = user == address(0) ? 0 : vsTan.balanceOf(user);
 
         RsTanData memory rsTanGlobalData = getVsTanInfo(vsTan, tanLP, usg, ethOracle, usgOracle);
 
@@ -20,13 +20,9 @@ contract LockUI is VsTANInfo {
         output.tanPrice = rsTanGlobalData.tanPrice;
         output.tanAPR = rsTanGlobalData.apr;
 
-        if (user != address(0)) {
-            positionOwned = vsTan.balanceOf(user);
-            output.balance = tan.balanceOf(user);
-            output.allowance = tan.allowance(user, address(vsTan));
-        } else {
-            positionOwned = 0;
-        }
+        output.balance = user == address(0) ? 0 : tan.balanceOf(user);
+        output.allowance = user == address(0) ? 0 : tan.allowance(user, address(vsTan));
+    
         LockedPosition[] memory positions = new LockedPosition[](positionOwned);
 
         for (uint256 i; i < positionOwned; ) {

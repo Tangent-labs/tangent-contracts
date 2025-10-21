@@ -34,8 +34,8 @@ contract sUSGUI is GetMarketDetails {
                 sUSGPrice: (USGPrice * sUSG.pricePerShare()) / 1e18,
                 sUSGSupply: sUSG.totalSupply(),
                 USGPercentageInsUSG: USGTotalSupply == 0 ? 0 : (USG.balanceOf(address(sUSG)) * 1e18) / USGTotalSupply,
-                USGBalance: USG.balanceOf(account),
-                sUSGBalance: sUSG.balanceOf(account),
+                USGBalance: account == address(0) ? 0 : USG.balanceOf(account),
+                sUSGBalance: account == address(0) ? 0 : sUSG.balanceOf(account),
                 USGAllowance: USG.allowance(account, address(sUSG))
             })
         );
