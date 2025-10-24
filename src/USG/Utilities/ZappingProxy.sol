@@ -7,10 +7,12 @@ import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 import {ZapStruct} from "../../interfaces/internals/ICommonStruct.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
+import {LightReentrancyGuardTransient} from "../Utilities/abstract/LightReentrancyGuardTransient.sol";
+
 /// @title ZappingProxy
 /// @notice This contract is used to zap tokens in and out of the system. Tokens are transiting to this contract and are pulled by the router passed in parameters.
 ///         NO TOKENS SHOULD BE SEND DIRECTLY HERE OR THEY WILL BE POTENTIALLY IMMEDIATLY STOLEN
-contract ZappingProxy is IZappingProxy {
+contract ZappingProxy is IZappingProxy, LightReentrancyGuardTransient {
     using SafeERC20 for IERC20;
 
     uint256 constant MAX_UINT = type(uint256).max;
@@ -36,7 +38,7 @@ contract ZappingProxy is IZappingProxy {
      * @param zap          Struct containing the router and the raw bytes data that will be executed
      * @return Amount of tokenOut received
      */
-    function zapProxy(IERC20 tokenIn, IERC20 tokenOut, uint256 minAmountOut, address receiver, ZapStruct calldata zap) public payable returns (uint256) {
+    function zapProxy(IERC20 tokenIn, IERC20 tokenOut, uint256 minAmountOut, address receiver, ZapStruct calldata zap) public payable nonReentrant returns (uint256) {
         address router = zap.router;
         require(tokenIn != tokenOut, TokenInOutMustBeDifferent());
         if (msg.value == 0) {
@@ -68,7 +70,8 @@ contract ZappingProxy is IZappingProxy {
         } else {
             balanceTokenInLeft = address(this).balance;
             if (0 != balanceTokenInLeft) {
-                payable(controlTower.feeTreasury()).transfer(balanceTokenInLeft);
+                (bool isSuccess, ) = payable(controlTower.feeTreasury()).call{value: balanceTokenInLeft}("");
+                require(isSuccess, ZapCallError(""));
             }
         }
 

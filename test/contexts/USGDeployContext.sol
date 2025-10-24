@@ -63,7 +63,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     address public owner = makeAddr("Owner");
     address public pauser = makeAddr("Pauser");
     address public ownerGauge = makeAddr("ownerGauge");
-    address public feeTreasury = makeAddr("feeTreasury");
+    address public feeTreasury = 0x0af815364BD9e9E60f3d2D3bAc1320B77d3E35F7;
     address public mockedLP = makeAddr("Mocked LP");
 
     Encoder public encoder;
