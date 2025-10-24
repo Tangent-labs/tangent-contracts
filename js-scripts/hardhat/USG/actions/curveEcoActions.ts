@@ -149,7 +149,7 @@ export const withdrawStakeDao = async (lpKey: CurveLpKey, user: HardhatEthersSig
 
 export async function transferStakeDaoGauge(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {
     const context = CURVE_CONTEXT[lpKey];
-    await transfer(context.stakeDaoGauge, from, to, amount);
+    await transfer(context.stakeDaoVault, from, to, amount);
 }
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

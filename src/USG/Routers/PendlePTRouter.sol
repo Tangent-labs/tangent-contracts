@@ -114,7 +114,6 @@ contract PendlePTRouter is IPendlePTRouter {
         // Allows the pendle router to spend the SY
         _approveIfNotAllowed(SYToPT.sy, address(pendleRouter));
 
-        // console.log("BITE");
         // Exchange the SY for some PT through the Pendle Router
         (uint256 ptOut, ) = pendleRouter.swapExactSyForPt(
             SYToPT.receiver,
@@ -124,10 +123,6 @@ contract PendlePTRouter is IPendlePTRouter {
             createDefaultApproxParams(),
             createEmptyLimitOrderData()
         );
-        // console.log("CHATTE");
-        // console.log("SYToPT.receiver", SYToPT.receiver);
-        // console.log("ptOut", ptOut);
-        // console.log("PENDLE MARKET", address(SYToPT.market));
 
         return ptOut;
     }

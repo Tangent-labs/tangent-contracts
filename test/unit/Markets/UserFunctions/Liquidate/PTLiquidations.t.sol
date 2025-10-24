@@ -59,7 +59,7 @@ contract PTLiquidations is MarketDeploymentContext {
                             ]
                         ),
                         swapParams,
-                        0,
+                        10 ether,
                         usr1
                     )
                 )
@@ -107,7 +107,7 @@ contract PTLiquidations is MarketDeploymentContext {
                             ]
                         ),
                         swapParams,
-                        0,
+                        10 ether,
                         usr1
                     )
                 )
