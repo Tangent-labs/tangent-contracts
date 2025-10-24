@@ -12,7 +12,7 @@ import {PauseSettings} from "./PauseSettings.sol";
 import {Collateral} from "./Collateral.sol";
 import {ZappingUtil} from "../../Utilities/abstract/ZappingUtil.sol";
 
-import {GlobalMarketInitParams, MarketInit, LiquidateInput, SelfLiquidateInput, IZappingProxy, IERC20} from "../../../interfaces/internals/USG/IMarketCore.sol";
+import {GlobalMarketInitParams, MarketInit, LiquidationPre, LiquidateInput, SelfLiquidateInput, IZappingProxy, IERC20} from "../../../interfaces/internals/USG/IMarketCore.sol";
 
 /// @notice Abstract base contract implementing core functionality for USG markets.
 /// @dev Inherits PauseSettings, Collateral and ZappingUtil to provide collateral management
@@ -28,6 +28,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
     error PositionWithoutBadDebt();
     error NotAMigratoor();
     error DebtToRepayTooBig();
+    error MaxUSGToBurn();
 
     /// @notice Constructor marks the contract as initialized.
     constructor() {
@@ -335,15 +336,22 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @dev  Internal function called at the begining of 'liquidate', 'selfLiquidate' and 'seizeCollateral' external functions.
      *       Performs the IR checkpoint and fetch loan parameters
      * @param account   Address of the position to liquidate
-     * @return New index of the debt after the checkpoint
-     * @return Collateral balances of the 'account'
-     * @return Debt shares of the 'account'
-     * @return Debt updated with the new index of the 'account'
+     * @return LiquidatePre struct composed of :
+     *   -  New index of the debt after the checkpoint
+     *   -  Collateral balances of the 'account'
+     *   -  Debt shares of the 'account'
+     *   -  Debt updated with the new index of the 'account'
      */
-    function _preLiquidate(address account) internal returns (uint256, uint256, uint256, uint256) {
+    function _preLiquidate(address account) internal returns (LiquidationPre memory) {
         uint256 newDebtIndex = _checkpointIR();
         uint256 userDebtShares_ = userDebtShares[account];
-        return (newDebtIndex, collateralBalances[account], userDebtShares_, _convertToAmount(userDebtShares_, newDebtIndex));
+        return
+            LiquidationPre({
+                newDebtIndex: newDebtIndex,
+                collatBalance: collateralBalances[account],
+                _userDebtShares: userDebtShares_,
+                userDebt_: _convertToAmount(userDebtShares_, newDebtIndex)
+            });
     }
 
     /**
@@ -392,7 +400,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             selfLiquidateCall._totalDebtShares - debtSharesToRemove
         );
 
-        _postLiquidate(selfLiquidateCall.collatAmountToLiquidate, USGToRepay, selfLiquidateCall.minUSGOut, liquidateCall);
+        _postLiquidate(selfLiquidateCall.collatAmountToLiquidate, USGToRepay, selfLiquidateCall.maxUSGToBurn, selfLiquidateCall.minUSGOut, liquidateCall);
 
         return (USGToRepay, newUserDebtShares);
     }
@@ -440,7 +448,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         uint256 fee = _mulDiv(USGToRepay, liquidationFee, DENOMINATOR);
 
-        _postLiquidate(collatAmountToLiquidate, USGToRepay + fee, liquidateInput.minUSGOut, liquidateCall);
+        _postLiquidate(collatAmountToLiquidate, USGToRepay + fee, liquidateInput.maxUSGToBurn, liquidateInput.minUSGOut, liquidateCall);
 
         if (fee != 0) {
             _mintUSG(usg, controlTower.feeTreasury(), fee);
@@ -459,7 +467,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @param minUSGOut                Slippage, Minimum amount of USG to receive after the selling of the collateral
      * @param liquidationCall          Contains address and bytes of the contract selling the collateral for USG
      */
-    function _postLiquidate(uint256 collatAmountToLiquidate, uint256 USGToBurn, uint256 minUSGOut, ZapStruct calldata liquidationCall) internal {
+    function _postLiquidate(uint256 collatAmountToLiquidate, uint256 USGToBurn, uint256 maxUSGToBurn, uint256 minUSGOut, ZapStruct calldata liquidationCall) internal {
+        require(USGToBurn <= maxUSGToBurn, MaxUSGToBurn());
         IZappingProxy _zappingProxy = zappingProxy;
         // Withdraw the collateral from the underlying protocol if needed and
         // Transfer it to the caller when there is no liquidator passed in parameter

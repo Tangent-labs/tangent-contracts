@@ -51,7 +51,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
         bytes memory routerCall = encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, amountToLiquidate, 4_250 ether, usr1));
 
         vm.expectRevert(abi.encodeWithSelector(Collateral.ZeroCollatAmount.selector));
-        market.selfLiquidate(0, 1_000 ether, 4_250 ether, ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall}));
+        market.selfLiquidate(0, 1_000 ether, MAX_UINT, 4_250 ether, ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall}));
 
         vm.stopPrank();
     }
@@ -65,7 +65,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
         bytes memory routerCall = encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, amountToLiquidate, 0, usr1));
 
         vm.expectRevert(abi.encodeWithSelector(DebtIR.UserDebtTooLow.selector));
-        market.selfLiquidate(amountToLiquidate, amountToRepay, 0, ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall}));
+        market.selfLiquidate(amountToLiquidate, amountToRepay, MAX_UINT, 0, ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall}));
 
         vm.stopPrank();
     }
@@ -78,7 +78,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
         bytes memory routerCall = encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, amountToLiquidate, 0, usr1));
 
         vm.expectRevert(abi.encodeWithSelector(Collateral.OverMaxLTV.selector));
-        market.selfLiquidate(amountToLiquidate, 0, 0, ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall}));
+        market.selfLiquidate(amountToLiquidate, 0, 0, 0, ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall}));
 
         vm.stopPrank();
     }
@@ -89,7 +89,18 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
         bytes memory routerCall = encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, collatDeposited, 0, usr1));
 
         vm.expectRevert(abi.encodeWithSelector(ZappingProxy.MinAmountOutNotReached.selector));
-        market.selfLiquidate(collatDeposited, MAX_UINT, 6_000 ether, ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall}));
+        market.selfLiquidate(collatDeposited, MAX_UINT, MAX_UINT, 6_000 ether, ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall}));
+
+        vm.stopPrank();
+    }
+
+    function test_selfLiquidate_fails_because_burns_too_much_usg() external {
+        vm.startPrank(usr1);
+
+        bytes memory routerCall = encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, collatDeposited, 0, usr1));
+
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.MaxUSGToBurn.selector));
+        market.selfLiquidate(collatDeposited, MAX_UINT, 3_000 ether, 6_000 ether, ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall}));
 
         vm.stopPrank();
     }

@@ -55,6 +55,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         market.selfLiquidate(
             collatDeposited,
             MAX_UINT,
+            MAX_UINT,
             4_250 ether,
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
@@ -80,6 +81,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         market.selfLiquidate(
             amountToLiquidate,
             amountToRepay,
+            MAX_UINT,
             0,
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),

@@ -32,6 +32,7 @@ contract PTLiquidations is MarketDeploymentContext {
         marketSUSDe.selfLiquidate(
             50_000 ether,
             20_000 ether,
+            MAX_UINT,
             0,
             ZapStruct({
                 router: address(pendlePTRouter),
@@ -80,6 +81,7 @@ contract PTLiquidations is MarketDeploymentContext {
         marketSUSDe.selfLiquidate(
             50_000 ether,
             20_000 ether,
+            MAX_UINT,
             0,
             ZapStruct({
                 router: address(pendlePTRouter),
