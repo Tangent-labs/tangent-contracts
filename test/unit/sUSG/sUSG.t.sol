@@ -4,10 +4,8 @@ import "../../contexts/MarketDeploymentContext.sol";
 import "forge-std/console.sol";
 import {Vm} from "forge-std/Vm.sol"; // <-- for Vm.Log
 
-
 contract sUSGDeposit is MarketDeploymentContext {
     bytes32 STRATEGY_REPORTED_SIG = keccak256("StrategyReported(address,uint256,uint256,uint256,uint256,uint256,uint256)");
-
     function test_deposit_sUSG() external {
         vm.startPrank(owner);
         // Deposit Limit
