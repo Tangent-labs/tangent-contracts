@@ -94,14 +94,21 @@ contract PendlePTRouter is IPendlePTRouter {
      *                          - minPTOut : Slippage parameter on the minimum amount of PT to get
      * @param  crvRouterData  Struct containing data to perform a swap through the Curve Router
      */
-    function swapTokenForPT(CurveRouterSwapNoReceiver calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256) {
+    function swapTokenForPT(CurveRouterSwap calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256) {
         IERC20 tokenIn = IERC20(crvRouterData._route[0]);
 
         // Transfers the tokenIn here
         _transferFrom(tokenIn, msg.sender, address(this), crvRouterData._amount);
 
         // Exchanges the tokenIn for one of the pendle market underlying
-        uint256 underlyingAmount = _curveExchange(crvRouterData._route, crvRouterData._swap_params, crvRouterData._amount, 0, crvRouterData._pools, address(this));
+        uint256 underlyingAmount = _curveExchange(
+            crvRouterData._route,
+            crvRouterData._swap_params,
+            crvRouterData._amount,
+            crvRouterData._min_dy,
+            crvRouterData._pools,
+            address(this)
+        );
 
         return _swapUnderlyingToPT(underlyingAmount, SYToPT);
     }
