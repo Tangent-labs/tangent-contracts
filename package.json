@@ -17,6 +17,7 @@
     "booster-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "time-travel": "npx hardhat run js-scripts/hardhat/USG/actions/time-travel.ts --network localhost",
     "liquidation-context": "npx hardhat run js-scripts/hardhat/USG/scripts/liquidationSetUp.ts --network localhost",
+    "saving-account-context": "npx hardhat run js-scripts/hardhat/USG/scripts/savingaccountSetUp.ts --network localhost",
     "routing:generate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/generateCurveRoutes.ts --network localhost",
     "routing:hydrate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/hydrateFinalRoutes.ts --network localhost",
     "action:distribute-rewards-vsTan": "npx hardhat run js-scripts/hardhat/USG/actions/distributeRewardsVsTan.ts --network localhost",

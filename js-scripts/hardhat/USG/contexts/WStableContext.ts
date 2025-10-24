@@ -1,26 +1,26 @@
-import {ethers} from "hardhat";
-import {WStable} from "../../../../typechain-types";
-import {BaseContext} from "./BaseContext";
-import {MaxUint256} from "ethers";
+import { ethers } from "hardhat";
+import { WStable } from "../../../../typechain-types";
+import { BaseContext } from "./BaseContext";
+import { MaxUint256 } from "ethers";
 
 export class WStablesContext {
-    wStable: {[key: string]: WStable} = {};
+    wStable: { [key: string]: WStable } = {};
 
     async deployWStables(baseContext: BaseContext) {
         const wStableFactory = await ethers.getContractFactory("WStable");
         const amount = ethers.parseEther("500000");
 
-        const wfrxUSD = "wfrxUSD";
-        const wfrxUSDContract = await wStableFactory.deploy(wfrxUSD, wfrxUSD, baseContext.controlTower, baseContext.coins.frxUSD, baseContext.coins.sfrxUSD, baseContext.owner);
-        this.wStable[wfrxUSD] = wfrxUSDContract;
-        await baseContext.coins.frxUSD.connect(baseContext.owner).approve(wfrxUSDContract, MaxUint256);
-        await wfrxUSDContract.connect(baseContext.owner).mint(amount, baseContext.owner, false);
+        // const wfrxUSD = "wfrxUSD";
+        // const wfrxUSDContract = await wStableFactory.deploy(wfrxUSD, wfrxUSD, baseContext.controlTower, baseContext.coins.frxUSD, baseContext.coins.sfrxUSD, baseContext.owner);
+        // this.wStable[wfrxUSD] = wfrxUSDContract;
+        // await baseContext.coins.frxUSD.connect(baseContext.owner).approve(wfrxUSDContract, MaxUint256);
+        // await wfrxUSDContract.connect(baseContext.owner).mint(amount, baseContext.owner, false);
 
         const wcrvUSD = "wcrvUSD";
         const wcrvUSDContract = await wStableFactory.deploy(wcrvUSD, wcrvUSD, baseContext.controlTower, baseContext.coins.crvUSD, baseContext.coins.scrvUSD, baseContext.owner);
         this.wStable[wcrvUSD] = wcrvUSDContract;
-        // await baseContext.coins.crvUSD.connect(baseContext.owner).approve(wcrvUSDContract, MaxUint256);
-        // await wcrvUSDContract.connect(baseContext.owner).mint(amount, baseContext.owner, false);
+        await baseContext.coins.crvUSD.connect(baseContext.owner).approve(wcrvUSDContract, MaxUint256);
+        await wcrvUSDContract.connect(baseContext.owner).mint(amount, baseContext.owner, false);
 
         const wUSDE = "wUSDe";
         const wUSDEContract = await wStableFactory.deploy(wUSDE, wUSDE, baseContext.controlTower, baseContext.coins.USDe, baseContext.coins.sUSDe, baseContext.owner);

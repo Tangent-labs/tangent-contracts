@@ -5,7 +5,7 @@ import {IPendleRouterV4, TokenOutput, LimitOrderData, ApproxParams} from "../../
 
 import {ICurveRouter} from "../../interfaces/externals/Curve/ICurveRouter.sol";
 
-import {CurveRouterSwapNoAmount, PendlePTToSY, PendleSYToPT} from "../../interfaces/internals/USG/IPendlePTRouter.sol";
+import {CurveRouterSwapNoAmount, CurveRouterSwapNoReceiver, PendlePTToSY, PendleSYToPT} from "../../interfaces/internals/USG/IPendlePTRouter.sol";
 
 import {CurveRouterSwap} from "../../interfaces/internals/USG/ICurveLPLiquidator.sol";
 import {IPendlePTRouter} from "../../interfaces/internals/USG/IPendlePTRouter.sol";
@@ -120,6 +120,7 @@ contract PendlePTRouter is IPendlePTRouter {
         uint256 syAmount = SYToPT.sy.deposit(address(this), SYToPT.underlyingIn, underlyingAmount, 0);
         // Allows the pendle router to spend the SY
         _approveIfNotAllowed(SYToPT.sy, address(pendleRouter));
+
         // Exchange the SY for some PT through the Pendle Router
         (uint256 ptOut, ) = pendleRouter.swapExactSyForPt(
             SYToPT.receiver,
@@ -129,6 +130,7 @@ contract PendlePTRouter is IPendlePTRouter {
             createDefaultApproxParams(),
             createEmptyLimitOrderData()
         );
+
         return ptOut;
     }
 

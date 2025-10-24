@@ -6,7 +6,7 @@ import {IPendleYTToken} from "../../externals/Pendle/IPendleYTToken.sol";
 import {IPendlePTToken} from "../../externals/Pendle/IPendlePTToken.sol";
 import {IPendleMarketV3} from "../../externals/Pendle/IPendleMarketV3.sol";
 
-import {CurveRouterSwap, CurveRouterSwapNoAmount} from "./ICurveLPLiquidator.sol";
+import {CurveRouterSwap, CurveRouterSwapNoAmount, CurveRouterSwapNoReceiver} from "./ICurveLPLiquidator.sol";
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 

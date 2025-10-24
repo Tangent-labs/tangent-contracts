@@ -69,15 +69,17 @@ export async function deployUSG(userCount: number = 5) {
     ];
     const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD"];
 
-    const pendlePTMarkets: PendlePTMarketsKeys[] = ["sUSDe_25_09_25", "wstUSR_25_09_25", "USDe_25_09_25", "wstUSR_25_09_25"];
+    const pendlePTMarkets: PendlePTMarketsKeys[] = ["USDe_27_11_25", "sUSDe_27_11_25"];
 
-    console.log("Deploy convex markets")
+    console.log("Deploy convex CRV markets")
     // Deploy Convex CRV markets
     await marketContext.deployConvexCrvMarkets(convexCrvMarkets, baseContext, oracleContext);
 
+    console.log("Deploy convex FXN markets")
     // Deploy Convex FXN markets
     await marketContext.deployConvexFxnMarkets(convexFxnMarkets, baseContext, oracleContext);
 
+    console.log("Deploy Pendle PT markets")
     // Deploy Pendle PT markets
     await marketContext.deployPendlePTMarkets(pendlePTMarkets, baseContext, oracleContext);
 
