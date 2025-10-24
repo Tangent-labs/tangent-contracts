@@ -31,5 +31,5 @@ struct PendleSYToPT {
 interface IPendlePTRouter {
     function swapPTForPT(PendlePTToSY calldata PTToSY, CurveRouterSwapNoAmount calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256);
     function swapPTForToken(PendlePTToSY calldata PTToSY, CurveRouterSwapNoAmount calldata crvRouterData) external returns (uint256);
-    function swapTokenForPT(CurveRouterSwapNoReceiver calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256);
+    function swapTokenForPT(CurveRouterSwap calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256);
 }
