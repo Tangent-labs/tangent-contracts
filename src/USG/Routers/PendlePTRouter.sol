@@ -107,7 +107,7 @@ contract PendlePTRouter is IPendlePTRouter {
             crvRouterData._amount,
             crvRouterData._min_dy,
             crvRouterData._pools,
-            address(this)
+            crvRouterData._receiver
         );
 
         return _swapUnderlyingToPT(underlyingAmount, SYToPT);
