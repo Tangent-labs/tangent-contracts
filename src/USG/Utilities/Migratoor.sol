@@ -43,23 +43,21 @@ contract Migratoor is LightReentrancyGuardTransient {
     function migrate(MigrateStruct calldata migrationData, ZapMigrateStruct calldata zapCollatData) external nonReentrant {
         IMarketExternalActions marketFrom = IMarketExternalActions(migrationData.markets[0]);
         IMarketExternalActions marketTo = IMarketExternalActions(migrationData.markets[1]);
-        IControlTower _controlTower = controlTower;
 
         // Verify that both contracts are vevrified markets in the ControlTower
-        require(_controlTower.areContractsMarkets(migrationData.markets), NotAMarket());
+        require(controlTower.areContractsMarkets(migrationData.markets), NotAMarket());
         // Verify that both markets are different
         require(marketFrom != marketTo, IdenticalMarkets());
 
         IERC20 collatFrom = ICollateral(address(marketFrom)).collatToken();
         // Block all calls to the market TO to prevent exploit in the raw call in ZappingProxy
-        IERC20 collatTo = marketTo.reeantrancyOn(_controlTower);
+        IERC20 collatTo = marketTo.reeantrancyOn();
 
         bool isSameCollat = collatFrom == collatTo;
         IZappingProxy _zappingProxy = zappingProxy;
 
         // Removes debt and collateral from source market.
         uint256 transferedDebt = marketFrom.migrateFrom(
-            _controlTower,
             msg.sender,
             migrationData.collatToWithdraw,
             migrationData.debtToRemove,
@@ -77,9 +75,9 @@ contract Migratoor is LightReentrancyGuardTransient {
         }
 
         // Shut down the reeantrancy guard on marketTo
-        marketTo.reeantrancyOff(_controlTower);
+        marketTo.reeantrancyOff();
 
         // Add collateral balances and debt to marketTo
-        marketTo.migrateTo(_controlTower, msg.sender, collatReceived, transferedDebt);
+        marketTo.migrateTo(msg.sender, collatReceived, transferedDebt);
     }
 }

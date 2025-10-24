@@ -92,12 +92,12 @@ contract MigratoorReverts is MarketDeploymentContext {
     function test_call_migrateFrom_not_from_migratoor_fails() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotAMigratoor.selector));
-        marketFrom.migrateFrom(controlTower, usr1, 0, 0, 0, address(0));
+        marketFrom.migrateFrom(usr1, 0, 0, 0, address(0));
     }
 
     function test_call_migrateTo_not_from_migratoor_fails() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotAMigratoor.selector));
-        marketFrom.migrateTo(controlTower, usr1, 0, 0);
+        marketFrom.migrateTo(usr1, 0, 0);
     }
 }

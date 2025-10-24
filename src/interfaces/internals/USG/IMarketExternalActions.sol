@@ -21,18 +21,11 @@ interface IMarketExternalActions {
 
     function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external returns (TokenAmount[] memory);
 
-    function migrateFrom(
-        IControlTower _controlTower,
-        address account,
-        uint256 collateralToRemove,
-        uint256 debtToRemove,
-        uint256 debtToRepay,
-        address collatReceiver
-    ) external returns (uint256);
+    function migrateFrom(address account, uint256 collateralToRemove, uint256 debtToRemove, uint256 debtToRepay, address collatReceiver) external returns (uint256);
 
-    function migrateTo(IControlTower _controlTower, address account, uint256 collatToAdd, uint256 debtToAdd) external;
+    function migrateTo(address account, uint256 collatToAdd, uint256 debtToAdd) external;
 
-    function reeantrancyOn(IControlTower _controlTower) external returns (IERC20);
+    function reeantrancyOn() external returns (IERC20);
 
-    function reeantrancyOff(IControlTower _controlTower) external;
+    function reeantrancyOff() external;
 }

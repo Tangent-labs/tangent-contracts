@@ -591,19 +591,12 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
                         MIGRATE
                                                     ------ */
 
-    function _verifySenderMigrator(IControlTower _controlTower) internal view {
-        require(_controlTower.isPositionMigrator(msg.sender), NotAMigratoor());
+    function _verifySenderMigrator() internal view {
+        require(controlTower.isPositionMigrator(msg.sender), NotAMigratoor());
     }
 
-    function _migrateFrom(
-        IControlTower _controlTower,
-        address account,
-        uint256 collateralToRemove,
-        uint256 debtToRemove,
-        uint256 debtToRepay,
-        address receiver
-    ) internal returns (uint256, uint256) {
-        _verifySenderMigrator(_controlTower);
+    function _migrateFrom(address account, uint256 collateralToRemove, uint256 debtToRemove, uint256 debtToRepay, address receiver) internal returns (uint256, uint256) {
+        _verifySenderMigrator();
         uint256 newDebtIndex = _checkpointIR();
 
         uint256 uDebtShares = userDebtShares[account];
@@ -652,8 +645,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         return (debtToRemove - debtToRepay, newUDebtShares);
     }
 
-    function _migrateTo(IControlTower _controlTower, address account, uint256 collatToAdd, uint256 debtToAdd) internal returns (uint256) {
-        _verifySenderMigrator(_controlTower);
+    function _migrateTo(address account, uint256 collatToAdd, uint256 debtToAdd) internal returns (uint256) {
+        _verifySenderMigrator();
         _verifyIsDepositNotPaused();
         _verifyIsBorrowNotPaused();
         uint256 debtIndex = _checkpointIR();

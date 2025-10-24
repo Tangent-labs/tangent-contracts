@@ -349,7 +349,6 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     /**
      * @dev Callable only by a verified Migrator.
      *      Remove and if wanted, repay a part of the debt and withdraw a part of the collateral.
-     * @param  _controlTower      Control Tower passed by the Migrator so save gas
      * @param  account            Account that will be affected by the modifications
      * @param  collatToRemove     Amount of collateral to remove from the contract
      * @param  debtToRemove       Amount of debt to remove from the contract
@@ -357,14 +356,13 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  receiver           Receiver of the colllateral
      */
     function migrateFrom(
-        IControlTower _controlTower,
         address account,
         uint256 collatToRemove,
         uint256 debtToRemove,
         uint256 debtToRepay,
         address receiver
     ) external nonReentrant updateRewards(account) returns (uint256) {
-        (uint256 debtRepaid, uint256 newUserDebtShares) = _migrateFrom(_controlTower, account, collatToRemove, debtToRemove, debtToRepay, receiver);
+        (uint256 debtRepaid, uint256 newUserDebtShares) = _migrateFrom(account, collatToRemove, debtToRemove, debtToRepay, receiver);
         emit MigrateFrom(account, collatToRemove, debtToRemove, debtToRepay, newUserDebtShares);
         return debtRepaid;
     }
@@ -372,34 +370,31 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     /**
      * @dev Callable only by a verified Migrator.
      *      Received the debt from the `FROM` market and the zapped collateral.
-     * @param  _controlTower  Control Tower passed by the Migrator so save gas
      * @param  account        Account that will be affected by the modifications
      * @param  collatToAdd    Amount of collateral to add to the contract
      * @param  debtToAdd      Amount of debt to add to the contract
      */
-    function migrateTo(IControlTower _controlTower, address account, uint256 collatToAdd, uint256 debtToAdd) external nonReentrant updateRewards(account) {
-        uint256 newUserDebtShares = _migrateTo(_controlTower, account, collatToAdd, debtToAdd);
+    function migrateTo(address account, uint256 collatToAdd, uint256 debtToAdd) external nonReentrant updateRewards(account) {
+        uint256 newUserDebtShares = _migrateTo(account, collatToAdd, debtToAdd);
         emit MigrateTo(account, collatToAdd, debtToAdd, newUserDebtShares);
     }
 
     /**
      * @dev Callable only by a verified Migrator.
      *      Block all the actions of the contract to prevent reentrancy exploits
-     * @param  _controlTower  Control Tower passed by the Migrator so save gas
      */
-    function reeantrancyOn(IControlTower _controlTower) external returns (IERC20) {
+    function reeantrancyOn() external returns (IERC20) {
         _nonReentrantBefore();
-        _verifySenderMigrator(_controlTower);
+        _verifySenderMigrator();
         return collatToken;
     }
 
     /**
      * @dev Callable only by a verified Migrator.
      *      Unlock all the actions of the contract.
-     * @param  _controlTower  Control Tower passed by the Migrator so save gas
      */
-    function reeantrancyOff(IControlTower _controlTower) external {
-        _verifySenderMigrator(_controlTower);
+    function reeantrancyOff() external {
+        _verifySenderMigrator();
         _nonReentrantAfter();
     }
 }
