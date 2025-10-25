@@ -214,6 +214,13 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
         return _computeIR(USGPrice, irParam);
     }
 
+    function _returnMinIR(bool isHec, uint24 irMin) internal pure returns (uint216) {
+        if (isHec) {
+            return 0;
+        }
+        return uint216(irMin * E13);
+    }
+
     /**
      * @notice Computes the intest rate regarding the USG price and parameters sigma and r0 from the market
      * @param  USGPrice Price of USG in wei.
@@ -224,10 +231,7 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
             return uint216(irParam.rMax * E13);
         }
         if (USGPrice >= uint256(irParam.pMax) * E12) {
-            if (irParam.isHEC) {
-                return 0;
-            }
-            return uint216(irParam.rMin * E13);
+            return _returnMinIR(irParam.isHEC, irParam.rMin);
         }
 
         // x to pass in the σ(x) function, with x = k . (actualPrice - pInflexion)
@@ -247,6 +251,12 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
         // Relative delta beween pMax, pMin and actual Price
         // quotient = (pMax - actualPrice) / (pMax - pMin )
         int128 quotientFixedPoint = ABDKMath64x64.divu(((uint256(irParam.pMax) * E12) - USGPrice) / (irParam.pMax - irParam.pMin), E12);
+
+        // To prevent tx to fail on log(0) in _pow in the computation of the IRIncrement
+        // we return the minimum IR
+        if (quotientFixedPoint == 0) {
+            return _returnMinIR(irParam.isHEC, irParam.rMin);
+        }
 
         // Computes the IR to increment to the minimum IR possible on the market.
         // irIncr = (rMax - rMin) * ((pMax - actualPrice) / (pMax - pMin))^alpha
