@@ -63,7 +63,7 @@ contract ZappingProxy is IZappingProxy {
         if (msg.value == 0) {
             balanceTokenInLeft = tokenIn.balanceOf(address(this));
             if (0 != balanceTokenInLeft) {
-                tokenIn.transfer(controlTower.feeTreasury(), balanceTokenInLeft);
+                tokenIn.safeTransfer(controlTower.feeTreasury(), balanceTokenInLeft);
             }
         } else {
             balanceTokenInLeft = address(this).balance;
