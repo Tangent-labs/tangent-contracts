@@ -141,7 +141,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @return Health ratio (1e18 base); higher is safer
      */
     function healthRatio(address account) public view returns (uint256) {
-        return _healthRatio(userDebt(account), collateralBalances[account], true);
+        return _healthRatio(userDebt(account), collateralBalances[account], _collateralPrice(true));
     }
 
     /**
@@ -189,9 +189,9 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @param collateralBalance Amount of collateral
      * @return Health ratio (1e18 base)
      */
-    function _healthRatio(uint256 userDebt_, uint256 collateralBalance, bool isNoFailMode) internal view returns (uint256) {
+    function _healthRatio(uint256 userDebt_, uint256 collateralBalance, uint256 collatPrice) internal view returns (uint256) {
         if (userDebt_ != 0) {
-            return (collateralBalance * 10 ** (18 - collatDecimals) * _collateralPrice(isNoFailMode) * liquidationThreshold) / (userDebt_ * DENOMINATOR);
+            return (collateralBalance * 10 ** (18 - collatDecimals) * collatPrice * liquidationThreshold) / (userDebt_ * DENOMINATOR);
         }
         return MAX_UINT; // Fully healthy if no debt
     }

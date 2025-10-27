@@ -1,4 +1,4 @@
-import {HardhatUserConfig} from "hardhat/config";
+import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
@@ -62,7 +62,7 @@ const config: HardhatUserConfig = {
                 interval: 12_000,
             },
             forking: {
-                url: `https://rpc.mevblocker.io`,
+                url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
                 blockNumber: Number(process.env.STARTING_BLOCK!),
             },
             timeout: 100_000_000,
@@ -73,7 +73,7 @@ const config: HardhatUserConfig = {
                 interval: 12_000,
             },
             forking: {
-                url: `https://rpc.mevblocker.io`,
+                url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
                 blockNumber: Number(process.env.STARTING_BLOCK!),
             },
         },

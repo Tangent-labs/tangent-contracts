@@ -33,7 +33,7 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(usr1, MAX_UINT, 0, 0, ZapStruct({router: address(0), routerCall: ""}));
         vm.stopPrank();
 
         // Dumps USG for USDC => Depegs USG
@@ -42,7 +42,7 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(usr1, MAX_UINT, 0, 0, ZapStruct({router: address(0), routerCall: ""}));
 
         // assertLt(lp.last_price(0), 991 * 10 ** 15, "Last price dropped hard");
 

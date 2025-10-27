@@ -3,7 +3,7 @@ pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {MarketCore, LiquidateInput, SelfLiquidateInput, ZapStructDeposit, IZappingProxy} from "./MarketCore.sol";
+import {MarketCore, LiquidateInput, LiquidationPre, SelfLiquidateInput, ZapStructDeposit, IZappingProxy} from "./MarketCore.sol";
 
 import {IMarketExternalActions, IControlTower} from "../../../interfaces/internals/USG/IMarketExternalActions.sol";
 
@@ -211,27 +211,37 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  minUSGOut         Minimum amount of USG to receive on the sell of the collateral. 
      * @param  liquidationCall     Contract and data allowing to sell the collateral for USG.
      */
-    function liquidate(address account, uint256 collatToLiquidate, uint256 minUSGOut, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(account) {
-        (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
-        // Can liquidate only if the health ratio is below 1
-        require(_healthRatio(userDebt_, collatBalance, true) < 1 ether, NotLiquidablePosition());
+    function liquidate(
+        address account,
+        uint256 collatToLiquidate,
+        uint256 maxUSGToBurn,
+        uint256 minUSGOut,
+        ZapStruct calldata liquidationCall
+    ) external nonReentrant updateRewards(account) {
+        LiquidationPre memory pre = _preLiquidate(account);
+        uint256 collatPrice = _collateralPrice(true);
 
-        (uint256 collatLiquidated, uint256 debtRepaid, uint256 fee, uint256 newUserDebtShares) = _liquidate(
+        // Can liquidate only if the health ratio is below 1
+        require(_healthRatio(pre.userDebt_, pre.collatBalance, collatPrice) < 1 ether, NotLiquidablePosition());
+
+        (uint256 collatLiquidated, uint256 repaidDebt, uint256 fee, uint256 newUserDebtShares) = _liquidate(
             LiquidateInput({
                 account: account,
                 collatToLiquidate: collatToLiquidate,
+                collatPrice: collatPrice,
                 minUSGOut: minUSGOut,
-                newDebtIndex: newDebtIndex,
-                _collateralBalance: collatBalance,
+                newDebtIndex: pre.newDebtIndex,
+                _collateralBalance: pre.collatBalance,
                 _totalCollateral: totalCollateral,
-                _userDebtShares: _userDebtShares,
+                _userDebtShares: pre._userDebtShares,
                 _totalDebtShares: totalDebtShares,
-                userDebt: userDebt_
+                userDebt: pre.userDebt_,
+                maxUSGToBurn: maxUSGToBurn
             }),
             liquidationCall
         );
 
-        emit Liquidate(account, debtRepaid, newUserDebtShares, fee, collatLiquidated, liquidationCall.router);
+        emit Liquidate(account, repaidDebt, newUserDebtShares, fee, collatLiquidated, liquidationCall.router);
     }
 
     /**
@@ -245,27 +255,29 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
     function selfLiquidate(
         uint256 collatAmountToLiquidate,
         uint256 USGToRepay,
+        uint256 maxUSGToBurn,
         uint256 minUSGOut,
         ZapStruct calldata liquidationCall
     ) external nonReentrant updateRewards(msg.sender) {
-        (uint256 newDebtIndex, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(msg.sender);
+        LiquidationPre memory pre = _preLiquidate(msg.sender);
 
-        (uint256 debtRepaid, uint256 newUserDebtShares) = _selfLiquidate(
+        (uint256 repaidDebt, uint256 newUserDebtShares) = _selfLiquidate(
             SelfLiquidateInput({
                 collatAmountToLiquidate: collatAmountToLiquidate,
                 USGToRepay: USGToRepay,
                 minUSGOut: minUSGOut,
-                newDebtIndex: newDebtIndex,
-                _collateralBalance: collatBalance,
+                newDebtIndex: pre.newDebtIndex,
+                _collateralBalance: pre.collatBalance,
                 _totalCollateral: totalCollateral,
-                _userDebtShares: _userDebtShares,
+                _userDebtShares: pre._userDebtShares,
                 _totalDebtShares: totalDebtShares,
-                userDebt: userDebt_
+                userDebt: pre.userDebt_,
+                maxUSGToBurn: maxUSGToBurn
             }),
             liquidationCall
         );
 
-        emit SelfLiquidate(msg.sender, debtRepaid, newUserDebtShares, collatAmountToLiquidate, liquidationCall.router);
+        emit SelfLiquidate(msg.sender, repaidDebt, newUserDebtShares, collatAmountToLiquidate, liquidationCall.router);
     }
 
     /**
@@ -275,14 +287,14 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      */
     function seizeCollateral(address account) external nonReentrant updateRewards(account) {
         // Checkpoint IR
-        (, uint256 collatBalance, uint256 _userDebtShares, uint256 userDebt_) = _preLiquidate(account);
+        LiquidationPre memory pre = _preLiquidate(account);
 
         // Can liquidate bad debt only if the value of the collateral is below the debt
-        require(_positionValue(collatBalance, true) < userDebt_, PositionWithoutBadDebt());
+        require(_positionValue(pre.collatBalance, true) < pre.userDebt_, PositionWithoutBadDebt());
 
-        _seizeCollateral(account, collatBalance, totalCollateral, _userDebtShares, totalDebtShares, userDebt_);
+        _seizeCollateral(account, pre.collatBalance, totalCollateral, pre._userDebtShares, totalDebtShares, pre.userDebt_);
 
-        emit SeizeCollateral(account, userDebt_, collatBalance);
+        emit SeizeCollateral(account, pre.userDebt_, pre.collatBalance);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

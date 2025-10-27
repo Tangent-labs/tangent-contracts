@@ -208,7 +208,14 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
                 minAmountOut: amountOut,
                 zap: ZapStruct({
                     router: address(market),
-                    routerCall: abi.encodeWithSelector(MarketExternalActions.liquidate.selector, usr1, amountIn, amountIn, ZapStruct({router: address(market), routerCall: ""}))
+                    routerCall: abi.encodeWithSelector(
+                        MarketExternalActions.liquidate.selector,
+                        usr1,
+                        amountIn,
+                        MAX_UINT,
+                        amountIn,
+                        ZapStruct({router: address(market), routerCall: ""})
+                    )
                 })
             })
         );
@@ -229,6 +236,7 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
                         MarketExternalActions.selfLiquidate.selector,
                         amountIn,
                         amountIn,
+                        MAX_UINT,
                         amountIn,
                         ZapStruct({router: address(market), routerCall: ""})
                     )

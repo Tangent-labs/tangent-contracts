@@ -88,6 +88,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         market_crvUSD_USDC.liquidate(
             usr1,
             collatDeposited,
+            MAX_UINT,
             5_200 ether,
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
@@ -165,6 +166,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         market_fxUSD_USDC.liquidate(
             usr1,
             collatDeposited,
+            MAX_UINT,
             5_000 ether,
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),

@@ -15,7 +15,7 @@ interface IMarketExternalActions {
 
     function repay(address account, uint256 USGToRepay) external;
 
-    function liquidate(address account, uint256 USGToRepay, uint256 minUSGOut, ZapStruct calldata zap) external;
+    function liquidate(address account, uint256 USGToRepay, uint256 maxUSGToBurn, uint256 minUSGOut, ZapStruct calldata zap) external;
 
     function leverage(uint256 collatToDeposit, uint256 USGToFlashMint, uint256 minCollatAmountOut, ZapStruct calldata zap) external;
 
