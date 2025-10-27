@@ -61,7 +61,7 @@ contract CreateMarket is MarketDeploymentContext {
         marketInit.maxLTV = 89_000;
         marketInit.liquidationThreshold = 90_000;
 
-        marketInit.liquidationFee = 15_000;
+        marketInit.liquidationFee = 80_000;
         vm.expectRevert(abi.encodeWithSelector(Collateral.LiquidationFeeTooHigh.selector));
         marketCreator.createBasicERC20Market(marketInit, irParams, rcParams);
     }

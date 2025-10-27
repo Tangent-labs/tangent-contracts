@@ -21,6 +21,7 @@ struct LiquidationPre {
 struct LiquidateInput {
     address account;
     uint256 collatToLiquidate;
+    uint256 collatPrice;
     uint256 minUSGOut;
     uint256 newDebtIndex;
     uint256 _collateralBalance;

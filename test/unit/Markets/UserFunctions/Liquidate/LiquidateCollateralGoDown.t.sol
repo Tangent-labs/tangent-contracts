@@ -65,7 +65,8 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         skip(200);
 
         uint256 userDebt = market.userDebt(usr1);
-        uint256 liquidationFee = (userDebt * market.liquidationFee()) / 100_000;
+        uint256 collatValue = (market.collatOracle().latestAnswer(true) * collatDeposited) / (10 ** (collatToken.decimals()));
+        uint256 liquidationFee = ((collatValue - userDebt) * market.liquidationFee()) / 100_000;
         deal(address(usg), usr1, userDebt + liquidationFee);
 
         verifyLostERC20(usg, usr1, userDebt + liquidationFee, "USG burnt from sender");
@@ -167,8 +168,9 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         uint256 userDebt = market.userDebt(usr1);
         uint256 debtToRepay = userDebt / 2;
-        uint256 liquidationFee = (debtToRepay * market.liquidationFee()) / 100_000;
 
+        uint256 collatValue = ((market.collatOracle().latestAnswer(true) * collatDeposited) / 2) / (10 ** (collatToken.decimals()));
+        uint256 liquidationFee = ((collatValue - debtToRepay) * market.liquidationFee()) / 100_000;
         deal(address(usg), usr1, 2 * userDebt);
 
         verifyLostERC20(usg, usr1, (debtToRepay + liquidationFee), "USG burnt from sender");
@@ -193,25 +195,27 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         assertEq(ir, uint256(irCalculator.getIRParams(address(market)).rMin) * 1e13, "IR is at the minimum");
 
         uint256 collatToLiquidate = 100;
-        verifyLostERC20(usg, usr1, 81, "USG burnt from sender");
-        verifyReceiveERC20(usg, feeTreasury, 1, "USG received by the treasuryFee");
+        verifyLostERC20(usg, usr1, 80, "USG burnt from sender");
+        verifyReceiveERC20(usg, feeTreasury, 0, "USG received by the treasuryFee");
 
         verifyReceiveERC20(collatToken, usr1, collatToLiquidate, "Collat sent to liquidator");
 
         market.liquidate(usr1, collatToLiquidate, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
         assertERC20Tracking();
 
+        uint256 collatBalances = market.collateralBalances(usr1);
+
         userDebt = market.userDebt(usr1);
-        liquidationFee = (userDebt * market.liquidationFee()) / 100_000;
+        collatValue = (market.collatOracle().latestAnswer(true) * collatBalances) / (10 ** (collatToken.decimals()));
+
+        liquidationFee = ((collatValue - userDebt) * market.liquidationFee()) / 100_000;
 
         verifyLostERC20(usg, usr1, userDebt + liquidationFee, "USG burnt from sender");
         verifyReceiveERC20(usg, feeTreasury, liquidationFee, "USG received by the treasuryFee");
-
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "Collat sent to liquidator");
 
         // Try to liquidate and leave a loan with less than the minimumLoan
 
-        uint256 collatBalances = market.collateralBalances(usr1);
         vm.expectRevert(abi.encodeWithSelector(DebtIR.UserDebtTooLow.selector));
         market.liquidate(usr1, collatBalances - 1 ether, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
 

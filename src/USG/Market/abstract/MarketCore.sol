@@ -14,6 +14,7 @@ import {ZappingUtil} from "../../Utilities/abstract/ZappingUtil.sol";
 
 import {GlobalMarketInitParams, MarketInit, LiquidationPre, LiquidateInput, SelfLiquidateInput, IZappingProxy, IERC20} from "../../../interfaces/internals/USG/IMarketCore.sol";
 
+import "forge-std/console.sol";
 /// @notice Abstract base contract implementing core functionality for USG markets.
 /// @dev Inherits PauseSettings, Collateral and ZappingUtil to provide collateral management
 /// Includes core logic for deposits, withdrawals, borrowing, repayment, liquidation, and leverage.
@@ -63,8 +64,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         require(_marketInit.liquidationThreshold < DENOMINATOR, LiquidationThresholdTooHigh());
         // Can't be less than the maxLTV
         require(_marketInit.liquidationThreshold > _marketInit.maxLTV, LiquidationThresholdTooLow());
-        // Can't be more than 15%
-        require(_marketInit.liquidationFee < 15_000, LiquidationFeeTooHigh());
+        // Can't be more than 80%
+        require(_marketInit.liquidationFee < 80_000, LiquidationFeeTooHigh());
 
         maxLTV = _marketInit.maxLTV;
         liquidationThreshold = _marketInit.liquidationThreshold;
@@ -446,7 +447,15 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             liquidateInput._totalDebtShares - debtSharesToRemove
         );
 
-        uint256 fee = _mulDiv(USGToRepay, liquidationFee, DENOMINATOR);
+        uint256 fee;
+        {
+            uint256 collatValue = _mulDiv(collatAmountToLiquidate, liquidateInput.collatPrice, 10 ** collatDecimals);
+            if (collatValue > USGToRepay) {
+                // Fee is taken on the liquidation profits
+                uint256 delta = collatValue - USGToRepay;
+                fee = (liquidationFee * delta) / DENOMINATOR;
+            }
+        }
 
         _postLiquidate(collatAmountToLiquidate, USGToRepay + fee, liquidateInput.maxUSGToBurn, liquidateInput.minUSGOut, liquidateCall);
 
