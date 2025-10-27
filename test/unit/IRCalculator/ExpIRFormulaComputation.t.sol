@@ -315,4 +315,22 @@ contract ExpIRFormulaComputation is MarketDeploymentContext {
             10 * 1e14 //0.1%
         );
     }
+
+    function test_IR_from_audit() external {
+        USGPrice = 999_999_999_999_980_001;
+        rMin = 1;
+        rMax = 5;
+        pMin = 980_000;
+        pInf = 990_000;
+        pMax = 1_000_000;
+        a1 = 500;
+        a2 = 1500;
+        k = 1;
+
+        assertApproxEqRel(
+            irFFI.getIRFFI(USGPrice, false, rMin, rMax, pMin, pInf, pMax, a1, a2, k),
+            irCalculator.simulateIR(USGPrice, IRParams({isHEC: false, rMin: rMin, rMax: rMax, pMin: pMin, pMax: pMax, pInf: pInf, a1: a1, a2: a2, k: k})),
+            10 * 1e14 //0.1%
+        );
+    }
 }
