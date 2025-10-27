@@ -17,15 +17,17 @@ contract OraclePendlePT is OracleBase {
         IPendleMarketV3 pendleMarket;
         uint96 underlyingOracleDecimals;
         IPriceOracle underlyingOracle;
-        uint96 duration;
+        uint88 duration;
+        uint8 ptToSYDecimals;
     }
 
-    constructor(IPendleMarketV3 _pendleMarket, IPriceOracle _underlyingOracle, uint96 _duration) {
+    constructor(IPendleMarketV3 _pendleMarket, IPriceOracle _underlyingOracle, uint88 _duration, uint8 _ptToSYDecimals) {
         params = OraclePendlePTStruct({
             pendleMarket: _pendleMarket,
             underlyingOracle: _underlyingOracle,
             underlyingOracleDecimals: _underlyingOracle.decimals(),
-            duration: _duration
+            duration: _duration,
+            ptToSYDecimals: _ptToSYDecimals
         });
     }
 
@@ -42,6 +44,6 @@ contract OraclePendlePT is OracleBase {
             return underlyingPrice;
         }
 
-        return (oracle.getPtToSyRate(address(_params.pendleMarket), uint32(_params.duration)) * underlyingPrice) / 1e18;
+        return (oracle.getPtToSyRate(address(_params.pendleMarket), uint32(_params.duration)) * underlyingPrice) / (10 ** _params.ptToSYDecimals);
     }
 }

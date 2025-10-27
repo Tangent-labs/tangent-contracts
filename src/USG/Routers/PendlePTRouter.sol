@@ -70,14 +70,14 @@ contract PendlePTRouter is IPendlePTRouter {
             (syOut, ) = pendleRouter.swapExactPtForSy(address(this), address(PTToSY.market), PTToSY.ptAmount, 0, createEmptyLimitOrderData());
         }
 
-        // Redeem the SY for the underlying
-        uint256 amountUnderlyingOut = PTToSY.sy.redeem(address(this), syOut, PTToSY.underlyingOut, 0, false);
-
         if (crvRouterData._route[0] != address(0)) {
+            // Redeem the SY for the underlying on this contract before the swap on Curve
+            uint256 amountUnderlyingOut = PTToSY.sy.redeem(address(this), syOut, PTToSY.underlyingOut, 0, false);
             // Swaps the underlying for the tokenOut desired through the Curve Router
             return _curveExchange(crvRouterData._route, crvRouterData._swap_params, amountUnderlyingOut, crvRouterData._min_dy, crvRouterData._pools, crvRouterData._receiver);
         } else {
-            return amountUnderlyingOut;
+            // Redeem the SY for the underlying directly on the receiver as we don't need to go through Curve
+            return PTToSY.sy.redeem(crvRouterData._receiver, syOut, PTToSY.underlyingOut, crvRouterData._min_dy, false);
         }
     }
 
@@ -94,7 +94,7 @@ contract PendlePTRouter is IPendlePTRouter {
      *                          - minPTOut : Slippage parameter on the minimum amount of PT to get
      * @param  crvRouterData  Struct containing data to perform a swap through the Curve Router
      */
-    function swapTokenForPT(CurveRouterSwap calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256) {
+    function swapTokenForPT(CurveRouterSwapNoReceiver calldata crvRouterData, PendleSYToPT calldata SYToPT) external payable returns (uint256) {
         IERC20 tokenIn = IERC20(crvRouterData._route[0]);
 
         // Transfers the tokenIn here
@@ -105,9 +105,10 @@ contract PendlePTRouter is IPendlePTRouter {
             crvRouterData._route,
             crvRouterData._swap_params,
             crvRouterData._amount,
-            crvRouterData._min_dy,
+            // Min amount can be zero because we check slippage in _swapUnderlyingToPT
+            0,
             crvRouterData._pools,
-            crvRouterData._receiver
+            address(this)
         );
 
         return _swapUnderlyingToPT(underlyingAmount, SYToPT);
