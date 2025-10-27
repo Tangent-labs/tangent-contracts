@@ -154,23 +154,23 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      * @param account Address of the user
      */
     function _updateReward(address market, address account, uint256 collateralBalance, uint256 totalCollateral) internal {
-        if (totalCollateral != 0) {
-            uint256 rewardLength = rewardTokens[market].length;
+        uint256 rewardLength = rewardTokens[market].length;
 
-            for (uint256 i; i < rewardLength; ) {
-                IERC20 token = rewardTokens[market][i];
-
+        for (uint256 i; i < rewardLength; ) {
+            IERC20 token = rewardTokens[market][i];
+            if (totalCollateral != 0) {
                 rewardData[market][token].rewardPerTokenStored = _rewardPerToken(market, token, totalCollateral);
                 rewardData[market][token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[market][token].periodFinish);
-
-                if (account != address(0)) {
+            }
+            if (account != address(0)) {
+                if (totalCollateral != 0) {
                     rewards[market][account][token] = _earned(market, account, token, collateralBalance, totalCollateral);
-                    userRewardPerTokenPaid[market][account][token] = rewardData[market][token].rewardPerTokenStored;
                 }
+                userRewardPerTokenPaid[market][account][token] = rewardData[market][token].rewardPerTokenStored;
+            }
 
-                unchecked {
-                    ++i;
-                }
+            unchecked {
+                ++i;
             }
         }
     }
