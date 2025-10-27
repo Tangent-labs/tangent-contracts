@@ -647,8 +647,12 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
     function _migrateTo(address account, uint256 collatToAdd, uint256 debtToAdd) internal returns (uint256) {
         _verifySenderMigrator();
-        _verifyIsDepositNotPaused();
-        _verifyIsBorrowNotPaused();
+        if (collatToAdd != 0) {
+            _verifyIsDepositNotPaused();
+        }
+        if (debtToAdd != 0) {
+            _verifyIsBorrowNotPaused();
+        }
         uint256 debtIndex = _checkpointIR();
 
         uint256 uDebtShares = userDebtShares[account];
@@ -667,7 +671,11 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         }
 
         _updateCollatAndDebts(account, newCollatBalance, totalCollateral + collatToAdd, newUserDebtShares, newTotalDebtShares);
-        _postDeposit(collatToken);
+
+        // Don't need to pass here when there is no collat to add
+        if (collatToAdd != 0) {
+            _postDeposit(collatToken);
+        }
 
         return newUserDebtShares;
     }
