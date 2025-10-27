@@ -616,10 +616,10 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     function updateRCParams(address market, RCParams calldata _rcParam) external onlyOwner {
         // Verify if the new reward cut params are compliant
         _verifyRCParams(_rcParam);
-        // Process the rewards with the old RC params
-        processRewards(market, controlTower.feeTreasury());
         // Update the new RC Params
         rcParams[market] = _rcParam;
+        // Process the rewards with the old RC params
+        processRewards(market, controlTower.feeTreasury());
     }
 
     /**
