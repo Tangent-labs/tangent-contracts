@@ -13,6 +13,7 @@ import {OracleTriPoolStable} from "../../src/USG/Oracles/CurveLP/OracleTriPoolSt
 import {OracleCryptoSwap} from "../../src/USG/Oracles/CurveLP/OracleCryptoSwap.sol";
 
 import {OraclePendlePT} from "../../src/USG/Oracles/Pendle/OraclePendlePT.sol";
+import {OraclePendlePTLinearDiscount} from "../../src/USG/Oracles/Pendle/OraclePendlePTLinearDiscount.sol";
 import {OraclePendleLP} from "../../src/USG/Oracles/Pendle/OraclePendleLP.sol";
 
 import {IRCalculator} from "../../src/USG/Utilities/IRCalculator.sol";
