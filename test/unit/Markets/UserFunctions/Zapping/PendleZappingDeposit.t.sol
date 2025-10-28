@@ -4,7 +4,7 @@ import "../../../../contexts/MarketDeploymentContext.sol";
 
 contract PendleZappingDeposit is MarketDeploymentContext {
     BasicERC20Market public market;
-    IERC20Metadata public collatToken = AddrPTPendle.USDe_25_09_25;
+    IERC20Metadata public collatToken = AddrPTPendle.USDe_27_11_25;
     IERC20 usdc = AddrClassicERC20.USDC;
     function setUp() public {
         market = deployBasicERC20Market(collatToken);
@@ -49,9 +49,9 @@ contract PendleZappingDeposit is MarketDeploymentContext {
                             10 ** 6
                         ),
                         PendleSYToPT({
-                            market: AddrMarketPendle.USDe_25_09_25,
-                            pt: AddrPTPendle.USDe_25_09_25,
-                            sy: AddrSYPendle.USDe_25_09_25,
+                            market: AddrMarketPendle.USDe_27_11_25,
+                            pt: AddrPTPendle.USDe_27_11_25,
+                            sy: AddrSYPendle.USDe_27_11_25,
                             underlyingIn: address(AddrClassicERC20.USDe),
                             receiver: address(market),
                             minPTOut: 0

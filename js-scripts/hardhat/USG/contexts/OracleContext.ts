@@ -71,7 +71,7 @@ export class OracleContext {
 
     ];
     async deployChainlinkWrappers() {
-        const ChainlinkWrapperFactory = await ethers.getContractFactory("ChainlinkAggregatorWrapper");
+        const ChainlinkWrapperFactory = await ethers.getContractFactory("OracleChainlinkWrapper");
 
         for (let index = 0; index < this.chainlinkOracleParams.length; index++) {
             const item = this.chainlinkOracleParams[index];

@@ -124,8 +124,8 @@ contract CurveRouterTest is MarketDeploymentContext {
     function test_stable_to_sStable() external {
         vm.startPrank(usr1);
 
-        IERC20 tokenIn = AddrClassicERC20.frxUSD;
-        IERC20 tokenOut = AddrERC4626.sfrxUSD;
+        IERC20 tokenIn = AddrClassicERC20.crvUSD;
+        IERC20 tokenOut = AddrERC4626.scrvUSD;
 
         deal(address(tokenIn), usr1, amount);
         tokenIn.approve(address(ROUTER), amount);

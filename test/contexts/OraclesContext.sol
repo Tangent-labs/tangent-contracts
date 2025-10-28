@@ -6,7 +6,7 @@ import "./USGDeployContext.sol";
 import {OracleCoinFromCurveLP} from "../../src/USG/Oracles/Token/OracleCoinFromCurveLP.sol";
 import {OracleERC4626} from "../../src/USG/Oracles/Token/OracleERC4626.sol";
 
-import {ChainlinkAggregatorWrapper} from "../../src/USG/Oracles/Token/ChainlinkAggregatorWrapper.sol";
+import {OracleChainlinkWrapper} from "../../src/USG/Oracles/Token/OracleChainlinkWrapper.sol";
 
 import {OracleDuoPoolStable} from "../../src/USG/Oracles/CurveLP/OracleDuoPoolStable.sol";
 import {OracleTriPoolStable} from "../../src/USG/Oracles/CurveLP/OracleTriPoolStable.sol";
@@ -92,44 +92,49 @@ contract OraclesContext is USGDeployContext {
     }
 
     function setupChainlinkOracles() internal {
-        oracles[AddrClassicERC20.DAI] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.DAI, 1000000000000);
+        oracles[AddrClassicERC20.DAI] = new OracleChainlinkWrapper(AddrChainlinkOracle.DAI, 1000000000000, IPriceOracle(address(0)));
         vm.label(address(AddrChainlinkOracle.DAI), "Oracle DAI");
 
-        oracles[AddrClassicERC20.USDS] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.USDS, 1000000000000);
+        oracles[AddrClassicERC20.USDS] = new OracleChainlinkWrapper(AddrChainlinkOracle.USDS, 1000000000000, IPriceOracle(address(0)));
         vm.label(address(AddrChainlinkOracle.USDS), "Oracle USDS");
 
-        oracles[AddrClassicERC20.USDe] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.USDe, 1000000000000);
+        OracleChainlinkWrapper USDeFallback = new OracleChainlinkWrapper(AddrRestoneOracle.USDe, 1000000000000, IPriceOracle(address(0)));
+        oracles[AddrClassicERC20.USDe] = new OracleChainlinkWrapper(AddrChainlinkOracle.USDe, 1000000000000, USDeFallback);
         vm.label(address(AddrChainlinkOracle.USDe), "Oracle USDe");
 
-        oracles[AddrClassicERC20.USDC] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.USDC, 1000000000000);
+        OracleChainlinkWrapper USDCFallback = new OracleChainlinkWrapper(AddrRestoneOracle.USDC, 1000000000000, IPriceOracle(address(0)));
+        oracles[AddrClassicERC20.USDC] = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 1000000000000, USDCFallback);
         vm.label(address(AddrChainlinkOracle.USDC), "Oracle USDC");
 
-        oracles[AddrClassicERC20.USDT] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.USDT, 1000000000000);
+        OracleChainlinkWrapper USDTFallback = new OracleChainlinkWrapper(AddrRestoneOracle.USDT, 1000000000000, IPriceOracle(address(0)));
+        oracles[AddrClassicERC20.USDT] = new OracleChainlinkWrapper(AddrChainlinkOracle.USDT, 1000000000000, USDTFallback);
         vm.label(address(AddrChainlinkOracle.USDT), "Oracle USDT");
 
-        oracles[AddrClassicERC20.crvUSD] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.crvUSD, 1000000000000);
+        oracles[AddrClassicERC20.crvUSD] = new OracleChainlinkWrapper(AddrChainlinkOracle.crvUSD, 1000000000000, IPriceOracle(address(0)));
         vm.label(address(AddrChainlinkOracle.crvUSD), "Oracle crvUSD");
 
-        oracles[AddrClassicERC20.GHO] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.GHO, 1000000000000);
+        oracles[AddrClassicERC20.GHO] = new OracleChainlinkWrapper(AddrChainlinkOracle.GHO, 1000000000000, IPriceOracle(address(0)));
         vm.label(address(AddrChainlinkOracle.GHO), "Oracle GHO");
 
-        oracles[AddrClassicERC20.WETH] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.ETH, 1000000000000);
+        OracleChainlinkWrapper ETHFallback = new OracleChainlinkWrapper(AddrRestoneOracle.ETH, 1000000000000, IPriceOracle(address(0)));
+        oracles[AddrClassicERC20.WETH] = new OracleChainlinkWrapper(AddrChainlinkOracle.ETH, 1000000000000, ETHFallback);
         vm.label(address(AddrChainlinkOracle.ETH), "Oracle ETH");
 
-        oracles[AddrClassicERC20.WBTC] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.BTC, 1000000000000);
+        oracles[AddrClassicERC20.WBTC] = new OracleChainlinkWrapper(AddrChainlinkOracle.BTC, 1000000000000, IPriceOracle(address(0)));
         vm.label(address(AddrChainlinkOracle.BTC), "Oracle BTC");
 
-        oracles[AddrClassicERC20.cbBTC] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.cbBTC, 1000000000000);
+        oracles[AddrClassicERC20.cbBTC] = new OracleChainlinkWrapper(AddrChainlinkOracle.cbBTC, 1000000000000, IPriceOracle(address(0)));
         vm.label(address(AddrChainlinkOracle.cbBTC), "Oracle cbBTC");
 
-        oracles[AddrClassicERC20.CRV] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.CRV, 1000000000000);
+        oracles[AddrClassicERC20.CRV] = new OracleChainlinkWrapper(AddrChainlinkOracle.CRV, 1000000000000, IPriceOracle(address(0)));
         vm.label(address(AddrChainlinkOracle.CRV), "Oracle CRV");
 
         // TODO Warning, is flagged as HIGH MARKET RISK
-        oracles[AddrClassicERC20.USR] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.USR, 1000000000000);
+        OracleChainlinkWrapper USRFallback = new OracleChainlinkWrapper(AddrRestoneOracle.USR, 1000000000000, IPriceOracle(address(0)));
+        oracles[AddrClassicERC20.USR] = new OracleChainlinkWrapper(AddrChainlinkOracle.USR, 1000000000000, USRFallback);
         vm.label(address(AddrChainlinkOracle.USR), "Oracle USR");
 
-        oracles[AddrClassicERC20.stETH] = new ChainlinkAggregatorWrapper(AddrChainlinkOracle.stETH, 1000000000000);
+        oracles[AddrClassicERC20.stETH] = new OracleChainlinkWrapper(AddrChainlinkOracle.stETH, 1000000000000, IPriceOracle(address(0)));
         vm.label(address(AddrChainlinkOracle.stETH), "Oracle stETH");
     }
 
@@ -312,6 +317,14 @@ contract OraclesContext is USGDeployContext {
         // Oracle PT USR_04_09_25
         oracles[AddrPTPendle.USR_04_09_25] = new OraclePendlePT(AddrMarketPendle.USR_04_09_25, oracles[AddrClassicERC20.USR], 900, 18);
         vm.label(address(oracles[AddrPTPendle.USR_04_09_25]), "Oracle PT USR_04_09_25");
+
+        // Oracle PT USDe_27_11_25
+        oracles[AddrPTPendle.USDe_27_11_25] = new OraclePendlePT(AddrMarketPendle.USDe_27_11_25, oracles[AddrClassicERC20.USDe], 900, 18);
+        vm.label(address(oracles[AddrPTPendle.USDe_27_11_25]), "Oracle PT USDe_27_11_25");
+
+        // Oracle PT sUSDe_27_11_25
+        oracles[AddrPTPendle.sUSDe_27_11_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_27_11_25, oracles[AddrERC4626.sUSDe], 900, 18);
+        vm.label(address(oracles[AddrPTPendle.sUSDe_27_11_25]), "Oracle PT sUSDe_27_11_25");
     }
 
     function setupPendleLPTokens() internal {

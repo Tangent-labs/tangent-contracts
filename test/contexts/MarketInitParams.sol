@@ -251,5 +251,27 @@ contract MarketInitParams is WStableContext {
             minimumLoan: 3_000 ether,
             maxMarketDebt: 1_000_000 ether
         });
+
+        // Pendle - USDe_27_11_25
+        basicERC20Maps[address(AddrPTPendle.USDe_27_11_25)] = MarketInitSimplified({
+            name: "Pendle - USDe 11/27/25",
+            collat: AddrPTPendle.USDe_27_11_25,
+            maxLTV: 85_000,
+            liquidationThreshold: 93_000,
+            liquidationFee: 2_000,
+            minimumLoan: 3_000 ether,
+            maxMarketDebt: 1_000_000 ether
+        });
+
+        // Pendle - sUSDe_27_11_25
+        basicERC20Maps[address(AddrPTPendle.sUSDe_27_11_25)] = MarketInitSimplified({
+            name: "Pendle - sUSDe 11/27/25",
+            collat: AddrPTPendle.sUSDe_27_11_25,
+            maxLTV: 85_000,
+            liquidationThreshold: 93_000,
+            liquidationFee: 2_000,
+            minimumLoan: 3_000 ether,
+            maxMarketDebt: 1_000_000 ether
+        });
     }
 }
