@@ -51,6 +51,6 @@ contract OraclePendlePTLinearDiscount is OracleBase {
         OraclePendlePTLinearDiscountStruct memory _params = params;
         uint256 underlyingPrice = _params.underlyingOracle.latestAnswer(isNoFailMode);
 
-        return (underlyingPrice * (1e18 - _getCurrentDiscount(_params.maturity, _params.baseDiscountPerYear))) / 1e18;
+        return (underlyingPrice * (1 ether - _getCurrentDiscount(_params.maturity, _params.baseDiscountPerYear))) / 1 ether;
     }
 }
