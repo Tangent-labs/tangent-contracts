@@ -7,8 +7,8 @@ import {IPendleMarketV3} from "../../../interfaces/externals/Pendle/IPendleMarke
 
 import {OracleBase} from "../OracleBase.sol";
 
-/// @title OracleDuoPoolStable
-/// @notice This contract provides price oracle functionality a PT from PENDLE.
+/// @title OraclePendlePT
+/// @notice This contract prices a PT of Pendle through it's LP paired with it's SY.
 contract OraclePendlePT is OracleBase {
     IPendlePYLpOracle public constant oracle = IPendlePYLpOracle(0x9a9Fa8338dd5E5B2188006f1Cd2Ef26d921650C2);
 

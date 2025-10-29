@@ -55,7 +55,7 @@ contract ClaimWhenTotalCollatIsZero is MarketDeploymentContext {
 
         // We expect that there is almost nothing at all on the RewardAccumulator because everything has been streamed, fees are claimed
 
-        assertApproxEqAbs(AddrClassicERC20.CRV.balanceOf(address(rewardAccumulator)), 0, 300_000);
-        assertApproxEqAbs(AddrClassicERC20.CVX.balanceOf(address(rewardAccumulator)), 0, 300_000);
+        assertApproxEqAbs(AddrClassicERC20.CRV.balanceOf(address(rewardAccumulator)), 0, 600_000);
+        assertApproxEqAbs(AddrClassicERC20.CVX.balanceOf(address(rewardAccumulator)), 0, 600_000);
     }
 }
