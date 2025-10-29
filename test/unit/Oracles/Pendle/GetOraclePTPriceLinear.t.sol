@@ -45,4 +45,9 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
 
         assertEq(linearDiscountPTOracleNotExpired.latestAnswer(true), oracle.latestAnswer(true));
     }
+
+    function test_create_linear_discount_contract_with_discount_more_than_100() external {
+        vm.expectRevert(abi.encodeWithSelector(OraclePendlePTLinearDiscount.DiscountMoreThan100Percent.selector));
+        new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], 1 ether + 1);
+    }
 }

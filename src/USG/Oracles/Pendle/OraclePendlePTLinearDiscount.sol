@@ -11,19 +11,21 @@ import {OracleBase} from "../OracleBase.sol";
 /// @notice This contract prices a PT of Pendle in $. An exponation of its price compared to the underlying is used, going to 1 at maturity.
 contract OraclePendlePTLinearDiscount is OracleBase {
     OraclePendlePTLinearDiscountStruct public params;
+
+    error DiscountMoreThan100Percent();
     struct OraclePendlePTLinearDiscountStruct {
         uint96 underlyingOracleDecimals;
         IPriceOracle underlyingOracle;
-        uint88 maturity;
-        uint256 baseDiscountPerYear;
+        uint40 maturity;
+        uint216 baseDiscountPerYear;
     }
 
-    constructor(IPendleMarketV3 _pendleMarket, IPriceOracle _underlyingOracle, uint256 _baseDiscountPerYear) {
-        require(_baseDiscountPerYear <= 1 ether);
+    constructor(IPendleMarketV3 _pendleMarket, IPriceOracle _underlyingOracle, uint216 _baseDiscountPerYear) {
+        require(_baseDiscountPerYear <= 1 ether, DiscountMoreThan100Percent());
         params = OraclePendlePTLinearDiscountStruct({
             underlyingOracle: _underlyingOracle,
             underlyingOracleDecimals: _underlyingOracle.decimals(),
-            maturity: uint88(_pendleMarket.expiry()),
+            maturity: uint40(_pendleMarket.expiry()),
             baseDiscountPerYear: _baseDiscountPerYear
         });
     }

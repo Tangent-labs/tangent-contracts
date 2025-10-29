@@ -7,8 +7,8 @@ import {OracleBase, IPriceOracle} from "../OracleBase.sol";
 
 struct OracleChainlinkWrapperStruct {
     IAggregatorV3 chainlinkOracle;
-    uint48 oracleDecimals;
-    uint48 heartbeat;
+    uint96 oracleDecimals;
+    uint96 heartbeat;
     IPriceOracle oracleFallback;
 }
 
@@ -18,7 +18,7 @@ contract OracleChainlinkWrapper is OracleBase {
     error InvalidAggregatorValue();
 
     OracleChainlinkWrapperStruct public oracleParams;
-    constructor(IAggregatorV3 _chainlinkOracle, uint48 heartbeat, IPriceOracle oracleFallback) {
+    constructor(IAggregatorV3 _chainlinkOracle, uint96 heartbeat, IPriceOracle oracleFallback) {
         oracleParams = OracleChainlinkWrapperStruct({
             chainlinkOracle: _chainlinkOracle,
             oracleDecimals: _chainlinkOracle.decimals(),
@@ -30,8 +30,8 @@ contract OracleChainlinkWrapper is OracleBase {
     /**
      * @notice Fetch and verify the price provided by a Chainlink Aggregator.
      *         Fails when roundId is incorrect or when the updateTime is stale.
-     * @dev    Adjust the decimals to 18 if needed.
-     * @return The price of the token from chainlink
+     * @param  isNoFailMode When true, the transaction cannot fail. When false, tx will revert in case of stale price.
+     * @return price of the token from chainlink
      */
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OracleChainlinkWrapperStruct memory _params = oracleParams;
@@ -47,7 +47,7 @@ contract OracleChainlinkWrapper is OracleBase {
         }
         // Price invalid
         else {
-            // If a fallback is setup, we fetch it's price
+            // If a fallback is setup, we fetch its price
             if (address(0) != address(_params.oracleFallback)) {
                 return _params.oracleFallback.latestAnswer(isNoFailMode);
             }
@@ -64,7 +64,10 @@ contract OracleChainlinkWrapper is OracleBase {
         return price * 10 ** (18 - _params.oracleDecimals);
     }
 
-    function _isPriceValid(int256 rawPrice, uint256 updateTime, uint80 answeredInRound, uint80 roundId, uint48 hb) internal view returns (bool) {
-        return rawPrice > 0 && updateTime != 0 && answeredInRound >= roundId && updateTime + hb >= block.timestamp;
+    function _isPriceValid(int256 rawPrice, uint256 updateTime, uint80 answeredInRound, uint80 roundId, uint96 hb) internal view returns (bool) {
+        return (rawPrice > 0 && // Price over 0
+            updateTime != 0 && // Update time different from 0
+            answeredInRound >= roundId && // Correct round ID
+            updateTime + hb >= block.timestamp); // Price not stale
     }
 }

@@ -7,6 +7,7 @@ import {OracleCoinFromCurveLP} from "../../src/USG/Oracles/Token/OracleCoinFromC
 import {OracleERC4626} from "../../src/USG/Oracles/Token/OracleERC4626.sol";
 
 import {OracleChainlinkWrapper} from "../../src/USG/Oracles/Token/OracleChainlinkWrapper.sol";
+import {OracleRedstoneWrapperFallback} from "../../src/USG/Oracles/Token/OracleRedstoneWrapperFallback.sol";
 
 import {OracleDuoPoolStable} from "../../src/USG/Oracles/CurveLP/OracleDuoPoolStable.sol";
 import {OracleTriPoolStable} from "../../src/USG/Oracles/CurveLP/OracleTriPoolStable.sol";
