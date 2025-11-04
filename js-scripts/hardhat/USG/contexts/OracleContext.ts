@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { curveLp, PRICE_FEEDS, PendlePools, commonERC20 } from "@tangent/defi-resources";
+import { curveLp, CHAINLINK_PRICE_FEEDS, PendlePools, commonERC20 } from "@tangent/defi-resources";
 import { IAggregatorStablePriceV3, IPriceOracle } from "../../../../typechain-types";
 import { BaseContext } from "./BaseContext";
 import { LpDeployContext } from "./LPDeployContext";
@@ -15,7 +15,7 @@ export class OracleContext {
 
         for (let index = 0; index < chainlinkOracleParams.length; index++) {
             const item = chainlinkOracleParams[index];
-            this.oracles[item.key] = await ChainlinkWrapperFactory.deploy(await ethers.getContractAt("IPriceOracle", PRICE_FEEDS[item.oracleName]), 10000000000, ZeroAddress);
+            this.oracles[item.key] = await ChainlinkWrapperFactory.deploy(await ethers.getContractAt("IPriceOracle", CHAINLINK_PRICE_FEEDS[item.oracleName]), 10000000000, ZeroAddress);
         }
     }
 
