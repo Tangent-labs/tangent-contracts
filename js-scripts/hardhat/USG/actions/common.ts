@@ -2,8 +2,21 @@ import {parseEther} from "ethers";
 import {MainSetup} from "../../Main.setup";
 import {ethers} from "hardhat";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import * as fs from "fs";
+import * as path from "path";
 
 export type UserMarketParams = Record<string, Record<string, string>>;
+
+/**
+ * Dynamically loads addresses.json from the project root.
+ * This function reads the file fresh each time it's called,
+ * so changes to the file will be reflected immediately.
+ */
+export function loadAddresses(): any {
+    const addressesPath = path.resolve(process.cwd(), "addresses.json");
+    const addressesData = fs.readFileSync(addressesPath, "utf8");
+    return JSON.parse(addressesData);
+}
 
 export async function executeUserMarketAction(
     mainSetup: MainSetup,
@@ -22,7 +35,7 @@ export async function executeUserMarketAction(
                     await actionFn(market, marketAddress, user, parsedAmount);
                 } catch (e) {
                     console.error(`error for market : ${marketAddress} & user : ${user.address}`);
-                    throw e;
+                    // throw e;
                 }
             }
         }

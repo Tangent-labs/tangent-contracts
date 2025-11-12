@@ -2,7 +2,6 @@ import {AddressLike} from "ethers";
 import {ethers} from "hardhat";
 import {setStorageAt} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import {GlobalHelper} from "../GlobalHelper";
-import {THIEF_TOKEN_CONFIG} from "defi-resources/build/ressources/erc20/thiefConfig";
 
 interface Tokens {
     address: string;
@@ -16,6 +15,7 @@ interface BalanceOfSlot {
 
 const RANDOM_ADDRESS = "0x47b4Dd903bC719D689a3a9391186c5deAaC5D8Ff";
 export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
+    const amount = ethers.parseEther((1 + Math.random()).toString()).toString();
     const result: BalanceOfSlot[] = [];
     for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i];
@@ -29,9 +29,9 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
             } else {
                 storageSlot = GlobalHelper.calculateStorageSlotEthersSolidity(RANDOM_ADDRESS, k);
             }
-            await setStorageAt(token.address, storageSlot, ethers.parseEther("1"));
+            await setStorageAt(token.address, storageSlot, ethers.parseEther(amount));
 
-            if ((await erc20.balanceOf(RANDOM_ADDRESS)) === ethers.parseEther("1")) {
+            if ((await erc20.balanceOf(RANDOM_ADDRESS)) === ethers.parseEther(amount)) {
                 result.push({
                     token: await erc20.name(),
                     slot: k,
