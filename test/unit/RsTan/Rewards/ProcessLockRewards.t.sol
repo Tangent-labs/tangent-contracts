@@ -9,7 +9,7 @@ contract ProcessLockRewards is MarketDeploymentContext {
     uint208 amountLocked2 = 333_333 ether;
 
     uint256 USGToDistribute = 20_000 ether;
-    uint256 amount2ToDistribute = 10_000 * 10 ** 6;
+    uint256 amount2ToDistribute = 500 * 10 ** 6;
     uint256 amount3ToDistribute = 30_000 ether;
 
     function setUp() external {
@@ -141,8 +141,8 @@ contract ProcessLockRewards is MarketDeploymentContext {
         verifyLostDeltaRelERC20(usg, address(vsTan), USGClaimExpected, 1e13, "usg claimed from VsTAN");
         verifyReceiveDeltaRelERC20(usg, usr1, USGClaimExpected, 1e13, "usg claimed and received by the user");
 
-        verifyLostDeltaRelERC20(AddrClassicERC20.USDT, address(vsTan), USDTClaimExpected, 5e13, "USDT claimed from VsTAN");
-        verifyReceiveDeltaRelERC20(AddrClassicERC20.USDT, usr1, USDTClaimExpected, 5e13, "USDT claimed and received by the user");
+        verifyLostDeltaRelERC20(AddrClassicERC20.USDT, address(vsTan), USDTClaimExpected, 1e15, "USDT claimed from VsTAN");
+        verifyReceiveDeltaRelERC20(AddrClassicERC20.USDT, usr1, USDTClaimExpected, 1e15, "USDT claimed and received by the user");
 
         verifyLostDeltaRelERC20(AddrClassicERC20.CRV, address(vsTan), crvClaimExpected, 1e13, "CRV claimed from VsTAN");
         verifyReceiveDeltaRelERC20(AddrClassicERC20.CRV, usr1, crvClaimExpected, 1e13, "CRV claimed and received by the user");
@@ -159,8 +159,8 @@ contract ProcessLockRewards is MarketDeploymentContext {
         verifyLostDeltaRelERC20(usg, address(vsTan), USGClaimExpected, 1e13, "usg claimed from VsTAN");
         verifyReceiveDeltaRelERC20(usg, usr2, USGClaimExpected, 1e13, "usg claimed and received by the user");
 
-        verifyLostDeltaRelERC20(AddrClassicERC20.USDT, address(vsTan), USDTClaimExpected, 5e13, "USDT claimed from VsTAN");
-        verifyReceiveDeltaRelERC20(AddrClassicERC20.USDT, usr2, USDTClaimExpected, 5e13, "USDT claimed and received by the user");
+        verifyLostDeltaRelERC20(AddrClassicERC20.USDT, address(vsTan), USDTClaimExpected, 1e15, "USDT claimed from VsTAN");
+        verifyReceiveDeltaRelERC20(AddrClassicERC20.USDT, usr2, USDTClaimExpected, 1e15, "USDT claimed and received by the user");
 
         verifyLostDeltaRelERC20(AddrClassicERC20.CRV, address(vsTan), crvClaimExpected, 1e13, "CRV claimed from VsTAN");
         verifyReceiveDeltaRelERC20(AddrClassicERC20.CRV, usr2, crvClaimExpected, 1e13, "CRV claimed and received by the user");

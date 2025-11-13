@@ -19,5 +19,5 @@ interface IYearnVaultFactory {
     function pendingGovernance() external view returns (address);
     function name() external view returns (string memory);
 
-    event NewVault(address newVault, address asset);
+    event NewVault(address indexed newVault, address indexed asset);
 }

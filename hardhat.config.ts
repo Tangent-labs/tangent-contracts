@@ -1,8 +1,8 @@
 import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
 import "@nomicfoundation/hardhat-ethers";
-import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomiclabs/hardhat-vyper";
 import "hardhat-contract-sizer";
 
@@ -77,7 +77,6 @@ const config: HardhatUserConfig = {
                 blockNumber: Number(process.env.STARTING_BLOCK!),
             },
         },
-
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "http://176.143.254.58:8545",
@@ -88,6 +87,9 @@ const config: HardhatUserConfig = {
             url: "https://io.convergence-finance.network:8545",
             timeout: 100_000_000,
         },
+    },
+    paths: {
+        cache: "cache_hardhat",  // ← FORCE LE DOSSIER
     },
 };
 

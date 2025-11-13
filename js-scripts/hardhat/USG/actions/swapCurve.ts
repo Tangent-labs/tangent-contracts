@@ -1,6 +1,6 @@
-import {formatUnits, MaxUint256, Signer} from "ethers";
-import {ethers} from "hardhat";
-import {MainSetup} from "../../Main.setup";
+import { formatUnits, MaxUint256, Signer } from "ethers";
+import { ethers } from "hardhat";
+import { MainSetup } from "../../Main.setup";
 
 // Updated swap function to accept parameters
 export async function swap(user: Signer, lpAddress: string, i: number, j: number, amountIn: string) {
@@ -25,9 +25,9 @@ export async function swap(user: Signer, lpAddress: string, i: number, j: number
 
     let balance = await tokenOut.balanceOf(userAddress);
     try {
-        await tokenIn.approve(lp, MaxUint256);
+        await tokenIn.connect(user).approve(lp, MaxUint256);
         await lp.connect(user)["exchange(int128,int128,uint256,uint256)"](i, j, amountRawIn, 0);
-        balance = (await tokenOut.balanceOf(await userAddress)) - balance;
+        balance = (await tokenOut.balanceOf(userAddress)) - balance;
         console.info("\x1b[32m%s\x1b[0m", "Swapped " + amountIn + " " + tokenInName + " and received " + formatUnits(balance, tokenOutDecimals) + " " + tokenOutName + "!");
     } catch (e) {
         console.info("\x1b[38;5;208m%s\x1b[0m", "Error Swap : " + tokenInName + "/ " + tokenOutName, (e as Error).message);
