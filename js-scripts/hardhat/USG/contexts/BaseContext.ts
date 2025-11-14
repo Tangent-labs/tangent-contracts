@@ -200,7 +200,8 @@ export class BaseContext extends MainSetup {
 
         await setStorageAt(await this.USG.getAddress(), 2, parseEther((USGToGivePerUser * this.users.length).toString()));
 
-        await lockVeTokensForAllUsers();
+        await lockVeTokensForAllUsers(this.users);
+
     }
 
     async approveCurveLP(lp: string) {

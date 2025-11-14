@@ -1,8 +1,8 @@
-import {setStorageAt} from "@nomicfoundation/hardhat-network-helpers";
-import {GlobalHelper} from "../GlobalHelper";
+import { setStorageAt } from "@nomicfoundation/hardhat-network-helpers";
+import { GlobalHelper } from "../GlobalHelper";
 
-import {parseUnits, Signer} from "ethers";
-import {THIEF_TOKEN_CONFIG} from "@tangent/defi-resources/build/ressources/erc20/thiefConfig";
+import { parseUnits, Signer } from "ethers";
+import { THIEF_TOKEN_CONFIG } from "@tangent/defi-resources/build/ressources/erc20/thiefConfig";
 
 export interface TokenAmounts {
     slotBalance: number;
