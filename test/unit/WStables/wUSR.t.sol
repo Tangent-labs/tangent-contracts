@@ -74,7 +74,7 @@ contract wUSR is MarketDeploymentContext {
 
         // Mint with usr1 with USR
 
-        uint256 expectedwUSR = saving.previewMint(amountIn);
+        uint256 expectedwUSR = saving.convertToAssets(amountIn);
         vm.startPrank(usr1);
         deal(address(saving), usr1, amountIn);
         saving.approve(address(wUSR), MAX_UINT);
@@ -110,7 +110,7 @@ contract wUSR is MarketDeploymentContext {
         assertEq(wUSR.balanceOf(usr1), 0);
         assertEq(stable.balanceOf(usr1), amountIn);
 
-        uint256 expectedSavingOut = saving.previewWithdraw(amountIn);
+        uint256 expectedSavingOut = saving.convertToShares(amountIn);
         vm.startPrank(usr2);
         vm.startSnapshotGas("WStable", "Burn wUSR to sUSR");
         wUSR.burn(amountIn, usr2, true);
