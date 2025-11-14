@@ -44,9 +44,6 @@ contract MarketCreator is LightOwnable {
     /// @notice Zapping proxy
     IZappingProxy public zappingProxy;
 
-    /// @notice Pauser EOA
-    address public pauser;
-
     /// @notice Convex CRV market implementation
     address public marketConvexCrv;
 
@@ -71,7 +68,6 @@ contract MarketCreator is LightOwnable {
         IIRCalculator _irCalculator,
         IRewardAccumulator _rewardAccumulator,
         IZappingProxy _zappingProxy,
-        address _pauser,
         address _marketConvexCrv,
         address _marketConvexFxn,
         address _marketBasicERC20
@@ -81,7 +77,6 @@ contract MarketCreator is LightOwnable {
         irCalculator = _irCalculator;
         rewardAccumulator = _rewardAccumulator;
         zappingProxy = _zappingProxy;
-        pauser = _pauser;
         marketConvexCrv = _marketConvexCrv;
         marketConvexFxn = _marketConvexFxn;
         marketBasicERC20 = _marketBasicERC20;

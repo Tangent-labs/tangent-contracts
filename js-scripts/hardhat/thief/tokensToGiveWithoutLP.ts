@@ -1,4 +1,4 @@
-import {thiefConfig} from "@tangent/defi-resources";
+import { thiefConfig } from "@tangent/defi-resources";
 
 export function TOKENS_TO_GIVE_WITHOUT_LP(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;
@@ -52,5 +52,18 @@ export function TOKENS_TO_GIVE_WITHOUT_LP(mintedAmount: number) {
             ...obj.WETH,
             amount: mintedAmount,
         },
+        {
+            ...obj.CRV,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.CVX,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.FXN,
+            amount: mintedAmount,
+        },
+
     ];
 }

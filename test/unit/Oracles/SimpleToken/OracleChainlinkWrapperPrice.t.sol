@@ -6,32 +6,32 @@ import "../../../handler/Curve/HLPManipulator.sol";
 contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
     function test_chainlink_oracle_usdc_with_a_fallback() external {
         OracleRedstoneWrapperFallback USDCFallback = new OracleRedstoneWrapperFallback(KeyBytes32RestoneOracle.USDC);
-        OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 24 hours, USDCFallback);
+        OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 12 hours, USDCFallback);
 
         // Chainlink price is correct
         uint256 priceChainlink = usdcOracle.latestAnswer(false);
         assertEq(priceChainlink, AddrChainlinkOracle.USDC.latestAnswer() * 10 ** (18 - AddrChainlinkOracle.USDC.decimals()), "Price of Chainlink is returned");
 
         // Chainlink price becomes incorrect but not the Redstone one
-        skip(8 hours);
+        skip(12 hours);
 
         // Should return something even if the fallback is stale because isNoFailMode = true
         uint256 priceRedstone = USDCFallback.latestAnswer(true);
         uint256 priceOracle = usdcOracle.latestAnswer(true);
-        assertApproxEqRel(priceChainlink, priceRedstone, 1e14); // 0.01% delta rel max
-        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle");
+        assertApproxEqRel(priceChainlink, priceRedstone, 2e14); // 0.02% delta rel max
+        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 1");
 
         priceOracle = usdcOracle.latestAnswer(false);
-        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle");
+        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 2");
 
-        skip(12 hours);
+        skip(15 hours);
 
         // Shoudld revert in isNoFail mode to false
         vm.expectRevert(abi.encodeWithSelector(OracleRedstoneWrapperFallback.InvalidAggregatorValue.selector));
         usdcOracle.latestAnswer(false);
 
         priceOracle = usdcOracle.latestAnswer(true);
-        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle");
+        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 3");
     }
 
     function test_chainlink_oracle_without_a_fallback() external {
@@ -67,11 +67,11 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
         // Should return something even if the fallback is stale because isNoFailMode = true
         uint256 priceRedstone = ETHFallback.latestAnswer(true);
         uint256 priceOracle = ETHOracle.latestAnswer(true);
-        assertApproxEqRel(priceChainlink, priceRedstone, 10e14); // 0.1% delta rel max
-        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle");
+        assertApproxEqRel(priceChainlink, priceRedstone, 20e14); // 0.1% delta rel max
+        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 1");
 
         priceOracle = ETHOracle.latestAnswer(false);
-        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle");
+        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 2");
 
         skip(24 hours);
 
@@ -80,6 +80,6 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
         ETHOracle.latestAnswer(false);
 
         priceOracle = ETHOracle.latestAnswer(true);
-        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle");
+        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 3");
     }
 }

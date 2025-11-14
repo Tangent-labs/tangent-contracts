@@ -1,15 +1,14 @@
 import { commonERC20 } from "@tangent/defi-resources";
-import { MaxUint256, parseEther } from "ethers";
+import { MaxUint256, parseEther, Signer } from "ethers";
 import { ethers } from "hardhat";
 import { giveTokenToAddress } from "../../thief/thief";
 
-export async function lockVeTokensForAllUsers() {
-    const signers = await ethers.getSigners();
+export async function lockVeTokensForAllUsers(signers: Signer[]) {
     const lockers = [
         { symbol: "CRV", token: commonERC20.CRV, locker: "0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2" },
         { symbol: "FXN", token: commonERC20.FXN, locker: "0xEC6B8A3F3605B083F7044C0F31f2cac0caf1d469" },
     ];
-    const amountToLock = parseEther("1000000");
+    const amountToLock = parseEther("1000");
 
     const now = (await ethers.provider.getBlock("latest"))?.timestamp!;
     for (let i = 0; i < lockers.length; i++) {
@@ -25,8 +24,8 @@ export async function lockVeTokensForAllUsers() {
             }
 
 
-            // Get the token
-            await giveTokenToAddress(signer, locker.symbol, amountToLock);
+            // // Get the token
+            // await giveTokenToAddress(signer, locker.symbol, amountToLock);
             // Approve
             await erc20.connect(signer).approve(locker.locker, MaxUint256);
             //  Lock

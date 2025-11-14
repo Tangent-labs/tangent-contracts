@@ -34,7 +34,8 @@ remappings = [
 
 [rpc_endpoints]
 forkito = 'http://127.0.0.1:8545'
-mainnet = 'https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q'
+mainnet = 'https://mainnet.infura.io/v3/ae4b64bed2884c5c87b4acbb4f062682'
+
 base = 'https://base.llamarpc.com'
 
 [fuzz]

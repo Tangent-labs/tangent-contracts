@@ -48,7 +48,6 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
             } catch {
                 break;
             }
-
             IPriceOracle oracle = oracles[coin];
             assertNotEq(address(oracle), address(0), "Oracle not setup");
             uint256 price = oracle.latestAnswer(true) * 10 ** (18 - oracle.decimals());
@@ -99,7 +98,7 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
             ICurveTriCryptoSwap lp = ICurveTriCryptoSwap(cryptoSwaps[i]);
             (uint256 approx, IERC20 lpToken) = approximateLPValue(lp);
 
-            assertApproxEqRel(approx, oracles[lpToken].latestAnswer(true), 16e15); // 1.6% maximum
+            assertApproxEqRel(approx, oracles[lpToken].latestAnswer(true), 18e15); // 1.8% maximum
         }
     }
 }

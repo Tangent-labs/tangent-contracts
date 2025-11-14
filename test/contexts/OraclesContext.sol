@@ -54,7 +54,6 @@ contract OraclesContext is USGDeployContext {
             irCalculator,
             rewardAccumulator,
             zappingProxy,
-            pauser,
             convexCrvLPMarketImplem,
             convexFxnLPMarketImplem,
             marketBasicERC20Implem

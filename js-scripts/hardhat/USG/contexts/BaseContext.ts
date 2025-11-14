@@ -1,10 +1,10 @@
-import {ethers} from "hardhat";
+import { ethers } from "hardhat";
 
-import {commonERC20, curveLp} from "@tangent/defi-resources";
+import { commonERC20, curveLp } from "@tangent/defi-resources";
 
-import {MainSetup} from "../../Main.setup";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {AddressLike, MaxUint256, parseEther} from "ethers";
+import { MainSetup } from "../../Main.setup";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { AddressLike, MaxUint256, parseEther } from "ethers";
 import {
     ControlTower,
     ConvexCrvLPMarket,
@@ -23,13 +23,13 @@ import {
     ZappingProxy,
     PendlePTRouter,
 } from "../../../../typechain-types";
-import {LpDeployContext} from "./LPDeployContext";
-import {setStorageAt} from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import {ConvexCrvMarketKeys, ConvexFxnMarketKeys, MarketContext, PendlePTMarketsKeys} from "./MarketContext";
-import {STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_PT_PENDLE} from "../config/market";
-import {OracleContext} from "./OracleContext";
-import {WStablesContext} from "./WStableContext";
-import {lockVeTokensForAllUsers} from "../actions/lock-ve-tokens";
+import { LpDeployContext } from "./LPDeployContext";
+import { setStorageAt } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, MarketContext, PendlePTMarketsKeys } from "./MarketContext";
+import { STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_PT_PENDLE } from "../config/market";
+import { OracleContext } from "./OracleContext";
+import { WStablesContext } from "./WStableContext";
+import { lockVeTokensForAllUsers } from "../actions/lock-ve-tokens";
 
 export class BaseContext extends MainSetup {
     owner!: HardhatEthersSigner;
@@ -56,7 +56,7 @@ export class BaseContext extends MainSetup {
     marketCvxFxnImplem!: ConvexFxnLPMarket;
     marketBasicER20Implem!: BasicERC20Market;
 
-    coins: {[name: string]: IERC20Metadata} = {};
+    coins: { [name: string]: IERC20Metadata } = {};
 
     async deployContracts1() {
         this.owner = this.users[0];
@@ -144,7 +144,6 @@ export class BaseContext extends MainSetup {
             this.irCalculator,
             this.rewardAccumulator,
             this.zappingProxy,
-            this.pauser,
             this.marketCvxCrvImplem,
             this.marketCvxFxnImplem,
             this.marketBasicER20Implem
@@ -197,11 +196,12 @@ export class BaseContext extends MainSetup {
 
         const USGToGivePerUser = 3_000_000;
 
-        await this.giveTokens(this.users, [{address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser}]);
+        await this.giveTokens(this.users, [{ address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser }]);
 
         await setStorageAt(await this.USG.getAddress(), 2, parseEther((USGToGivePerUser * this.users.length).toString()));
 
-        await lockVeTokensForAllUsers();
+        await lockVeTokensForAllUsers(this.users);
+
     }
 
     async approveCurveLP(lp: string) {
@@ -260,13 +260,13 @@ export async function createJSONAddress(
         });
     }
 
-    let oracles: {[key: string]: string} = {};
+    let oracles: { [key: string]: string } = {};
     for (const prop in oracleContext.oracles) {
         const oracle = await oracleContext.oracles[prop].getAddress();
         oracles[prop] = oracle;
     }
 
-    const lps: {[key: string]: string} = {};
+    const lps: { [key: string]: string } = {};
     for (const prop in lpDeployContext.stableLp) {
         const lp = await lpDeployContext.stableLp[prop].getAddress();
         lps[prop] = lp;
@@ -274,7 +274,7 @@ export async function createJSONAddress(
 
     lps["TAN-WETH"] = await lpDeployContext.tanLP?.getAddress()!;
 
-    const wStables: {[key: string]: string} = {};
+    const wStables: { [key: string]: string } = {};
     for (const prop in wStableContext.wStable) {
         const wStable = await wStableContext.wStable[prop].getAddress();
         wStables[prop] = wStable;
