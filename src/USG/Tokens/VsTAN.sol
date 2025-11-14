@@ -232,7 +232,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
      */
     function unlock(uint256 tokenId, bool isClaimAssUSG) external nonReentrant onlyTokenOwner(tokenId) updateReward(tokenId) {
         (uint48 endLockTime, uint208 amount) = _getLock(tokenId);
-        require(endLockTime < block.timestamp, LockNotOver());
+        require(endLockTime <= block.timestamp, LockNotOver());
 
         totalSupplyVsTan -= amount;
         delete locks[tokenId];
