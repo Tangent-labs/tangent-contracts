@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
 
 contract MergeLock is MarketDeploymentContext {
-    uint208 amount = 1 ether;
+    uint208 amount = 10_000 ether;
 
     function setUp() external {
         vm.startPrank(usr1);

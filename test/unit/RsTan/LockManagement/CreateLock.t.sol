@@ -82,7 +82,7 @@ contract CreateLock is MarketDeploymentContext {
         deal(address(tan), usr1, 1 ether);
         tan.approve(address(vsTan), 1 ether);
 
-        vm.expectRevert(abi.encodeWithSelector(VsTAN.ZeroAmount.selector));
+        vm.expectRevert(abi.encodeWithSelector(VsTAN.MinLockAmountNotReached.selector));
         vsTan.createLock(0, true);
     }
 }
