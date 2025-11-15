@@ -90,11 +90,11 @@ abstract contract Collateral is DebtIR, ICollateral {
 
     /**
      * @notice Updates the liquidation fee
-     * @dev Cannot exceed 15% (15,000)
+     * @dev Cannot exceed 80% (80,000)
      * @param _liquidationFee New liquidation fee in base 100,000
      */
     function setLiquidationFee(uint256 _liquidationFee) external onlyOwner {
-        require(_liquidationFee < 15_000, LiquidationFeeTooHigh());
+        require(_liquidationFee <= 80_000, LiquidationFeeTooHigh());
         liquidationFee = _liquidationFee;
     }
 
