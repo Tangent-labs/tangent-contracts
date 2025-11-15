@@ -55,6 +55,7 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
     error RMinBiggerThanRMax();
     error PMinBiggerThanPInf();
     error PInfBiggerThanPMax();
+    error PMinBiggerThanPMax();
     error PMaxBiggerThanOneDollar();
 
     event CheckpointIR(address indexed market, uint256 irAmount, uint256 newIndex);
@@ -74,6 +75,7 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
         require(_irParam.rMin <= _irParam.rMax, RMinBiggerThanRMax());
         require(_irParam.pMin <= _irParam.pInf, PMinBiggerThanPInf());
         require(_irParam.pInf <= _irParam.pMax, PInfBiggerThanPMax());
+        require(_irParam.pMin < _irParam.pMax, PMinBiggerThanPMax());
         require(_irParam.pMax <= 1_000_000, PMaxBiggerThanOneDollar());
     }
 

@@ -17,7 +17,7 @@ contract IRCalculatorAdminFunctions is MarketDeploymentContext {
         IRCheckpoint memory irCheck = irCalculator.getIRCheckpoint(address(market));
         assertEq(irCheck.ir, 0);
 
-        irCalculator.updateIRParams(address(market), IRParams(false, 5_000, 100_000, 0, 0, 0, 0, 0, 0));
+        irCalculator.updateIRParams(address(market), IRParams(false, 5_000, 100_000, 0, 1, 2, 0, 0, 0));
 
         irCheck = irCalculator.getIRCheckpoint(address(market));
 
