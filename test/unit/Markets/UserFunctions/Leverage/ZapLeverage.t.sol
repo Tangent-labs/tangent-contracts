@@ -75,8 +75,8 @@ contract ZapLeverage is MarketDeploymentContext {
         assertEq(market.collateralBalances(usr4), totalCollat);
         assertEq(market.totalCollateral(), totalCollat);
 
-        assertEq(market.userDebt(usr4), (shares * index) / RAY);
-        assertEq(market.totalDebt(), (shares * index) / RAY);
+        assertApproxEqAbs(market.userDebt(usr4), (shares * index) / RAY, 3);
+        assertApproxEqAbs(market.totalDebt(), (shares * index) / RAY, 3);
 
         assertERC20Tracking();
     }
@@ -113,8 +113,8 @@ contract ZapLeverage is MarketDeploymentContext {
         assertEq(market.collateralBalances(usr4), totalCollat);
         assertEq(market.totalCollateral(), totalCollat);
 
-        assertEq(market.userDebt(usr4), (shares * index) / RAY);
-        assertEq(market.totalDebt(), (shares * index) / RAY);
+        assertApproxEqRel(market.userDebt(usr4), (shares * index) / RAY, 3);
+        assertApproxEqRel(market.totalDebt(), (shares * index) / RAY, 3);
 
         assertERC20Tracking();
 

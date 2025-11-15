@@ -187,7 +187,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         assertERC20Tracking();
 
-        assertEq(market.userDebt(usr1), userDebt - debtToRepay);
+        assertApproxEqAbs(market.userDebt(usr1), userDebt - debtToRepay, 3, "User debt not correct");
         assertEq(market.totalDebt(), market.userDebt(usr1) + market.userDebt(usr2) + market.userDebt(usr3), "Total Debt");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));

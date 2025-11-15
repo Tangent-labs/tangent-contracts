@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+
 import {IUSG} from "../../../interfaces/internals/USG/IUSG.sol";
 import {IDebtIR} from "../../../interfaces/internals/USG/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/USG/IIRCalculator.sol";
@@ -114,7 +116,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @return Debt shares
      */
     function _convertToShares(uint256 debt, uint256 index) internal pure returns (uint256) {
-        return _mulDiv(debt, RAY, index);
+        return Math.mulDiv(debt, RAY, index, Math.Rounding.Ceil);
     }
 
     /**
@@ -124,7 +126,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @return Debt amount
      */
     function _convertToAmount(uint256 debtShares, uint256 index) internal pure returns (uint256) {
-        return _mulDiv(debtShares, index, RAY);
+        return Math.mulDiv(debtShares, index, RAY, Math.Rounding.Floor);
     }
 
     /**

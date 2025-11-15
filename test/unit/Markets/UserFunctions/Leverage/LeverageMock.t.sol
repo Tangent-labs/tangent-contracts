@@ -79,12 +79,8 @@ contract LeverageMock is MarketDeploymentContext {
         assertEq(market.totalCollateral(), totalCollat);
 
         uint256 shares = (USGToFlashMint * RAY) / index;
-
-        assertEq(market.userDebt(usr3), (shares * index) / RAY);
-        assertEq(market.totalDebt(), (shares * index) / RAY);
-
-        assertEq(market.userDebtShares(usr3), shares);
-        assertEq(market.totalDebtShares(), shares);
+        assertApproxEqAbs(market.userDebtShares(usr3), shares, 3);
+        assertApproxEqAbs(market.totalDebtShares(), shares, 3);
 
         assertERC20Tracking();
     }
@@ -176,8 +172,11 @@ contract LeverageMock is MarketDeploymentContext {
 
         uint256 expectedShares = ((initialBorrow * RAY) / index) + ((USGToFlashMint * RAY) / index);
 
-        assertEq(market.userDebtShares(usr1), expectedShares);
-        assertEq(market.totalDebtShares(), expectedShares);
+        assertApproxEqAbs(market.userDebtShares(usr1), expectedShares, 4, "Expected shares not good");
+        assertApproxEqAbs(market.totalDebtShares(), expectedShares, 4, "Expected total shares not good");
+
+        assertGe(market.userDebtShares(usr1), expectedShares, "Slightly bigger because of ceiling");
+        assertGe(market.totalDebtShares(), expectedShares, "Slightly bigger because of ceiling");
 
         assertERC20Tracking();
     }
