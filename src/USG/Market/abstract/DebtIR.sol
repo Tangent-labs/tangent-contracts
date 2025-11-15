@@ -48,6 +48,10 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
                         OWNER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    event SetMaxMarketDebt(uint256 newMaxMarketDebt);
+    event SetMinimumLoan(uint256 newMinimumLoan);
+    event RepayBadDebt(address user, uint256 badDebtRepaid);
+
     /**
      * @notice Sets a new maximum market debt
      * @dev Callable only by the DAO governance
@@ -55,6 +59,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      */
     function setMaxMarketDebt(uint256 _maxMarketDebt) external onlyOwner {
         maxMarketDebt = _maxMarketDebt;
+        emit SetMaxMarketDebt(_maxMarketDebt);
     }
 
     /**
@@ -64,6 +69,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      */
     function setMinimumLoan(uint256 _minimumLoan) external onlyOwner {
         minimumLoan = _minimumLoan;
+        emit SetMinimumLoan(_minimumLoan);
     }
 
     /**
@@ -76,6 +82,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
         require(amount <= _badDebt, RepayMoreThanBadDebt());
         badDebt = _badDebt - amount;
         _burnUSG(msg.sender, amount);
+
+        emit RepayBadDebt(msg.sender, amount);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

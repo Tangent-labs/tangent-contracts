@@ -58,6 +58,11 @@ abstract contract Collateral is DebtIR, ICollateral {
                     OWNER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    event SetOracle(IPriceOracle newOracle);
+    event SetMaxLTV(uint256 newMaxLTV);
+    event SetLiquidationThreshold(uint256 newLiquidationThreshold);
+    event SetLiquidationFee(uint256 newLiquidationFee);
+
     /**
      * @notice Updates the oracle used to fetch collateral price
      * @dev Callable only by contract owner (DAO or governance)
@@ -65,6 +70,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      */
     function setCollatOracle(IPriceOracle _collatOracle) external onlyOwner {
         collatOracle = _collatOracle;
+        emit SetOracle(_collatOracle);
     }
 
     /**
@@ -75,6 +81,7 @@ abstract contract Collateral is DebtIR, ICollateral {
     function setMaxLTV(uint256 _maxLTV) external onlyOwner {
         require(_maxLTV < liquidationThreshold, MaxLTVBiggerThanLiquidationThreshold());
         maxLTV = _maxLTV;
+        emit SetMaxLTV(_maxLTV);
     }
 
     /**
@@ -86,6 +93,7 @@ abstract contract Collateral is DebtIR, ICollateral {
         require(_liquidationThreshold < DENOMINATOR, LiquidationThresholdTooHigh());
         require(_liquidationThreshold > maxLTV, LiquidationThresholdTooLow());
         liquidationThreshold = _liquidationThreshold;
+        emit SetLiquidationThreshold(_liquidationThreshold);
     }
 
     /**
@@ -96,6 +104,7 @@ abstract contract Collateral is DebtIR, ICollateral {
     function setLiquidationFee(uint256 _liquidationFee) external onlyOwner {
         require(_liquidationFee <= 80_000, LiquidationFeeTooHigh());
         liquidationFee = _liquidationFee;
+        emit SetLiquidationFee(_liquidationFee);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
