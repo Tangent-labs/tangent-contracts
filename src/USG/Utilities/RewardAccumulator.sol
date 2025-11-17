@@ -160,14 +160,11 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
 
         for (uint256 i; i < rewardLength; ) {
             IERC20 token = rewardTokens[market][i];
-            if (totalCollateral != 0) {
-                rewardData[market][token].rewardPerTokenStored = _rewardPerToken(market, token, totalCollateral);
-                rewardData[market][token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[market][token].periodFinish);
-            }
+            rewardData[market][token].rewardPerTokenStored = _rewardPerToken(market, token, totalCollateral);
+            rewardData[market][token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[market][token].periodFinish);
+
             if (account != address(0)) {
-                if (totalCollateral != 0) {
-                    rewards[market][account][token] = _earned(market, account, token, collateralBalance, totalCollateral);
-                }
+                rewards[market][account][token] = _earned(market, account, token, collateralBalance, totalCollateral);
                 userRewardPerTokenPaid[market][account][token] = rewardData[market][token].rewardPerTokenStored;
             }
 

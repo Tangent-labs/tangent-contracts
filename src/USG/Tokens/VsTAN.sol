@@ -466,19 +466,14 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
      * @param tokenId Position ID
      */
     function _updateReward(uint256 tokenId) internal {
-        uint256 _totalSupplyVsTan = totalSupplyVsTan;
         uint256 positionBal = locks[tokenId].amount;
         uint256 rewardLength = rewardTokens.length;
         for (uint256 i; i < rewardLength; ) {
             IERC20 token = rewardTokens[i];
-            if (_totalSupplyVsTan != 0) {
-                rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
-                rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
-            }
+            rewardData[token].rewardPerTokenStored = _rewardPerToken(token);
+            rewardData[token].lastUpdateTime = _lastTimeRewardApplicable(rewardData[token].periodFinish);
             if (tokenId != 0) {
-                if (_totalSupplyVsTan != 0) {
-                    rewards[tokenId][token] = _earned(tokenId, token, positionBal);
-                }
+                rewards[tokenId][token] = _earned(tokenId, token, positionBal);
                 userRewardPerTokenPaid[tokenId][token] = rewardData[token].rewardPerTokenStored;
             }
 
