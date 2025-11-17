@@ -139,7 +139,7 @@ contract PendlePTRouter is IPendlePTRouter {
 
     function _approveIfNotAllowed(IERC20 token, address spender) internal {
         if (CHAIN_COIN != address(token) && token.allowance(address(this), address(spender)) != MAX_UINT) {
-            token.approve(address(spender), MAX_UINT);
+            token.forceApprove(address(spender), MAX_UINT);
         }
     }
 
