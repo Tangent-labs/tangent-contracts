@@ -19,14 +19,5 @@ async function main() {
 
     await liquidationContext.setOraclesToMock();
     console.info("\x1b[32m%s\x1b[0m", "mockOracle OK");
-
-    // await liquidationContext.testChainView();
-    // console.info("\x1b[32m%s\x1b[0m", "testChainView OK");
-
-    // await liquidationContext.setOraclesToMock();
-    // console.info("\x1b[32m%s\x1b[0m", "mockOracle OK");
-
-    // await liquidationContext.unbalanceContext();
-    // console.info("\x1b[32m%s\x1b[0m", "unbalanceContext OK");
 }
 main();

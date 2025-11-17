@@ -74,18 +74,6 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
     }
 }
 
-// export async function borrow(mainSetup: MainSetup, userAmountByMarket: Record<string, Record<string, string>>) {
-//     let _marketAddress: string = "-";
-//     try {
-//         await executeUserMarketAction(mainSetup, userAmountByMarket, async (market, marketAddress, user, parsedAmount) => {
-//             _marketAddress = marketAddress;
-//             await market.connect(user).borrow(user.address, parsedAmount);
-//         });
-//     } catch (error) {
-//         console.error("Error borrowing", _marketAddress, error);
-//     }
-//     console.info("\x1b[32m%s\x1b[0m", "All borrow actions completed across specified markets!");
-// }
 
 export async function borrowAll(allMarkets: Market[]) {
     const mainSetup = new MainSetup(5);

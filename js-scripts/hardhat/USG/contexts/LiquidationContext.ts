@@ -132,7 +132,7 @@ export class LiquidationContext {
         const mockOracle = await ethers.deployContract("MockOracle");
         const mockOracleAddress = await mockOracle.getAddress();
         await mockOracle.setLastAnswer(lastPrice);
-        // Reduce the price by 10% 3 times
+        // Reduce the price
         await mockOracle.minus();
 
         // Set the mock oracle to the market
@@ -163,21 +163,17 @@ export class LiquidationContext {
             for (let userIndex = 0; userIndex < userAddresses.length; userIndex++) {
                 const userAddress = userAddresses[userIndex];
                 let deposit: string;
-
-                // if there is a specific cases we apply it.
-
                 const marketInfo = await this.getMarketInfo(marketaddress);
 
-                //console.log("marketInfo", {...marketInfo});
                 const USD = 10_000n;
-                const PRICE = marketInfo.collateralPrice; // 991917533334839915n
-                const DECIMALS = marketInfo.collatDecimals; // 18n
-                // on depose l'equivalent de 10_000 USD en collateral
+                const PRICE = marketInfo.collateralPrice; 
+                const DECIMALS = marketInfo.collatDecimals; 
+                // we deposit the equivalent of 10_000 USD in collateral
                 const position10000Value = (USD * 10n ** DECIMALS * 10n ** 18n + PRICE - 1n) / PRICE;
-                // on emprunte 8500 USG
                 deposit = position10000Value.toString();
 
                 currentMarketDeposit[userAddress] = formatEther(deposit);
+                // borrow 6800 for liquidate & 8500 for  seizing
                 currentMarketBorrow[userAddress] = userIndex % 2 === 0 ? "6800" : "8500";
             }
             depositParams[marketaddress] = currentMarketDeposit;
@@ -200,74 +196,5 @@ export class LiquidationContext {
         // // let's do it .
         await deposit(users as HardhatEthersSigner[], depositParams);
         await borrow(users as HardhatEthersSigner[], borrowParams);
-    }
-
-    async unbalanceContext() {
-        const amount = 450_000;
-
-        const USG_USDC = this.lpDeployContext?.stableLp["USG-USDC"];
-        const USG_wfrxUSD = this.lpDeployContext?.stableLp["USG-wcrvUSD"];
-
-        if (!this.marketAddresses?.length || !this.baseContext) throw new Error("Contracts not depoyed");
-
-        await swap(this.baseContext!.users[4], await USG_USDC!.getAddress(), 1, 0, amount.toString());
-        await swap(this.baseContext!.users[4], await USG_wfrxUSD!.getAddress(), 1, 0, amount.toString());
-
-        await time.increase(30 * 60 * 60);
-
-        // Deposit on all markets to checkpoint the IR
-        const depositParams: UserMarketParams = {};
-        for (const marketAddress of this.marketAddresses) {
-            depositParams[marketAddress] = {
-                [this.userAddresses[0]]: "1000",
-            };
-        }
-        await deposit(this.baseContext.users as HardhatEthersSigner[], depositParams);
-
-        // Time advance
-        const day = 100;
-        const seconds = day * 24 * 60 * 60;
-        await time.increase(seconds);
-        console.info("\x1b[32m%s\x1b[0m", "Time has been incresed by " + day + " day on the test node !");
-    }
-
-    async testChainView() {
-        // just to test the accounts chain view execution
-        const params = this.marketAddresses
-            .map((marketAddress) =>
-                this.userAddresses.map((userAddress) => {
-                    return {
-                        account: userAddress,
-                        market: marketAddress,
-                    };
-                })
-            )
-            .flat();
-
-        // test the full chain view
-        const userAccountsData = await chainView<[string[], LiquidationUserInInfo[]], [LiquidationMarketAccountInfo]>(
-            chainViewMarketAccountArtifact.abi,
-            chainViewMarketAccountArtifact.bytecode,
-            [this.marketAddresses, params]
-        );
-
-        // const firstAccount = userAccountsData?.at(0)?.accounts?.at(0);
-        // const firstmarket = userAccountsData?.at(0)?.markets?.at(0);
-
-        //     const expectedBorrow = parseEther(borrow);
-        //     const borrowTolerance = expectedBorrow / 100n;
-        //     if (firstAccount?.userDebt === undefined || firstAccount.userDebt < expectedBorrow - borrowTolerance || firstAccount.userDebt > expectedBorrow + borrowTolerance) {
-        //         throw Error("Specific borrow not applied within 1% tolerance, expected " + expectedBorrow + " got " + firstAccount?.userDebt);
-        //     }
-
-        //     const expectedPositionValue = (parseEther(deposit) * (firstmarket?.collateralUSDPrice || 0n)) / BigInt(10 ** 18);
-        //     const positionTolerance = expectedPositionValue / 100n;
-        //     if (
-        //         firstAccount?.positionValue === undefined ||
-        //         firstAccount.positionValue < expectedPositionValue - positionTolerance ||
-        //         firstAccount.positionValue > expectedPositionValue + positionTolerance
-        //     ) {
-        //         throw Error("Specific deposit not applied within 1% tolerance");
-        //     }
     }
 }
