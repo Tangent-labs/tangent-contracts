@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import {IERC20, TokenAmount, ZapStruct} from "../ICommonStruct.sol";
 
 import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-
+import {LiquidateIn} from "./IMarketCore.sol";
 import {IMigratoor, MigrateStruct} from "./IMigratoor.sol";
 import {IControlTower} from "./IControlTower.sol";
 interface IMarketExternalActions {
@@ -15,7 +15,7 @@ interface IMarketExternalActions {
 
     function repay(address account, uint256 USGToRepay) external;
 
-    function liquidate(address account, uint256 USGToRepay, uint256 maxUSGToBurn, uint256 minUSGOut, ZapStruct calldata zap) external;
+    function liquidate(LiquidateIn calldata liquidateIn, ZapStruct calldata liquidationCall) external;
 
     function leverage(uint256 collatToDeposit, uint256 USGToFlashMint, uint256 minCollatAmountOut, ZapStruct calldata zap) external;
 

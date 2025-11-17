@@ -3,7 +3,7 @@ pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {MarketCore, LiquidateInput, LiquidationPre, SelfLiquidateInput, ZapStructDeposit, IZappingProxy} from "./MarketCore.sol";
+import {MarketCore, LiquidateIn, LiquidateTransitionStruct, LiquidationPre, SelfLiquidateInput, ZapStructDeposit, IZappingProxy} from "./MarketCore.sol";
 
 import {IMarketExternalActions, IControlTower} from "../../../interfaces/internals/USG/IMarketExternalActions.sol";
 
@@ -206,42 +206,35 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @dev    Two liquidation modes are possibles : 
      *           - Buy USG with a flashloan, repay the debt, get the collateral and do whatever you want with it.
                  - Selling the collateral for USG directly through ZappingProxy by providing a route then repay the debt and keep the difference in USG
-     * @param  account             Account of the position to liquidate
-     * @param  collatToLiquidate   Amount of collateral to liquidate from the position.
-     * @param  minUSGOut         Minimum amount of USG to receive on the sell of the collateral. 
+     * @param  liquidateIn    Parameters proper to the liquidation
+    *                           - Account position to liquidate
+                                - Amount of collateral to liquidate from the position.   
+                                - Min USG to be returned after the swap through ZapProxy
+                                - Maximum amount of USG to be burnt from the liquidator balance prior to zap
      * @param  liquidationCall     Contract and data allowing to sell the collateral for USG.
      */
-    function liquidate(
-        address account,
-        uint256 collatToLiquidate,
-        uint256 maxUSGToBurn,
-        uint256 minUSGOut,
-        ZapStruct calldata liquidationCall
-    ) external nonReentrant updateRewards(account) {
-        LiquidationPre memory pre = _preLiquidate(account);
+    function liquidate(LiquidateIn calldata liquidateIn, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(liquidateIn.account) {
+        LiquidationPre memory pre = _preLiquidate(liquidateIn.account);
         uint256 collatPrice = _collateralPrice(true);
 
         // Can liquidate only if the health ratio is below 1
         require(_healthRatio(pre.userDebt_, pre.collatBalance, collatPrice) < 1 ether, NotLiquidablePosition());
 
         (uint256 collatLiquidated, uint256 repaidDebt, uint256 fee, uint256 newUserDebtShares) = _liquidate(
-            LiquidateInput({
-                account: account,
-                collatToLiquidate: collatToLiquidate,
+            LiquidateTransitionStruct({
+                liquidateIn: liquidateIn,
                 collatPrice: collatPrice,
-                minUSGOut: minUSGOut,
                 newDebtIndex: pre.newDebtIndex,
                 _collateralBalance: pre.collatBalance,
                 _totalCollateral: totalCollateral,
                 _userDebtShares: pre._userDebtShares,
                 _totalDebtShares: totalDebtShares,
-                userDebt: pre.userDebt_,
-                maxUSGToBurn: maxUSGToBurn
+                userDebt: pre.userDebt_
             }),
             liquidationCall
         );
 
-        emit Liquidate(account, repaidDebt, newUserDebtShares, fee, collatLiquidated, liquidationCall.router);
+        emit Liquidate(liquidateIn.account, repaidDebt, newUserDebtShares, fee, collatLiquidated, liquidationCall.router);
     }
 
     /**

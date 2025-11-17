@@ -86,10 +86,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         irCalculator.mintIR();
 
         market_crvUSD_USDC.liquidate(
-            usr1,
-            collatDeposited,
-            MAX_UINT,
-            5_200 ether,
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 5200 ether, maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
                 routerCall: encoder.encodeLiquidateCallForCurveLP(
@@ -164,10 +161,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         // skip(365 days);
 
         market_fxUSD_USDC.liquidate(
-            usr1,
-            collatDeposited,
-            MAX_UINT,
-            5_000 ether,
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 5000 ether, maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
                 routerCall: encoder.encodeLiquidateCallForCurveLP(

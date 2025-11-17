@@ -18,18 +18,23 @@ struct LiquidationPre {
     uint256 userDebt_;
 }
 
-struct LiquidateInput {
+struct LiquidateIn {
     address account;
     uint256 collatToLiquidate;
-    uint256 collatPrice;
     uint256 minUSGOut;
+    uint256 maxUSGToBurn;
+    uint256 minCollatValue;
+}
+
+struct LiquidateTransitionStruct {
+    LiquidateIn liquidateIn;
+    uint256 collatPrice;
     uint256 newDebtIndex;
     uint256 _collateralBalance;
     uint256 _totalCollateral;
     uint256 _userDebtShares;
     uint256 _totalDebtShares;
     uint256 userDebt;
-    uint256 maxUSGToBurn;
 }
 
 struct SelfLiquidateInput {

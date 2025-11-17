@@ -33,7 +33,10 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, MAX_UINT, 0, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValue: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
         vm.stopPrank();
 
         // Dumps USG for USDC => Depegs USG
@@ -42,7 +45,10 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, MAX_UINT, 0, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValue: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
 
         assertLt(lp.last_price(0), 991 * 10 ** 15, "Last price dropped hard");
 
@@ -58,7 +64,10 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         skip(8 days);
         // Liquidation doesn't pass, the HR is very close to 1 but still >
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, MAX_UINT, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
 
         // The position from this point liquidable
         skip(15 days);
@@ -71,7 +80,10 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         verifyLostERC20(usg, usr1, market.userDebt(usr1), "USG burnt from sender");
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "USG burnt from sender");
         // Liquidation passes after IR increased the user debt over the liquidation threshold
-        market.liquidate(usr1, MAX_UINT, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
         assertERC20Tracking();
 
         assertEq(market.userDebt(usr1), 0);

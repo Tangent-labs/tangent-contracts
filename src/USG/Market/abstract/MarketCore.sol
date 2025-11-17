@@ -12,9 +12,17 @@ import {PauseSettings} from "./PauseSettings.sol";
 import {Collateral} from "./Collateral.sol";
 import {ZappingUtil} from "../../Utilities/abstract/ZappingUtil.sol";
 
-import {GlobalMarketInitParams, MarketInit, LiquidationPre, LiquidateInput, SelfLiquidateInput, IZappingProxy, IERC20} from "../../../interfaces/internals/USG/IMarketCore.sol";
+import {
+    GlobalMarketInitParams,
+    MarketInit,
+    LiquidationPre,
+    LiquidateIn,
+    LiquidateTransitionStruct,
+    SelfLiquidateInput,
+    IZappingProxy,
+    IERC20
+} from "../../../interfaces/internals/USG/IMarketCore.sol";
 
-import "forge-std/console.sol";
 /// @notice Abstract base contract implementing core functionality for USG markets.
 /// @dev Inherits PauseSettings, Collateral and ZappingUtil to provide collateral management
 /// Includes core logic for deposits, withdrawals, borrowing, repayment, liquidation, and leverage.
@@ -30,6 +38,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
     error NotAMigratoor();
     error DebtToRepayTooBig();
     error MaxUSGToBurn();
+    error NotEnoughCollateralToLiquidate(uint256 collatBalance);
+    error CollatValueToLiquidateTooLow(uint256 collatValue);
 
     /// @notice Constructor marks the contract as initialized.
     constructor() {
@@ -405,51 +415,47 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         return (USGToRepay, newUserDebtShares);
     }
-
     /**
      * @dev  Internal function called during 'liquidate' external function.
-     * @param liquidateInput  Struct containing all variables needed for the liquidation
+     * @param liquidateStruct  Struct containing all variables needed for the liquidation
      * @param liquidateCall   Contains address and bytes of the contract selling the collateral for USG
      * @return The amount of collateral to liquidate
      * @return The amount of USG debt repaid
      * @return The amount of USG taken in liquidation fee
      */
-    function _liquidate(LiquidateInput memory liquidateInput, ZapStruct calldata liquidateCall) internal returns (uint256, uint256, uint256, uint256) {
-        uint256 collatAmountToLiquidate = liquidateInput.collatToLiquidate;
+    function _liquidate(LiquidateTransitionStruct memory liquidateStruct, ZapStruct calldata liquidateCall) internal returns (uint256, uint256, uint256, uint256) {
+        _verifyCollatInputNotZero(liquidateStruct.liquidateIn.collatToLiquidate);
 
-        _verifyCollatInputNotZero(liquidateInput.collatToLiquidate);
+        // Prepare params as if it was a full liquidation
+        uint256 collatAmountToLiquidate = liquidateStruct.liquidateIn.collatToLiquidate;
+        uint256 debtSharesToRemove = liquidateStruct._userDebtShares;
+        uint256 USGToRepay = liquidateStruct.userDebt;
 
-        uint256 debtSharesToRemove;
-        uint256 USGToRepay;
-
-        // Liquidate all
-        if (collatAmountToLiquidate >= liquidateInput._collateralBalance) {
-            collatAmountToLiquidate = liquidateInput._collateralBalance;
-            USGToRepay = liquidateInput.userDebt;
-            debtSharesToRemove = liquidateInput._userDebtShares;
-        }
         // Liquidate partial
-        else {
-            USGToRepay = (collatAmountToLiquidate * liquidateInput.userDebt) / liquidateInput._collateralBalance;
-            debtSharesToRemove = _convertToShares(USGToRepay, liquidateInput.newDebtIndex);
+        if (collatAmountToLiquidate != liquidateStruct._collateralBalance) {
+            // Cannot liquidate more than the balance of the position
+            require(collatAmountToLiquidate < liquidateStruct._collateralBalance, NotEnoughCollateralToLiquidate(liquidateStruct._collateralBalance));
+            USGToRepay = (collatAmountToLiquidate * liquidateStruct.userDebt) / liquidateStruct._collateralBalance;
+            debtSharesToRemove = _convertToShares(USGToRepay, liquidateStruct.newDebtIndex);
 
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
-            _verifyMinimumDebt(liquidateInput.userDebt - USGToRepay);
+            _verifyMinimumDebt(liquidateStruct.userDebt - USGToRepay);
         }
 
-        uint256 newUserDebtShares = liquidateInput._userDebtShares - debtSharesToRemove;
+        uint256 newUserDebtShares = liquidateStruct._userDebtShares - debtSharesToRemove;
         // Modify the collateral balance, the user debt and the total debt
         _updateCollatAndDebts(
-            liquidateInput.account,
-            liquidateInput._collateralBalance - collatAmountToLiquidate,
-            liquidateInput._totalCollateral - collatAmountToLiquidate,
+            liquidateStruct.liquidateIn.account,
+            liquidateStruct._collateralBalance - collatAmountToLiquidate,
+            liquidateStruct._totalCollateral - collatAmountToLiquidate,
             newUserDebtShares,
-            liquidateInput._totalDebtShares - debtSharesToRemove
+            liquidateStruct._totalDebtShares - debtSharesToRemove
         );
 
         uint256 fee;
         {
-            uint256 collatValue = _mulDiv(collatAmountToLiquidate, liquidateInput.collatPrice, 10 ** collatDecimals);
+            uint256 collatValue = _mulDiv(collatAmountToLiquidate, liquidateStruct.collatPrice, 10 ** collatDecimals);
+            require(collatValue >= liquidateStruct.liquidateIn.minCollatValue, CollatValueToLiquidateTooLow(collatValue));
             if (collatValue > USGToRepay) {
                 // Fee is taken on the liquidation profits
                 uint256 delta = collatValue - USGToRepay;
@@ -457,7 +463,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             }
         }
 
-        _postLiquidate(collatAmountToLiquidate, USGToRepay + fee, liquidateInput.maxUSGToBurn, liquidateInput.minUSGOut, liquidateCall);
+        _postLiquidate(collatAmountToLiquidate, USGToRepay + fee, liquidateStruct.liquidateIn.maxUSGToBurn, liquidateStruct.liquidateIn.minUSGOut, liquidateCall);
 
         if (fee != 0) {
             _mintUSG(usg, controlTower.feeTreasury(), fee);
