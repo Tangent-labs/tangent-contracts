@@ -76,7 +76,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         // Harvest Fee <= 2%
         require(_rcParam.harvestFeePercentage <= 2_000, HarvesterFeeTooHigh());
         // Start of the cut must be <= 1$
-        require(_rcParam.startCutPrice <= 1e18, StartCutPriceTooHigh());
+        require(_rcParam.startCutPrice <= 1_000_000, StartCutPriceTooHigh());
         // Maximum reward cut cannot be more than 100%
         require(DENOMINATOR >= _rcParam.endCutPercentage, EndCutPercentageBiggerThan100());
         // Minimum reward cut cannot be more than 100%
