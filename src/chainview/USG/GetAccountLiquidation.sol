@@ -23,7 +23,6 @@ contract GetAccountLiquidation {
         for (uint256 index; index < usersMarkets.length; index++) {
             address market = usersMarkets[index].market;
             address account = usersMarkets[index].account;
-
             ICollateral marketCollateral = ICollateral(market);
             output[index] = AccountLiquidationInfo({
                 market: market,

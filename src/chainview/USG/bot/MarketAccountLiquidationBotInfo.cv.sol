@@ -13,6 +13,9 @@ contract MarketAccountLiquidationBotInfo is GetMarketLiquidation, GetAccountLiqu
     error MarketLiquidationBotInfoError(MarketAccountLiquidationBotInfoOut output);
 
     constructor(address[] memory markets, LendingPositionsIn[] memory usersMarkets) {
+
+     
+
         MarketAccountLiquidationBotInfoOut memory out = MarketAccountLiquidationBotInfoOut({
             markets: getMarketsLiquidationInfo(markets),
             accounts: getAccountLiquidationInfo(usersMarkets)
