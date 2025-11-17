@@ -77,4 +77,7 @@ contract ZappingProxy is IZappingProxy, LightReentrancyGuardTransient {
 
         return bal;
     }
+
+    // Receive ETH sent
+    receive() external payable {}
 }
