@@ -15,6 +15,8 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 /// @title  PendlePTRouter
 /// @notice Swaps ERC20 for PT and vice versa through Pendle and Curve Router.
 contract PendlePTRouter is IPendlePTRouter {
+    using SafeERC20 for IERC20;
+
     uint256 constant MAX_UINT = type(uint256).max;
     IPendleRouterV4 public constant pendleRouter = IPendleRouterV4(0x888888888889758F76e7103c6CbF23ABbF58F946);
     ICurveRouter public constant curveRouter = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
@@ -143,7 +145,7 @@ contract PendlePTRouter is IPendlePTRouter {
 
     function _transferFrom(IERC20 token, address from, address to, uint256 amount) internal {
         if (CHAIN_COIN != address(token)) {
-            token.transferFrom(from, to, amount);
+            token.safeTransferFrom(from, to, amount);
         }
     }
 
