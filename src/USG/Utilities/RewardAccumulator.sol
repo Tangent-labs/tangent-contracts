@@ -48,6 +48,8 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
 
     event RewardNotified(address market, IERC20 _token, uint256 streamed, uint256 harvesterFee, uint256 rewardCut);
     event RewardPaid(address market, address _user, IERC20 _rewardToken, uint256 _reward);
+    event AddReward(address market, IERC20 reward);
+    event SetRCParams(address market, RCParams rcParams);
 
     error NoRewardsToClaimFromContract(address contractAddr);
     error IncorrectRewardLength(uint256 rewardLengthInParam, uint256 realRewardLength);
@@ -390,6 +392,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
             unchecked {
                 ++i;
             }
+            emit AddReward(market, _newRewardToken);
         }
     }
 
@@ -620,6 +623,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         rcParams[market] = _rcParam;
         // Process the rewards with the old RC params
         processRewards(market, controlTower.feeTreasury());
+        emit SetRCParams(market, _rcParam);
     }
 
     /**

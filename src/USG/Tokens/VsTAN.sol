@@ -108,6 +108,17 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
 
     event RewardNotified(IERC20 indexed _token, uint256 _reward);
     event RewardPaid(uint256 indexed tokenId, IERC20 indexed _rewardToken, uint256 _reward);
+    event SetKick(KickParams kick);
+    event AddNewReward(IERC20 newReward);
+    event CreateLock(uint256 id, uint256 amount, bool isPerma);
+    event IncreaseLockAmount(uint256 id, uint256 amount);
+    event IncreaseLockTime(uint256 id);
+    event TogglePermaLock(uint256 id);
+    event Unlock(uint256 id);
+    event RageQuit(uint256 id, uint256 penality);
+    event KickPosition(uint256 id, uint256 kickIncentivization);
+    event SplitPosition(uint256 fromId, uint256 toID, uint256 fromAmount, uint256 toAmount);
+    event MergePositions(uint256 tokenIdA, uint256 tokenIdB, uint256 newAmount);
 
     /**
      * @dev   Constructor of the contract
@@ -219,6 +230,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
 
         //
         locks[tokenId].endLockTime = newEnd;
+
+        emit IncreaseLockTime(tokenId);
     }
 
     /**
@@ -229,6 +242,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         uint48 oldEndLockTime = locks[tokenId].endLockTime;
         require(oldEndLockTime > block.timestamp, LockExpired());
         locks[tokenId].endLockTime = oldEndLockTime != MAX_UINT48 ? MAX_UINT48 : _newEndLockTime();
+        emit TogglePermaLock(tokenId);
     }
 
     /**
@@ -245,6 +259,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
 
         _claimSimple(tokenId, msg.sender, isClaimAssUSG);
         tan.transfer(msg.sender, amount);
+
+        emit Unlock(tokenId);
     }
 
     /**
@@ -266,6 +282,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         IERC20 _tan = tan;
         _tan.transfer(msg.sender, amount - penality);
         _tan.transfer(controlTower.feeTreasury(), penality);
+
+        emit RageQuit(tokenId, penality);
     }
 
     /**
@@ -289,6 +307,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         IERC20 _tan = tan;
         _tan.transfer(tokenOwner, amount - kickIncentivization);
         _tan.transfer(receiver, kickIncentivization);
+
+        emit KickPosition(tokenId, kickIncentivization);
     }
 
     /**
@@ -310,6 +330,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         locks[newTokenId] = Lock({endLockTime: endLockTime, amount: amountToRemove});
         locks[tokenId].amount = newAmount;
         _mint(msg.sender, newTokenId);
+
+        emit SplitPosition(tokenId, newTokenId, newAmount, amountToRemove);
     }
 
     /**
@@ -331,14 +353,16 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         // Cant merge expired positions
         require(endLockA > block.timestamp, LockExpired());
         require(endLockB > block.timestamp, LockExpired());
-
-        locks[tokenIdA] = Lock({endLockTime: endLockA < endLockB ? endLockB : endLockA, amount: amountA + amountB});
+        uint208 totalAmount = amountA + amountB;
+        locks[tokenIdA] = Lock({endLockTime: endLockA < endLockB ? endLockB : endLockA, amount: totalAmount});
         delete locks[tokenIdB];
 
         _burn(tokenIdB);
 
         // Claims the rewards of the burnt position or they will be lost for everÒ
         _claimSimple(tokenIdB, msg.sender, isClaimAssUSG);
+
+        emit MergePositions(tokenIdA, tokenIdB, totalAmount);
     }
 
     /**
@@ -474,6 +498,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         // Increase the total amount locked
         totalSupplyVsTan += amountIn;
         _mint(msg.sender, tokenId);
+
+        emit CreateLock(tokenId, amountIn, isPermaLock);
     }
 
     function _increaseLockAmount(uint256 tokenId, uint208 amountIn) internal onlyTokenOwner(tokenId) updateReward(tokenId) {
@@ -485,6 +511,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         locks[tokenId] = Lock({endLockTime: oldLockTime != MAX_UINT48 ? _newEndLockTime() : MAX_UINT48, amount: oldAmount + amountIn});
         // Increase the total amount locked
         totalSupplyVsTan += amountIn;
+
+        emit IncreaseLockAmount(tokenId, amountIn);
     }
 
     function _claimSimple(uint256 tokenId, address receiver, bool isClaimAssUSG) internal returns (bool) {
@@ -531,6 +559,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         rewardTokens.push(_newRewardToken);
         rewardData[_newRewardToken].lastUpdateTime = uint128(block.timestamp);
         rewardData[_newRewardToken].periodFinish = uint128(block.timestamp);
+
+        emit AddNewReward(_newRewardToken);
     }
 
     function setKick(KickParams calldata _newKickParams) external onlyOwner {
@@ -542,6 +572,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         require(_newKickParams.percentage <= 20_000, KickPercentageTooHigh());
 
         kick = _newKickParams;
+
+        emit SetKick(_newKickParams);
     }
 
     /**

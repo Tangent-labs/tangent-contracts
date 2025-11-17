@@ -62,6 +62,14 @@ contract ControlTower is LightOwnable, IControlTower {
                         OWNER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    event SetFeeTreasury(address feeTreasury);
+    event ToggleMarket(address market);
+    event ToggleMarketCreator(address marketCreator);
+    event TogglePegKeeper(address pegKeeper);
+    event ToggleIRCalculator(address irCalculator);
+    event TogglePositionMigrator(address migrator);
+    event TogglePauser(address pauser);
+
     /**
      *  @notice Sets the receiver of the protocol fees
      *  @dev    Callable only by the owner.
@@ -69,6 +77,7 @@ contract ControlTower is LightOwnable, IControlTower {
      */
     function setFeeTreasury(address _feeTreasury) external onlyOwner {
         feeTreasury = _feeTreasury;
+        emit SetFeeTreasury(_feeTreasury);
     }
 
     /**
@@ -79,6 +88,7 @@ contract ControlTower is LightOwnable, IControlTower {
     function toggleMarket(address _market) external {
         require(owner == msg.sender || isMarketCreator[msg.sender], CallerNotOwnerOrMarketCreator(msg.sender));
         isMarket[_market] = !isMarket[_market];
+        emit ToggleMarket(_market);
     }
 
     /**
@@ -88,6 +98,7 @@ contract ControlTower is LightOwnable, IControlTower {
      */
     function toggleMarketCreator(address marketCreator) external onlyOwner {
         isMarketCreator[marketCreator] = !isMarketCreator[marketCreator];
+        emit ToggleMarketCreator(marketCreator);
     }
 
     /**
@@ -97,6 +108,7 @@ contract ControlTower is LightOwnable, IControlTower {
      */
     function togglePegKeeper(address pegKeeper) external onlyOwner {
         isPegKeeper[pegKeeper] = !isPegKeeper[pegKeeper];
+        emit TogglePegKeeper(pegKeeper);
     }
 
     /**
@@ -106,6 +118,7 @@ contract ControlTower is LightOwnable, IControlTower {
      */
     function toggleIRCalculator(address irCalculator) external onlyOwner {
         isIRCalculator[irCalculator] = !isIRCalculator[irCalculator];
+        emit ToggleIRCalculator(irCalculator);
     }
 
     /**
@@ -115,6 +128,7 @@ contract ControlTower is LightOwnable, IControlTower {
      */
     function togglePositionMigrator(address positionMigrator) external onlyOwner {
         isPositionMigrator[positionMigrator] = !isPositionMigrator[positionMigrator];
+        emit TogglePositionMigrator(positionMigrator);
     }
 
     /**
@@ -124,5 +138,6 @@ contract ControlTower is LightOwnable, IControlTower {
      */
     function togglePauser(address _pauser) external onlyOwner {
         isPauser[_pauser] = !isPauser[_pauser];
+        emit TogglePauser(_pauser);
     }
 }
