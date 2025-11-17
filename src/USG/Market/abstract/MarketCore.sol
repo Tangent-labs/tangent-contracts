@@ -400,6 +400,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             _verifyMaxLTV(newCollatBalance, newUserDebt, false);
         }
 
+        require(debtSharesToRemove != 0, ZeroDebtAmount());
+
         uint256 newUserDebtShares = selfLiquidateCall._userDebtShares - debtSharesToRemove;
 
         // Modify the collateral balance, the user debt and the total debt
@@ -441,6 +443,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
             _verifyMinimumDebt(liquidateStruct.userDebt - USGToRepay);
         }
+
+        require(debtSharesToRemove != 0, ZeroDebtAmount());
 
         uint256 newUserDebtShares = liquidateStruct._userDebtShares - debtSharesToRemove;
         // Modify the collateral balance, the user debt and the total debt
