@@ -112,7 +112,8 @@ contract WStable is ERC20, LightOwnable {
         IERC4626 _savingAccount = savingAccount;
 
         // Retrieve and sum the amount of stable farming on the saving account and the amount of pending stable.
-        uint256 totalStableStaked = _savingAccount.maxWithdraw(address(this));
+        uint256 totalStableStaked = _savingAccount.convertToAssets(_savingAccount.balanceOf(address(this)));
+
         // Retrieve the amount due to users.
         uint256 dueAmount = totalSupply();
         require(totalStableStaked > dueAmount, NoRewardsToClaim());
