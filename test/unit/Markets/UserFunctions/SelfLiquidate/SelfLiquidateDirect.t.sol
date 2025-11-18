@@ -33,7 +33,10 @@ contract SelfLiquidateDirect is MarketDeploymentContext {
         verifyBurnERC20(usg, initialDebt, "usg Burnt after a repay");
         verifyLostERC20(usg, usr1, initialDebt, "usg taken from usr1");
 
-        market.selfLiquidate(collatDeposited, MAX_UINT, MAX_UINT, initialDebt, ZapStruct({router: address(0), routerCall: ""}));
+        market.selfLiquidate(
+            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUSGToBurn: MAX_UINT, minUSGOut: initialDebt, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
 
         assertERC20Tracking();
 

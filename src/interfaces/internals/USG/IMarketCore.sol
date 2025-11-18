@@ -23,7 +23,8 @@ struct LiquidateIn {
     uint256 collatToLiquidate;
     uint256 minUSGOut;
     uint256 maxUSGToBurn;
-    uint256 minCollatValue;
+    uint256 minCollatAmountToLiquidate;
+    uint256 minCollatValueToLiquidate;
 }
 
 struct LiquidateTransitionStruct {
@@ -37,17 +38,22 @@ struct LiquidateTransitionStruct {
     uint256 userDebt;
 }
 
-struct SelfLiquidateInput {
+struct SelfLiquidateIn {
     uint256 collatAmountToLiquidate;
-    uint256 USGToRepay;
+    uint256 usgToRepay;
+    uint256 maxUSGToBurn;
     uint256 minUSGOut;
+    uint256 minCollatAmountToLiquidate;
+}
+
+struct SelfLiquidateTransitionStruct {
+    SelfLiquidateIn selfLiquidateIn;
     uint256 newDebtIndex;
     uint256 _collateralBalance;
     uint256 _totalCollateral;
     uint256 _userDebtShares;
     uint256 _totalDebtShares;
     uint256 userDebt;
-    uint256 maxUSGToBurn;
 }
 
 struct GlobalMarketInitParams {

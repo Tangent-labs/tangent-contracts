@@ -126,7 +126,14 @@ contract ZapLeverage is MarketDeploymentContext {
         deal(address(usg), address(mockRouter), uDebt + (market.liquidationFee() * uDebt) / 100_000);
 
         market.liquidate(
-            LiquidateIn({account: usr4, collatToLiquidate: market.collateralBalances(usr4), minUSGOut: market.collateralBalances(usr4), maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
+            LiquidateIn({
+                account: usr4,
+                collatToLiquidate: market.collateralBalances(usr4),
+                minUSGOut: market.collateralBalances(usr4),
+                maxUSGToBurn: MAX_UINT,
+                minCollatValueToLiquidate: 0,
+                minCollatAmountToLiquidate: 0
+            }),
             encoder.encodeSwapToMockRouter(address(mockRouter), collatToken, totalCollat, usg, usr1, uDebt + (market.liquidationFee() * uDebt) / 100_000)
         );
 

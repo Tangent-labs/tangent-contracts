@@ -3,7 +3,16 @@ pragma solidity ^0.8.22;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {MarketCore, LiquidateIn, LiquidateTransitionStruct, LiquidationPre, SelfLiquidateInput, ZapStructDeposit, IZappingProxy} from "./MarketCore.sol";
+import {
+    MarketCore,
+    LiquidateIn,
+    LiquidateTransitionStruct,
+    SelfLiquidateIn,
+    SelfLiquidateTransitionStruct,
+    LiquidationPre,
+    ZapStructDeposit,
+    IZappingProxy
+} from "./MarketCore.sol";
 
 import {IMarketExternalActions, IControlTower} from "../../../interfaces/internals/USG/IMarketExternalActions.sol";
 
@@ -239,38 +248,27 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
 
     /**
      * @notice Liquidate a part or the full collateral of the position of the caller.
-     * @dev
-     * @param  collatAmountToLiquidate   Amount of collateral to liquidate from the position.
-     * @param  USGToRepay                Amount of debt to repay in USG after the selling of the position.
-     * @param  minUSGOut                 Minimum amount of USG to receive on the sell of the collateral.
-     * @param  liquidationCall           Contract and data allowing to sell the collateral for USG.
+     * @dev   edf
+     * @param  selfLiquidateIn   Amount of collateral to liquidate from the position.
+     * @param  liquidationCall   Contract and data allowing to sell the collateral for USG.
      */
-    function selfLiquidate(
-        uint256 collatAmountToLiquidate,
-        uint256 USGToRepay,
-        uint256 maxUSGToBurn,
-        uint256 minUSGOut,
-        ZapStruct calldata liquidationCall
-    ) external nonReentrant updateRewards(msg.sender) {
+    function selfLiquidate(SelfLiquidateIn calldata selfLiquidateIn, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(msg.sender) {
         LiquidationPre memory pre = _preLiquidate(msg.sender);
 
         (uint256 repaidDebt, uint256 newUserDebtShares) = _selfLiquidate(
-            SelfLiquidateInput({
-                collatAmountToLiquidate: collatAmountToLiquidate,
-                USGToRepay: USGToRepay,
-                minUSGOut: minUSGOut,
+            SelfLiquidateTransitionStruct({
+                selfLiquidateIn: selfLiquidateIn,
                 newDebtIndex: pre.newDebtIndex,
                 _collateralBalance: pre.collatBalance,
                 _totalCollateral: totalCollateral,
                 _userDebtShares: pre._userDebtShares,
                 _totalDebtShares: totalDebtShares,
-                userDebt: pre.userDebt_,
-                maxUSGToBurn: maxUSGToBurn
+                userDebt: pre.userDebt_
             }),
             liquidationCall
         );
 
-        emit SelfLiquidate(msg.sender, repaidDebt, newUserDebtShares, collatAmountToLiquidate, liquidationCall.router);
+        emit SelfLiquidate(msg.sender, repaidDebt, newUserDebtShares, selfLiquidateIn.collatAmountToLiquidate, liquidationCall.router);
     }
 
     /**
