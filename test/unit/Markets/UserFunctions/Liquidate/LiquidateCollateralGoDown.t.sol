@@ -94,7 +94,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         uint256 pendingInterests = irCalculator.mintableInterests();
         assertEq(market.userDebt(usr1), 0);
-        assertEq(market.totalDebt(), USGBorrowed * 2 + ((pendingInterests * 2) / 3), "Total debt wrong");
+        assertEq(market.totalDebt(), USGBorrowed * 2 + ((pendingInterests * 2) / 3) + 1, "Total debt wrong");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
@@ -209,7 +209,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         assertERC20Tracking();
 
         assertApproxEqAbs(market.userDebt(usr1), userDebt - debtToRepay, 3, "User debt not correct");
-        assertEq(market.totalDebt(), market.userDebt(usr1) + market.userDebt(usr2) + market.userDebt(usr3), "Total Debt");
+        assertEq(market.totalDebt() + 2, market.userDebt(usr1) + market.userDebt(usr2) + market.userDebt(usr3), "Total Debt");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 

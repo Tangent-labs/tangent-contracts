@@ -2,6 +2,7 @@
 pragma solidity ^0.8.22;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {IUSG} from "../../../interfaces/internals/USG/IUSG.sol";
 import {IControlTower} from "../../../interfaces/internals/USG/IControlTower.sol";
@@ -156,7 +157,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Increase collateral deposited by the user
         _updateCollateral(
             msg.sender,
-            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _convertToAmount(userDebtShares[msg.sender], newDebtIndex)),
+            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _convertToAmount(userDebtShares[msg.sender], newDebtIndex, Math.Rounding.Floor)),
             totalCollateral - amountToWithdraw
         );
 
@@ -211,10 +212,10 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         uint256 _userDebtShares = userDebtShares[msg.sender];
 
-        uint256 newUserDebt = USGToBorrow + _convertToAmount(_userDebtShares, newDebtIndex);
+        uint256 newUserDebt = USGToBorrow + _convertToAmount(_userDebtShares, newDebtIndex, Math.Rounding.Ceil);
 
         //  Cache the new value in USG of the debt
-        uint256 newUserDebtShares = _convertToShares(USGToBorrow, newDebtIndex);
+        uint256 newUserDebtShares = _convertToShares(USGToBorrow, newDebtIndex, Math.Rounding.Ceil);
 
         uint256 newTotalDebtShares = totalDebtShares + newUserDebtShares;
 
@@ -279,7 +280,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         uint256 _userDebtShares = userDebtShares[account];
 
-        uint256 oldUserDebt = _convertToAmount(_userDebtShares, newDebtIndex);
+        uint256 oldUserDebt = _convertToAmount(_userDebtShares, newDebtIndex, Math.Rounding.Ceil);
 
         // Cannot repay an empty position
         require(_userDebtShares != 0, UserDebtZero());
@@ -305,7 +306,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             // Retrieve the real debt of the user
             newUserDebt = oldUserDebt - USGToRepay;
 
-            sharesToRemove = _convertToShares(USGToRepay, newDebtIndex);
+            sharesToRemove = _convertToShares(USGToRepay, newDebtIndex, Math.Rounding.Floor);
 
             newUserDebtShares = _userDebtShares - sharesToRemove;
 
@@ -363,7 +364,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
                 newDebtIndex: newDebtIndex,
                 collatBalance: collateralBalances[account],
                 _userDebtShares: userDebtShares_,
-                userDebt_: _convertToAmount(userDebtShares_, newDebtIndex)
+                userDebt_: _convertToAmount(userDebtShares_, newDebtIndex, Math.Rounding.Ceil)
             });
     }
 
@@ -392,7 +393,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Liquidate partial
         else {
             // As it's a partial liquidation, we have to compute the amount of shares to remove that match with the USG amount to repay.
-            debtSharesToRemove = _convertToShares(usgToRepay, selfLiquidateStruct.newDebtIndex);
+            debtSharesToRemove = _convertToShares(usgToRepay, selfLiquidateStruct.newDebtIndex, Math.Rounding.Floor);
 
             uint256 newUserDebt = selfLiquidateStruct.userDebt - usgToRepay;
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
@@ -451,7 +452,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Partial liquidation
         else {
             USGToRepay = (collatAmountToLiquidate * liquidateStruct.userDebt) / liquidateStruct._collateralBalance;
-            debtSharesToRemove = _convertToShares(USGToRepay, liquidateStruct.newDebtIndex);
+            debtSharesToRemove = _convertToShares(USGToRepay, liquidateStruct.newDebtIndex, Math.Rounding.Floor);
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
             _verifyMinimumDebt(liquidateStruct.userDebt - USGToRepay);
         }
@@ -656,7 +657,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         uint256 newDebtIndex = _checkpointIR();
 
         uint256 uDebtShares = userDebtShares[account];
-        uint256 debtUser = _convertToAmount(uDebtShares, newDebtIndex);
+        uint256 debtUser = _convertToAmount(uDebtShares, newDebtIndex, Math.Rounding.Ceil);
         uint256 newCollatBalance = collateralBalances[account] - collateralToRemove;
         uint256 sharesToRemove;
         uint256 newUserDebt;
@@ -676,7 +677,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         }
         // Only a part of the debt is removed from marketFrom
         else {
-            sharesToRemove = _convertToShares(debtToRemove, newDebtIndex);
+            sharesToRemove = _convertToShares(debtToRemove, newDebtIndex, Math.Rounding.Floor);
             newUserDebt = debtUser - debtToRemove;
             // We check both condition on minimum loan and maxLTV
             // Dont need to check them when the new user debt is equal to 0
@@ -712,9 +713,9 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         uint256 debtIndex = _checkpointIR();
 
         uint256 uDebtShares = userDebtShares[account];
-        uint256 newUserDebt = _convertToAmount(uDebtShares, debtIndex) + debtToAdd;
+        uint256 newUserDebt = _convertToAmount(uDebtShares, debtIndex, Math.Rounding.Ceil) + debtToAdd;
         uint256 newCollatBalance = collateralBalances[account] + collatToAdd;
-        uint256 sharesToAdd = _convertToShares(debtToAdd, debtIndex);
+        uint256 sharesToAdd = _convertToShares(debtToAdd, debtIndex, Math.Rounding.Ceil);
         uint256 newTotalDebtShares = totalDebtShares + sharesToAdd;
         uint256 newUserDebtShares = uDebtShares + sharesToAdd;
 

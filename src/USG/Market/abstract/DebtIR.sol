@@ -114,7 +114,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @return Calculated total debt
      */
     function _totalDebt(uint256 _badDebt, uint256 _totalDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
-        return _badDebt + _convertToAmount(_totalDebtShares, newDebtIndex);
+        return _badDebt + _convertToAmount(_totalDebtShares, newDebtIndex, Math.Rounding.Ceil);
     }
 
     /**
@@ -123,8 +123,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @param index Debt index of the market
      * @return Debt shares
      */
-    function _convertToShares(uint256 debt, uint256 index) internal pure returns (uint256) {
-        return Math.mulDiv(debt, RAY, index, Math.Rounding.Ceil);
+    function _convertToShares(uint256 debt, uint256 index, Math.Rounding roundingType) internal pure returns (uint256) {
+        return Math.mulDiv(debt, RAY, index, roundingType);
     }
 
     /**
@@ -133,8 +133,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @param index       Debt index of the market
      * @return Debt amount
      */
-    function _convertToAmount(uint256 debtShares, uint256 index) internal pure returns (uint256) {
-        return Math.mulDiv(debtShares, index, RAY, Math.Rounding.Floor);
+    function _convertToAmount(uint256 debtShares, uint256 index, Math.Rounding roundingType) internal pure returns (uint256) {
+        return Math.mulDiv(debtShares, index, RAY, roundingType);
     }
 
     /**
@@ -195,7 +195,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @return The total debt the user owes in USG
      */
     function userDebt(address account) public view returns (uint256) {
-        return _convertToAmount(userDebtShares[account], irCalculator.newDebtIndex(address(this)));
+        return _convertToAmount(userDebtShares[account], irCalculator.newDebtIndex(address(this)), Math.Rounding.Ceil);
     }
 
     /**
@@ -203,7 +203,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @return Interest amount in USG accrued but not yet reflected in totalDebtShares
      */
     function pendingInterests() external view returns (uint256) {
-        return _convertToAmount(totalDebtShares, irCalculator.indexDelta(address(this)));
+        return _convertToAmount(totalDebtShares, irCalculator.indexDelta(address(this)), Math.Rounding.Floor);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
