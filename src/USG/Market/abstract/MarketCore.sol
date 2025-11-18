@@ -508,13 +508,13 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      */
     function _postLiquidate(
         uint256 collatAmountToLiquidate,
-        uint256 USGToBurn,
+        uint256 usgToBurn,
         uint256 maxUSGToBurn,
         uint256 minUSGOut,
         uint256 minCollatToLiquidate,
         ZapStruct calldata liquidationCall
     ) internal {
-        require(USGToBurn <= maxUSGToBurn, MaxUSGToBurn());
+        require(usgToBurn <= maxUSGToBurn, MaxUSGToBurn());
         require(minCollatToLiquidate <= collatAmountToLiquidate, MinCollatToLiquidate(collatAmountToLiquidate));
         IZappingProxy _zappingProxy = zappingProxy;
         // Withdraw the collateral from the underlying protocol if needed and
@@ -530,7 +530,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Burns USG from the sender.
         // The debt has to be on the caller of the transaction.
         // In case a liquidator is passed in parameter, it needs to send it back to the sender of the tx.
-        _burnUSG(msg.sender, USGToBurn);
+        _burnUSG(msg.sender, usgToBurn);
     }
 
     /**

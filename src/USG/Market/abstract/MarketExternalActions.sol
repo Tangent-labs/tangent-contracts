@@ -216,11 +216,13 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      *           - Buy USG with a flashloan, repay the debt, get the collateral and do whatever you want with it.
                  - Selling the collateral for USG directly through ZappingProxy by providing a route then repay the debt and keep the difference in USG
      * @param  liquidateIn    Parameters proper to the liquidation
-    *                           - Account position to liquidate
-                                - Amount of collateral to liquidate from the position.   
-                                - Min USG to be returned after the swap through ZapProxy
-                                - Maximum amount of USG to be burnt from the liquidator balance prior to zap
-     * @param  liquidationCall     Contract and data allowing to sell the collateral for USG.
+     *                           - Account position to liquidate
+     *                           - Amount of collateral to liquidate from the position.   
+     *                           - Min USG to be returned after the swap through ZapProxy
+     *                           - Maximum amount of USG to be burnt
+     *                           - Minimum amount of collateral to be liquidate
+     *                           - Minimum value in USD of collateral to be liquidate
+     * @param  liquidationCall  Contract and data allowing to sell the collateral for USG.
      */
     function liquidate(LiquidateIn calldata liquidateIn, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(liquidateIn.account) {
         LiquidationPre memory pre = _preLiquidate(liquidateIn.account);
@@ -248,8 +250,11 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
 
     /**
      * @notice Liquidate a part or the full collateral of the position of the caller.
-     * @dev   edf
-     * @param  selfLiquidateIn   Amount of collateral to liquidate from the position.
+     * @param  selfLiquidateIn    Parameters proper to the self liquidation
+     *                              - Amount of collateral to liquidate from the position.
+     *                              - Min USG to be returned after the swap through ZapProxy
+     *                              - Maximum amount of USG to be burnt
+     *                              - Minimum amount of collateral to be liquidate
      * @param  liquidationCall   Contract and data allowing to sell the collateral for USG.
      */
     function selfLiquidate(SelfLiquidateIn calldata selfLiquidateIn, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(msg.sender) {
