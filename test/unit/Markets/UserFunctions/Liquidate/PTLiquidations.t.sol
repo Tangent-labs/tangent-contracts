@@ -29,7 +29,7 @@ contract PTLiquidations is MarketDeploymentContext {
         swapParams[2] = Array.memoryUint256([uint256(0), uint256(1), uint256(1), uint256(1), uint256(3)]);
         swapParams[3] = Array.memoryUint256([uint256(0), uint256(1), uint256(1), uint256(1), uint256(2)]);
         marketSUSDe.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: 50_000 ether, usgToRepay: 20_000 ether, maxUSGToBurn: MAX_UINT, minUSGOut: 0, minCollatAmountToLiquidate: 0}),
+            SelfLiquidateIn({collatAmountToLiquidate: 50_000 ether, usgToRepay: 20_000 ether, maxUSGToBurn: MAX_UINT, minUSGOut: 0}),
             ZapStruct({
                 router: address(pendlePTRouter),
                 routerCall: encoder.encodeSwapPTForToken(
@@ -75,7 +75,7 @@ contract PTLiquidations is MarketDeploymentContext {
         swapParams[3] = Array.memoryUint256([uint256(0), uint256(1), uint256(1), uint256(1), uint256(2)]);
 
         marketSUSDe.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: 50_000 ether, usgToRepay: 20_000 ether, maxUSGToBurn: MAX_UINT, minUSGOut: 0, minCollatAmountToLiquidate: 0}),
+            SelfLiquidateIn({collatAmountToLiquidate: 50_000 ether, usgToRepay: 20_000 ether, maxUSGToBurn: MAX_UINT, minUSGOut: 0}),
             ZapStruct({
                 router: address(pendlePTRouter),
                 routerCall: encoder.encodeSwapPTForToken(

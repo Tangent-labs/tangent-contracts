@@ -253,8 +253,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      * @param  selfLiquidateIn    Parameters proper to the self liquidation
      *                              - Amount of collateral to liquidate from the position.
      *                              - Min USG to be returned after the swap through ZapProxy
-     *                              - Maximum amount of USG to be burnt
-     *                              - Minimum amount of collateral to be liquidate
+     *                              - Maximum amount of USG to be burnt in total
      * @param  liquidationCall   Contract and data allowing to sell the collateral for USG.
      */
     function selfLiquidate(SelfLiquidateIn calldata selfLiquidateIn, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(msg.sender) {

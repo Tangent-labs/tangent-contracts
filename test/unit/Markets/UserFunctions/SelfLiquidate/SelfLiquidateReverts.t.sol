@@ -53,7 +53,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(Collateral.ZeroCollatAmount.selector));
 
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: 0, usgToRepay: 1_000 ether, maxUSGToBurn: MAX_UINT, minUSGOut: 4250 ether, minCollatAmountToLiquidate: 0}),
+            SelfLiquidateIn({collatAmountToLiquidate: 0, usgToRepay: 1_000 ether, maxUSGToBurn: MAX_UINT, minUSGOut: 4250 ether}),
             ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall})
         );
 
@@ -70,7 +70,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
 
         vm.expectRevert(abi.encodeWithSelector(DebtIR.UserDebtTooLow.selector));
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: amountToLiquidate, usgToRepay: amountToRepay, maxUSGToBurn: MAX_UINT, minUSGOut: 0, minCollatAmountToLiquidate: 0}),
+            SelfLiquidateIn({collatAmountToLiquidate: amountToLiquidate, usgToRepay: amountToRepay, maxUSGToBurn: MAX_UINT, minUSGOut: 0}),
             ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall})
         );
 
@@ -86,7 +86,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
 
         vm.expectRevert(abi.encodeWithSelector(Collateral.OverMaxLTV.selector));
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: amountToLiquidate, usgToRepay: 0, maxUSGToBurn: 0, minUSGOut: 0, minCollatAmountToLiquidate: 0}),
+            SelfLiquidateIn({collatAmountToLiquidate: amountToLiquidate, usgToRepay: 0, maxUSGToBurn: 0, minUSGOut: 0}),
             ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall})
         );
         vm.stopPrank();
@@ -99,7 +99,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
 
         vm.expectRevert(abi.encodeWithSelector(ZappingProxy.MinAmountOutNotReached.selector));
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUSGToBurn: MAX_UINT, minUSGOut: 6_000 ether, minCollatAmountToLiquidate: 0}),
+            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUSGToBurn: MAX_UINT, minUSGOut: 6_000 ether}),
             ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall})
         );
 
@@ -113,7 +113,7 @@ contract SelfLiquidateReverts is MarketDeploymentContext {
 
         vm.expectRevert(abi.encodeWithSelector(MarketCore.MaxUSGToBurn.selector));
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUSGToBurn: 3_000 ether, minUSGOut: 6_000 ether, minCollatAmountToLiquidate: 0}),
+            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUSGToBurn: 3_000 ether, minUSGOut: 6_000 ether}),
             ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routerCall})
         );
 

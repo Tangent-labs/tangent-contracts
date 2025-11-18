@@ -420,7 +420,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             usgToRepay,
             selfLiquidateStruct.selfLiquidateIn.maxUSGToBurn,
             selfLiquidateStruct.selfLiquidateIn.minUSGOut,
-            selfLiquidateStruct.selfLiquidateIn.minCollatAmountToLiquidate,
+            selfLiquidateStruct.selfLiquidateIn.collatAmountToLiquidate,
             liquidateCall
         );
 

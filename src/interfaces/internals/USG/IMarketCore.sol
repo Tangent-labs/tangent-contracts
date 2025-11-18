@@ -43,7 +43,6 @@ struct SelfLiquidateIn {
     uint256 usgToRepay;
     uint256 maxUSGToBurn;
     uint256 minUSGOut;
-    uint256 minCollatAmountToLiquidate;
 }
 
 struct SelfLiquidateTransitionStruct {

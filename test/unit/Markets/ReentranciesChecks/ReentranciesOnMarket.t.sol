@@ -238,7 +238,7 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
                     router: address(market),
                     routerCall: abi.encodeWithSelector(
                         MarketExternalActions.selfLiquidate.selector,
-                        SelfLiquidateIn({collatAmountToLiquidate: amountIn, usgToRepay: amountIn, maxUSGToBurn: MAX_UINT, minUSGOut: amountIn, minCollatAmountToLiquidate: 0}),
+                        SelfLiquidateIn({collatAmountToLiquidate: amountIn, usgToRepay: amountIn, maxUSGToBurn: MAX_UINT, minUSGOut: amountIn}),
                         ZapStruct({router: address(market), routerCall: ""})
                     )
                 })

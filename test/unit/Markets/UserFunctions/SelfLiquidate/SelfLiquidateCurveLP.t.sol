@@ -53,7 +53,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         uint256 collatToDump = market.collateralBalances(usr1);
 
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUSGToBurn: MAX_UINT, minUSGOut: 4250 ether, minCollatAmountToLiquidate: 0}),
+            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUSGToBurn: MAX_UINT, minUSGOut: 4250 ether}),
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
                 routerCall: encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, collatToDump, 4_250 ether, usr1))
@@ -77,7 +77,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         uint256 surplus = usg.balanceOf(usr1);
 
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: amountToLiquidate, usgToRepay: amountToRepay, maxUSGToBurn: MAX_UINT, minUSGOut: 0, minCollatAmountToLiquidate: 0}),
+            SelfLiquidateIn({collatAmountToLiquidate: amountToLiquidate, usgToRepay: amountToRepay, maxUSGToBurn: MAX_UINT, minUSGOut: 0}),
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
                 routerCall: encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, amountToLiquidate, 0, usr1))
