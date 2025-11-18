@@ -149,7 +149,7 @@ abstract contract Collateral is DebtIR, ICollateral {
      * @param account Address of the user
      * @return Health ratio (1e18 base); higher is safer
      */
-    function healthRatio(address account) public view returns (uint256) {
+    function healthRatio(address account) external view returns (uint256) {
         return _healthRatio(userDebt(account), collateralBalances[account], _collateralPrice(true));
     }
 
@@ -164,17 +164,37 @@ abstract contract Collateral is DebtIR, ICollateral {
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        INTERNAL VIEWS
+                        INTERNAL UPDATES
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    /**
+     * @dev Returns the current price of 1 unit of collateral in USD (1e18 precision) and store last good value in oracle if needed
+     */
+    function _collateralPriceUpdate(bool isNoFailMode) internal returns (uint256) {
+        return collatOracle.latestAnswerUpdate(isNoFailMode);
+    }
 
     /**
-     * @dev Computes maximum borrowable USG given a collateral amount
+     * @dev Computes USD value of the given amount of collateral and store last good value in oracle if needed
      * @param collatAmount Amount of collateral
-     * @return Borrow limit in USG
+     * @return Value in USD (1e18 base)
      */
-    function _maxBorrowable(uint256 collatAmount, bool isNoFailMode) internal view returns (uint256) {
-        return _mulDiv(maxLTV, _positionValue(collatAmount, isNoFailMode), DENOMINATOR);
+    function _positionValueUpdate(uint256 collatAmount, bool isNoFailMode) internal returns (uint256) {
+        return _mulDiv(collatAmount, _collateralPriceUpdate(isNoFailMode), 10 ** collatDecimals);
     }
+
+    /**
+     * @dev Compare the value of an amount of collateral with an amount of debt to the maxLTV of the market
+     *      and fails if it's not respected + store last good value in oracle if needed
+     * @param collatAmount Amount of collateral
+     * @param debt         Amount of debt
+     * @param isNoFailMode If true, will fail if the oracle is stale
+     */
+    function _verifyMaxLTV(uint256 collatAmount, uint256 debt, bool isNoFailMode) internal {
+        require(_mulDiv(maxLTV, _positionValueUpdate(collatAmount, isNoFailMode), DENOMINATOR) >= debt, OverMaxLTV());
+    }
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                        INTERNAL VIEWS
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
      * @dev Returns the current price of 1 unit of collateral in USD (1e18 precision)
@@ -221,17 +241,6 @@ abstract contract Collateral is DebtIR, ICollateral {
      */
     function _positionValue(address account, bool isNoFailMode) internal view returns (uint256) {
         return _mulDiv(collateralBalances[account], _collateralPrice(isNoFailMode), 10 ** collatDecimals);
-    }
-
-    /**
-     * @dev Compare the value of an amount of collateral with an amount of debt to the maxLTV of the market
-     *      and fails if it's not respected
-     * @param collatAmount Amount of collateral
-     * @param debt         Amount of debt
-     * @param isNoFailMode If true, will fail if the oracle is stale
-     */
-    function _verifyMaxLTV(uint256 collatAmount, uint256 debt, bool isNoFailMode) internal view {
-        require(_maxBorrowable(collatAmount, isNoFailMode) >= debt, OverMaxLTV());
     }
 
     /**

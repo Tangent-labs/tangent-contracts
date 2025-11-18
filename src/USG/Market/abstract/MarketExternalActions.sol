@@ -215,7 +215,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
      */
     function liquidate(LiquidateIn calldata liquidateIn, ZapStruct calldata liquidationCall) external nonReentrant updateRewards(liquidateIn.account) {
         LiquidationPre memory pre = _preLiquidate(liquidateIn.account);
-        uint256 collatPrice = _collateralPrice(true);
+        uint256 collatPrice = _collateralPriceUpdate(true);
 
         // Can liquidate only if the health ratio is below 1
         require(_healthRatio(pre.userDebt_, pre.collatBalance, collatPrice) < 1 ether, NotLiquidablePosition());
@@ -283,7 +283,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         LiquidationPre memory pre = _preLiquidate(account);
 
         // Can liquidate bad debt only if the value of the collateral is below the debt
-        require(_positionValue(pre.collatBalance, true) < pre.userDebt_, PositionWithoutBadDebt());
+        require(_positionValueUpdate(pre.collatBalance, true) < pre.userDebt_, PositionWithoutBadDebt());
 
         _seizeCollateral(account, pre.collatBalance, totalCollateral, pre._userDebtShares, totalDebtShares, pre.userDebt_);
 

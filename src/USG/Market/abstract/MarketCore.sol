@@ -167,7 +167,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @param newUserDebt      New user debt of the user.
      * @return Collateral of the user post withdraw
      */
-    function _getBalanceAfterWithdrawAndCheckMaxBorrowable(uint256 amountToWithdraw, uint256 newUserDebt) internal view returns (uint256) {
+    function _getBalanceAfterWithdrawAndCheckMaxBorrowable(uint256 amountToWithdraw, uint256 newUserDebt) internal returns (uint256) {
         // Prevent to withdraw 0 collateral from the market
         _verifyCollatInputNotZero(amountToWithdraw);
         // Computes the decremented collateral balance of the user after the withdraw

@@ -21,7 +21,7 @@ contract OraclePendlePT is OracleBase {
         uint8 ptToSYDecimals;
     }
 
-    constructor(IPendleMarketV3 _pendleMarket, IPriceOracle _underlyingOracle, uint88 _duration, uint8 _ptToSYDecimals) {
+    constructor(IPendleMarketV3 _pendleMarket, IPriceOracle _underlyingOracle, uint88 _duration, uint8 _ptToSYDecimals, string memory _oracleName) OracleBase(_oracleName) {
         params = OraclePendlePTStruct({
             pendleMarket: _pendleMarket,
             underlyingOracle: _underlyingOracle,
@@ -38,12 +38,23 @@ contract OraclePendlePT is OracleBase {
      */
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OraclePendlePTStruct memory _params = params;
-        uint256 underlyingPrice = _params.underlyingOracle.latestAnswer(isNoFailMode);
+        return _computePrice(_params.underlyingOracle.latestAnswer(isNoFailMode), _params.pendleMarket, _params.duration, _params.ptToSYDecimals);
+    }
 
-        if (_params.pendleMarket.isExpired()) {
+    /**
+     * @notice Returns the latest price of a PT.
+     * @dev    When the PT is expired, 1PT is redeemable 1:1 against the underlying.
+     * @return The price of the PT.
+     */
+    function latestAnswerUpdate(bool isNoFailMode) external override returns (uint256) {
+        OraclePendlePTStruct memory _params = params;
+        return _computePrice(_params.underlyingOracle.latestAnswerUpdate(isNoFailMode), _params.pendleMarket, _params.duration, _params.ptToSYDecimals);
+    }
+
+    function _computePrice(uint256 underlyingPrice, IPendleMarketV3 market, uint88 duration, uint8 ptToSYDecimals) internal view returns (uint256) {
+        if (market.isExpired()) {
             return underlyingPrice;
         }
-
-        return (oracle.getPtToSyRate(address(_params.pendleMarket), uint32(_params.duration)) * underlyingPrice) / (10 ** _params.ptToSYDecimals);
+        return (oracle.getPtToSyRate(address(market), uint32(duration)) * underlyingPrice) / (10 ** ptToSYDecimals);
     }
 }

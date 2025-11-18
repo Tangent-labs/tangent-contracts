@@ -8,9 +8,9 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
 
     function setUp() external {
         // Oracle PT sUSDE 31_07_25
-        linearDiscountPTOracleExpired = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], 2 * 10 ** 17);
+        linearDiscountPTOracleExpired = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], 2 * 10 ** 17, "PT sUSDe 31/07/25 Linear");
         // Oracle PT sUSDe 25_09_25
-        linearDiscountPTOracleNotExpired = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_27_11_25, oracles[AddrERC4626.sUSDe], 2 * 10 ** 17);
+        linearDiscountPTOracleNotExpired = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_27_11_25, oracles[AddrERC4626.sUSDe], 2 * 10 ** 17, "PT sUSDe 27/11/25 Linear");
     }
 
     function test_estimate_PT_price_linear_expired() external {
@@ -48,6 +48,6 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
 
     function test_create_linear_discount_contract_with_discount_more_than_100() external {
         vm.expectRevert(abi.encodeWithSelector(OraclePendlePTLinearDiscount.DiscountMoreThan100Percent.selector));
-        new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], 1 ether + 1);
+        new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], 1 ether + 1, "PT sUSDe31/07/25 Linear");
     }
 }

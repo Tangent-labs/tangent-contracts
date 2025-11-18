@@ -20,7 +20,7 @@ contract OraclePendlePTLinearDiscount is OracleBase {
         uint216 baseDiscountPerYear;
     }
 
-    constructor(IPendleMarketV3 _pendleMarket, IPriceOracle _underlyingOracle, uint216 _baseDiscountPerYear) {
+    constructor(IPendleMarketV3 _pendleMarket, IPriceOracle _underlyingOracle, uint216 _baseDiscountPerYear, string memory _oracleName) OracleBase(_oracleName) {
         require(_baseDiscountPerYear <= 1 ether, DiscountMoreThan100Percent());
         params = OraclePendlePTLinearDiscountStruct({
             underlyingOracle: _underlyingOracle,
@@ -51,8 +51,21 @@ contract OraclePendlePTLinearDiscount is OracleBase {
      */
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OraclePendlePTLinearDiscountStruct memory _params = params;
-        uint256 underlyingPrice = _params.underlyingOracle.latestAnswer(isNoFailMode);
+        return _computePrice(_params.underlyingOracle.latestAnswer(isNoFailMode), _params.maturity, _params.baseDiscountPerYear);
+    }
 
-        return (underlyingPrice * (1 ether - _getCurrentDiscount(_params.maturity, _params.baseDiscountPerYear))) / 1 ether;
+    /**
+     * @notice Returns an esimation of a PT price from Pendle by representing the PT=>Underlying price with a
+     *         linear function reaching 1 at maturity.
+     * @dev    When the PT is expired, 1PT is redeemable 1:1 against the underlying.
+     * @return The price of the PT in $.
+     */
+    function latestAnswerUpdate(bool isNoFailMode) external override returns (uint256) {
+        OraclePendlePTLinearDiscountStruct memory _params = params;
+        return _computePrice(_params.underlyingOracle.latestAnswerUpdate(isNoFailMode), _params.maturity, _params.baseDiscountPerYear);
+    }
+
+    function _computePrice(uint256 underlyingPrice, uint40 maturity, uint216 baseDiscountPerYear) internal view returns (uint256) {
+        return (underlyingPrice * (1 ether - _getCurrentDiscount(maturity, baseDiscountPerYear))) / 1 ether;
     }
 }

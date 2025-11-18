@@ -5,8 +5,8 @@ import "../../../handler/Curve/HLPManipulator.sol";
 
 contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
     function test_chainlink_oracle_usdc_with_a_fallback() external {
-        OracleRedstoneWrapperFallback USDCFallback = new OracleRedstoneWrapperFallback(KeyBytes32RestoneOracle.USDC);
-        OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 12 hours, USDCFallback);
+        OracleRedstoneWrapperFallback USDCFallback = new OracleRedstoneWrapperFallback(KeyBytes32RestoneOracle.USDC, "Redstone USDC/USD Fallback");
+        OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 12 hours, address(USDCFallback), "USDC / USD");
 
         // Chainlink price is correct
         uint256 priceChainlink = usdcOracle.latestAnswer(false);
@@ -14,9 +14,8 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
 
         // Chainlink price becomes incorrect but not the Redstone one
         skip(12 hours);
-
         // Should return something even if the fallback is stale because isNoFailMode = true
-        uint256 priceRedstone = USDCFallback.latestAnswer(true);
+        uint256 priceRedstone = USDCFallback.latestAnswer(false);
         uint256 priceOracle = usdcOracle.latestAnswer(true);
         assertApproxEqRel(priceChainlink, priceRedstone, 2e14); // 0.02% delta rel max
         assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 1");
@@ -31,11 +30,11 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
         usdcOracle.latestAnswer(false);
 
         priceOracle = usdcOracle.latestAnswer(true);
-        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 3");
+        assertEq(priceOracle, usdcOracle.lastGoodValue(), "Last good value price is returned");
     }
 
     function test_chainlink_oracle_without_a_fallback() external {
-        OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 24 hours, IPriceOracle(address(0)));
+        OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 24 hours, address(0), "USDC / USD Oracle");
 
         // Chainlink price is correct
         uint256 priceChainlink = usdcOracle.latestAnswer(false);
@@ -54,8 +53,8 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
     }
 
     function test_chainlink_oracle_eth_with_a_fallback() external {
-        OracleRedstoneWrapperFallback ETHFallback = new OracleRedstoneWrapperFallback(KeyBytes32RestoneOracle.ETH);
-        OracleChainlinkWrapper ETHOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.ETH, 12 hours, ETHFallback);
+        OracleRedstoneWrapperFallback ETHFallback = new OracleRedstoneWrapperFallback(KeyBytes32RestoneOracle.ETH, "Redstone ETH/USD Fallback");
+        OracleChainlinkWrapper ETHOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.ETH, 12 hours, address(ETHFallback), "ETH / USD Oracle");
 
         // Chainlink price is correct
         uint256 priceChainlink = ETHOracle.latestAnswer(false);
@@ -65,7 +64,7 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
         skip(12 hours);
 
         // Should return something even if the fallback is stale because isNoFailMode = true
-        uint256 priceRedstone = ETHFallback.latestAnswer(true);
+        uint256 priceRedstone = ETHFallback.latestAnswer(false);
         uint256 priceOracle = ETHOracle.latestAnswer(true);
         assertApproxEqRel(priceChainlink, priceRedstone, 20e14); // 0.1% delta rel max
         assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 1");
@@ -80,6 +79,6 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
         ETHOracle.latestAnswer(false);
 
         priceOracle = ETHOracle.latestAnswer(true);
-        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 3");
+        assertEq(priceOracle, ETHOracle.lastGoodValue(), "Last good value is returned");
     }
 }

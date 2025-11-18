@@ -23,6 +23,10 @@ contract MockChainlinkOracle is IPriceOracle {
         return lastAns;
     }
 
+    function latestAnswerUpdate(bool isNoFailMode) external returns (uint256) {
+        return lastAns;
+    }
+
     function decimals() external view returns (uint8) {
         return dec;
     }
