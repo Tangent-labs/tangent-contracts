@@ -1,11 +1,11 @@
-import { giveTokensToAddresses } from "./thief/thief";
-import { ethers } from "hardhat";
+import {giveTokensToAddresses} from "./thief/thief";
+import {ethers} from "hardhat";
 
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { commonERC20 } from "@tangent/defi-resources";
-import { MaxUint256 } from "ethers";
-import { TOKENS_TO_GIVE_WITH_LP } from "./thief/tokensToGiveWithLP";
-import { TOKENS_TO_GIVE_WITHOUT_LP } from "./thief/tokensToGiveWithoutLP";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import {commonERC20} from "@tangent/defi-resources";
+import {MaxUint256} from "ethers";
+import {TOKENS_TO_GIVE_WITH_LP} from "./thief/tokensToGiveWithLP";
+import {TOKENS_TO_GIVE_WITHOUT_LP} from "./thief/tokensToGiveWithoutLP";
 
 export class MainSetup {
     users: HardhatEthersSigner[] = [];
@@ -30,13 +30,13 @@ export class MainSetup {
             amount: number;
         }[]
     ) {
-        await giveTokensToAddresses(users, TOKENS_TO_GIVE_WITHOUT_LP(this.erc20Minted).concat(extraTokens));
+        await giveTokensToAddresses(users, TOKENS_TO_GIVE_WITH_LP(this.erc20Minted).concat(extraTokens));
         const erc4626 = [
             // {saving: commonERC20.sfrxUSD, stable: commonERC20.frxUSD},
             // {saving: commonERC20.wstUSR, stable: "0x6c8984bc7DBBeDAf4F6b2FD766f16eBB7d10AAb4"},
-            { saving: commonERC20.sDOLA, stable: commonERC20.DOLA },
-            { saving: commonERC20.sUSDe, stable: commonERC20.USDe },
-            { saving: commonERC20.scrvUSD, stable: commonERC20.crvUSD },
+            {saving: commonERC20.sDOLA, stable: commonERC20.DOLA},
+            {saving: commonERC20.sUSDe, stable: commonERC20.USDe},
+            {saving: commonERC20.scrvUSD, stable: commonERC20.crvUSD},
         ];
         await this.stakeInERC2646(erc4626, users);
     }
