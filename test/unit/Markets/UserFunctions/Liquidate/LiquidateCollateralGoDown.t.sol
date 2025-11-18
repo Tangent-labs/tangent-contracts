@@ -48,7 +48,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValue: 0}),
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
             ZapStruct({router: address(0), routerCall: ""})
         );
         vm.stopPrank();
@@ -60,7 +60,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValue: 0}),
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -82,7 +82,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         // Liquidation passes after EMA of price_oralce passed
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -159,7 +159,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValue: 0}),
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
             ZapStruct({router: address(0), routerCall: ""})
         );
         vm.stopPrank();
@@ -171,7 +171,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValue: 0}),
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -196,13 +196,13 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation doesn't pass because 0 collat is passed in param
         vm.expectRevert(abi.encodeWithSelector(Collateral.ZeroCollatAmount.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: 0, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
+            LiquidateIn({account: usr1, collatToLiquidate: 0, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
         // Liquidation passes after EMA of price_oralce passed
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: 5_000 ether, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
+            LiquidateIn({account: usr1, collatToLiquidate: 5_000 ether, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -222,7 +222,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         verifyReceiveERC20(collatToken, usr1, collatToLiquidate, "Collat sent to liquidator");
 
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatToLiquidate, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
+            LiquidateIn({account: usr1, collatToLiquidate: collatToLiquidate, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -242,12 +242,19 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Try to liquidate and leave a loan with less than the minimumLoan
         vm.expectRevert(abi.encodeWithSelector(DebtIR.UserDebtTooLow.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatBalances - 1 ether, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
+            LiquidateIn({
+                account: usr1,
+                collatToLiquidate: collatBalances - 1 ether,
+                minUSGOut: 0,
+                maxUSGToBurn: MAX_UINT,
+                minCollatValueToLiquidate: 0,
+                minCollatAmountToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatBalances, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValue: 0}),
+            LiquidateIn({account: usr1, collatToLiquidate: collatBalances, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
             ZapStruct({router: address(0), routerCall: ""})
         );
         assertERC20Tracking();
