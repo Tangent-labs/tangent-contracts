@@ -21,7 +21,7 @@ contract RageQuit is MarketDeploymentContext {
 
         skip(4 weeks + 3 days);
 
-        uint256 nextLockTime = vsTan.nextEndLockTime();
+        uint256 nextLockTime = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
 
         uint256 delta = nextLockTime - block.timestamp;
         uint256 penalty = (delta * amount) / vsTan.LOCK_DURATION();

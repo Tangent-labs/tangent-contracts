@@ -671,26 +671,6 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         return rewardData[erc20];
     }
 
-    function lastTimeRewardApplicable(IERC20 _rewardToken) external view isReentrancyGuartEntered returns (uint256) {
-        return _lastTimeRewardApplicable(rewardData[_rewardToken].periodFinish);
-    }
-
-    function rewardPerToken(IERC20 _rewardToken) external view isReentrancyGuartEntered returns (uint256) {
-        return _rewardPerToken(_rewardToken);
-    }
-
-    function getRewardTokens() external view returns (IERC20[] memory) {
-        return rewardTokens;
-    }
-
-    /**
-     * @notice Get the next end lock time based on the current timestamp
-     * @return The next end lock time
-     */
-    function nextEndLockTime() external view isReentrancyGuartEntered returns (uint48) {
-        return _newEndLockTime();
-    }
-
     /**
      * @notice Get the lock details for a specific token ID
      * @param tokenId ID of the locking position

@@ -127,15 +127,13 @@ contract ClaimMultipleLock is MarketDeploymentContext {
         vsTan.addNewReward(AddrClassicERC20.CRV);
 
         {
-            IERC20[] memory tokens = vsTan.getRewardTokens();
-            assertEq(address(tokens[0]), address(usg));
-            assertEq(address(tokens[1]), address(AddrClassicERC20.CRV));
+            assertEq(address(vsTan.rewardTokens(0)), address(usg));
+            assertEq(address(vsTan.rewardTokens(1)), address(AddrClassicERC20.CRV));
 
-            vsTan.rewardPerToken(usg);
-            vsTan.rewardPerToken(AddrClassicERC20.CRV);
-
-            assertEq(block.timestamp, vsTan.lastTimeRewardApplicable(usg));
-            assertEq(block.timestamp, vsTan.lastTimeRewardApplicable(AddrClassicERC20.CRV));
+            uint256 finishTime = vsTan.getRewardData(usg).periodFinish;
+            assertEq(block.timestamp, block.timestamp < finishTime ? uint128(block.timestamp) : uint128(finishTime));
+            finishTime = vsTan.getRewardData(usg).periodFinish;
+            assertEq(block.timestamp, block.timestamp < finishTime ? uint128(block.timestamp) : uint128(finishTime));
         }
 
         TokenAmount[] memory tokenAmounts = new TokenAmount[](2);

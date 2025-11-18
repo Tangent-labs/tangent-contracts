@@ -37,7 +37,7 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         tan.approve(address(vsTan), fullAmount);
 
         vsTan.createLock(amount0, false);
-        uint48 endLockTime = vsTan.nextEndLockTime();
+        uint48 endLockTime = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
         (uint256 endLockTime0, ) = vsTan.locks(1);
 
         verifyReceiveERC20(tan, address(vsTan), amount1);
@@ -62,7 +62,7 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         tan.approve(address(vsTan), MAX_UINT);
 
         vsTan.createLock(amount0, false);
-        uint48 endLockTime0 = vsTan.nextEndLockTime();
+        uint48 endLockTime0 = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
 
         skip(6 weeks);
 
@@ -77,7 +77,7 @@ contract IncreaseLockAmount is MarketDeploymentContext {
 
         assertERC20Tracking();
 
-        uint48 endLockTime1Expected = vsTan.nextEndLockTime();
+        uint48 endLockTime1Expected = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
 
         (uint256 endLockTime1, uint256 amountLocked1) = vsTan.locks(1);
 

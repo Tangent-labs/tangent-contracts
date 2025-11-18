@@ -15,7 +15,7 @@ contract IncreaseLockTime is MarketDeploymentContext {
     }
 
     function test_increase_time() external {
-        uint256 oldEndLockTimeExpected = vsTan.nextEndLockTime();
+        uint256 oldEndLockTimeExpected = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
 
         (uint48 oldEndLockTime, uint208 amountBefore) = vsTan.locks(2);
         assertEq(oldEndLockTimeExpected, oldEndLockTime);
