@@ -502,7 +502,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      *       Transfer the collateral to the caller or to the zapping proxy
      *       When the collateral is sent to the zapping proxy, the 'liquidationCall' handles the selling of the collateral
      * @param collatAmountToLiquidate  Amount of collateral to sell during the liquidation
-     * @param USGToBurn                Amount of USG to burn from the sender
+     * @param usgToBurn                Amount of USG to burn from the sender
      * @param minUSGOut                Slippage, Minimum amount of USG to receive after the selling of the collateral
      * @param liquidationCall          Contains address and bytes of the contract selling the collateral for USG
      */
