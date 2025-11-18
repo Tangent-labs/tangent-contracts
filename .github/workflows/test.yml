@@ -52,5 +52,6 @@ jobs:
       - name: Run Forge build
         run: |
           forge --version
+          forge clean
           forge build
         id: build
