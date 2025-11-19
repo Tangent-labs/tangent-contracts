@@ -47,4 +47,30 @@ contract SelfLiquidateDirect is MarketDeploymentContext {
 
         vm.stopPrank();
     }
+
+    function test_selfLiquidate_fails_with_small_debt_shares_to_remove_zero() external {
+        vm.startPrank(usr1);
+        uint256 collatToDump = market.collateralBalances(usr1);
+
+        // Dump USG
+        HLPManipulator lpManipulator = new HLPManipulator(owner);
+        lpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-USDC"), 1, 0, 400_000 ether);
+
+        // Adjust oracle price
+        skip(1 hours);
+
+        irCalculator.checkpointIR(address(market));
+
+        skip(20 days);
+
+        market.healthRatio(usr1);
+
+        vm.expectRevert(abi.encodeWithSelector(DebtIR.ZeroDebtAmount.selector));
+        market.selfLiquidate(
+            SelfLiquidateIn({collatAmountToLiquidate: 3, usgToRepay: 1, maxUSGToBurn: MAX_UINT, minUSGOut: initialDebt}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
+
+        vm.stopPrank();
+    }
 }

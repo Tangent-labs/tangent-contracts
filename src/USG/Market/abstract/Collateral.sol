@@ -204,15 +204,6 @@ abstract contract Collateral is DebtIR, ICollateral {
     }
 
     /**
-     * @dev Computes USD value of the given amount of collateral
-     * @param collatAmount Amount of collateral
-     * @return Value in USD (1e18 base)
-     */
-    function _positionValue(uint256 collatAmount, bool isNoFailMode) internal view returns (uint256) {
-        return _mulDiv(collatAmount, _collateralPrice(isNoFailMode), 10 ** collatDecimals);
-    }
-
-    /**
      * @dev Computes health ratio for a position
      * @param userDebt_ Debt of the user
      * @param collateralBalance Amount of collateral

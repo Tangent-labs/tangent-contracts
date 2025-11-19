@@ -91,4 +91,94 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
 
         vm.stopPrank();
     }
+
+    function test_liquidate_fails_because_minAmountToLiquidate_slippage() external {
+        uint256 collatDeposited = 5_000 ether;
+        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether);
+
+        // Dumps USG for USDC => Depegs USG
+        hLpManipulator.dumpCrvPool(lp, 1, 0, 450_500 ether);
+
+        vm.startPrank(usr1);
+        skip(800);
+
+        // Update IR on the market
+        irCalculator.checkpointIR(address(market));
+
+        // Go to the limit of the health ratio
+        skip(300 days);
+
+        deal(address(usg), usr1, market.userDebt(usr1));
+        // Liquidation doesn't pass, the HR is very close to 1 but still >
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.MinCollatToLiquidate.selector, collatDeposited));
+        market.liquidate(
+            LiquidateIn({
+                account: usr1,
+                collatToLiquidate: MAX_UINT,
+                minUSGOut: 0,
+                maxUSGToBurn: MAX_UINT,
+                minCollatValueToLiquidate: 0,
+                minCollatAmountToLiquidate: collatDeposited + 1
+            }),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
+    }
+
+    function test_liquidate_fails_when_debtShares_are_zero() external {
+        uint256 collatDeposited = 5_000 ether;
+        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether);
+
+        // Dumps USG for USDC => Depegs USG
+        hLpManipulator.dumpCrvPool(lp, 1, 0, 450_500 ether);
+
+        vm.startPrank(usr1);
+        skip(800);
+
+        // Update IR on the market
+        irCalculator.checkpointIR(address(market));
+
+        // Go to the limit of the health ratio
+        skip(300 days);
+
+        deal(address(usg), usr1, market.userDebt(usr1));
+        // Liquidation doesn't pass, the HR is very close to 1 but still >
+        vm.expectRevert(abi.encodeWithSelector(DebtIR.ZeroDebtAmount.selector));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: 1, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
+    }
+
+    function test_liquidate_fails_when_collatValue_is_too_low() external {
+        uint256 collatDeposited = 5_000 ether;
+        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether);
+
+        // Dumps USG for USDC => Depegs USG
+        hLpManipulator.dumpCrvPool(lp, 1, 0, 450_500 ether);
+
+        vm.startPrank(usr1);
+        skip(800);
+
+        // Update IR on the market
+        irCalculator.checkpointIR(address(market));
+
+        // Go to the limit of the health ratio
+        skip(16 days);
+
+        deal(address(usg), usr1, market.userDebt(usr1));
+        uint256 collatValue = (market.collatOracle().latestAnswer(true) * collatDeposited) / 1e18;
+        // Liquidation doesn't pass, the HR is very close to 1 but still >
+        vm.expectRevert(abi.encodeWithSelector(MarketCore.CollatValueToLiquidateTooLow.selector, collatValue));
+        market.liquidate(
+            LiquidateIn({
+                account: usr1,
+                collatToLiquidate: collatDeposited,
+                minUSGOut: 0,
+                maxUSGToBurn: MAX_UINT,
+                minCollatValueToLiquidate: collatValue + 1,
+                minCollatAmountToLiquidate: 0
+            }),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
+    }
 }

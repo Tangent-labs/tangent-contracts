@@ -11,6 +11,18 @@ contract AdminFunctionsControlTower is MarketDeploymentContext {
         assertEq(controlTower.isMarket(usr2), false);
     }
 
+    function test_setTreasury_success() external {
+        vm.startPrank(owner);
+        controlTower.setFeeTreasury(usr2);
+        assertEq(controlTower.feeTreasury(), usr2);
+
+        controlTower.setFeeTreasury(usr1);
+        assertEq(controlTower.feeTreasury(), usr1);
+
+        controlTower.setFeeTreasury(usr3);
+        assertEq(controlTower.feeTreasury(), usr3);
+    }
+
     function test_toggleMarket_success_as_marketCreator() external {
         vm.prank(owner);
         controlTower.toggleMarketCreator(usr2);

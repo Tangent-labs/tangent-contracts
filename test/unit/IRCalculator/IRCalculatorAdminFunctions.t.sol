@@ -29,6 +29,11 @@ contract IRCalculatorAdminFunctions is MarketDeploymentContext {
         irCalculator.updateIRParams(address(market), IRParams({isHEC: false, rMin: 0, rMax: 100_000, pMin: 0, pInf: 0, pMax: 0, a1: 20_001, a2: 0, k: 0}));
     }
 
+    function test_updateIRParams_fails_as_Pmin_gt_PMax() external {
+        vm.expectRevert(abi.encodeWithSelector(IRCalculator.PMinBiggerThanPMax.selector));
+        irCalculator.updateIRParams(address(market), IRParams({isHEC: false, rMin: 0, rMax: 100_000, pMin: 1, pInf: 1, pMax: 1, a1: 2, a2: 4, k: 0}));
+    }
+
     function test_updateIRParams_fails_as_a2_bigger_than_20() external {
         vm.expectRevert(abi.encodeWithSelector(IRCalculator.A2TooBig.selector));
         irCalculator.updateIRParams(address(market), IRParams({isHEC: false, rMin: 0, rMax: 100_000, pMin: 0, pInf: 0, pMax: 0, a1: 0, a2: 20_001, k: 0}));

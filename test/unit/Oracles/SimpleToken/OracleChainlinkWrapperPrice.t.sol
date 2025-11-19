@@ -4,7 +4,7 @@ import "../../../contexts/MarketDeploymentContext.sol";
 import "../../../handler/Curve/HLPManipulator.sol";
 
 contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
-    function test_chainlink_oracle_usdc_with_a_fallback() external {
+    function test_chainlink_oracle_latestAnswer_usdc_with_a_fallback() external {
         OracleRedstoneWrapperFallback USDCFallback = new OracleRedstoneWrapperFallback(KeyBytes32RestoneOracle.USDC, "Redstone USDC/USD Fallback");
         OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 12 hours, address(USDCFallback), "USDC / USD");
 
@@ -33,7 +33,36 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
         assertEq(priceOracle, usdcOracle.lastGoodValue(), "Last good value price is returned");
     }
 
-    function test_chainlink_oracle_without_a_fallback() external {
+    function test_chainlink_oracle_latestAnswerUpdate_usdc_with_a_fallback() external {
+        OracleRedstoneWrapperFallback USDCFallback = new OracleRedstoneWrapperFallback(KeyBytes32RestoneOracle.USDC, "Redstone USDC/USD Fallback");
+        OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 12 hours, address(USDCFallback), "USDC / USD");
+
+        // Chainlink price is correct
+        uint256 priceChainlink = usdcOracle.latestAnswerUpdate(false);
+        assertEq(priceChainlink, AddrChainlinkOracle.USDC.latestAnswer() * 10 ** (18 - AddrChainlinkOracle.USDC.decimals()), "Price of Chainlink is returned");
+
+        // Chainlink price becomes incorrect but not the Redstone one
+        skip(12 hours);
+        // Should return something even if the fallback is stale because isNoFailMode = true
+        uint256 priceRedstone = USDCFallback.latestAnswer(false);
+        uint256 priceOracle = usdcOracle.latestAnswerUpdate(true);
+        assertApproxEqRel(priceChainlink, priceRedstone, 2e14); // 0.02% delta rel max
+        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 1");
+
+        priceOracle = usdcOracle.latestAnswerUpdate(false);
+        assertEq(priceOracle, priceRedstone, "Price of redstone is returned by the oracle 2");
+
+        skip(15 hours);
+
+        // Shoudld revert in isNoFail mode to false
+        vm.expectRevert(abi.encodeWithSelector(OracleRedstoneWrapperFallback.InvalidAggregatorValue.selector));
+        usdcOracle.latestAnswerUpdate(false);
+
+        priceOracle = usdcOracle.latestAnswerUpdate(true);
+        assertEq(priceOracle, usdcOracle.lastGoodValue(), "Last good value price is returned");
+    }
+
+    function test_chainlink_oracle_latestAnswer_without_a_fallback() external {
         OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 24 hours, address(0), "USDC / USD Oracle");
 
         // Chainlink price is correct
@@ -52,10 +81,29 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
         usdcOracle.latestAnswer(false);
     }
 
+    function test_chainlink_oracle_latestAnswerUpdate_without_a_fallback() external {
+        OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 24 hours, address(0), "USDC / USD Oracle");
+
+        // Chainlink price is correct
+        uint256 priceChainlink = usdcOracle.latestAnswerUpdate(false);
+        assertEq(priceChainlink, AddrChainlinkOracle.USDC.latestAnswer() * 10 ** (18 - AddrChainlinkOracle.USDC.decimals()), "Price of Chainlink is returned");
+
+        // Chainlink price becomes incorrect but not the Redstone one
+        skip(1 days);
+
+        // Should return something even if the fallback is stale because isNoFailMode = true
+        uint256 priceOracle = usdcOracle.latestAnswerUpdate(true);
+        assertEq(priceOracle, priceChainlink, "Price of Chainlink is returned by the oracle");
+
+        // Shoudld revert in isNoFail mode to false
+        vm.expectRevert(abi.encodeWithSelector(OracleRedstoneWrapperFallback.InvalidAggregatorValue.selector));
+        usdcOracle.latestAnswerUpdate(false);
+    }
+
     function test_chainlink_oracle_eth_with_a_fallback() external {
         OracleRedstoneWrapperFallback ETHFallback = new OracleRedstoneWrapperFallback(KeyBytes32RestoneOracle.ETH, "Redstone ETH/USD Fallback");
         OracleChainlinkWrapper ETHOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.ETH, 12 hours, address(ETHFallback), "ETH / USD Oracle");
-
+        assertEq(ETHFallback.decimals(), 18);
         // Chainlink price is correct
         uint256 priceChainlink = ETHOracle.latestAnswer(false);
         assertEq(priceChainlink, AddrChainlinkOracle.ETH.latestAnswer() * 10 ** (18 - AddrChainlinkOracle.ETH.decimals()), "Price of Chainlink is returned");
@@ -80,5 +128,13 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
 
         priceOracle = ETHOracle.latestAnswer(true);
         assertEq(priceOracle, ETHOracle.lastGoodValue(), "Last good value is returned");
+    }
+
+    function test_oracle_deployment_fails_because_chainlink_invalid() external {
+        // Chainlink price becomes incorrect but not the Redstone one
+        skip(24 hours);
+        OracleRedstoneWrapperFallback ETHFallback = new OracleRedstoneWrapperFallback(KeyBytes32RestoneOracle.ETH, "Redstone ETH/USD Fallback");
+        vm.expectRevert(abi.encodeWithSelector(OracleRedstoneWrapperFallback.InvalidAggregatorValue.selector));
+        OracleChainlinkWrapper ETHOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.ETH, 12 hours, address(ETHFallback), "ETH / USD Oracle");
     }
 }

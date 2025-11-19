@@ -14,7 +14,7 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
     }
 
     function test_estimate_PT_price_linear_expired() external {
-        uint256 price = linearDiscountPTOracleExpired.latestAnswer(true);
+        uint256 price = linearDiscountPTOracleExpired.latestAnswerUpdate(true);
         (, IPriceOracle oracle, , ) = linearDiscountPTOracleExpired.params();
         assertEq(price, oracle.latestAnswer(true));
     }
