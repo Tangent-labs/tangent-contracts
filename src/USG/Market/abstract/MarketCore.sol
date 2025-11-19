@@ -157,7 +157,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Increase collateral deposited by the user
         _updateCollateral(
             msg.sender,
-            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _convertToAmount(userDebtShares[msg.sender], newDebtIndex, Math.Rounding.Floor)),
+            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _convertToAmount(userDebtShares[msg.sender], newDebtIndex, Math.Rounding.Ceil)),
             totalCollateral - amountToWithdraw
         );
 
