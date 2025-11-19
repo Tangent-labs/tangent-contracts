@@ -121,9 +121,9 @@ contract OracleChainlinkWrapper is OracleBase {
      */
     function _getChainlinkPriceNormalized(IAggregatorV3 chainlinkOracle, uint96 heartbeat, uint256 chainlinkDecimals) internal view returns (uint256) {
         // Retrieve price and round infos of the Chainlink aggregator
-        (uint80 roundId, int256 rawPrice, , uint256 updateTime, uint80 answeredInRound) = chainlinkOracle.latestRoundData();
+        (, int256 rawPrice, , uint256 updateTime, ) = chainlinkOracle.latestRoundData();
         // Verify the validity of the price
-        bool isValid = _isPriceValid(rawPrice, updateTime, answeredInRound, roundId, heartbeat);
+        bool isValid = _isPriceValid(rawPrice, updateTime, heartbeat);
 
         // Price valid, we so adjust it to be under 18 decimals
         if (isValid) {
@@ -148,10 +148,9 @@ contract OracleChainlinkWrapper is OracleBase {
         }
     }
 
-    function _isPriceValid(int256 rawPrice, uint256 updateTime, uint80 answeredInRound, uint80 roundId, uint96 hb) internal view returns (bool) {
+    function _isPriceValid(int256 rawPrice, uint256 updateTime, uint96 hb) internal view returns (bool) {
         return (rawPrice > 0 && // Price over 0
             updateTime != 0 && // Update time different from 0
-            answeredInRound >= roundId && // Correct round ID
             updateTime + hb >= block.timestamp); // Price not stale
     }
 }

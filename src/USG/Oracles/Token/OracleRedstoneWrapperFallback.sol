@@ -4,8 +4,6 @@ pragma solidity ^0.8.24;
 import {IAggregatorV3} from "../../../interfaces/externals/Chainlink/IAggregatorV3.sol";
 import {IRedstonePriceFeedAdapter} from "../../../interfaces/externals/Redstone/IRedstonePriceFeedAdapter.sol";
 
-import {OracleBase, IPriceOracle} from "../OracleBase.sol";
-
 /// @title  OracleRedstoneWrapperFallback
 /// @notice This contract is a fallback of a Chainlink price feed using Redstone.
 /// @dev    It'll not be plugged directly as an oracle to a market collateral
