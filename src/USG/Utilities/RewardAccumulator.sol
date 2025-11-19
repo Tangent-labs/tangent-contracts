@@ -447,7 +447,13 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         for (uint256 tokenIndex; tokenIndex < rewardTokensLength; ) {
             IERC20 rewardToken = rewardAmounts[tokenIndex].token;
             // Update streaming data for the current rewardToken
-            (uint256 rewardCutAmount, uint256 harvesterAmount) = _processRewards(market, rewardToken, rewardAmounts[tokenIndex].amount, harvestFeePercentage, rewardCutPercentage);
+            (uint256 rewardCutAmount, uint256 harvesterAmount, uint256 dusts) = _processRewards(
+                market,
+                rewardToken,
+                rewardAmounts[tokenIndex].amount,
+                harvestFeePercentage,
+                rewardCutPercentage
+            );
             // If there are cut rewards, increments it
             if (rewardCutAmount != 0) {
                 cutFeeForToken[rewardToken] += rewardCutAmount;
@@ -455,6 +461,12 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
             // If there are harvest rewards, transfer them to the harvest fee receiver
             if (harvesterAmount != 0) {
                 rewardToken.safeTransfer(harvestFeeReceiver, harvesterAmount);
+            }
+
+            // Transfer back the dusts for next processes
+            // Gas is not expensives because balanceOf slots of the Market and RewardAccumulator are still hot
+            if (dusts != 0) {
+                rewardToken.safeTransfer(market, dusts);
             }
 
             unchecked {
@@ -500,7 +512,6 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
 
             uint256 rewardCutPercentage = lastRewardCuts[market];
             RCParams memory _rcParams = rcParams[market];
-            uint16 harvestFeePercentage = _rcParams.harvestFeePercentage;
 
             // Actualize reward cut
             lastRewardCuts[market] = _calculateRC(USGPrice, _rcParams);
@@ -510,7 +521,13 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
                 IERC20 rewardToken = rewardAmounts[j].token;
 
                 // Update streaming data for the current rewardToken
-                (uint256 rewardCutAmount, uint256 harvesterAmount) = _processRewards(market, rewardToken, rewardAmounts[j].amount, harvestFeePercentage, rewardCutPercentage);
+                (uint256 rewardCutAmount, uint256 harvesterAmount, uint256 dusts) = _processRewards(
+                    market,
+                    rewardToken,
+                    rewardAmounts[j].amount,
+                    _rcParams.harvestFeePercentage,
+                    rewardCutPercentage
+                );
 
                 // If token is seen the first time (tokensToClaim[token] == 0)
                 uint256 index = _tLoadUintForAddress(address(rewardToken));
@@ -526,12 +543,17 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
                     _tStoreUintForAddress(address(rewardToken), actualErc20Index);
                 }
 
+                // Transfer back the dusts for next processes
+                // Gas is not expensives because balanceOf slots of the Market and RewardAccumulator are still hot
+                if (dusts != 0) {
+                    rewardToken.safeTransfer(market, dusts);
+                }
+
                 unchecked {
                     ++j;
                 }
             }
 
-            // require(rewardTokensLength != 0, NothingToProcess()); TODO Cannot modify some RC params if no rewards ?
             unchecked {
                 ++i;
             }
@@ -566,7 +588,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         uint256 rewardToProcess,
         uint16 _harvesterFeePercentage,
         uint256 rewardCutPercentage
-    ) internal returns (uint256, uint256) {
+    ) internal returns (uint256, uint256, uint256) {
         // Calculate and sends harvester fees
         uint256 harvesterFees = (rewardToProcess * _harvesterFeePercentage) / DENOMINATOR;
         uint256 rewardCutAmount;
@@ -583,18 +605,23 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
 
         Reward storage rData = rewardData[market][rewardToken];
 
+        uint256 adjustedRewardAmount;
+        uint256 dusts;
         if (block.timestamp >= rData.periodFinish) {
-            rData.rewardRate = rewardAmountStreamed / REWARDS_DURATION;
+            dusts = rewardAmountStreamed % REWARDS_DURATION;
+            adjustedRewardAmount = rewardAmountStreamed - dusts;
         } else {
-            rData.rewardRate = (rewardAmountStreamed + (rData.periodFinish - block.timestamp) * rData.rewardRate) / REWARDS_DURATION;
+            uint256 newRewardAmountStreamed = (rewardAmountStreamed + (rData.periodFinish - block.timestamp) * rData.rewardRate);
+            dusts = newRewardAmountStreamed % REWARDS_DURATION;
+            adjustedRewardAmount = newRewardAmountStreamed - dusts;
         }
-
+        rData.rewardRate = adjustedRewardAmount / REWARDS_DURATION;
         rData.lastUpdateTime = uint128(block.timestamp);
         rData.periodFinish = uint128(block.timestamp + REWARDS_DURATION);
 
         emit RewardNotified(market, rewardToken, rewardAmountStreamed, harvesterFees, rewardCutAmount);
 
-        return (rewardCutAmount, harvesterFees);
+        return (rewardCutAmount, harvesterFees, dusts);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

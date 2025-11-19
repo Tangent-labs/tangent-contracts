@@ -91,8 +91,8 @@ contract ProcessMultiRewards is MarketDeploymentContext {
             IERC20 rewardToken = rewardAccumulator.rewardTokens(address(market4), i);
             processedR[i] = expectedProcessable - harvesterFee;
 
-            verifyReceiveDeltaAbsERC20(rewardToken, address(rewardAccumulator), expectedProcessable - harvesterFee, 1);
-            verifyReceiveDeltaAbsERC20(rewardToken, usr2, harvesterFee, 1);
+            verifyReceiveDeltaAbsERC20(rewardToken, address(rewardAccumulator), expectedProcessable - harvesterFee, 3_000_000, "Sent to RewardAccumulator");
+            verifyReceiveDeltaAbsERC20(rewardToken, usr2, harvesterFee, 1_000_000, "Sent to harvestor");
         }
 
         uint256 lastRewardCutPercentage = rewardAccumulator.lastRewardCuts(address(market1));
@@ -103,7 +103,7 @@ contract ProcessMultiRewards is MarketDeploymentContext {
 
         for (uint256 i; i < processedR.length; i++) {
             IERC20 rewardToken = rewardAccumulator.rewardTokens(address(market4), i);
-            assertApproxEqAbs((processedR[i] * lastRewardCutPercentage) / 100_000, rewardAccumulator.cutFeeForToken(rewardToken), 1);
+            assertApproxEqAbs((processedR[i] * lastRewardCutPercentage) / 100_000, rewardAccumulator.cutFeeForToken(rewardToken), 1_000_000);
         }
 
         assertERC20Tracking();

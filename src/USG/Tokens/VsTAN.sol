@@ -589,17 +589,23 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
             require(0 != rData.lastUpdateTime, RewardNotAdded(rewardToken));
             require(0 != amount / ONE_WEEK, ZeroAmount());
 
+            uint256 adjustedRewardAmount;
+            uint256 dusts;
+
             if (timestamp >= rData.periodFinish) {
-                rewardData[rewardToken].rewardRate = amount / ONE_WEEK;
+                dusts = amount % ONE_WEEK;
+                adjustedRewardAmount = amount - dusts;
             } else {
-                uint256 leftover = (rData.periodFinish - timestamp) * rData.rewardRate;
-                rewardData[rewardToken].rewardRate = (amount + leftover) / ONE_WEEK;
+                uint256 newRewardAmountStreamed = amount + (rData.periodFinish - timestamp) * rData.rewardRate;
+                dusts = newRewardAmountStreamed % ONE_WEEK;
+                adjustedRewardAmount = newRewardAmountStreamed - dusts;
             }
 
+            rewardData[rewardToken].rewardRate = adjustedRewardAmount / ONE_WEEK;
             rewardData[rewardToken].lastUpdateTime = uint128(timestamp);
             rewardData[rewardToken].periodFinish = uint128(timestamp + ONE_WEEK);
 
-            rewardToken.safeTransferFrom(msg.sender, address(this), amount);
+            rewardToken.safeTransferFrom(msg.sender, address(this), amount - dusts);
 
             emit RewardNotified(rewardToken, amount);
 

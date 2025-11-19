@@ -56,7 +56,7 @@ contract ProcessRewardsAndClaimCvxMarket is MarketDeploymentContext {
 
         rewardAccumulator.claimCutFees(rewardAccumulator.getRewardTokens(address(market)));
 
-        assertLt(rewardAccumulator.rewardTokens(address(market), 0).balanceOf(address(rewardAccumulator)), 10 ** 7);
+        assertLt(rewardAccumulator.rewardTokens(address(market), 0).balanceOf(address(rewardAccumulator)), 5_000_000);
 
         vm.stopPrank();
     }
@@ -86,7 +86,7 @@ contract ProcessRewardsAndClaimCvxMarket is MarketDeploymentContext {
         rewardAccumulator.claimMultiple(Array.memoryAddress([address(market), address(market2)]), 3);
         rewardAccumulator.claimCutFees(rewardAccumulator.getRewardTokens(address(market)));
 
-        assertLt(rewardAccumulator.rewardTokens(address(market), 0).balanceOf(address(rewardAccumulator)), 10 ** 7);
+        assertLt(rewardAccumulator.rewardTokens(address(market), 0).balanceOf(address(rewardAccumulator)), 5_000_000);
 
         vm.stopPrank();
     }
