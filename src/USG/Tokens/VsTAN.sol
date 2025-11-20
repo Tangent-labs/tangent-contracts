@@ -605,9 +605,9 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
             rewardData[rewardToken].lastUpdateTime = uint128(timestamp);
             rewardData[rewardToken].periodFinish = uint128(timestamp + ONE_WEEK);
 
-            rewardToken.safeTransferFrom(msg.sender, address(this), amount - dusts);
+            rewardToken.safeTransferFrom(msg.sender, address(this), adjustedRewardAmount);
 
-            emit RewardNotified(rewardToken, amount);
+            emit RewardNotified(rewardToken, adjustedRewardAmount);
 
             unchecked {
                 ++i;

@@ -619,7 +619,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         rData.lastUpdateTime = uint128(block.timestamp);
         rData.periodFinish = uint128(block.timestamp + REWARDS_DURATION);
 
-        emit RewardNotified(market, rewardToken, rewardAmountStreamed, harvesterFees, rewardCutAmount);
+        emit RewardNotified(market, rewardToken, adjustedRewardAmount, harvesterFees, rewardCutAmount);
 
         return (rewardCutAmount, harvesterFees, dusts);
     }
