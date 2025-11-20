@@ -109,6 +109,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     event RewardNotified(IERC20 indexed _token, uint256 _reward);
     event RewardPaid(uint256 indexed tokenId, IERC20 indexed _rewardToken, uint256 _reward);
     event SetKick(KickParams kick);
+    event SetMinLock(uint256 minLock);
     event AddNewReward(IERC20 newReward);
     event CreateLock(uint256 id, uint256 amount, bool isPerma);
     event IncreaseLockAmount(uint256 id, uint256 amount);
@@ -569,6 +570,11 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         kick = _newKickParams;
 
         emit SetKick(_newKickParams);
+    }
+
+    function setMinLock(uint256 _newMinLock) external onlyOwner {
+        minLock = _newMinLock;
+        emit SetMinLock(_newMinLock);
     }
 
     /**
