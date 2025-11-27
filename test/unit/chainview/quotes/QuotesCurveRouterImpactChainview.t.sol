@@ -3,12 +3,12 @@ pragma solidity ^0.8.24;
 
 import "../../../contexts/MarketDeploymentContext.sol";
 
-import {QuotesCurveRouter, CurveQuote} from "../../../../src/chainview/USG/bot/QuotesCurveRouter.cv.sol";
+import {QuotesCurveRouterImpact, CurveQuote} from "../../../../src/chainview/USG/bot/QuotesCurveRouterImpact.cv.sol";
 
-contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
+contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
     uint256 constant ZERO = 0;
 
-    function test_quote_curve_router_chainview_without_wStable_fxUSD() public {
+    function test_quote_curve_router_impact_chainview_without_wStable_fxUSD() public {
         CurveQuote[] memory quoteIn = new CurveQuote[](1);
         address[11] memory route = [
             address(AddrCurveStableLP.USDC_fxUSD),
@@ -35,13 +35,13 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
         CurveQuote memory curveQuote = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
         quoteIn[0] = curveQuote;
 
-        try new QuotesCurveRouter(quoteIn) {} catch (bytes memory reason) {
+        try new QuotesCurveRouterImpact(quoteIn) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }
 
     // QUOTE crvUSD-USDC => USDC => usg-USDC => usg
-    function test_quote_curve_router_chainview_without_wStable() public {
+    function test_quote_curve_router_impact_chainview_without_wStable() public {
         CurveQuote[] memory curveQuotes = new CurveQuote[](2);
         address[11] memory route = [
             address(AddrCurveStableLP.USDC_crvUSD),
@@ -67,7 +67,7 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
 
         curveQuotes[0] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
         curveQuotes[1] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
-        try new QuotesCurveRouter(curveQuotes) {} catch (bytes memory reason) {
+        try new QuotesCurveRouterImpact(curveQuotes) {} catch (bytes memory reason) {
             // parse revert reason
             (uint256[] memory results, uint256[] memory priceImpacts) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
             assertGt(results[0], 100 ether);
@@ -78,7 +78,7 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
     }
 
     // QUOTE crvUSD-USDC => crvUSD => wcrvUSD => usg-wcrvUSD => usg
-    function test_liquidator_curve_router_chainview_with_wStable() public {
+    function test_liquidator_curve_router_impact_chainview_with_wStable() public {
         CurveQuote[] memory curveQuotes = new CurveQuote[](2);
 
         address[11] memory route = [
@@ -105,7 +105,7 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
 
         curveQuotes[0] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
         curveQuotes[1] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
-        try new QuotesCurveRouter(curveQuotes) {} catch (bytes memory reason) {
+        try new QuotesCurveRouterImpact(curveQuotes) {} catch (bytes memory reason) {
             // parse revert reason
             (uint256[] memory results, uint256[] memory priceImpacts) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
             assertGt(results[0], 100 ether);
@@ -113,7 +113,7 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
         }
     }
 
-    function test_liquidator_curve_router_chainview_multi_quote() public {
+    function test_liquidator_curve_router_impact_chainview_multi_quote() public {
         CurveQuote[] memory curveQuotes = new CurveQuote[](2);
 
         address[11] memory route = [
@@ -166,7 +166,7 @@ contract QuoteLiquidationRouterChainview is MarketDeploymentContext {
 
         curveQuotes[0] = curveQuote1;
         curveQuotes[1] = curveQuote2;
-        try new QuotesCurveRouter(curveQuotes) {} catch (bytes memory reason) {
+        try new QuotesCurveRouterImpact(curveQuotes) {} catch (bytes memory reason) {
             (uint256[] memory results, uint256[] memory priceImpacts) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
             assertGt(results[0], 100 ether);
             assertGt(results[1], 100 ether);
