@@ -7,23 +7,22 @@ import {OracleBase} from "../OracleBase.sol";
 
 struct OracleCoinFromCurveLPStruct {
     ICurveStableSwapNG lp;
+    uint96 otherStableDecimals;
     IPriceOracle otherStableOracle;
-    uint128 otherStableDecimals;
-    uint128 isParamsForPriceOracle;
-    bool isReversed;
+    uint88 isParamsForPriceOracle;
+    uint8 isReversed;
 }
 /// @title OracleCoinFromCurveLP
 /// @notice This contract provides price oracle functionality for an ERC20, from a pool of Curve
 contract OracleCoinFromCurveLP is OracleBase {
     OracleCoinFromCurveLPStruct public oracleParams;
-    constructor(address _lp, IPriceOracle _otherStableOracle, bool isReversed) {
-        uint128 isParamsForPriceOracle;
+    constructor(address _lp, IPriceOracle _otherStableOracle, uint8 isReversed, string memory _oracleName) OracleBase(_oracleName) {
+        uint88 isParamsForPriceOracle;
         try ICurveStableSwapNG(_lp).price_oracle() {
             isParamsForPriceOracle = 0;
         } catch {
             isParamsForPriceOracle = 1;
         }
-
         oracleParams = OracleCoinFromCurveLPStruct({
             lp: ICurveStableSwapNG(_lp),
             otherStableOracle: _otherStableOracle,
@@ -41,11 +40,31 @@ contract OracleCoinFromCurveLP is OracleBase {
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
         OracleCoinFromCurveLPStruct memory params = oracleParams;
 
-        uint256 priceOtherStable = params.otherStableOracle.latestAnswer(isNoFailMode);
+        return _computePrice(params.lp, params.isParamsForPriceOracle, params.otherStableOracle.latestAnswer(isNoFailMode), params.isReversed);
+    }
 
-        uint256 priceOracle = params.isReversed ? 1e36 / _priceOracle(params.lp, params.isParamsForPriceOracle) : _priceOracle(params.lp, params.isParamsForPriceOracle);
+    /**
+     * @notice Returns a time weighted price of a token present in a Curve pool
+     * @dev    Using the price_oracle, we can are protected from flash attacks.
+     * @return The price of the token from the pool.
+     */
+    function latestAnswerUpdate(bool isNoFailMode) external override returns (uint256) {
+        OracleCoinFromCurveLPStruct memory params = oracleParams;
 
-        return (priceOracle * priceOtherStable) / 1e18;
+        return _computePrice(params.lp, params.isParamsForPriceOracle, params.otherStableOracle.latestAnswerUpdate(isNoFailMode), params.isReversed);
+    }
+
+    function _computePrice(ICurveStableSwapNG lp, uint88 isParamsForPriceOracle, uint256 priceOtherStable, uint8 isReversed) internal view returns (uint256) {
+        uint256 p;
+
+        // When price is reversed do 1/price to get the correct price
+        if (isReversed == 1) {
+            p = 1e36 / _priceOracle(lp, isParamsForPriceOracle);
+        } else {
+            p = _priceOracle(lp, isParamsForPriceOracle);
+        }
+
+        return (p * priceOtherStable) / 1e18;
     }
 
     function _priceOracle(ICurveStableSwapNG lp, uint128 isParamsForPriceOracle) internal view returns (uint256) {

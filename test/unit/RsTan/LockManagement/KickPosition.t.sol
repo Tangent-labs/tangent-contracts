@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
 
 contract KickPosition is MarketDeploymentContext {
-    uint208 amountToLock = 1 ether;
+    uint208 amountToLock = 10_000 ether;
     uint256 rewardAmount = 1_000 ether;
 
     function setUp() external {

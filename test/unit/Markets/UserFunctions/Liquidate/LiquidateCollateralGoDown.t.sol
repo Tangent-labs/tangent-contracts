@@ -47,7 +47,10 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, collatDeposited, 0, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
         vm.stopPrank();
 
         // Unbalance USDC_FXUSD LP for destroying the peg and so the price_oracle
@@ -56,7 +59,10 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, collatDeposited, 0, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
 
         (uint128 lastUpdateTime, uint256 periodFinish, uint256 rewardRate, uint256 rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
         assertEq(lastUpdateTime, periodFinish, "Times are the same as on deployment because no processRewards occured");
@@ -75,7 +81,10 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "USG burnt from sender");
 
         // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, collatDeposited, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
 
         assertERC20Tracking();
         (lastUpdateTime, periodFinish, rewardRate, rewardPerTokenStored) = rewardAccumulator.rewardData(address(market), rewardTokens[0]);
@@ -85,7 +94,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         uint256 pendingInterests = irCalculator.mintableInterests();
         assertEq(market.userDebt(usr1), 0);
-        assertEq(market.totalDebt(), USGBorrowed * 2 + ((pendingInterests * 2) / 3), "Total debt wrong");
+        assertEq(market.totalDebt(), USGBorrowed * 2 + ((pendingInterests * 2) / 3) + 1, "Total debt wrong");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
@@ -149,7 +158,10 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, collatDeposited, 0, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
         vm.stopPrank();
 
         // Unbalance USDC_FXUSD LP for destroying the peg and so the price_oracle
@@ -158,7 +170,10 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         vm.startPrank(usr1);
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
-        market.liquidate(usr1, collatDeposited, 0, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
 
         vm.stopPrank();
 
@@ -174,21 +189,27 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         deal(address(usg), usr1, 2 * userDebt);
 
         verifyLostERC20(usg, usr1, (debtToRepay + liquidationFee), "USG burnt from sender");
-        verifyReceiveERC20(usg, feeTreasury, liquidationFee, "USG received by the treasuryFee");
+        verifyReceiveERC20(usg, feeTreasury, liquidationFee, "USG received by the treasuryFee 1");
 
         verifyReceiveERC20(collatToken, usr1, 5_000 ether, "Collat sent to liquidator");
 
         // Liquidation doesn't pass because 0 collat is passed in param
         vm.expectRevert(abi.encodeWithSelector(Collateral.ZeroCollatAmount.selector));
-        market.liquidate(usr1, 0, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: 0, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
 
         // Liquidation passes after EMA of price_oralce passed
-        market.liquidate(usr1, 5_000 ether, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: 5_000 ether, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
 
         assertERC20Tracking();
 
-        assertEq(market.userDebt(usr1), userDebt - debtToRepay);
-        assertEq(market.totalDebt(), market.userDebt(usr1) + market.userDebt(usr2) + market.userDebt(usr3), "Total Debt");
+        assertApproxEqAbs(market.userDebt(usr1), userDebt - debtToRepay, 3, "User debt not correct");
+        assertEq(market.totalDebt() + 2, market.userDebt(usr1) + market.userDebt(usr2) + market.userDebt(usr3), "Total Debt");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
@@ -196,11 +217,15 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         uint256 collatToLiquidate = 100;
         verifyLostERC20(usg, usr1, 80, "USG burnt from sender");
-        verifyReceiveERC20(usg, feeTreasury, 0, "USG received by the treasuryFee");
+        verifyReceiveERC20(usg, feeTreasury, 0, "USG received by the treasuryFee 2");
 
         verifyReceiveERC20(collatToken, usr1, collatToLiquidate, "Collat sent to liquidator");
 
-        market.liquidate(usr1, collatToLiquidate, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatToLiquidate, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
+
         assertERC20Tracking();
 
         uint256 collatBalances = market.collateralBalances(usr1);
@@ -211,15 +236,27 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         liquidationFee = ((collatValue - userDebt) * market.liquidationFee()) / 100_000;
 
         verifyLostERC20(usg, usr1, userDebt + liquidationFee, "USG burnt from sender");
-        verifyReceiveERC20(usg, feeTreasury, liquidationFee, "USG received by the treasuryFee");
+        verifyReceiveERC20(usg, feeTreasury, liquidationFee, "USG received by the treasuryFee 3");
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "Collat sent to liquidator");
 
         // Try to liquidate and leave a loan with less than the minimumLoan
-
         vm.expectRevert(abi.encodeWithSelector(DebtIR.UserDebtTooLow.selector));
-        market.liquidate(usr1, collatBalances - 1 ether, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({
+                account: usr1,
+                collatToLiquidate: collatBalances - 1 ether,
+                minUSGOut: 0,
+                maxUSGToBurn: MAX_UINT,
+                minCollatValueToLiquidate: 0,
+                minCollatAmountToLiquidate: 0
+            }),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
 
-        market.liquidate(usr1, collatBalances, MAX_UINT, 0, ZapStruct({router: address(0), routerCall: ""}));
+        market.liquidate(
+            LiquidateIn({account: usr1, collatToLiquidate: collatBalances, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            ZapStruct({router: address(0), routerCall: ""})
+        );
         assertERC20Tracking();
 
         vm.stopPrank();

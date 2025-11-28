@@ -44,9 +44,9 @@ contract UpdateAdminParamsMarkets is MarketDeploymentContext {
         assertEq(market.liquidationFee(), 10_001);
     }
 
-    function test_setLiquidationFee_fails_when_higher_than_100() external {
+    function test_setLiquidationFee_fails_when_higher_than_80() external {
         vm.expectRevert(abi.encodeWithSelector(Collateral.LiquidationFeeTooHigh.selector));
-        market.setLiquidationFee(15_001);
+        market.setLiquidationFee(80_001);
     }
 
     function test_setMaxMarketDebt_success() external {

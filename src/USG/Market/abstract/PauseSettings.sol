@@ -24,6 +24,10 @@ abstract contract PauseSettings is LightOwnable {
     error LeveragePaused();
     error CallerNotPauser();
 
+    event PauseDeposit(bool isPaused);
+    event PauseBorrow(bool isPaused);
+    event PauseLeverage(bool isPaused);
+
     modifier isCallerPauser() {
         _verifyIsCallerPauser();
         _;
@@ -43,11 +47,14 @@ abstract contract PauseSettings is LightOwnable {
 
     function setIsDepositPaused(bool _isDepositPaused) external isCallerPauser {
         isDepositPaused = _isDepositPaused;
+        emit PauseDeposit(_isDepositPaused);
     }
     function setIsBorrowPaused(bool _isBorrowPaused) external isCallerPauser {
         isBorrowPaused = _isBorrowPaused;
+        emit PauseBorrow(_isBorrowPaused);
     }
     function setIsLeveragePaused(bool _isLeveragePaused) external isCallerPauser {
         isLeveragePaused = _isLeveragePaused;
+        emit PauseLeverage(_isLeveragePaused);
     }
 }

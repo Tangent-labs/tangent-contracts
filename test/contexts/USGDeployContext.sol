@@ -166,7 +166,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         deal(address(tan), owner, 9_998_500 ether);
 
-        vsTan = new VsTAN(owner, controlTower, tan, usg, sUSG, zappingProxy);
+        vsTan = new VsTAN(owner, controlTower, tan, usg, sUSG, zappingProxy, 100 ether);
         vsTan.addNewReward(usg);
 
         mockRouter = new MockRouter();

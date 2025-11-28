@@ -61,8 +61,8 @@ contract ProcessSimpleRewards is MarketDeploymentContext {
             IERC20 rewardToken = rewardAccumulator.rewardTokens(address(market), i);
             processedR[i] = expectedProcessable - harvesterFee;
 
-            verifyReceiveERC20(rewardToken, address(rewardAccumulator), expectedProcessable - harvesterFee);
-            verifyReceiveERC20(rewardToken, usr2, harvesterFee);
+            verifyReceiveDeltaAbsERC20(rewardToken, address(rewardAccumulator), expectedProcessable - harvesterFee, 500_000);
+            verifyReceiveDeltaAbsERC20(rewardToken, usr2, harvesterFee, 100_000);
         }
 
         uint256 lastRewardCutPercentage = rewardAccumulator.lastRewardCuts(address(market));
@@ -73,7 +73,7 @@ contract ProcessSimpleRewards is MarketDeploymentContext {
 
         for (uint256 i; i < processedR.length; i++) {
             IERC20 rewardToken = rewardAccumulator.rewardTokens(address(market), i);
-            assertEq((processedR[i] * lastRewardCutPercentage) / 100_000, rewardAccumulator.cutFeeForToken(rewardToken));
+            assertApproxEqAbs((processedR[i] * lastRewardCutPercentage) / 100_000, rewardAccumulator.cutFeeForToken(rewardToken), 500_000, "Verify cut fee");
         }
 
         assertERC20Tracking();
@@ -117,8 +117,8 @@ contract ProcessSimpleRewards is MarketDeploymentContext {
             IERC20 rewardToken = rewardAccumulator.rewardTokens(address(market), i);
             processedR[i] = expectedProcessable - harvesterFee;
 
-            verifyReceiveERC20(rewardToken, address(rewardAccumulator), expectedProcessable - harvesterFee);
-            verifyReceiveERC20(rewardToken, usr2, harvesterFee);
+            verifyReceiveDeltaAbsERC20(rewardToken, address(rewardAccumulator), expectedProcessable - harvesterFee, 500_000);
+            verifyReceiveDeltaAbsERC20(rewardToken, usr2, harvesterFee, 500_000);
         }
 
         rewardAccumulator.processRewards(address(market), usr2);

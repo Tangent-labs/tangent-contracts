@@ -84,9 +84,9 @@ contract AddNewRewardRewardAcc is MarketDeploymentContext {
             uint256 harvesterRewards = (processed[i] * rcParam.harvestFeePercentage) / 100_000;
             IERC20 token = rewardAccumulator.rewardTokens(address(market), i);
 
-            verifyReceiveERC20(token, usr4, harvesterRewards);
-            verifyReceiveERC20(token, address(rewardAccumulator), processed[i] - harvesterRewards);
-            verifyLostERC20(token, address(market), processed[i]);
+            verifyReceiveDeltaAbsERC20(token, usr4, harvesterRewards, 1_000_000);
+            verifyReceiveDeltaAbsERC20(token, address(rewardAccumulator), processed[i] - harvesterRewards, 1_000_000);
+            verifyLostDeltaAbsERC20(token, address(market), processed[i], 1_000_000);
         }
         rewardAccumulator.processRewards(address(market), usr4);
 

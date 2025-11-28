@@ -38,8 +38,8 @@ contract ProcessLockRewards is MarketDeploymentContext {
         // Process the rewards when period is finished
         vm.startPrank(owner);
 
-        verifyLostERC20(usg, owner, USGToDistribute, "usg transfered by owner");
-        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTAN");
+        verifyLostDeltaAbsERC20(usg, owner, USGToDistribute, 1_000_000, "usg transfered by owner");
+        verifyReceiveDeltaAbsERC20(usg, address(vsTan), USGToDistribute, 1_000_000, "usg transfered to VsTAN");
 
         TokenAmount[] memory tokenAmounts = new TokenAmount[](1);
         tokenAmounts[0] = TokenAmount({token: usg, amount: USGToDistribute});
@@ -55,8 +55,8 @@ contract ProcessLockRewards is MarketDeploymentContext {
         // Process the rewards when period is not finished, we pass in the else
         skip(6 days);
 
-        verifyLostERC20(usg, owner, USGToDistribute, "usg transfered by owner");
-        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTAN");
+        verifyLostDeltaAbsERC20(usg, owner, USGToDistribute, 1_000_000, "usg transfered by owner");
+        verifyReceiveDeltaAbsERC20(usg, address(vsTan), USGToDistribute, 1_000_000, "usg transfered to VsTAN");
 
         uint256 leftOver = (rDataUSG.periodFinish - block.timestamp) * rDataUSG.rewardRate;
         uint256 rateExpected = ((leftOver + USGToDistribute) / 1 weeks);
@@ -71,8 +71,8 @@ contract ProcessLockRewards is MarketDeploymentContext {
         // Process the rewards when period is finished again
         skip(7 days);
 
-        verifyLostERC20(usg, owner, USGToDistribute, "usg transfered by owner");
-        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTAN");
+        verifyLostDeltaAbsERC20(usg, owner, USGToDistribute, 1_000_000, "usg transfered by owner");
+        verifyReceiveDeltaAbsERC20(usg, address(vsTan), USGToDistribute, 1_000_000, "usg transfered to VsTAN");
 
         rateExpected = USGToDistribute / 1 weeks;
         vsTan.processRewards(tokenAmounts);
@@ -100,14 +100,14 @@ contract ProcessLockRewards is MarketDeploymentContext {
         tokenAmounts2[2] = TokenAmount({token: usg, amount: USGToDistribute});
 
         // Do a processRewards with several tokens not in the same order of creation
-        verifyLostERC20(usg, owner, USGToDistribute, "usg transfered by owner");
-        verifyReceiveERC20(usg, address(vsTan), USGToDistribute, "usg transfered to VsTAN");
+        verifyLostDeltaAbsERC20(usg, owner, USGToDistribute, 1_000_000, "usg transfered by owner");
+        verifyReceiveDeltaAbsERC20(usg, address(vsTan), USGToDistribute, 1_000_000, "usg transfered to VsTAN");
 
-        verifyLostERC20(AddrClassicERC20.USDT, owner, amount2ToDistribute, "USDT transfered by owner");
-        verifyReceiveERC20(AddrClassicERC20.USDT, address(vsTan), amount2ToDistribute, "USDT transfered to VsTAN");
+        verifyLostDeltaAbsERC20(AddrClassicERC20.USDT, owner, amount2ToDistribute, 1_000_000, "USDT transfered by owner");
+        verifyReceiveDeltaAbsERC20(AddrClassicERC20.USDT, address(vsTan), amount2ToDistribute, 1_000_000, "USDT transfered to VsTAN");
 
-        verifyLostERC20(AddrClassicERC20.CRV, owner, amount3ToDistribute, "CRV transfered by owner");
-        verifyReceiveERC20(AddrClassicERC20.CRV, address(vsTan), amount3ToDistribute, "CRV transfered to VsTAN");
+        verifyLostDeltaAbsERC20(AddrClassicERC20.CRV, owner, amount3ToDistribute, 1_000_000, "CRV transfered by owner");
+        verifyReceiveDeltaAbsERC20(AddrClassicERC20.CRV, address(vsTan), amount3ToDistribute, 1_000_000, "CRV transfered to VsTAN");
 
         vsTan.processRewards(tokenAmounts2);
 

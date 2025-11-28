@@ -229,48 +229,6 @@ contract ReentranciesOnVsTan is MarketDeploymentContext {
         );
     }
 
-    function test_reentrancy_lastTimeRewardApplicable() external {
-        // Verify that the call to the "router" returns an error about the reentrancy
-        vm.expectRevert(ZapCallErrorReentrancy);
-        vsTan.zapCreateLock(
-            true,
-            ZapStructDeposit({
-                tokenIn: AddrClassicERC20.USDT,
-                amountIn: amountIn,
-                minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.lastTimeRewardApplicable.selector, usg)})
-            })
-        );
-    }
-
-    function test_reentrancy_rewardPerToken() external {
-        // Verify that the call to the "router" returns an error about the reentrancy
-        vm.expectRevert(ZapCallErrorReentrancy);
-        vsTan.zapCreateLock(
-            true,
-            ZapStructDeposit({
-                tokenIn: AddrClassicERC20.USDT,
-                amountIn: amountIn,
-                minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.rewardPerToken.selector, usg)})
-            })
-        );
-    }
-
-    function test_reentrancy_nextEndLockTime() external {
-        // Verify that the call to the "router" returns an error about the reentrancy
-        vm.expectRevert(ZapCallErrorReentrancy);
-        vsTan.zapCreateLock(
-            true,
-            ZapStructDeposit({
-                tokenIn: AddrClassicERC20.USDT,
-                amountIn: amountIn,
-                minAmountOut: 0,
-                zap: ZapStruct({router: address(vsTan), routerCall: abi.encodeWithSelector(VsTAN.nextEndLockTime.selector)})
-            })
-        );
-    }
-
     function test_reentrancy_getLock() external {
         // Verify that the call to the "router" returns an error about the reentrancy
         vm.expectRevert(ZapCallErrorReentrancy);

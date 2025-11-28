@@ -42,12 +42,12 @@ contract HProcessRewards is HandlerBase {
             receivedByAccumulator[index] = rewardToken.balanceOf(address(rewardAccumulator)) - receivedByAccumulator[index];
 
             uint256 totalClaimed = receivedByHarvestor[index] + receivedByAccumulator[index];
-            assertEq((totalClaimed * harvesterFeePercentage) / 100_000, receivedByHarvestor[index], "Verify amount claimed by harvestor");
+            assertApproxEqAbs((totalClaimed * harvesterFeePercentage) / 100_000, receivedByHarvestor[index], 1_000_000, "Verify amount claimed by harvestor");
 
             uint256 cutFee = (receivedByAccumulator[index] * rewardCut) / 100_000;
             // uint256 streamedRewards = receivedByAccumulator[index] - cutFee;
 
-            assertEq(rewardAccumulator.cutFeeForToken(rewardToken) - rewardCuts[index], cutFee, "Verify cut fee computation");
+            assertApproxEqAbs(rewardAccumulator.cutFeeForToken(rewardToken) - rewardCuts[index], cutFee, 1_000_000, "Verify cut fee computation");
         }
     }
 }

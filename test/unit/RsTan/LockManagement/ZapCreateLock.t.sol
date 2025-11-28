@@ -5,7 +5,7 @@ import "../../../contexts/MarketDeploymentContext.sol";
 contract ZapCreateLock is MarketDeploymentContext {
     using SafeERC20 for IERC20Metadata;
 
-    uint208 amountIn = 1 ether;
+    uint208 amountIn = 10_000 ether;
     uint208 amountOutTan = 1_000 ether;
 
     function setUp() external {

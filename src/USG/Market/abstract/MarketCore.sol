@@ -2,6 +2,7 @@
 pragma solidity ^0.8.22;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 import {IUSG} from "../../../interfaces/internals/USG/IUSG.sol";
 import {IControlTower} from "../../../interfaces/internals/USG/IControlTower.sol";
@@ -12,9 +13,18 @@ import {PauseSettings} from "./PauseSettings.sol";
 import {Collateral} from "./Collateral.sol";
 import {ZappingUtil} from "../../Utilities/abstract/ZappingUtil.sol";
 
-import {GlobalMarketInitParams, MarketInit, LiquidationPre, LiquidateInput, SelfLiquidateInput, IZappingProxy, IERC20} from "../../../interfaces/internals/USG/IMarketCore.sol";
+import {
+    GlobalMarketInitParams,
+    MarketInit,
+    LiquidationPre,
+    LiquidateIn,
+    LiquidateTransitionStruct,
+    SelfLiquidateIn,
+    SelfLiquidateTransitionStruct,
+    IZappingProxy,
+    IERC20
+} from "../../../interfaces/internals/USG/IMarketCore.sol";
 
-import "forge-std/console.sol";
 /// @notice Abstract base contract implementing core functionality for USG markets.
 /// @dev Inherits PauseSettings, Collateral and ZappingUtil to provide collateral management
 /// Includes core logic for deposits, withdrawals, borrowing, repayment, liquidation, and leverage.
@@ -30,6 +40,9 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
     error NotAMigratoor();
     error DebtToRepayTooBig();
     error MaxUSGToBurn();
+    error NotEnoughCollateralToLiquidate(uint256 collatBalance);
+    error CollatValueToLiquidateTooLow(uint256 collatValue);
+    error MinCollatToLiquidate(uint256 collatAmount);
 
     /// @notice Constructor marks the contract as initialized.
     constructor() {
@@ -65,7 +78,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Can't be less than the maxLTV
         require(_marketInit.liquidationThreshold > _marketInit.maxLTV, LiquidationThresholdTooLow());
         // Can't be more than 80%
-        require(_marketInit.liquidationFee < 80_000, LiquidationFeeTooHigh());
+        require(_marketInit.liquidationFee <= 80_000, LiquidationFeeTooHigh());
 
         maxLTV = _marketInit.maxLTV;
         liquidationThreshold = _marketInit.liquidationThreshold;
@@ -144,7 +157,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Increase collateral deposited by the user
         _updateCollateral(
             msg.sender,
-            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _convertToAmount(userDebtShares[msg.sender], newDebtIndex)),
+            _getBalanceAfterWithdrawAndCheckMaxBorrowable(amountToWithdraw, _convertToAmount(userDebtShares[msg.sender], newDebtIndex, Math.Rounding.Ceil)),
             totalCollateral - amountToWithdraw
         );
 
@@ -157,7 +170,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @param newUserDebt      New user debt of the user.
      * @return Collateral of the user post withdraw
      */
-    function _getBalanceAfterWithdrawAndCheckMaxBorrowable(uint256 amountToWithdraw, uint256 newUserDebt) internal view returns (uint256) {
+    function _getBalanceAfterWithdrawAndCheckMaxBorrowable(uint256 amountToWithdraw, uint256 newUserDebt) internal returns (uint256) {
         // Prevent to withdraw 0 collateral from the market
         _verifyCollatInputNotZero(amountToWithdraw);
         // Computes the decremented collateral balance of the user after the withdraw
@@ -199,10 +212,10 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         uint256 _userDebtShares = userDebtShares[msg.sender];
 
-        uint256 newUserDebt = USGToBorrow + _convertToAmount(_userDebtShares, newDebtIndex);
+        uint256 newUserDebt = USGToBorrow + _convertToAmount(_userDebtShares, newDebtIndex, Math.Rounding.Ceil);
 
         //  Cache the new value in USG of the debt
-        uint256 newUserDebtShares = _convertToShares(USGToBorrow, newDebtIndex);
+        uint256 newUserDebtShares = _convertToShares(USGToBorrow, newDebtIndex, Math.Rounding.Ceil);
 
         uint256 newTotalDebtShares = totalDebtShares + newUserDebtShares;
 
@@ -267,7 +280,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         uint256 _userDebtShares = userDebtShares[account];
 
-        uint256 oldUserDebt = _convertToAmount(_userDebtShares, newDebtIndex);
+        uint256 oldUserDebt = _convertToAmount(_userDebtShares, newDebtIndex, Math.Rounding.Ceil);
 
         // Cannot repay an empty position
         require(_userDebtShares != 0, UserDebtZero());
@@ -293,7 +306,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             // Retrieve the real debt of the user
             newUserDebt = oldUserDebt - USGToRepay;
 
-            sharesToRemove = _convertToShares(USGToRepay, newDebtIndex);
+            sharesToRemove = _convertToShares(USGToRepay, newDebtIndex, Math.Rounding.Floor);
 
             newUserDebtShares = _userDebtShares - sharesToRemove;
 
@@ -351,38 +364,38 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
                 newDebtIndex: newDebtIndex,
                 collatBalance: collateralBalances[account],
                 _userDebtShares: userDebtShares_,
-                userDebt_: _convertToAmount(userDebtShares_, newDebtIndex)
+                userDebt_: _convertToAmount(userDebtShares_, newDebtIndex, Math.Rounding.Ceil)
             });
     }
 
     /**
      * @dev  Internal function called during 'selfLiquidate' external function.
-     * @param selfLiquidateCall  Struct containing all variables needed for the self liquidation
-     * @param liquidateCall      Contains address and bytes of the contract selling the collateral for USG
+     * @param selfLiquidateStruct  Struct containing all variables needed for the self liquidation
+     * @param liquidateCall        Contains address and bytes of the contract selling the collateral for USG
      * @return The real amount of USG to burn from the account
      */
-    function _selfLiquidate(SelfLiquidateInput memory selfLiquidateCall, ZapStruct calldata liquidateCall) internal returns (uint256, uint256) {
+    function _selfLiquidate(SelfLiquidateTransitionStruct memory selfLiquidateStruct, ZapStruct calldata liquidateCall) internal returns (uint256, uint256) {
         // Need to some collateral
-        _verifyCollatInputNotZero(selfLiquidateCall.collatAmountToLiquidate);
+        _verifyCollatInputNotZero(selfLiquidateStruct.selfLiquidateIn.collatAmountToLiquidate);
 
         // Computes the new collat balance after liquidating the collateral
-        uint256 newCollatBalance = selfLiquidateCall._collateralBalance - selfLiquidateCall.collatAmountToLiquidate;
+        uint256 newCollatBalance = selfLiquidateStruct._collateralBalance - selfLiquidateStruct.selfLiquidateIn.collatAmountToLiquidate;
         uint256 debtSharesToRemove;
-        uint256 USGToRepay = selfLiquidateCall.USGToRepay;
+        uint256 usgToRepay = selfLiquidateStruct.selfLiquidateIn.usgToRepay;
 
         // Liquidate All
-        if (USGToRepay >= selfLiquidateCall.userDebt) {
+        if (usgToRepay >= selfLiquidateStruct.userDebt) {
             // We override USGToRepay to don't over repay
-            USGToRepay = selfLiquidateCall.userDebt;
+            usgToRepay = selfLiquidateStruct.userDebt;
             // As we liquidate everything, the shares to remove are all the debt shares of the position
-            debtSharesToRemove = selfLiquidateCall._userDebtShares;
+            debtSharesToRemove = selfLiquidateStruct._userDebtShares;
         }
         // Liquidate partial
         else {
             // As it's a partial liquidation, we have to compute the amount of shares to remove that match with the USG amount to repay.
-            debtSharesToRemove = _convertToShares(USGToRepay, selfLiquidateCall.newDebtIndex);
+            debtSharesToRemove = _convertToShares(usgToRepay, selfLiquidateStruct.newDebtIndex, Math.Rounding.Floor);
 
-            uint256 newUserDebt = selfLiquidateCall.userDebt - USGToRepay;
+            uint256 newUserDebt = selfLiquidateStruct.userDebt - usgToRepay;
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
 
             _verifyMinimumDebt(newUserDebt);
@@ -390,66 +403,77 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             _verifyMaxLTV(newCollatBalance, newUserDebt, false);
         }
 
-        uint256 newUserDebtShares = selfLiquidateCall._userDebtShares - debtSharesToRemove;
+        require(debtSharesToRemove != 0, ZeroDebtAmount());
+
+        uint256 newUserDebtShares = selfLiquidateStruct._userDebtShares - debtSharesToRemove;
 
         // Modify the collateral balance, the user debt and the total debt
         _updateCollatAndDebts(
             msg.sender,
             newCollatBalance,
-            selfLiquidateCall._totalCollateral - selfLiquidateCall.collatAmountToLiquidate,
+            selfLiquidateStruct._totalCollateral - selfLiquidateStruct.selfLiquidateIn.collatAmountToLiquidate,
             newUserDebtShares,
-            selfLiquidateCall._totalDebtShares - debtSharesToRemove
+            selfLiquidateStruct._totalDebtShares - debtSharesToRemove
         );
 
-        _postLiquidate(selfLiquidateCall.collatAmountToLiquidate, USGToRepay, selfLiquidateCall.maxUSGToBurn, selfLiquidateCall.minUSGOut, liquidateCall);
+        _postLiquidate(
+            selfLiquidateStruct.selfLiquidateIn.collatAmountToLiquidate,
+            usgToRepay,
+            selfLiquidateStruct.selfLiquidateIn.maxUSGToBurn,
+            selfLiquidateStruct.selfLiquidateIn.minUSGOut,
+            selfLiquidateStruct.selfLiquidateIn.collatAmountToLiquidate,
+            liquidateCall
+        );
 
-        return (USGToRepay, newUserDebtShares);
+        return (usgToRepay, newUserDebtShares);
     }
-
     /**
      * @dev  Internal function called during 'liquidate' external function.
-     * @param liquidateInput  Struct containing all variables needed for the liquidation
+     * @param liquidateStruct  Struct containing all variables needed for the liquidation
      * @param liquidateCall   Contains address and bytes of the contract selling the collateral for USG
      * @return The amount of collateral to liquidate
      * @return The amount of USG debt repaid
      * @return The amount of USG taken in liquidation fee
      */
-    function _liquidate(LiquidateInput memory liquidateInput, ZapStruct calldata liquidateCall) internal returns (uint256, uint256, uint256, uint256) {
-        uint256 collatAmountToLiquidate = liquidateInput.collatToLiquidate;
+    function _liquidate(LiquidateTransitionStruct memory liquidateStruct, ZapStruct calldata liquidateCall) internal returns (uint256, uint256, uint256, uint256) {
+        _verifyCollatInputNotZero(liquidateStruct.liquidateIn.collatToLiquidate);
 
-        _verifyCollatInputNotZero(liquidateInput.collatToLiquidate);
-
+        // Prepare params as if it was a full liquidation
+        uint256 collatAmountToLiquidate = liquidateStruct.liquidateIn.collatToLiquidate;
         uint256 debtSharesToRemove;
         uint256 USGToRepay;
 
-        // Liquidate all
-        if (collatAmountToLiquidate >= liquidateInput._collateralBalance) {
-            collatAmountToLiquidate = liquidateInput._collateralBalance;
-            USGToRepay = liquidateInput.userDebt;
-            debtSharesToRemove = liquidateInput._userDebtShares;
+        // Full liquidation
+        if (collatAmountToLiquidate >= liquidateStruct._collateralBalance) {
+            collatAmountToLiquidate = liquidateStruct._collateralBalance;
+            USGToRepay = liquidateStruct.userDebt;
+            debtSharesToRemove = liquidateStruct._userDebtShares;
         }
-        // Liquidate partial
+        // Partial liquidation
         else {
-            USGToRepay = (collatAmountToLiquidate * liquidateInput.userDebt) / liquidateInput._collateralBalance;
-            debtSharesToRemove = _convertToShares(USGToRepay, liquidateInput.newDebtIndex);
-
+            USGToRepay = (collatAmountToLiquidate * liquidateStruct.userDebt) / liquidateStruct._collateralBalance;
+            debtSharesToRemove = _convertToShares(USGToRepay, liquidateStruct.newDebtIndex, Math.Rounding.Floor);
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
-            _verifyMinimumDebt(liquidateInput.userDebt - USGToRepay);
+            _verifyMinimumDebt(liquidateStruct.userDebt - USGToRepay);
         }
 
-        uint256 newUserDebtShares = liquidateInput._userDebtShares - debtSharesToRemove;
+        // Prevent small amount liquidation that doesn't remove shares
+        require(debtSharesToRemove != 0, ZeroDebtAmount());
+
+        uint256 newUserDebtShares = liquidateStruct._userDebtShares - debtSharesToRemove;
         // Modify the collateral balance, the user debt and the total debt
         _updateCollatAndDebts(
-            liquidateInput.account,
-            liquidateInput._collateralBalance - collatAmountToLiquidate,
-            liquidateInput._totalCollateral - collatAmountToLiquidate,
+            liquidateStruct.liquidateIn.account,
+            liquidateStruct._collateralBalance - collatAmountToLiquidate,
+            liquidateStruct._totalCollateral - collatAmountToLiquidate,
             newUserDebtShares,
-            liquidateInput._totalDebtShares - debtSharesToRemove
+            liquidateStruct._totalDebtShares - debtSharesToRemove
         );
 
         uint256 fee;
         {
-            uint256 collatValue = _mulDiv(collatAmountToLiquidate, liquidateInput.collatPrice, 10 ** collatDecimals);
+            uint256 collatValue = _mulDiv(collatAmountToLiquidate, liquidateStruct.collatPrice, 10 ** collatDecimals);
+            require(collatValue >= liquidateStruct.liquidateIn.minCollatValueToLiquidate, CollatValueToLiquidateTooLow(collatValue));
             if (collatValue > USGToRepay) {
                 // Fee is taken on the liquidation profits
                 uint256 delta = collatValue - USGToRepay;
@@ -457,7 +481,14 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             }
         }
 
-        _postLiquidate(collatAmountToLiquidate, USGToRepay + fee, liquidateInput.maxUSGToBurn, liquidateInput.minUSGOut, liquidateCall);
+        _postLiquidate(
+            collatAmountToLiquidate,
+            USGToRepay + fee,
+            liquidateStruct.liquidateIn.maxUSGToBurn,
+            liquidateStruct.liquidateIn.minUSGOut,
+            liquidateStruct.liquidateIn.minCollatAmountToLiquidate,
+            liquidateCall
+        );
 
         if (fee != 0) {
             _mintUSG(usg, controlTower.feeTreasury(), fee);
@@ -472,12 +503,20 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      *       Transfer the collateral to the caller or to the zapping proxy
      *       When the collateral is sent to the zapping proxy, the 'liquidationCall' handles the selling of the collateral
      * @param collatAmountToLiquidate  Amount of collateral to sell during the liquidation
-     * @param USGToBurn                Amount of USG to burn from the sender
+     * @param usgToBurn                Amount of USG to burn from the sender
      * @param minUSGOut                Slippage, Minimum amount of USG to receive after the selling of the collateral
      * @param liquidationCall          Contains address and bytes of the contract selling the collateral for USG
      */
-    function _postLiquidate(uint256 collatAmountToLiquidate, uint256 USGToBurn, uint256 maxUSGToBurn, uint256 minUSGOut, ZapStruct calldata liquidationCall) internal {
-        require(USGToBurn <= maxUSGToBurn, MaxUSGToBurn());
+    function _postLiquidate(
+        uint256 collatAmountToLiquidate,
+        uint256 usgToBurn,
+        uint256 maxUSGToBurn,
+        uint256 minUSGOut,
+        uint256 minCollatToLiquidate,
+        ZapStruct calldata liquidationCall
+    ) internal {
+        require(usgToBurn <= maxUSGToBurn, MaxUSGToBurn());
+        require(minCollatToLiquidate <= collatAmountToLiquidate, MinCollatToLiquidate(collatAmountToLiquidate));
         IZappingProxy _zappingProxy = zappingProxy;
         // Withdraw the collateral from the underlying protocol if needed and
         // Transfer it to the caller when there is no liquidator passed in parameter
@@ -492,7 +531,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Burns USG from the sender.
         // The debt has to be on the caller of the transaction.
         // In case a liquidator is passed in parameter, it needs to send it back to the sender of the tx.
-        _burnUSG(msg.sender, USGToBurn);
+        _burnUSG(msg.sender, usgToBurn);
     }
 
     /**
@@ -618,7 +657,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         uint256 newDebtIndex = _checkpointIR();
 
         uint256 uDebtShares = userDebtShares[account];
-        uint256 debtUser = _convertToAmount(uDebtShares, newDebtIndex);
+        uint256 debtUser = _convertToAmount(uDebtShares, newDebtIndex, Math.Rounding.Ceil);
         uint256 newCollatBalance = collateralBalances[account] - collateralToRemove;
         uint256 sharesToRemove;
         uint256 newUserDebt;
@@ -638,7 +677,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         }
         // Only a part of the debt is removed from marketFrom
         else {
-            sharesToRemove = _convertToShares(debtToRemove, newDebtIndex);
+            sharesToRemove = _convertToShares(debtToRemove, newDebtIndex, Math.Rounding.Floor);
             newUserDebt = debtUser - debtToRemove;
             // We check both condition on minimum loan and maxLTV
             // Dont need to check them when the new user debt is equal to 0
@@ -674,9 +713,9 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         uint256 debtIndex = _checkpointIR();
 
         uint256 uDebtShares = userDebtShares[account];
-        uint256 newUserDebt = _convertToAmount(uDebtShares, debtIndex) + debtToAdd;
+        uint256 newUserDebt = _convertToAmount(uDebtShares, debtIndex, Math.Rounding.Ceil) + debtToAdd;
         uint256 newCollatBalance = collateralBalances[account] + collatToAdd;
-        uint256 sharesToAdd = _convertToShares(debtToAdd, debtIndex);
+        uint256 sharesToAdd = _convertToShares(debtToAdd, debtIndex, Math.Rounding.Ceil);
         uint256 newTotalDebtShares = totalDebtShares + sharesToAdd;
         uint256 newUserDebtShares = uDebtShares + sharesToAdd;
 

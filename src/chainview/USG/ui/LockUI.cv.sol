@@ -22,7 +22,7 @@ contract LockUI is VsTANInfo {
 
         output.balance = user == address(0) ? 0 : tan.balanceOf(user);
         output.allowance = user == address(0) ? 0 : tan.allowance(user, address(vsTan));
-    
+
         LockedPosition[] memory positions = new LockedPosition[](positionOwned);
 
         for (uint256 i; i < positionOwned; ) {

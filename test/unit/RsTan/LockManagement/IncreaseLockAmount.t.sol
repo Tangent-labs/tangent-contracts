@@ -37,7 +37,7 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         tan.approve(address(vsTan), fullAmount);
 
         vsTan.createLock(amount0, false);
-        uint48 endLockTime = vsTan.nextEndLockTime();
+        uint48 endLockTime = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
         (uint256 endLockTime0, ) = vsTan.locks(1);
 
         verifyReceiveERC20(tan, address(vsTan), amount1);
@@ -62,7 +62,7 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         tan.approve(address(vsTan), MAX_UINT);
 
         vsTan.createLock(amount0, false);
-        uint48 endLockTime0 = vsTan.nextEndLockTime();
+        uint48 endLockTime0 = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
 
         skip(6 weeks);
 
@@ -77,7 +77,7 @@ contract IncreaseLockAmount is MarketDeploymentContext {
 
         assertERC20Tracking();
 
-        uint48 endLockTime1Expected = vsTan.nextEndLockTime();
+        uint48 endLockTime1Expected = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
 
         (uint256 endLockTime1, uint256 amountLocked1) = vsTan.locks(1);
 
@@ -103,9 +103,9 @@ contract IncreaseLockAmount is MarketDeploymentContext {
 
     function test_fails_to_increase_lock_on_token_not_owned() external {
         vm.startPrank(usr1);
-        deal(address(tan), usr1, 1 ether);
-        tan.approve(address(vsTan), 1 ether);
-        vsTan.createLock(1 ether, true);
+        deal(address(tan), usr1, 1000 ether);
+        tan.approve(address(vsTan), 1000 ether);
+        vsTan.createLock(1000 ether, true);
         vm.stopPrank();
 
         vm.startPrank(usr2);
@@ -115,9 +115,9 @@ contract IncreaseLockAmount is MarketDeploymentContext {
 
     function test_fails_to_increaseLockAmount_zeroAmount() external {
         vm.startPrank(usr1);
-        deal(address(tan), usr1, 1 ether);
-        tan.approve(address(vsTan), 1 ether);
-        vsTan.createLock(1 ether, true);
+        deal(address(tan), usr1, 1000 ether);
+        tan.approve(address(vsTan), 1000 ether);
+        vsTan.createLock(1000 ether, true);
 
         vm.expectRevert(abi.encodeWithSelector(VsTAN.ZeroAmount.selector));
         vsTan.increaseLockAmount(1, 0);
@@ -125,9 +125,9 @@ contract IncreaseLockAmount is MarketDeploymentContext {
 
     function test_fails_to_increaseLockAmount_on_expired_position() external {
         vm.startPrank(usr1);
-        deal(address(tan), usr1, 10 ether);
-        tan.approve(address(vsTan), 10 ether);
-        vsTan.createLock(1 ether, false);
+        deal(address(tan), usr1, amount0);
+        tan.approve(address(vsTan), amount0);
+        vsTan.createLock(amount0, false);
 
         skip(vsTan.LOCK_DURATION());
         vm.expectRevert(abi.encodeWithSelector(VsTAN.LockExpired.selector));

@@ -11,7 +11,7 @@ contract AccessControlIRCalculator is MarketDeploymentContext {
     function test_initializeMarket_fails_as_not_market_creator() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(IRCalculator.CallerNotMarketCreator.selector));
-        irCalculator.initializeMarket(usr2, IRParams(true, 0, 0, 0, 0, 0, 0, 0, 0));
+        irCalculator.initializeMarket(usr2, IRParams(true, 0, 0, 0, 1, 2, 0, 0, 0));
     }
 
     function test_updateIRParams_fails_as_not_owner() external {

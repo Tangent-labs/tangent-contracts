@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 import "../../../contexts/MarketDeploymentContext.sol";
 
 contract IncreaseLockTime is MarketDeploymentContext {
-    uint208 amount = 1 ether;
+    uint208 amount = 10_000 ether;
 
     function setUp() external {
         vm.startPrank(usr1);
@@ -15,7 +15,7 @@ contract IncreaseLockTime is MarketDeploymentContext {
     }
 
     function test_increase_time() external {
-        uint256 oldEndLockTimeExpected = vsTan.nextEndLockTime();
+        uint256 oldEndLockTimeExpected = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
 
         (uint48 oldEndLockTime, uint208 amountBefore) = vsTan.locks(2);
         assertEq(oldEndLockTimeExpected, oldEndLockTime);

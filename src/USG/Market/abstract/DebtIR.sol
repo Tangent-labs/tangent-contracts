@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
+
 import {IUSG} from "../../../interfaces/internals/USG/IUSG.sol";
 import {IDebtIR} from "../../../interfaces/internals/USG/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/USG/IIRCalculator.sol";
@@ -46,6 +48,10 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
                         OWNER ACTIONS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
+    event SetMaxMarketDebt(uint256 newMaxMarketDebt);
+    event SetMinimumLoan(uint256 newMinimumLoan);
+    event RepayBadDebt(address user, uint256 badDebtRepaid);
+
     /**
      * @notice Sets a new maximum market debt
      * @dev Callable only by the DAO governance
@@ -53,6 +59,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      */
     function setMaxMarketDebt(uint256 _maxMarketDebt) external onlyOwner {
         maxMarketDebt = _maxMarketDebt;
+        emit SetMaxMarketDebt(_maxMarketDebt);
     }
 
     /**
@@ -62,6 +69,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      */
     function setMinimumLoan(uint256 _minimumLoan) external onlyOwner {
         minimumLoan = _minimumLoan;
+        emit SetMinimumLoan(_minimumLoan);
     }
 
     /**
@@ -74,6 +82,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
         require(amount <= _badDebt, RepayMoreThanBadDebt());
         badDebt = _badDebt - amount;
         _burnUSG(msg.sender, amount);
+
+        emit RepayBadDebt(msg.sender, amount);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -104,7 +114,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @return Calculated total debt
      */
     function _totalDebt(uint256 _badDebt, uint256 _totalDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
-        return _badDebt + _convertToAmount(_totalDebtShares, newDebtIndex);
+        return _badDebt + _convertToAmount(_totalDebtShares, newDebtIndex, Math.Rounding.Ceil);
     }
 
     /**
@@ -113,8 +123,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @param index Debt index of the market
      * @return Debt shares
      */
-    function _convertToShares(uint256 debt, uint256 index) internal pure returns (uint256) {
-        return _mulDiv(debt, RAY, index);
+    function _convertToShares(uint256 debt, uint256 index, Math.Rounding roundingType) internal pure returns (uint256) {
+        return Math.mulDiv(debt, RAY, index, roundingType);
     }
 
     /**
@@ -123,8 +133,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @param index       Debt index of the market
      * @return Debt amount
      */
-    function _convertToAmount(uint256 debtShares, uint256 index) internal pure returns (uint256) {
-        return _mulDiv(debtShares, index, RAY);
+    function _convertToAmount(uint256 debtShares, uint256 index, Math.Rounding roundingType) internal pure returns (uint256) {
+        return Math.mulDiv(debtShares, index, RAY, roundingType);
     }
 
     /**
@@ -185,7 +195,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @return The total debt the user owes in USG
      */
     function userDebt(address account) public view returns (uint256) {
-        return _convertToAmount(userDebtShares[account], irCalculator.newDebtIndex(address(this)));
+        return _convertToAmount(userDebtShares[account], irCalculator.newDebtIndex(address(this)), Math.Rounding.Ceil);
     }
 
     /**
@@ -193,7 +203,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @return Interest amount in USG accrued but not yet reflected in totalDebtShares
      */
     function pendingInterests() external view returns (uint256) {
-        return _convertToAmount(totalDebtShares, irCalculator.indexDelta(address(this)));
+        return _convertToAmount(totalDebtShares, irCalculator.indexDelta(address(this)), Math.Rounding.Floor);
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=

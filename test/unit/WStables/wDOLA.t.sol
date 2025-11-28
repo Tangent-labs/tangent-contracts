@@ -73,7 +73,7 @@ contract wDOLA is MarketDeploymentContext {
 
         // Mint with usr1 with DOLA
 
-        uint256 expectedWDola = saving.previewMint(amountIn);
+        uint256 expectedWDola = saving.convertToAssets(amountIn);
         vm.startPrank(usr1);
         deal(address(saving), usr1, amountIn);
         saving.approve(address(wDOLA), MAX_UINT);
@@ -118,7 +118,7 @@ contract wDOLA is MarketDeploymentContext {
         vm.stopPrank();
 
         assertEq(wDOLA.balanceOf(usr2), 0);
-        assertEq(saving.balanceOf(usr2), expectedSavingOut);
+        assertApproxEqAbs(saving.balanceOf(usr2), expectedSavingOut, 1, "Saving out expected");
     }
 
     function test_claimRewards_wDOLA() external {

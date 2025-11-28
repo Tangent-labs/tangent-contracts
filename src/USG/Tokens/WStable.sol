@@ -48,7 +48,7 @@ contract WStable is ERC20, LightOwnable {
 
         if (isSaving) {
             IERC4626 _savingAccount = savingAccount;
-            amountToMint = _savingAccount.previewMint(amountIn);
+            amountToMint = _savingAccount.convertToAssets(amountIn);
             _savingAccount.transferFrom(msg.sender, address(this), amountIn);
         } else {
             stable.transferFrom(msg.sender, address(this), amountIn);
@@ -82,7 +82,7 @@ contract WStable is ERC20, LightOwnable {
 
         if (isSaving) {
             IERC4626 _savingAccount = savingAccount;
-            _savingAccount.transfer(receiver, _savingAccount.previewWithdraw(amount));
+            _savingAccount.transfer(receiver, _savingAccount.convertToShares(amount));
         } else {
             savingAccount.withdraw(amount, receiver, address(this));
         }
@@ -112,7 +112,8 @@ contract WStable is ERC20, LightOwnable {
         IERC4626 _savingAccount = savingAccount;
 
         // Retrieve and sum the amount of stable farming on the saving account and the amount of pending stable.
-        uint256 totalStableStaked = _savingAccount.maxWithdraw(address(this));
+        uint256 totalStableStaked = _savingAccount.convertToAssets(_savingAccount.balanceOf(address(this)));
+
         // Retrieve the amount due to users.
         uint256 dueAmount = totalSupply();
         require(totalStableStaked > dueAmount, NoRewardsToClaim());

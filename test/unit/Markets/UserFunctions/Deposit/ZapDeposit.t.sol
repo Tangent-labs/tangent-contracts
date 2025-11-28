@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../../contexts/MarketDeploymentContext.sol";
+import "../../../../mocks/MockETHReceiverSender.sol";
+
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract ZapDeposit is MarketDeploymentContext {
@@ -8,9 +10,11 @@ contract ZapDeposit is MarketDeploymentContext {
 
     ConvexCrvLPMarket public market;
     IERC20Metadata public collatToken = AddrCurveStableLP.USDC_crvUSD;
+    MockETHReceiverSender public mockEthReceiver;
 
     function setUp() public {
         market = deployConvexCurveLPMarket(collatToken, true);
+        mockEthReceiver = new MockETHReceiverSender();
     }
 
     function test_zap_deposit_with_ERC20() external {
@@ -159,6 +163,33 @@ contract ZapDeposit is MarketDeploymentContext {
                 minAmountOut: 0,
                 zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(bytes4(keccak256("deposit(address,uint256,bool)")), usr1, 1_000 ether, false)})
             })
+        );
+    }
+
+    function test_zapProxy_with_remaining_eth() external {
+        zappingProxy.zapProxy{value: 10 ether}(
+            ETH_NAKED,
+            AddrClassicERC20.USDC,
+            0,
+            usr1,
+            ZapStruct({router: address(mockEthReceiver), routerCall: abi.encodeWithSelector(bytes4(keccak256("zaazaz()")))})
+        );
+
+        assertEq(controlTower.feeTreasury().balance, 10 ether);
+    }
+
+    function test_zapProxy_with_remaining_eth_fails() external {
+        vm.prank(owner);
+
+        controlTower.setFeeTreasury(address(market));
+
+        vm.expectRevert(abi.encodeWithSelector(ZappingProxy.ZapCallError.selector, ""));
+        zappingProxy.zapProxy{value: 10 ether}(
+            ETH_NAKED,
+            AddrClassicERC20.USDC,
+            0,
+            usr1,
+            ZapStruct({router: address(mockEthReceiver), routerCall: abi.encodeWithSelector(bytes4(keccak256("zaze()")))})
         );
     }
 }

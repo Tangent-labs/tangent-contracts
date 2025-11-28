@@ -55,9 +55,12 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
     error RMinBiggerThanRMax();
     error PMinBiggerThanPInf();
     error PInfBiggerThanPMax();
+    error PMinBiggerThanPMax();
     error PMaxBiggerThanOneDollar();
 
     event CheckpointIR(address indexed market, uint256 irAmount, uint256 newIndex);
+    event SetUSGOracle(IAggregatorStablePriceV3 usgOracle);
+    event SetIRParams(address market, IRParams _irParam);
 
     constructor(address _owner, IControlTower _controlTower, IAggregatorStablePriceV3 _USGOracle, IUSG _USG) {
         controlTower = _controlTower;
@@ -74,6 +77,7 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
         require(_irParam.rMin <= _irParam.rMax, RMinBiggerThanRMax());
         require(_irParam.pMin <= _irParam.pInf, PMinBiggerThanPInf());
         require(_irParam.pInf <= _irParam.pMax, PInfBiggerThanPMax());
+        require(_irParam.pMin < _irParam.pMax, PMinBiggerThanPMax());
         require(_irParam.pMax <= 1_000_000, PMaxBiggerThanOneDollar());
     }
 
@@ -83,6 +87,7 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
 
     function setUSGOracle(IAggregatorStablePriceV3 _USGOracle) external onlyOwner {
         USGOracle = _USGOracle;
+        emit SetUSGOracle(_USGOracle);
     }
 
     function initializeMarket(address market, IRParams calldata _irParam) external nonReentrant {
@@ -105,6 +110,7 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
         _verifyIRParams(_irParam);
         irParams[market] = _irParam;
         _checkpointIR(market);
+        emit SetIRParams(market, _irParam);
     }
 
     /**
