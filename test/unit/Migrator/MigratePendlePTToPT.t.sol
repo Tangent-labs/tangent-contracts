@@ -24,7 +24,7 @@ contract MigratePendlePTToPT is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(collatTokenFrom), usr1, collatIn);
         collatTokenFrom.approve(address(marketFrom), MAX_UINT);
-        marketFrom.depositAndBorrow(collatIn, 50_000 ether);
+        marketFrom.depositAndBorrow(collatIn, 50_000 ether, false);
 
         swapParams.push(Array.memoryUint256([uint256(0), uint256(1), uint256(9), uint256(0), uint256(0)]));
     }

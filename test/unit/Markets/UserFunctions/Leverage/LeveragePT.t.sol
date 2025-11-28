@@ -29,9 +29,7 @@ contract LeveragePT is MarketDeploymentContext {
         swapParams[3] = Array.memoryUint256([uint256(0), uint256(1), uint256(1), uint256(10), uint256(2)]);
 
         marketSUSDe.leverage(
-            50_000 ether,
-            50_000 ether,
-            0,
+            LeverageIn({collatToDeposit: 50_000 ether, usgToFlashMint: 50_000 ether, minCollatAmountOut: 0, isReceiptIn: false}),
             ZapStruct({
                 router: address(pendlePTRouter),
                 routerCall: encoder.encodeSwapTokenForPT(

@@ -10,7 +10,7 @@ contract LandingChainViewTest is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
     }
 
     // LIST

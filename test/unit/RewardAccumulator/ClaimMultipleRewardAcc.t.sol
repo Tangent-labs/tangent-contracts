@@ -24,17 +24,17 @@ contract ClaimMultipleRewardAcc is MarketDeploymentContext {
 
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
         market2 = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
-        hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
-        hRewards2 = new HProcessRewards(usr1, market2, rewardAccumulator);
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
-        hDeposit2 = new HDepositConvexFxnLP(usr1, market2);
-        hBorrow = new HBorrow(usr1, market);
+        hRewards = new HProcessRewards(usr1, market, rewardAccumulator, usg, marketViewer);
+        hRewards2 = new HProcessRewards(usr1, market2, rewardAccumulator, usg, marketViewer);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
+        hDeposit2 = new HDepositConvexFxnLP(usr1, market2, usg, marketViewer);
+        hBorrow = new HBorrow(usr1, market, usg, marketViewer);
         minimumLoan = market.minimumLoan();
 
-        hDeposit.deposit(usr1, collatDeposited);
-        hDeposit2.deposit(usr1, collatDeposited);
+        hDeposit.deposit(usr1, collatDeposited, false);
+        hDeposit2.deposit(usr1, collatDeposited, false);
 
         vm.startPrank(usr1);
 

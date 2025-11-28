@@ -17,10 +17,10 @@ contract ZapRepay is MarketDeploymentContext {
 
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        market = deployConvexCurveLPMarket(collatToken, true);
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
+        market = deployConvexCurveLPMarket(collatToken);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
 
-        hDeposit.depositAndBorrow(initialDeposit, initialDebt);
+        hDeposit.depositAndBorrow(initialDeposit, initialDebt, false);
 
         skip(10 days);
 
@@ -52,7 +52,7 @@ contract ZapRepay is MarketDeploymentContext {
 
         assertERC20Tracking();
 
-        assertEq(market.userDebt(usr1), amountOut);
+        assertEq(marketViewer.userDebt(market, usr1), amountOut);
         assertEq(usr2.balance, 0, "Native coin is sent from sender");
         assertEq(address(mockRouter).balance, amountIn, "Native coin sent to router");
     }

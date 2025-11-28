@@ -16,8 +16,8 @@ contract MigratoorReverts is MarketDeploymentContext {
     uint256 constant debtToRepay = 10_000 ether;
 
     function setUp() public {
-        marketFrom = deployConvexCurveLPMarket(collatToken, true);
-        marketTo = deployConvexCurveLPMarket(collatToken, true);
+        marketFrom = deployConvexCurveLPMarket(collatToken);
+        marketTo = deployConvexCurveLPMarket(collatToken);
 
         vm.startPrank(usr1);
         deal(address(collatToken), usr1, 2 * collatIn);
@@ -25,8 +25,8 @@ contract MigratoorReverts is MarketDeploymentContext {
         collatToken.approve(address(marketFrom), MAX_UINT);
         collatToken.approve(address(marketTo), MAX_UINT);
 
-        marketFrom.depositAndBorrow(collatIn, debtInFrom);
-        marketTo.depositAndBorrow(collatIn, debtInTo);
+        marketFrom.depositAndBorrow(collatIn, debtInFrom, false);
+        marketTo.depositAndBorrow(collatIn, debtInTo, false);
     }
 
     function test_migrate_marketFrom_not_a_market_fails() external {

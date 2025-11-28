@@ -67,4 +67,16 @@ contract Labeliser is Test {
         vm.label(collat, collatSymbol);
         vm.label(market, string.concat("Market ", collatSymbol));
     }
+
+    function labeliseNewCurveGaugeMarket(address collat, string calldata collatSymbol, address gaugeMarket, address gauge) external {
+        vm.label(collat, collatSymbol);
+        vm.label(gauge, string.concat("Curve Gauge ", collatSymbol));
+        vm.label(gaugeMarket, string.concat("Market Curve Gauge ", collatSymbol));
+    }
+
+    function labeliseNewStakeDaoVaultV2Market(address collat, string calldata collatSymbol, address vaultMarket, address vault) external {
+        vm.label(collat, collatSymbol);
+        vm.label(vault, string.concat("StakeDao Vault ", collatSymbol));
+        vm.label(vaultMarket, string.concat("Market StakeDao Vault ", collatSymbol));
+    }
 }

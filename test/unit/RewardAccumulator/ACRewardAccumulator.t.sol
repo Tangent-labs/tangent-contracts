@@ -7,7 +7,7 @@ contract ACRewardAccumulator is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
     }
 
     function test_claimSimple_fails_on_not_a_market() external {

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+import "../../interfaces/externals/Curve/IGauge.sol";
 import "../../interfaces/externals/Curve/ICurveStable.sol";
 import "../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 import "../../interfaces/externals/Curve/ICurveStableSwapFactoryNG.sol";
@@ -39,8 +40,16 @@ library AddrCurveStableLP {
     ICurveStableSwapNG constant sUSDe_crvUSD = ICurveStableSwapNG(0x57064F49Ad7123C92560882a45518374ad982e85);
     ICurveStableSwapNG constant USDe_USDC = ICurveStableSwapNG(0x02950460E2b9529D0E00284A5fA2d7bDF3fA4d72);
 
+    ICurveStableSwapNG constant PYUSD_USDC = ICurveStableSwapNG(0x383E6b4437b59fff47B619CBA855CA29342A8559);
+    ICurveStableSwapNG constant RLUSD_USDC = ICurveStableSwapNG(0xD001aE433f254283FeCE51d4ACcE8c53263aa186);
+
     ICurveStable constant ETH_stETH_POOL = ICurveStable(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
     IERC20Metadata constant ETH_stETH_LP = IERC20Metadata(0x06325440D014e39736583c165C2963BA99fAf14E);
+}
+
+library AddrCurveGauge {
+    IGauge constant PYUSD_USDC = IGauge(0x9da75997624C697444958aDeD6790bfCa96Af19A);
+    IGauge constant RLUSD_USDC = IGauge(0xFc3212Bd9Ad9A28Da6B2bd50a2918969C126894F);
 }
 
 library AddrCryptoSwapLP {

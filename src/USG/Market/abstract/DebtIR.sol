@@ -14,13 +14,13 @@ import {LightReentrancyGuardTransient} from "../../Utilities/abstract/LightReent
 /// @dev Inherits access control (LightOwnable) and reentrancy protection
 abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient {
     /// @notice Precision factor (10^27)
-    uint256 public constant RAY = 1e27;
+    uint256 constant RAY = 1e27;
 
     /// @notice Contract that calculates and updates interest rate and debt indexes
     IIRCalculator public irCalculator;
 
     /// @notice The USG token contract
-    IUSG public usg;
+    IUSG usg;
 
     /// @notice Maximum allowable total debt in the market (in USG units)
     uint256 public maxMarketDebt;
@@ -93,8 +93,8 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
     /**
      * @notice Updates debt shares for a user and the market total
      * @dev Must be called whenever borrowing or repaying to sync the internal accounting
-     * @param account Address of the user
-     * @param newUserDebtShare New debt share for the user
+     * @param account            Address of the user
+     * @param newUserDebtShare   New debt share for the user
      * @param newTotalDebtShares New total market debt shares
      */
     function _updateDebts(address account, uint256 newUserDebtShare, uint256 newTotalDebtShares) internal {
@@ -107,21 +107,10 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
-     * @notice Internal pure helper to compute total debt
-     * @param _badDebt Current bad debt
-     * @param _totalDebtShares Current total shares
-     * @param newDebtIndex Current debt index (with interest)
-     * @return Calculated total debt
-     */
-    function _totalDebt(uint256 _badDebt, uint256 _totalDebtShares, uint256 newDebtIndex) internal pure returns (uint256) {
-        return _badDebt + _convertToAmount(_totalDebtShares, newDebtIndex, Math.Rounding.Ceil);
-    }
-
-    /**
      * @dev   Convert a debt amount to a debt shares
-     * @param debt  Debt amount
-     * @param index Debt index of the market
-     * @return Debt shares
+     * @param  debt  Debt amount
+     * @param  index Debt index of the market
+     * @return debtShares
      */
     function _convertToShares(uint256 debt, uint256 index, Math.Rounding roundingType) internal pure returns (uint256) {
         return Math.mulDiv(debt, RAY, index, roundingType);
@@ -129,9 +118,9 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
 
     /**
      * @dev   Convert a debt shares to a debt amount
-     * @param debtShares  Debt shares
-     * @param index       Debt index of the market
-     * @return Debt amount
+     * @param  debtShares  Debt shares
+     * @param  index       Debt index of the market
+     * @return debtAmount
      */
     function _convertToAmount(uint256 debtShares, uint256 index, Math.Rounding roundingType) internal pure returns (uint256) {
         return Math.mulDiv(debtShares, index, RAY, roundingType);
@@ -158,7 +147,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
     }
 
     /**
-     * @dev   Mints some USG on an amount
+     * @dev   Mints an USG `amount` on an `account`
      * @param _usg    USG token
      * @param account Account to mint USG on
      * @param amount  Amount of USG to mint
@@ -176,49 +165,17 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
     }
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        PUBLIC VIEWS
-    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    /**
-     * @notice Returns the current total debt in USG (including interest)
-     * @dev Applies the interest index to total debt shares and adds bad debt
-     * @return Total outstanding system debt in USG
-     */
-    function totalDebt() public view returns (uint256) {
-        return _totalDebt(badDebt, totalDebtShares, irCalculator.newDebtIndex(address(this)));
-    }
-
-    /**
-     * @notice Returns the total debt of a user (including accrued interest)
-     * @dev Applies current debt index to user's stored shares
-     * @param account User address
-     * @return The total debt the user owes in USG
-     */
-    function userDebt(address account) public view returns (uint256) {
-        return _convertToAmount(userDebtShares[account], irCalculator.newDebtIndex(address(this)), Math.Rounding.Ceil);
-    }
-
-    /**
-     * @notice Calculates the interest accumulated since last checkpoint
-     * @return Interest amount in USG accrued but not yet reflected in totalDebtShares
-     */
-    function pendingInterests() external view returns (uint256) {
-        return _convertToAmount(totalDebtShares, irCalculator.indexDelta(address(this)), Math.Rounding.Floor);
-    }
-
-    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         VERIFIERS 
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
      * @dev Fails if the new amount of total debt is over the maximum debt of the market
-     * @param _badDebt    Collat amount to deposit or withdraw
-     * @param totalShares Collat amount to deposit or withdraw
-     * @param debtIndex   Collat amount to deposit or withdraw
+     * @param totalShares Total debt shares on the market
+     * @param debtIndex   Debt index of the market
 
      */
-    function _verifyDebtCap(uint256 _badDebt, uint256 totalShares, uint256 debtIndex) internal view {
-        require(_totalDebt(_badDebt, totalShares, debtIndex) <= maxMarketDebt, TotalDebtTooHigh());
+    function _verifyDebtCap(uint256 totalShares, uint256 debtIndex) internal view {
+        require(badDebt + _convertToAmount(totalShares, debtIndex, Math.Rounding.Ceil) <= maxMarketDebt, TotalDebtTooHigh());
     }
 
     /**

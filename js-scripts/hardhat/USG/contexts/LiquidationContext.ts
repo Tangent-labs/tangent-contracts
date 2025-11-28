@@ -1,25 +1,20 @@
-import {BaseContext, createJSONAddress} from "./BaseContext";
-import {deployUSG} from "../actions/deployUSG";
-import {MarketContext} from "./MarketContext";
-import {OracleContext} from "./OracleContext";
-import {loadAddresses, UserMarketParams} from "../actions/common";
-import {deposit} from "../actions/deposit";
-import {borrow} from "../actions/borrow";
-import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { ethers } from "hardhat";
+import { formatEther } from "ethers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
-import {ethers} from "hardhat";
+import { BaseContext, createJSONAddress } from "./BaseContext";
+import { deployUSG } from "../actions/deployUSG";
+import { MarketContext } from "./MarketContext";
+import { OracleContext } from "./OracleContext";
+import { loadAddresses, UserMarketParams } from "../actions/common";
+import { deposit } from "../actions/deposit";
+import { borrow } from "../actions/borrow";
+import { BasicERC20Market, ConvexCrvLPMarket, ConvexFxnLPMarket, CurveGaugeMarket, StakeDaoVaultV2Market } from "../../../../typechain-types";
+import { MockOracle } from "../../../../typechain-types";
+import { LpDeployContext } from "./LPDeployContext";
+import { WStablesContext } from "./WStableContext";
 
-import chainViewMarketAccountArtifact from "../../../../artifacts/src/chainview/USG/bot/MarketAccountLiquidationBotInfo.cv.sol/MarketAccountLiquidationBotInfo.json";
-import {chainView} from "../../../chainView";
-import {BasicERC20Market, ConvexCrvLPMarket, ConvexFxnLPMarket} from "../../../../typechain-types";
-import {MockOracle} from "../../../../typechain-types";
-import {swap} from "../actions/swapCurve";
-import {LpDeployContext} from "./LPDeployContext";
-import {WStablesContext} from "./WStableContext";
-import {formatEther} from "ethers";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-
-export type DepositBorrowSpecific = Record<string, Record<string, {deposit: string; borrow: string}>>;
+export type DepositBorrowSpecific = Record<string, Record<string, { deposit: string; borrow: string }>>;
 
 export type LiquidationMarketInfo = {
     toObject: () => LiquidationMarketInfo;
@@ -29,7 +24,7 @@ export type LiquidationMarketInfo = {
     oracleDecimals: bigint;
     market: string;
 };
-export type LiquidationUserInInfo = {account: string; market: string};
+export type LiquidationUserInInfo = { account: string; market: string };
 
 export type LiquidationAccountInfo = {
     toObject: () => LiquidationAccountInfo;
@@ -63,14 +58,14 @@ export class LiquidationContext {
     baseDeposit = 2000;
     marketAddresses: string[] = [];
     userAddresses: string[] = [];
-    markets?: (ConvexCrvLPMarket | ConvexFxnLPMarket | BasicERC20Market)[];
+    markets?: (ConvexCrvLPMarket | ConvexFxnLPMarket | BasicERC20Market | CurveGaugeMarket | StakeDaoVaultV2Market)[];
     fxUSDindex: number = 0;
     jsonAddressData?: any;
     marketInfo: Record<string, MarketInfo> = {};
     mockOracles: Record<string, MockOracle> = {};
 
     async doDeploy() {
-        const {baseContext, marketContext, oracleContext, lpDeployContext, wStableContext} = await deployUSG(this.userCount);
+        const { baseContext, marketContext, oracleContext, lpDeployContext, wStableContext } = await deployUSG(this.userCount);
         this.baseContext = baseContext;
         this.marketContext = marketContext;
         this.oracleContext = oracleContext;
@@ -80,7 +75,9 @@ export class LiquidationContext {
         this.markets = [
             ...Object.values(this.marketContext.convexFxnMarkets),
             ...Object.values(this.marketContext.convexCrvMarkets),
-            ...Object.values(this.marketContext.pendlePTMarkets),
+            ...Object.values(this.marketContext.basicERC20Markets),
+            ...Object.values(this.marketContext.curveGaugeMarkets),
+            ...Object.values(this.marketContext.stakeDaoVaultMarkets),
         ];
 
         this.fxUSDindex = 0;
@@ -143,14 +140,8 @@ export class LiquidationContext {
     }
 
     async setOraclesToMock() {
-        for (const market of Object.values(this.marketContext?.convexCrvMarkets || {})) {
-            await this.setOracleToMock(await market.getAddress());
-        }
-        for (const market of Object.values(this.marketContext?.convexFxnMarkets || {})) {
-            await this.setOracleToMock(await market.getAddress());
-        }
-        for (const market of Object.values(this.marketContext?.pendlePTMarkets || {})) {
-            await this.setOracleToMock(await market.getAddress());
+        for (const market of this.marketAddresses) {
+            await this.setOracleToMock(market);
         }
     }
 
@@ -166,8 +157,8 @@ export class LiquidationContext {
                 const marketInfo = await this.getMarketInfo(marketaddress);
 
                 const USD = 10_000n;
-                const PRICE = marketInfo.collateralPrice; 
-                const DECIMALS = marketInfo.collatDecimals; 
+                const PRICE = marketInfo.collateralPrice;
+                const DECIMALS = marketInfo.collatDecimals;
                 // we deposit the equivalent of 10_000 USD in collateral
                 const position10000Value = (USD * 10n ** DECIMALS * 10n ** 18n + PRICE - 1n) / PRICE;
                 deposit = position10000Value.toString();
@@ -179,7 +170,7 @@ export class LiquidationContext {
             depositParams[marketaddress] = currentMarketDeposit;
             borrowParams[marketaddress] = currentMarketBorrow;
         }
-        return {depositParams, borrowParams};
+        return { depositParams, borrowParams };
     }
 
     async doDepositAndBorrow() {
@@ -187,7 +178,7 @@ export class LiquidationContext {
 
         // generate the params
 
-        const {depositParams, borrowParams}: {depositParams: UserMarketParams; borrowParams: UserMarketParams} = await this.getBorrowAndDepositParams(
+        const { depositParams, borrowParams }: { depositParams: UserMarketParams; borrowParams: UserMarketParams } = await this.getBorrowAndDepositParams(
             this.marketAddresses,
             this.userAddresses
         );

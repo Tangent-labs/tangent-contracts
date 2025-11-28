@@ -1,4 +1,4 @@
-import { commonERC20, ConvexCrvPools, ConvexFxnPools, PendlePools } from "@tangent/defi-resources";
+import { commonERC20, ConvexCrvPools, ConvexFxnPools, curveLp, PendlePools, curveGauges, CURVE_CONTEXT } from "@tangent/defi-resources";
 import { parseEther } from "ethers";
 import { IRParamsStruct, RCParamsStruct } from "../../../../typechain-types/src/chainview/USG/GetMarketDetails";
 
@@ -223,7 +223,54 @@ export const STATIC_CONFIG_CONVEX_FXN = {
     },
 };
 
-export const STATIC_CONFIG_PT_PENDLE = {
+
+export const STATIC_CONFIG_CURVE_GAUGE = {
+    PYUSD_USDC: {
+        collatName: "PYUSD_USDC",
+        collatToken: curveLp.CRV_DUO_PYUSD_USDC,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [commonERC20.PYUSD, commonERC20.CRV],
+        gaugeToken: curveGauges.CURVE_PYUSD_USDC_GAUGE
+    },
+    RLUSD_USDC: {
+        collatName: "RLUSD_USDC",
+        collatToken: curveLp.CRV_DUO_RLUSD_USDC,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [commonERC20.RLUSD, commonERC20.CRV],
+        gaugeToken: curveGauges.CURVE_RLUSD_USDC_GAUGE
+    }
+};
+
+export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
+    crvUSD_USDC: {
+        collatName: "crvUSD_USDC",
+        collatToken: ConvexCrvPools.USDC_crvUSD.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [commonERC20.CRV, commonERC20.CVX],
+        vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.USDC_crvUSD.stakeDaoVault
+    },
+    crvUSD_USDT: {
+        collatName: "crvUSD_USDT",
+        collatToken: ConvexCrvPools.USDT_crvUSD.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewards: [commonERC20.CRV, commonERC20.CVX],
+        vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.USDT_crvUSD.stakeDaoVault
+    },
+};
+
+export const STATIC_CONFIG_BASIC_ERC20s = {
     sUSDe_25_09_25: {
         collatName: "sUSDe 09/25/25",
         collatToken: PendlePools["sUSDe 09/25/25"].PT,

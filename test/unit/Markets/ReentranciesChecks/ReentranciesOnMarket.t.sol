@@ -15,7 +15,7 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
     bytes ZapCallErrorReentrancy;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
 
         ZapCallErrorReentrancy = abi.encodeWithSelector(
             ZappingProxy.ZapCallError.selector,
@@ -108,7 +108,7 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.CRV,
                 amountIn: amountIn,
                 minAmountOut: amountOut,
-                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(MarketExternalActions.withdraw.selector, amountIn)})
+                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(MarketExternalActions.withdraw.selector, amountIn, false)})
             })
         );
     }
@@ -122,7 +122,7 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.CRV,
                 amountIn: amountIn,
                 minAmountOut: amountOut,
-                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(MarketExternalActions.repayAndWithdraw.selector, amountIn, amountIn)})
+                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(MarketExternalActions.repayAndWithdraw.selector, amountIn, amountIn, false)})
             })
         );
     }
@@ -141,6 +141,7 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
                     routerCall: abi.encodeWithSelector(
                         MarketExternalActions.zapRepayAndWithdraw.selector,
                         amountIn,
+                        false,
                         ZapStructDeposit({tokenIn: AddrClassicERC20.CRV, amountIn: amountIn, minAmountOut: amountOut, zap: ZapStruct({router: address(market), routerCall: ""})})
                     )
                 })
@@ -212,11 +213,14 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
                         MarketExternalActions.liquidate.selector,
                         LiquidateIn({
                             account: usr1,
-                            collatToLiquidate: amountIn,
-                            minUSGOut: amountIn,
-                            maxUSGToBurn: MAX_UINT,
-                            minCollatValueToLiquidate: 0,
-                            minCollatAmountToLiquidate: 0
+                            postLiquidate: PostLiquidate({
+                                collatAmountToLiquidate: amountIn,
+                                minUsgOut: amountIn,
+                                maxUsgToBurn: MAX_UINT,
+                                minCollatAmountToLiquidate: 0,
+                                isReceiptOut: false
+                            }),
+                            minCollatValueToLiquidate: 0
                         }),
                         ZapStruct({router: address(market), routerCall: ""})
                     )
@@ -238,7 +242,7 @@ contract ReentranciesOnMarket is MarketDeploymentContext {
                     router: address(market),
                     routerCall: abi.encodeWithSelector(
                         MarketExternalActions.selfLiquidate.selector,
-                        SelfLiquidateIn({collatAmountToLiquidate: amountIn, usgToRepay: amountIn, maxUSGToBurn: MAX_UINT, minUSGOut: amountIn}),
+                        SelfLiquidateIn({collatAmountToLiquidate: amountIn, usgToRepay: amountIn, maxUsgToBurn: MAX_UINT, minUsgOut: amountIn, isReceiptOut: false}),
                         ZapStruct({router: address(market), routerCall: ""})
                     )
                 })

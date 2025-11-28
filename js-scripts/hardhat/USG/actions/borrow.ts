@@ -1,13 +1,15 @@
-import {ethers} from "hardhat";
-import {MainSetup} from "../../Main.setup";
-import {Market} from "../contexts/BaseContext";
-import {prepareUserAmountByMarket, loadAddresses} from "./common";
-import {parseEther} from "ethers";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import { ethers } from "hardhat";
+import { MainSetup } from "../../Main.setup";
+import { Market } from "../contexts/BaseContext";
+import { prepareUserAmountByMarket, loadAddresses } from "./common";
+import { parseEther } from "ethers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: Record<string, Record<string, string>>) {
     try {
         const addresses = loadAddresses();
+        const marketViewer = await ethers.getContractAt("MarketViewer", addresses.utilities.marketViewer as string);
+
         const errorMessages = new Set<string>();
         const collatTokenCache: Record<string, any> = {};
         const errorMarkets = new Map<string, number>();
@@ -20,7 +22,6 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
                 i++;
                 const amount = userAmountByMarket?.[marketAddress]?.[user.address] || "0";
                 let parsedAmount = parseEther(amount);
-                //console.log("borrow", marketAddress, user.address, parsedAmount);
 
                 if (parsedAmount > 0n) {
                     try {
@@ -34,9 +35,9 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
 
                         // Check maxBorrowable limit
                         // const marketAsCollateral = await ethers.getContractAt("ICollateral", marketAddress);
-                        const maxBorrowableAmount = await market.maxBorrowable(user.address);
-                        const positionValue = await market.positionValue(user.address);
-                        //  console.log("maxBorrowableAmount", maxBorrowableAmount, positionValue);
+
+                        const maxBorrowableAmount = await marketViewer.maxBorrowable(market, user.address);
+                        const positionValue = await marketViewer.positionValue(market, user.address);
 
                         // Skip if maxBorrowable is 0
                         if (maxBorrowableAmount === 0n) {

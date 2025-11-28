@@ -14,7 +14,6 @@ import {
     IPegKeeperV2,
     IRCalculator,
     IYearnV3Vault,
-    MarketCreator,
     BasicERC20Market,
     RewardAccumulator,
     VsTAN,
@@ -22,11 +21,15 @@ import {
     USG,
     ZappingProxy,
     PendlePTRouter,
+    MarketCreator,
+    CurveGaugeMarket,
+    MarketViewer,
+    StakeDaoVaultV2Market
 } from "../../../../typechain-types";
 import { LpDeployContext } from "./LPDeployContext";
 import { setStorageAt } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, MarketContext, PendlePTMarketsKeys } from "./MarketContext";
-import { STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_PT_PENDLE } from "../config/market";
+import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CURVE_GAUGE, STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/market";
 import { OracleContext } from "./OracleContext";
 import { WStablesContext } from "./WStableContext";
 import { lockVeTokensForAllUsers } from "../actions/lock-ve-tokens";
@@ -44,7 +47,10 @@ export class BaseContext extends MainSetup {
     vsTAN!: VsTAN;
     rewardAccumulator!: RewardAccumulator;
     irCalculator!: IRCalculator;
+
     marketCreator!: MarketCreator;
+    marketViewer!: MarketViewer;
+
     zappingProxy!: ZappingProxy;
     pendlePTRouter!: PendlePTRouter;
 
@@ -55,6 +61,8 @@ export class BaseContext extends MainSetup {
     marketCvxCrvImplem!: ConvexCrvLPMarket;
     marketCvxFxnImplem!: ConvexFxnLPMarket;
     marketBasicER20Implem!: BasicERC20Market;
+    marketCurveGaugeImplem!: CurveGaugeMarket;
+    marketStakeDaoVaultV2Implem!: StakeDaoVaultV2Market;
 
     coins: { [name: string]: IERC20Metadata } = {};
 
@@ -65,6 +73,9 @@ export class BaseContext extends MainSetup {
 
         this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
         await this.controlTower.waitForDeployment();
+
+        this.marketViewer = await (await ethers.getContractFactory("MarketViewer")).deploy();
+        await this.marketViewer.waitForDeployment();
 
         this.USG = await (await ethers.getContractFactory("USG")).deploy(this.owner, this.controlTower);
         await this.USG.waitForDeployment();
@@ -79,7 +90,7 @@ export class BaseContext extends MainSetup {
 
         await this.deploy_sTAN();
 
-        this.vsTAN = await (await ethers.getContractFactory("VsTAN")).deploy(this.owner, this.controlTower, this.TAN, this.USG, this.sUSG, this.zappingProxy);
+        this.vsTAN = await (await ethers.getContractFactory("VsTAN")).deploy(this.owner, this.controlTower, this.TAN, this.USG, this.sUSG, this.zappingProxy, ethers.parseEther("1000"));
         await this.vsTAN.waitForDeployment();
         await this.vsTAN.addNewReward(this.USG);
 
@@ -91,6 +102,13 @@ export class BaseContext extends MainSetup {
 
         this.marketBasicER20Implem = await (await ethers.getContractFactory("BasicERC20Market")).deploy();
         await this.marketBasicER20Implem.waitForDeployment();
+
+        this.marketStakeDaoVaultV2Implem = await (await ethers.getContractFactory("StakeDaoVaultV2Market")).deploy();
+        await this.marketStakeDaoVaultV2Implem.waitForDeployment();
+
+        this.marketCurveGaugeImplem = await (await ethers.getContractFactory("CurveGaugeMarket")).deploy();
+        await this.marketCurveGaugeImplem.waitForDeployment();
+
     }
 
     async deploy_sUSG() {
@@ -146,6 +164,8 @@ export class BaseContext extends MainSetup {
             this.zappingProxy,
             this.marketCvxCrvImplem,
             this.marketCvxFxnImplem,
+            this.marketCurveGaugeImplem,
+            this.marketStakeDaoVaultV2Implem,
             this.marketBasicER20Implem
         );
         await this.marketCreator.waitForDeployment();
@@ -169,6 +189,7 @@ export class BaseContext extends MainSetup {
 
         await this.controlTower.connect(this.owner).togglePegKeeper(this.pegKeeperUSG_USDC);
         await this.controlTower.connect(this.owner).togglePegKeeper(this.pegKeeperUSG_wfrxUSD);
+
         await this.controlTower.connect(this.owner).toggleMarketCreator(this.marketCreator);
 
         this.pendlePTRouter = await (await ethers.getContractFactory("PendlePTRouter")).deploy();
@@ -196,8 +217,7 @@ export class BaseContext extends MainSetup {
 
         const USGToGivePerUser = 3_000_000;
 
-        await this.giveTokens(this.users, [{ address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser }]);
-
+        await this.giveTokens(this.users, [{ address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser, name: "usg" }]);
         await setStorageAt(await this.USG.getAddress(), 2, parseEther((USGToGivePerUser * this.users.length).toString()));
 
         await lockVeTokensForAllUsers(this.users);
@@ -248,9 +268,9 @@ export async function createJSONAddress(
         });
     }
 
-    for (const key in marketContext.pendlePTMarkets) {
-        const market = await marketContext.pendlePTMarkets[key].getAddress();
-        const staticConfig = STATIC_CONFIG_PT_PENDLE[key as PendlePTMarketsKeys];
+    for (const key in marketContext.basicERC20Markets) {
+        const market = await marketContext.basicERC20Markets[key].getAddress();
+        const staticConfig = STATIC_CONFIG_BASIC_ERC20s[key as PendlePTMarketsKeys];
 
         markets.push({
             marketAddress: market,
@@ -290,6 +310,7 @@ export async function createJSONAddress(
             irCalculator: await baseContext.irCalculator.getAddress(),
             pegKeeperRegulator: await baseContext.pegKeeperRegulator.getAddress(),
             pendlePTRouter: await baseContext.pendlePTRouter.getAddress(),
+            marketViewer: await baseContext.marketViewer.getAddress()
         },
         tokens: {
             USG: await baseContext.USG.getAddress(),

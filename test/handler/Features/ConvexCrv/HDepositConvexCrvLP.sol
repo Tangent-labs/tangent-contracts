@@ -7,26 +7,26 @@ import "../../../../src/USG/Market/Convex/ConvexCrvLPMarket.sol";
 
 contract HDepositConvexCrvLP is HMarketBase {
     ConvexCrvLPMarket marketCrvLP;
-    constructor(address _sender, ConvexCrvLPMarket _market) HandlerBase(_sender, _market) {
+    constructor(address _sender, ConvexCrvLPMarket _market, IERC20 _usg, MarketViewer _marketViewer) HandlerBase(_sender, _market, _usg, _marketViewer) {
         marketCrvLP = ConvexCrvLPMarket(address(_market));
     }
-    function deposit(address _for, uint256 lpDeposited) external handler {
+    function deposit(address _for, uint256 lpDeposited, bool isReceiptIn) external handler {
         (uint256 totalCollateralBefore, uint256 balanceCollateralBefore) = _beforeDepositCheck(_for, lpDeposited);
 
-        marketCrvLP.deposit(_for, lpDeposited);
+        marketCrvLP.deposit(_for, lpDeposited, isReceiptIn);
 
         _afterDepositCheck(_for, lpDeposited, totalCollateralBefore, balanceCollateralBefore);
     }
 
-    function depositAndBorrow(uint256 lpDeposited, uint256 borrowedAmount) external handler {
+    function depositAndBorrow(uint256 lpDeposited, uint256 borrowedAmount, bool isReceiptIn) external handler {
         (uint256 totalCollateralBefore, uint256 balanceCollateralBefore) = _beforeDepositCheck(sender, lpDeposited);
         DebtData memory debtData = _beforBorrowOrRepayCheck(marketCrvLP);
         _beforeBorrowCheck(marketCrvLP, sender, borrowedAmount);
 
-        marketCrvLP.depositAndBorrow(lpDeposited, borrowedAmount);
+        marketCrvLP.depositAndBorrow(lpDeposited, borrowedAmount, isReceiptIn);
 
         _afterDepositCheck(sender, lpDeposited, totalCollateralBefore, balanceCollateralBefore);
-        // _afterBorrowCheck(marketCrvLP, borrowedAmount, interests, newDebtIndex, userDebt, oldTotalDebt);
+        _afterBorrowCheck(market, borrowedAmount, debtData.newDebtIndex, debtData.userDebtShares, debtData.totalDebtShares);
     }
 
     function _beforeDepositCheck(address _for, uint256 lpDeposited) internal returns (uint256 totalCollateralBefore, uint256 balanceCollateralBefore) {

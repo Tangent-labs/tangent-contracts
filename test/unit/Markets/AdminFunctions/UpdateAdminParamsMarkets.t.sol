@@ -5,7 +5,7 @@ contract UpdateAdminParamsMarkets is MarketDeploymentContext {
     ConvexCrvLPMarket market;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
         vm.startPrank(owner);
     }
     function test_setCollatOracle_success() external {

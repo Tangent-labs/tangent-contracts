@@ -16,8 +16,8 @@ contract MigratoorSameCollateral is MarketDeploymentContext {
     uint256 constant debtToRepay = 10_000 ether;
 
     function setUp() public {
-        marketFrom = deployConvexCurveLPMarket(collatToken, true);
-        marketTo = deployConvexCurveLPMarket(collatToken, true);
+        marketFrom = deployConvexCurveLPMarket(collatToken);
+        marketTo = deployConvexCurveLPMarket(collatToken);
 
         vm.startPrank(usr1);
         deal(address(collatToken), usr1, 2 * collatIn);
@@ -25,8 +25,8 @@ contract MigratoorSameCollateral is MarketDeploymentContext {
         collatToken.approve(address(marketFrom), MAX_UINT);
         collatToken.approve(address(marketTo), MAX_UINT);
 
-        marketFrom.depositAndBorrow(collatIn, debtInFrom);
-        marketTo.depositAndBorrow(collatIn, debtInTo);
+        marketFrom.depositAndBorrow(collatIn, debtInFrom, false);
+        marketTo.depositAndBorrow(collatIn, debtInTo, false);
     }
 
     function test_exchange_USDC_crvUSD() external {
@@ -51,10 +51,10 @@ contract MigratoorSameCollateral is MarketDeploymentContext {
         assertEq(marketFrom.totalCollateral(), collatIn - collatToWithdraw);
         assertEq(marketTo.totalCollateral(), collatIn + collatToWithdraw);
 
-        assertEq(marketFrom.userDebt(usr1), debtInFrom - debtToRemove);
-        assertEq(marketTo.userDebt(usr1), debtInTo + (debtToRemove - debtToRepay));
+        assertEq(marketViewer.userDebt(marketFrom, usr1), debtInFrom - debtToRemove);
+        assertEq(marketViewer.userDebt(marketTo, usr1), debtInTo + (debtToRemove - debtToRepay));
 
-        assertEq(marketFrom.totalDebt(), debtInFrom - debtToRemove);
-        assertEq(marketTo.totalDebt(), debtInTo + (debtToRemove - debtToRepay));
+        assertEq(marketViewer.totalDebt(marketFrom), debtInFrom - debtToRemove);
+        assertEq(marketViewer.totalDebt(marketTo), debtInTo + (debtToRemove - debtToRepay));
     }
 }

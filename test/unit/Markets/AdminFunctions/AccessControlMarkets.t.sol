@@ -8,8 +8,8 @@ contract AccessControlMarkets is MarketDeploymentContext {
     BasicERC20Market marketBasicERC20;
 
     function setUp() public {
-        marketCrv = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
-        marketCrvWithoutConvex = deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, false);
+        marketCrv = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
+        marketCrvWithoutConvex = deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD);
         marketFxn = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
         marketBasicERC20 = deployBasicERC20Market(AddrPTPendle.sUSDe_31_07_25);
 
@@ -45,16 +45,11 @@ contract AccessControlMarkets is MarketDeploymentContext {
         marketCrv.setMinimumLoan(100);
     }
 
-    function test_setCvxRewardToken_fails_as_not_owner() external {
-        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        marketCrvWithoutConvex.setConvexStaking(AddrCvxRewardTokens.USDT_crvUSD_LP, PidCvxCrvBooster.USDT_crvUSD_LP);
-    }
-
     function test_initialize_alreadyInit_market() external {
         GlobalMarketInitParams memory _marketConstants = GlobalMarketInitParams(address(0), usg, controlTower, irCalculator, rewardAccumulator, zappingProxy);
         MarketInit memory _marketInit = MarketInit(AddrClassicERC20.CRV, IPriceOracle(address(0)), 0, 0, 0, 0, 0, "");
         vm.expectRevert(abi.encodeWithSelector(MarketCore.AlreadyInitialized.selector));
-        marketCrv.initialize(_marketConstants, _marketInit, ICvxRewardToken(address(0)), 0);
+        marketCrv.initialize(_marketConstants, _marketInit, 0);
     }
 
     function test_claimUnderlyingRewards_on_ConvexCrvMarket_fails_when_caller_not_rewardAccumulator() external {
@@ -84,36 +79,39 @@ contract AccessControlMarkets is MarketDeploymentContext {
     function test_setDepositPaused_success() external {
         vm.stopPrank();
         vm.startPrank(pauser);
-        marketCrv.setIsDepositPaused(true);
-        assertEq(marketCrv.isDepositPaused(), true);
+        marketCrv.setPause(PauseSettings.PauseEnum.DepositPaused, 1);
+        (uint64 isDepositPaused, , ) = marketCrv.getPausedSettings();
+        assertEq(isDepositPaused, 1);
     }
 
     function test_setBorrowPaused_success() external {
         vm.stopPrank();
         vm.startPrank(pauser);
-        marketCrv.setIsBorrowPaused(true);
-        assertEq(marketCrv.isBorrowPaused(), true);
+        marketCrv.setPause(PauseSettings.PauseEnum.BorrowPaused, 1);
+        (, uint64 isBorrowPaused, ) = marketCrv.getPausedSettings();
+        assertEq(isBorrowPaused, 1);
     }
 
     function test_setLeveragePaused_success() external {
         vm.stopPrank();
         vm.startPrank(pauser);
-        marketCrv.setIsLeveragePaused(true);
-        assertEq(marketCrv.isLeveragePaused(), true);
+        marketCrv.setPause(PauseSettings.PauseEnum.LeveragePaused, 1);
+        (, , uint64 isLeveragePaused) = marketCrv.getPausedSettings();
+        assertEq(isLeveragePaused, 1);
     }
 
     function test_setDepositPaused_fails_as_not_pauser() external {
         vm.expectRevert(abi.encodeWithSelector(PauseSettings.CallerNotPauser.selector));
-        marketCrv.setIsDepositPaused(true);
+        marketCrv.setPause(PauseSettings.PauseEnum.DepositPaused, 1);
     }
 
     function test_setBorrowPaused_fails_as_not_pauser() external {
         vm.expectRevert(abi.encodeWithSelector(PauseSettings.CallerNotPauser.selector));
-        marketCrv.setIsBorrowPaused(true);
+        marketCrv.setPause(PauseSettings.PauseEnum.BorrowPaused, 1);
     }
 
     function test_setLeveragePaused_fails_as_not_pauser() external {
         vm.expectRevert(abi.encodeWithSelector(PauseSettings.CallerNotPauser.selector));
-        marketCrv.setIsLeveragePaused(true);
+        marketCrv.setPause(PauseSettings.PauseEnum.LeveragePaused, 1);
     }
 }

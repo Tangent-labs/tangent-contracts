@@ -20,10 +20,10 @@ contract SelfLiquidateDirect is MarketDeploymentContext {
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
 
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
 
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
-        hDeposit.depositAndBorrow(collatDeposited, initialDebt);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
+        hDeposit.depositAndBorrow(collatDeposited, initialDebt, false);
     }
 
     function test_selfLiquidate_all_position_with_USG_having_before() external {
@@ -34,7 +34,7 @@ contract SelfLiquidateDirect is MarketDeploymentContext {
         verifyLostERC20(usg, usr1, initialDebt, "usg taken from usr1");
 
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUSGToBurn: MAX_UINT, minUSGOut: initialDebt}),
+            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUsgToBurn: MAX_UINT, minUsgOut: initialDebt, isReceiptOut: false}),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -42,8 +42,8 @@ contract SelfLiquidateDirect is MarketDeploymentContext {
 
         assertEq(market.collateralBalances(usr1), 0);
         assertEq(market.totalCollateral(), 0);
-        assertEq(market.userDebt(usr1), 0);
-        assertEq(market.totalDebt(), 0);
+        assertEq(marketViewer.userDebt(market, usr1), 0);
+        assertEq(marketViewer.totalDebt(market), 0);
 
         vm.stopPrank();
     }
@@ -63,11 +63,11 @@ contract SelfLiquidateDirect is MarketDeploymentContext {
 
         skip(20 days);
 
-        market.healthRatio(usr1);
+        marketViewer.healthRatio(address(market), usr1);
 
         vm.expectRevert(abi.encodeWithSelector(DebtIR.ZeroDebtAmount.selector));
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: 3, usgToRepay: 1, maxUSGToBurn: MAX_UINT, minUSGOut: initialDebt}),
+            SelfLiquidateIn({collatAmountToLiquidate: 3, usgToRepay: 1, maxUsgToBurn: MAX_UINT, minUsgOut: initialDebt, isReceiptOut: false}),
             ZapStruct({router: address(0), routerCall: ""})
         );
 

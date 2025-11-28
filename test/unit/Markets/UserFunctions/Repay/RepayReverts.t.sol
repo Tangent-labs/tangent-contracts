@@ -16,8 +16,8 @@ contract RepayReverts is MarketDeploymentContext {
     uint256 maxMarketDebt;
     function setUp() public {
         collatToken = AddrCurveStableLP.WETH_frxETH;
-        market = deployConvexCurveLPMarket(collatToken, true);
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
+        market = deployConvexCurveLPMarket(collatToken);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
         minimumLoan = market.minimumLoan();
         maxMarketDebt = market.maxMarketDebt();
     }
@@ -37,7 +37,7 @@ contract RepayReverts is MarketDeploymentContext {
 
     function test_repay_and_leave_position_under_minimum_loan() external {
         deal(address(usg), usr1, 1);
-        hDeposit.depositAndBorrow(10_000 ether, 3_000 ether);
+        hDeposit.depositAndBorrow(10_000 ether, 3_000 ether, false);
 
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(DebtIR.UserDebtTooLow.selector));

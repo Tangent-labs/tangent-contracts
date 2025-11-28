@@ -5,28 +5,31 @@ import {LightOwnable} from "../../Utilities/abstract/LightOwnable.sol";
 import {IControlTower} from "../../../interfaces/internals/USG/IControlTower.sol";
 
 abstract contract PauseSettings is LightOwnable {
+    enum PauseEnum {
+        DepositPaused,
+        BorrowPaused,
+        LeveragePaused
+    }
     /// @notice Reference to the ControlTower contract managing market governance and treasury.
     IControlTower controlTower;
 
-    bool public isInitialized;
+    uint64 isInitialized;
 
     /// @notice Pauses new deposits on the market
-    bool public isDepositPaused;
+    uint64 isDepositPaused;
 
     /// @notice Pauses new borrows on the market
-    bool public isBorrowPaused;
+    uint64 isBorrowPaused;
 
     /// @notice Pauses new leverages on the market
-    bool public isLeveragePaused;
+    uint64 isLeveragePaused;
 
     error DepositPaused();
     error BorrowPaused();
     error LeveragePaused();
     error CallerNotPauser();
 
-    event PauseDeposit(bool isPaused);
-    event PauseBorrow(bool isPaused);
-    event PauseLeverage(bool isPaused);
+    event PauseTrigger(PauseEnum pauseType, uint64 isPaused);
 
     modifier isCallerPauser() {
         _verifyIsCallerPauser();
@@ -38,23 +41,25 @@ abstract contract PauseSettings is LightOwnable {
     }
 
     function _verifyIsDepositNotPaused() internal view {
-        require(!isDepositPaused, DepositPaused());
+        require(isDepositPaused == 0, DepositPaused());
     }
 
     function _verifyIsBorrowNotPaused() internal view {
-        require(!isBorrowPaused, BorrowPaused());
+        require(isBorrowPaused == 0, BorrowPaused());
     }
 
-    function setIsDepositPaused(bool _isDepositPaused) external isCallerPauser {
-        isDepositPaused = _isDepositPaused;
-        emit PauseDeposit(_isDepositPaused);
+    function setPause(PauseEnum pauseType, uint64 isPaused) external isCallerPauser {
+        if (pauseType == PauseEnum.DepositPaused) {
+            isDepositPaused = isPaused;
+        } else if (pauseType == PauseEnum.BorrowPaused) {
+            isBorrowPaused = isPaused;
+        } else {
+            isLeveragePaused = isPaused;
+        }
+        emit PauseTrigger(pauseType, isPaused);
     }
-    function setIsBorrowPaused(bool _isBorrowPaused) external isCallerPauser {
-        isBorrowPaused = _isBorrowPaused;
-        emit PauseBorrow(_isBorrowPaused);
-    }
-    function setIsLeveragePaused(bool _isLeveragePaused) external isCallerPauser {
-        isLeveragePaused = _isLeveragePaused;
-        emit PauseLeverage(_isLeveragePaused);
+
+    function getPausedSettings() external view returns (uint64, uint64, uint64) {
+        return (isDepositPaused, isBorrowPaused, isLeveragePaused);
     }
 }

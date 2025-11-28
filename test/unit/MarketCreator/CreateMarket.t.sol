@@ -25,7 +25,7 @@ contract CreateMarket is MarketDeploymentContext {
     function test_createConvexCrvMarket_fails_as_not_owner() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        marketCreator.createConvexCrvMarket(marketInit, ICvxRewardToken(address(0)), 0, irParams, rcParams);
+        marketCreator.createConvexCrvMarket(marketInit, 0, irParams, rcParams);
     }
 
     function test_createConvexFxnMarket_fails_as_not_owner() external {

@@ -11,8 +11,8 @@ contract MarketListChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market2;
 
     function setUp() public {
-        market1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
-        market2 = deployConvexCurveLPMarket(AddrCurveStableLP.WETH_frxETH, true);
+        market1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
+        market2 = deployConvexCurveLPMarket(AddrCurveStableLP.WETH_frxETH);
     }
 
     // LIST
@@ -25,7 +25,7 @@ contract MarketListChainview is MarketDeploymentContext {
         pegKeepers[0] = address(pegKeeperUSG_USDC);
         pegKeepers[1] = address(pegKeeperUSG_wcrvUSD);
 
-        try new MarketListUI(usr1, USGOracle, usg, sUSG, markets, pegKeepers) {} catch (bytes memory reason) {
+        try new MarketListUI(usr1, USGOracle, usg, sUSG, markets, pegKeepers, marketViewer) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }

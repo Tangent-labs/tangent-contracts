@@ -7,6 +7,8 @@ contract MarketInitParams is WStableContext {
     mapping(address => ParamsInitConvexCurveLPMarket) public cvxCurveLPMaps;
     mapping(address => ParamsInitConvexFxnLPMarket) public cvxFxnLPMaps;
     mapping(address => MarketInitSimplified) public basicERC20Maps;
+    mapping(address => ParamsInitCurveGaugeMarket) public curveGaugeMaps;
+    mapping(address => ParamsInitStakeDaoVaultV2Market) public stakeDaoVaultV2Maps;
 
     struct ParamsInitConvexCurveLPMarket {
         MarketInitSimplified marketInit;
@@ -17,6 +19,16 @@ contract MarketInitParams is WStableContext {
     struct ParamsInitConvexFxnLPMarket {
         MarketInitSimplified marketInit;
         uint256 pid;
+    }
+
+    struct ParamsInitCurveGaugeMarket {
+        MarketInitSimplified marketInit;
+        IGauge gaugeToken;
+    }
+
+    struct ParamsInitStakeDaoVaultV2Market {
+        MarketInitSimplified marketInit;
+        IStakeDaoVaultV2 vaultToken;
     }
 
     struct MarketInitSimplified {
@@ -33,6 +45,8 @@ contract MarketInitParams is WStableContext {
         initConvexCurveParams();
         initConvexFxnParams();
         initBasicERC20Market();
+        initCurveGaugeParams();
+        initStakeDaoVaultV2Params();
     }
 
     function initConvexCurveParams() public {
@@ -174,21 +188,6 @@ contract MarketInitParams is WStableContext {
             cvxRewardToken: ICvxRewardToken(address(0)),
             pid: 0
         });
-
-        // Convex Curve - sUSDS/USDT
-        cvxCurveLPMaps[address(AddrCurveStableLP.sUSDS_USDT)] = ParamsInitConvexCurveLPMarket({
-            marketInit: MarketInitSimplified({
-                name: "Convex CRV - sUSDS-USDT",
-                collat: AddrCurveStableLP.sUSDS_USDT,
-                maxLTV: 85_000,
-                liquidationThreshold: 93_000,
-                liquidationFee: 2_000,
-                minimumLoan: 3_000 ether,
-                maxMarketDebt: 1_000_000 ether
-            }),
-            cvxRewardToken: ICvxRewardToken(address(0)),
-            pid: 0
-        });
     }
 
     function initConvexFxnParams() public {
@@ -207,7 +206,89 @@ contract MarketInitParams is WStableContext {
         });
     }
 
+    function initCurveGaugeParams() public {
+        // Gauge - PYUSD-USDC
+        curveGaugeMaps[address(AddrCurveStableLP.PYUSD_USDC)] = ParamsInitCurveGaugeMarket({
+            marketInit: MarketInitSimplified({
+                name: "CurveGauge - PYUSD-USDC",
+                collat: AddrCurveStableLP.PYUSD_USDC,
+                maxLTV: 85_000,
+                liquidationThreshold: 93_000,
+                liquidationFee: 2_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether
+            }),
+            gaugeToken: AddrCurveGauge.PYUSD_USDC
+        });
+
+        // Gauge - RLUSD-USDC
+        curveGaugeMaps[address(AddrCurveStableLP.RLUSD_USDC)] = ParamsInitCurveGaugeMarket({
+            marketInit: MarketInitSimplified({
+                name: "CurveGauge - RLUSD-USDC",
+                collat: AddrCurveStableLP.RLUSD_USDC,
+                maxLTV: 85_000,
+                liquidationThreshold: 93_000,
+                liquidationFee: 2_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether
+            }),
+            gaugeToken: AddrCurveGauge.RLUSD_USDC
+        });
+    }
+
+    function initStakeDaoVaultV2Params() public {
+        // StakeDao - CRVUSD-USDC
+        stakeDaoVaultV2Maps[address(AddrCurveStableLP.USDC_crvUSD)] = ParamsInitStakeDaoVaultV2Market({
+            marketInit: MarketInitSimplified({
+                name: "StakeDao - crvUSD-USDC",
+                collat: AddrCurveStableLP.USDC_crvUSD,
+                maxLTV: 90_000,
+                liquidationThreshold: 93_000,
+                liquidationFee: 2_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether
+            }),
+            vaultToken: AddrStakeDaoVaultV2.USDC_crvUSD_LP
+        });
+
+        // StakeDao - CRVUSD-USDT
+        stakeDaoVaultV2Maps[address(AddrCurveStableLP.USDT_crvUSD)] = ParamsInitStakeDaoVaultV2Market({
+            marketInit: MarketInitSimplified({
+                name: "StakeDao - crvUSD-USDT",
+                collat: AddrCurveStableLP.USDT_crvUSD,
+                maxLTV: 90_000,
+                liquidationThreshold: 93_000,
+                liquidationFee: 2_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether
+            }),
+            vaultToken: AddrStakeDaoVaultV2.USDT_crvUSD_LP
+        });
+    }
+
     function initBasicERC20Market() public {
+        // LP Curve - sUSDS/USDT
+        basicERC20Maps[address(AddrCurveStableLP.sUSDS_USDT)] = MarketInitSimplified({
+            name: "Convex CRV - sUSDS-USDT",
+            collat: AddrCurveStableLP.sUSDS_USDT,
+            maxLTV: 85_000,
+            liquidationThreshold: 93_000,
+            liquidationFee: 2_000,
+            minimumLoan: 3_000 ether,
+            maxMarketDebt: 1_000_000 ether
+        });
+
+        // LP Curve - sUSDS/USDT
+        basicERC20Maps[address(AddrCurveStableLP.sDAI_sUSDe)] = MarketInitSimplified({
+            name: "Convex CRV - sDAI-sUSDe",
+            collat: AddrCurveStableLP.sDAI_sUSDe,
+            maxLTV: 85_000,
+            liquidationThreshold: 93_000,
+            liquidationFee: 2_000,
+            minimumLoan: 3_000 ether,
+            maxMarketDebt: 1_000_000 ether
+        });
+
         // Pendle - eUSDe_29_05_25
         basicERC20Maps[address(AddrPTPendle.eUSDe_29_05_25)] = MarketInitSimplified({
             name: "Pendle - eUSDe 05/29/25",

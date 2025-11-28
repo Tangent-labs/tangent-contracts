@@ -20,7 +20,7 @@ contract ViewsControlTower is MarketDeploymentContext {
     }
 
     function test_areContractsMarkets() external {
-        address market1 = address(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true));
+        address market1 = address(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD));
         address market2 = address(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD));
         address market3 = address(deployBasicERC20Market(AddrPTPendle.sUSDe_31_07_25));
 

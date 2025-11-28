@@ -14,8 +14,8 @@ contract BorrowReverts is MarketDeploymentContext {
     uint256 minimumLoan;
     uint256 maxMarketDebt;
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, true);
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
+        market = deployConvexCurveLPMarket(collatToken);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
         minimumLoan = market.minimumLoan();
         maxMarketDebt = market.maxMarketDebt();
     }
@@ -27,7 +27,7 @@ contract BorrowReverts is MarketDeploymentContext {
 
     function test_borrow_fails_when_borrow_is_paused() external {
         vm.startPrank(pauser);
-        market.setIsBorrowPaused(true);
+        market.setPause(PauseSettings.PauseEnum.BorrowPaused, 1);
         vm.expectRevert(abi.encodeWithSelector(PauseSettings.BorrowPaused.selector));
         market.borrow(usr1, 0);
     }
@@ -48,8 +48,8 @@ contract BorrowReverts is MarketDeploymentContext {
     }
 
     function test_borrow_more_than_LTV_with_not_enough_collat() external {
-        hDeposit.deposit(usr1, 3 ether);
-        uint256 maxBorrow = market.maxBorrowable(usr1);
+        hDeposit.deposit(usr1, 3 ether, false);
+        uint256 maxBorrow = marketViewer.maxBorrowable(market, usr1);
 
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(Collateral.OverMaxLTV.selector));

@@ -18,8 +18,8 @@ contract MigratoorReentrancy is MarketDeploymentContext {
     bytes ZapCallErrorReentrancy;
 
     function setUp() public {
-        marketFrom = deployConvexCurveLPMarket(collatTokenFrom, true);
-        marketTo = deployConvexCurveLPMarket(collatTokenTo, true);
+        marketFrom = deployConvexCurveLPMarket(collatTokenFrom);
+        marketTo = deployConvexCurveLPMarket(collatTokenTo);
 
         vm.startPrank(usr1);
 
@@ -31,7 +31,7 @@ contract MigratoorReentrancy is MarketDeploymentContext {
 
         collatTokenFrom.approve(address(marketFrom), MAX_UINT);
         collatTokenTo.approve(address(marketTo), MAX_UINT);
-        marketFrom.depositAndBorrow(collatIn, 90_000 ether);
+        marketFrom.depositAndBorrow(collatIn, 90_000 ether, false);
 
         ZapCallErrorReentrancy = abi.encodeWithSelector(
             ZappingProxy.ZapCallError.selector,
@@ -39,7 +39,6 @@ contract MigratoorReentrancy is MarketDeploymentContext {
         );
     }
 
-    //TODO
     function test_reenter_in_migrate() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
             markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),

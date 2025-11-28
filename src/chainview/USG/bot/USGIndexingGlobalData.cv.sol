@@ -15,6 +15,7 @@ import {IAggregatorStablePriceV3} from "../../../interfaces/externals/LlamaLend/
 import {IRewardAccumulator} from "../../../interfaces/internals/USG/IRewardAccumulator.sol";
 import {IDebtIR} from "../../../interfaces/internals/USG/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/USG/IIRCalculator.sol";
+import {IMarketViewer} from "../../../interfaces/internals/USG/IMarketViewer.sol";
 
 import {UsgInfo, USGInfoOut, IERC4626} from "../../UsgInfo.sol";
 
@@ -66,23 +67,29 @@ contract USGIndexingGlobalData is UsgInfo {
         IERC20 usg,
         IERC4626 sUSG,
         address[] memory pegKeepers,
-        IAggregatorStablePriceV3 usgOracle
+        IAggregatorStablePriceV3 usgOracle,
+        IMarketViewer _marketViewer
     ) {
         revert MarketCurrentAPRError(
             USGIndexingGlobalDataOut({
                 timestamp: block.timestamp,
-                marketData: getMarketsData(markets, rewardAccumulator, irCalculator),
+                marketData: getMarketsData(markets, rewardAccumulator, irCalculator, _marketViewer),
                 usgInfo: getUSGInfo(usg, sUSG, pegKeepers, usgOracle)
             })
         );
     }
 
-    function getMarketsData(MarketAPRInput[] memory markets, IRewardAccumulator rewardAccumulator, IIRCalculator irCalculator) public view returns (TVLAprs[] memory) {
+    function getMarketsData(
+        MarketAPRInput[] memory markets,
+        IRewardAccumulator rewardAccumulator,
+        IIRCalculator irCalculator,
+        IMarketViewer _marketViewer
+    ) public view returns (TVLAprs[] memory) {
         TVLAprs[] memory output = new TVLAprs[](markets.length);
 
         for (uint256 i; i < markets.length; i++) {
             address market = markets[i].marketAddress;
-            GlobalData memory globalData = _getMarketData(market, rewardAccumulator, irCalculator);
+            GlobalData memory globalData = _getMarketData(market, rewardAccumulator, irCalculator, _marketViewer);
             output[i] = TVLAprs({
                 globalData: globalData,
                 currentAPR: _getCurrentAPR(market, globalData.rewardTokens, rewardAccumulator),
@@ -92,7 +99,12 @@ contract USGIndexingGlobalData is UsgInfo {
         return output;
     }
 
-    function _getMarketData(address market, IRewardAccumulator rewardAccumulator, IIRCalculator irCalculator) internal view returns (GlobalData memory) {
+    function _getMarketData(
+        address market,
+        IRewardAccumulator rewardAccumulator,
+        IIRCalculator irCalculator,
+        IMarketViewer _marketViewer
+    ) internal view returns (GlobalData memory) {
         uint256 totalStakedAmount = ICollateral(market).totalCollateral();
         IPriceOracle oracle = ICollateral(market).collatOracle();
         uint256 oraclePrice = oracle.latestAnswer(true) * 10 ** (18 - oracle.decimals());
@@ -102,7 +114,7 @@ contract USGIndexingGlobalData is UsgInfo {
                 marketAddress: market,
                 totalStakedAmount: totalStakedAmount,
                 totalStakedUSD: (oraclePrice * totalStakedAmount) / 1e18,
-                totalDebt: IDebtIR(market).totalDebt(),
+                totalDebt: _marketViewer.totalDebt(IDebtIR(market)),
                 badDebt: IDebtIR(market).badDebt(),
                 oraclePrice: oraclePrice,
                 irApr: irCalculator.getIRCheckpoint(market).ir,

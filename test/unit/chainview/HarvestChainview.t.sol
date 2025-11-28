@@ -15,8 +15,8 @@ contract HarvestChainview is MarketDeploymentContext {
     BasicERC20Market public market4;
 
     function setUp() public {
-        market1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
-        market2 = deployConvexCurveLPMarket(AddrCurveStableLP.WETH_pxETH, true);
+        market1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
+        market2 = deployConvexCurveLPMarket(AddrCurveStableLP.WETH_pxETH);
         market3 = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
         market4 = deployBasicERC20Market(AddrPTPendle.eUSDe_29_05_25);
     }

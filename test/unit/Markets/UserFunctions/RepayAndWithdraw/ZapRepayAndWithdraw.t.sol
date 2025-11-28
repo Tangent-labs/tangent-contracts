@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import "../../../../contexts/MarketDeploymentContext.sol";
 
 contract ZapRepayAndWithdraw is MarketDeploymentContext {
-    ConvexCrvLPMarket public market;
+    BasicERC20Market public market;
     IERC20Metadata public collatToken = AddrCurveStableLP.sDAI_sUSDe;
 
     uint256 depositedAmount = 333_333 ether;
@@ -13,11 +13,11 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
     uint256 debtBorrow = 200_000 ether;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, false);
+        market = deployBasicERC20Market(collatToken);
 
         vm.startPrank(usr1);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(depositedAmount, debtBorrow);
+        market.depositAndBorrow(depositedAmount, debtBorrow, false);
     }
 
     function test_zapRepayAndWithdraw_partial_with_eth() external {
@@ -36,6 +36,7 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
 
         market.zapRepayAndWithdraw{value: amountIn}(
             withdrawnAmount,
+            false,
             ZapStructDeposit({
                 tokenIn: ETH_NAKED,
                 amountIn: amountIn,
@@ -48,8 +49,8 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
         assertEq(market.totalCollateral(), depositedAmount - withdrawnAmount);
         assertEq(market.collateralBalances(usr1), depositedAmount - withdrawnAmount);
 
-        assertEq(market.userDebt(usr1), debtBorrow - USGBought);
-        assertEq(market.totalDebt(), debtBorrow - USGBought);
+        assertEq(marketViewer.userDebt(market, usr1), debtBorrow - USGBought);
+        assertEq(marketViewer.totalDebt(market), debtBorrow - USGBought);
     }
 
     function test_zapRepayAndWithdraw_fullRepay_partialWithdraw_with_erc20() external {
@@ -72,6 +73,7 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
         tokenIn.approve(address(market), MAX_UINT);
         market.zapRepayAndWithdraw(
             withdrawnAmount,
+            false,
             ZapStructDeposit({
                 tokenIn: tokenIn,
                 amountIn: debtBorrow,
@@ -84,10 +86,10 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
         assertEq(market.totalCollateral(), depositedAmount - withdrawnAmount);
         assertEq(market.collateralBalances(usr1), depositedAmount - withdrawnAmount);
 
-        assertEq(market.userDebt(usr1), 0);
-        assertEq(market.totalDebt(), 0);
+        assertEq(marketViewer.userDebt(market, usr1), 0);
+        assertEq(marketViewer.totalDebt(market), 0);
 
-        market.withdraw(depositedAmount - withdrawnAmount);
+        market.withdraw(depositedAmount - withdrawnAmount, false);
 
         assertEq(market.totalCollateral(), 0);
         assertEq(market.collateralBalances(usr1), 0);
@@ -96,7 +98,7 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
     function test_zapRepayAndWithdraw_fullWithdraw_fullRepay() external {
         vm.startPrank(usr2);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(depositedAmount, debtBorrow);
+        market.depositAndBorrow(depositedAmount, debtBorrow, false);
 
         IERC20 tokenIn = AddrClassicERC20.frxUSD;
         uint256 amountReturnZap = debtBorrow + 1_000 ether;
@@ -114,6 +116,7 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
         tokenIn.approve(address(market), MAX_UINT);
         market.zapRepayAndWithdraw(
             depositedAmount,
+            false,
             ZapStructDeposit({
                 tokenIn: tokenIn,
                 amountIn: debtBorrow,
@@ -126,7 +129,7 @@ contract ZapRepayAndWithdraw is MarketDeploymentContext {
         assertEq(market.totalCollateral(), depositedAmount);
         assertEq(market.collateralBalances(usr1), depositedAmount);
 
-        assertEq(market.userDebt(usr1), debtBorrow);
-        assertEq(market.totalDebt(), debtBorrow);
+        assertEq(marketViewer.userDebt(market, usr1), debtBorrow);
+        assertEq(marketViewer.totalDebt(market), debtBorrow);
     }
 }

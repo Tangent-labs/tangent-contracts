@@ -41,6 +41,7 @@ contract OraclesContext is USGDeployContext {
         vm.label(address(USGOracle), "Oracle USG");
 
         irCalculator = new IRCalculator(owner, controlTower, USGOracle, usg);
+
         controlTower.toggleIRCalculator(address(irCalculator));
 
         rewardAccumulator = new RewardAccumulator(owner, controlTower, USGOracle);
@@ -56,9 +57,12 @@ contract OraclesContext is USGDeployContext {
             zappingProxy,
             convexCrvLPMarketImplem,
             convexFxnLPMarketImplem,
+            curveGaugeMarketImplem,
+            stakeDaoVaultV2MarketImplem,
             marketBasicERC20Implem
         );
         controlTower.toggleMarketCreator(address(marketCreator));
+
         vm.label(address(marketCreator), "MarketCreator");
 
         vm.stopPrank();
@@ -129,13 +133,24 @@ contract OraclesContext is USGDeployContext {
         oracles[AddrClassicERC20.CRV] = new OracleChainlinkWrapper(AddrChainlinkOracle.CRV, 1000000000000, address(0), "CRV / USD");
         vm.label(address(AddrChainlinkOracle.CRV), "Oracle CRV");
 
-        // TODO Warning, is flagged as HIGH MARKET RISK
         OracleChainlinkWrapper USRFallback = new OracleChainlinkWrapper(AddrRestoneOracle.USR, 1000000000000, address(0), "Redstone Fallback USR / USD");
         oracles[AddrClassicERC20.USR] = new OracleChainlinkWrapper(AddrChainlinkOracle.USR, 1000000000000, address(USRFallback), "USR / USD");
         vm.label(address(AddrChainlinkOracle.USR), "Oracle USR");
 
         oracles[AddrClassicERC20.stETH] = new OracleChainlinkWrapper(AddrChainlinkOracle.stETH, 1000000000000, address(0), "stETH / USD");
         vm.label(address(AddrChainlinkOracle.stETH), "Oracle stETH");
+
+        oracles[AddrClassicERC20.cbBTC] = new OracleChainlinkWrapper(AddrChainlinkOracle.cbBTC, 1000000000000, address(0), "cbBTC / USD");
+        vm.label(address(AddrChainlinkOracle.cbBTC), "Oracle cbBTC");
+
+        oracles[AddrClassicERC20.CRV] = new OracleChainlinkWrapper(AddrChainlinkOracle.CRV, 1000000000000, address(0), "CRV / USD");
+        vm.label(address(AddrChainlinkOracle.CRV), "Oracle CRV");
+
+        oracles[AddrClassicERC20.RLUSD] = new OracleChainlinkWrapper(AddrChainlinkOracle.RLUSD, 1000000000000, address(0), "RLUSD / USD");
+        vm.label(address(AddrChainlinkOracle.RLUSD), "Oracle RLUSD");
+
+        oracles[AddrClassicERC20.PYUSD] = new OracleChainlinkWrapper(AddrChainlinkOracle.PYUSD, 1000000000000, address(0), "PYUSD / USD");
+        vm.label(address(AddrChainlinkOracle.PYUSD), "Oracle PYUSD");
     }
 
     function setupSimpleTokenOraclesWithCurveLP() internal {
@@ -306,6 +321,26 @@ contract OraclesContext is USGDeployContext {
             "frxUSD_sUSDS / USD"
         );
         vm.label(address(oracles[AddrCurveStableLP.frxUSD_sUSDS]), "Oracle LP frxUSD/sUSDS");
+
+        // Oracle RLUSD/USDC
+        oracles[AddrCurveStableLP.RLUSD_USDC] = new OracleDuoPoolStable(
+            address(AddrCurveStableLP.RLUSD_USDC),
+            oracles[AddrClassicERC20.USDC],
+            oracles[AddrClassicERC20.RLUSD],
+            "RLUSD_USDC / USD"
+        );
+        oracles[AddrCurveGauge.RLUSD_USDC] = oracles[AddrCurveStableLP.RLUSD_USDC];
+        vm.label(address(oracles[AddrCurveStableLP.RLUSD_USDC]), "Oracle LP RLUSD/USDC");
+
+        // Oracle PYUSD/USDC
+        oracles[AddrCurveStableLP.PYUSD_USDC] = new OracleDuoPoolStable(
+            address(AddrCurveStableLP.PYUSD_USDC),
+            oracles[AddrClassicERC20.PYUSD],
+            oracles[AddrClassicERC20.USDC],
+            "PYUSD_USDC / USD"
+        );
+        oracles[AddrCurveGauge.PYUSD_USDC] = oracles[AddrCurveStableLP.PYUSD_USDC];
+        vm.label(address(oracles[AddrCurveStableLP.PYUSD_USDC]), "Oracle LP PYUSD/USDC");
     }
 
     function setupSavingAccountOracles() internal {

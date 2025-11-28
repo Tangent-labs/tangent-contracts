@@ -27,16 +27,16 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         collatToken = AddrCurveStableLP.USDC_fxUSD;
         market = deployConvexFxnLPMarket(collatToken);
 
-        hDeposit = new HDepositConvexFxnLP(usr1, market);
-        hBorrow = new HBorrow(usr1, market);
+        hDeposit = new HDepositConvexFxnLP(usr1, market, usg, marketViewer);
+        hBorrow = new HBorrow(usr1, market, usg, marketViewer);
         hLpManipulator = new HLPManipulator(usr1);
 
-        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed);
+        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed, false);
 
         hDeposit.setMsgSender(usr2);
-        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed);
+        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed, false);
         hDeposit.setMsgSender(usr3);
-        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed);
+        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed, false);
 
         balanceChanges = new ERC20BalanceChanges();
 
@@ -48,7 +48,11 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatDeposited, minUsgOut: 0, maxUsgToBurn: 0, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
         vm.stopPrank();
@@ -60,7 +64,11 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatDeposited, minUsgOut: 0, maxUsgToBurn: 0, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -70,7 +78,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         assertEq(rewardRate, rewardPerTokenStored, "RewardPerTokenStored should be 0 before processRewards");
         skip(200);
 
-        uint256 userDebt = market.userDebt(usr1);
+        uint256 userDebt = marketViewer.userDebt(market, usr1);
         uint256 collatValue = (market.collatOracle().latestAnswer(true) * collatDeposited) / (10 ** (collatToken.decimals()));
         uint256 liquidationFee = ((collatValue - userDebt) * market.liquidationFee()) / 100_000;
         deal(address(usg), usr1, userDebt + liquidationFee);
@@ -82,7 +90,11 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         // Liquidation passes after EMA of price_oralce passed
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatDeposited, minUsgOut: 0, maxUsgToBurn: MAX_UINT, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -93,8 +105,8 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         assertEq(rewardRate, rewardPerTokenStored, "RewardPerTokenStored should be 0 before processRewards");
 
         uint256 pendingInterests = irCalculator.mintableInterests();
-        assertEq(market.userDebt(usr1), 0);
-        assertEq(market.totalDebt(), USGBorrowed * 2 + ((pendingInterests * 2) / 3) + 1, "Total debt wrong");
+        assertEq(marketViewer.userDebt(market, usr1), 0);
+        assertEq(marketViewer.totalDebt(market), USGBorrowed * 2 + ((pendingInterests * 2) / 3) + 1, "Total debt wrong");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
@@ -159,7 +171,11 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatDeposited, minUsgOut: 0, maxUsgToBurn: 0, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
         vm.stopPrank();
@@ -171,7 +187,11 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatDeposited, minUsgOut: 0, maxUsgToBurn: 0, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -181,7 +201,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         vm.startPrank(usr1);
 
-        uint256 userDebt = market.userDebt(usr1);
+        uint256 userDebt = marketViewer.userDebt(market, usr1);
         uint256 debtToRepay = userDebt / 2;
 
         uint256 collatValue = ((market.collatOracle().latestAnswer(true) * collatDeposited) / 2) / (10 ** (collatToken.decimals()));
@@ -196,20 +216,28 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         // Liquidation doesn't pass because 0 collat is passed in param
         vm.expectRevert(abi.encodeWithSelector(Collateral.ZeroCollatAmount.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: 0, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: 0, minUsgOut: 0, maxUsgToBurn: MAX_UINT, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
         // Liquidation passes after EMA of price_oralce passed
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: 5_000 ether, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: 5_000 ether, minUsgOut: 0, maxUsgToBurn: MAX_UINT, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
         assertERC20Tracking();
 
-        assertApproxEqAbs(market.userDebt(usr1), userDebt - debtToRepay, 3, "User debt not correct");
-        assertEq(market.totalDebt() + 2, market.userDebt(usr1) + market.userDebt(usr2) + market.userDebt(usr3), "Total Debt");
+        assertApproxEqAbs(marketViewer.userDebt(market, usr1), userDebt - debtToRepay, 3, "User debt not correct");
+        assertEq(marketViewer.totalDebt(market) + 2, marketViewer.userDebt(market, usr1) + marketViewer.userDebt(market, usr2) + marketViewer.userDebt(market, usr3), "Total Debt");
 
         (uint216 ir, uint40 timestamp) = irCalculator.irCheckpoints(address(market));
 
@@ -222,7 +250,17 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         verifyReceiveERC20(collatToken, usr1, collatToLiquidate, "Collat sent to liquidator");
 
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatToLiquidate, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({
+                    collatAmountToLiquidate: collatToLiquidate,
+                    minUsgOut: 0,
+                    maxUsgToBurn: MAX_UINT,
+                    minCollatAmountToLiquidate: 0,
+                    isReceiptOut: false
+                }),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -230,7 +268,7 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
 
         uint256 collatBalances = market.collateralBalances(usr1);
 
-        userDebt = market.userDebt(usr1);
+        userDebt = marketViewer.userDebt(market, usr1);
         collatValue = (market.collatOracle().latestAnswer(true) * collatBalances) / (10 ** (collatToken.decimals()));
 
         liquidationFee = ((collatValue - userDebt) * market.liquidationFee()) / 100_000;
@@ -244,17 +282,24 @@ contract LiquidateCollateralGoDown is MarketDeploymentContext {
         market.liquidate(
             LiquidateIn({
                 account: usr1,
-                collatToLiquidate: collatBalances - 1 ether,
-                minUSGOut: 0,
-                maxUSGToBurn: MAX_UINT,
-                minCollatValueToLiquidate: 0,
-                minCollatAmountToLiquidate: 0
+                postLiquidate: PostLiquidate({
+                    collatAmountToLiquidate: collatBalances - 1 ether,
+                    minUsgOut: 0,
+                    maxUsgToBurn: MAX_UINT,
+                    minCollatAmountToLiquidate: 0,
+                    isReceiptOut: false
+                }),
+                minCollatValueToLiquidate: 0
             }),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatBalances, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatBalances, minUsgOut: 0, maxUsgToBurn: MAX_UINT, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
         assertERC20Tracking();

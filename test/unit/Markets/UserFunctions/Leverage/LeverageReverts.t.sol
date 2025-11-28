@@ -14,18 +14,21 @@ contract LeverageReverts is MarketDeploymentContext {
     uint256 minimumLoan;
     uint256 maxMarketDebt;
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, true);
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
+        market = deployConvexCurveLPMarket(collatToken);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
         minimumLoan = market.minimumLoan();
         maxMarketDebt = market.maxMarketDebt();
     }
 
     function test_leverage_when_deposit_paused() external {
         vm.startPrank(pauser);
-        market.setIsDepositPaused(true);
+        market.setPause(PauseSettings.PauseEnum.DepositPaused, 1);
 
         vm.expectRevert(abi.encodeWithSelector(PauseSettings.DepositPaused.selector));
-        market.leverage(0, 10, 100, ZapStruct({router: address(collatToken), routerCall: ""}));
+        market.leverage(
+            LeverageIn({collatToDeposit: 0, usgToFlashMint: 10, minCollatAmountOut: 100, isReceiptIn: false}),
+            ZapStruct({router: address(collatToken), routerCall: ""})
+        );
     }
 
     function test_leverage_when_borrow_paused() external {
@@ -35,17 +38,20 @@ contract LeverageReverts is MarketDeploymentContext {
         deal(address(collatToken), address(mockRouter), collatOut);
 
         vm.startPrank(pauser);
-        market.setIsBorrowPaused(true);
+        market.setPause(PauseSettings.PauseEnum.BorrowPaused, 1);
         ZapStruct memory zap = encoder.encodeSwapToMockRouter(address(mockRouter), usg, USGMinted, collatToken, address(market), collatOut);
         vm.expectRevert(abi.encodeWithSelector(PauseSettings.BorrowPaused.selector));
-        market.leverage(0, USGMinted, collatOut, zap);
+        market.leverage(LeverageIn({collatToDeposit: 0, usgToFlashMint: USGMinted, minCollatAmountOut: collatOut, isReceiptIn: false}), zap);
     }
 
     function test_leverage_when_leverage_paused() external {
         vm.startPrank(pauser);
-        market.setIsLeveragePaused(true);
+        market.setPause(PauseSettings.PauseEnum.LeveragePaused, 1);
 
         vm.expectRevert(abi.encodeWithSelector(PauseSettings.LeveragePaused.selector));
-        market.leverage(0, 10, 100, ZapStruct({router: address(collatToken), routerCall: ""}));
+        market.leverage(
+            LeverageIn({collatToDeposit: 0, usgToFlashMint: 10, minCollatAmountOut: 100, isReceiptIn: false}),
+            ZapStruct({router: address(collatToken), routerCall: ""})
+        );
     }
 }

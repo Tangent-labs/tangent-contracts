@@ -12,7 +12,7 @@ contract LeverageCurveRoute is MarketDeploymentContext {
     HLPManipulator hLpManipulator;
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
     }
 
     function test_leverage_on_curve_route() external {
@@ -49,9 +49,7 @@ contract LeverageCurveRoute is MarketDeploymentContext {
         );
 
         market.leverage(
-            collatToDeposit,
-            USGToFlashMint,
-            minCollatOut,
+            LeverageIn({collatToDeposit: collatToDeposit, usgToFlashMint: USGToFlashMint, minCollatAmountOut: minCollatOut, isReceiptIn: false}),
             // Simulate zap call with a transfer to the market
             ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routeCall})
         );
@@ -77,9 +75,7 @@ contract LeverageCurveRoute is MarketDeploymentContext {
         );
 
         market.leverage(
-            0,
-            USGToFlashMint,
-            minCollatOut,
+            LeverageIn({collatToDeposit: 0, usgToFlashMint: USGToFlashMint, minCollatAmountOut: minCollatOut, isReceiptIn: false}),
             // Simulate zap call with a transfer to the market
             ZapStruct({router: address(AddrRouter.ROUTER_CURVE), routerCall: routeCall})
         );

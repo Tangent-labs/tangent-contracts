@@ -24,7 +24,7 @@ contract DepositBasicERC20Market is MarketDeploymentContext {
         verifyLostERC20(collatToken, usr1, collatDeposited1);
         verifyReceiveERC20(collatToken, address(market), collatDeposited1);
 
-        market.depositAndBorrow(collatDeposited1, borrowedAmount1);
+        market.depositAndBorrow(collatDeposited1, borrowedAmount1, false);
 
         assertERC20Tracking();
     }
@@ -36,7 +36,7 @@ contract DepositBasicERC20Market is MarketDeploymentContext {
         verifyLostERC20(collatToken, usr1, collatDeposited1);
         verifyReceiveERC20(collatToken, address(market), collatDeposited1);
 
-        market.depositAndBorrow(collatDeposited1, borrowedAmount1);
+        market.depositAndBorrow(collatDeposited1, borrowedAmount1, false);
 
         assertERC20Tracking();
 
@@ -44,7 +44,7 @@ contract DepositBasicERC20Market is MarketDeploymentContext {
         verifyLostERC20(collatToken, address(market), collatDeposited1);
         verifyReceiveERC20(collatToken, usr1, collatDeposited1);
 
-        market.repayAndWithdraw(collatDeposited1, borrowedAmount1);
+        market.repayAndWithdraw(collatDeposited1, borrowedAmount1, false);
 
         assertERC20Tracking();
     }
@@ -53,6 +53,6 @@ contract DepositBasicERC20Market is MarketDeploymentContext {
         vm.startPrank(usr1);
 
         vm.expectRevert(abi.encodeWithSelector(Collateral.ZeroCollatAmount.selector));
-        market.deposit(usr1, 0);
+        market.deposit(usr1, 0, false);
     }
 }

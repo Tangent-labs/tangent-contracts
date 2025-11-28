@@ -13,8 +13,8 @@ contract DebtInvariant is MarketDeploymentContext {
 
     BorrowInvariantHandler public borrowInvariantHandler;
     function setUp() public {
-        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true));
-        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, true));
+        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD));
+        markets.push(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD));
         markets.push(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD));
 
         MarketExternalActions[] memory marketsMemory = new MarketExternalActions[](markets.length);
@@ -36,7 +36,7 @@ contract DebtInvariant is MarketDeploymentContext {
         targetSender(usr5);
         targetSender(usr6);
 
-        borrowInvariantHandler = new BorrowInvariantHandler(marketsMemory, usg);
+        borrowInvariantHandler = new BorrowInvariantHandler(marketsMemory, usg, marketViewer);
 
         targetContract(address(borrowInvariantHandler));
 
@@ -57,9 +57,9 @@ contract DebtInvariant is MarketDeploymentContext {
             uint256 debtSum;
             MarketExternalActions market = markets[i];
             for (uint256 j; j < users.length; j++) {
-                debtSum += market.userDebt(users[j]);
+                debtSum += marketViewer.userDebt(market, users[j]);
             }
-            assertApproxEqRel(debtSum, market.totalDebt(), 1e5, "Sum of all debts is not equal to the total debt of the market");
+            assertApproxEqRel(debtSum, marketViewer.totalDebt(market), 1e5, "Sum of all debts is not equal to the total debt of the market");
         }
     }
 

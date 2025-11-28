@@ -8,7 +8,7 @@ contract AddNewRewardRewardAcc is MarketDeploymentContext {
     RCParams public rcParam;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
         rcParam = rewardAccumulator.getRCParams(address(market));
     }
 
@@ -37,11 +37,11 @@ contract AddNewRewardRewardAcc is MarketDeploymentContext {
 
         vm.startPrank(usr1);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(amountStaked * 2, borrowed);
+        market.depositAndBorrow(amountStaked * 2, borrowed, false);
 
         vm.startPrank(usr2);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(amountStaked, borrowed);
+        market.depositAndBorrow(amountStaked, borrowed, false);
 
         vm.startPrank(owner);
         uint256 distributed = 10_000 ether;

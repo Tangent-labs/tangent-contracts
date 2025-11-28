@@ -10,12 +10,12 @@ contract MarketDetailsChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+        market = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
     }
 
     // LIST
     function test_marketDetails_ui_returns() public {
-        try new MarketDetailsUI(usr1, address(market)) {} catch (bytes memory reason) {
+        try new MarketDetailsUI(usr1, address(market), marketViewer) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }

@@ -5,6 +5,7 @@ import {BalancesAllowances, OutputBalanceAllowances, InputBalancesAllowances} fr
 import {ERC20Infos, IERC20Metadata, ERC20StaticInfos, IERC20} from "../ERC20Infos.sol";
 
 import {ICollateral} from "../../interfaces/internals/USG/ICollateral.sol";
+import {IMarketViewer} from "../../interfaces/internals/USG/IMarketViewer.sol";
 import {IDebtIR} from "../../interfaces/internals/USG/IDebtIR.sol";
 import {IIRCalculator, IRParams} from "../../interfaces/internals/USG/IIRCalculator.sol";
 import {IPriceOracle} from "../../interfaces/internals/USG/IPriceOracle.sol";
@@ -52,19 +53,19 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         MarketRewards[] rewardData;
     }
 
-    function getMarketDetails(address account, address market) public returns (MarketRow memory) {
+    function getMarketDetails(address account, address market, IMarketViewer marketViewer) public returns (MarketRow memory) {
         return
             MarketRow({
                 marketAddress: market,
-                collateralInfos: _getCollateralInfos(account, market),
-                debtInfos: _getDebtInfos(account, market),
+                collateralInfos: _getCollateralInfos(account, market, marketViewer),
+                debtInfos: _getDebtInfos(account, market, marketViewer),
                 constants: _getMarketConstants(market),
                 obas: _getBalancesAllowances(account, market),
                 rewardData: _getRewardData(market)
             });
     }
 
-    function _getCollateralInfos(address account, address market) internal view returns (CollateralInfos memory) {
+    function _getCollateralInfos(address account, address market, IMarketViewer marketViewer) internal view returns (CollateralInfos memory) {
         ICollateral marketCollateral = ICollateral(market);
         IERC20Metadata collatToken = marketCollateral.collatToken();
         uint256 totalCollateral = marketCollateral.totalCollateral();
@@ -78,12 +79,12 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                 totalCollateralAmount: totalCollateral,
                 collateralUSDPrice: collateralUSDPrice,
                 positionCollateralAmount: marketCollateral.collateralBalances(account),
-                positionCollateralUSDValue: marketCollateral.positionValue(account),
+                positionCollateralUSDValue: marketViewer.positionValue(marketCollateral, account),
                 priceOracle: priceOracle
             });
     }
 
-    function _getDebtInfos(address account, address market) internal returns (DebtInfos memory) {
+    function _getDebtInfos(address account, address market, IMarketViewer marketViewer) internal returns (DebtInfos memory) {
         ICollateral marketCollateral = ICollateral(market);
         IDebtIR marketDebt = IDebtIR(market);
         IIRCalculator irCalculator = IIRCalculator(marketDebt.irCalculator());
@@ -91,9 +92,9 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
 
         return
             DebtInfos({
-                totalDebt: marketDebt.totalDebt(),
-                userDebt: marketDebt.userDebt(account),
-                healthRatio: marketCollateral.healthRatio(account),
+                totalDebt: marketViewer.totalDebt(marketDebt),
+                userDebt: marketViewer.userDebt(marketDebt, account),
+                healthRatio: marketViewer.healthRatio(market, account),
                 currentBorrowRate: irCalculator.getIRCheckpoint(market).ir,
                 futureBorrowRate: irCalculator.computeIRForMarket(market),
                 currentRewardCut: _rewardAccumulator.lastRewardCuts(market),

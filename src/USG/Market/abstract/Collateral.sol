@@ -15,7 +15,7 @@ abstract contract Collateral is DebtIR, ICollateral {
     uint256 constant MAX_UINT = uint256(int256(-1));
 
     /// @notice Denominator used for percentage calculations (e.g. 100% = 100_000)
-    uint256 public constant DENOMINATOR = 100_000;
+    uint256 constant DENOMINATOR = 100_000;
 
     /// @notice The amount of decimals of the collateral
     uint256 public collatDecimals;
@@ -122,36 +122,9 @@ abstract contract Collateral is DebtIR, ICollateral {
         collateralBalances[account] = newCollatBalance;
     }
 
-    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-                        PUBLIC VIEWS
-    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    /**
-     * @notice Returns the maximum amount of USG a user can borrow based on their collateral
-     * @param account Address of the user
-     * @return Amount of USG borrowable
-     */
-    function maxBorrowable(address account) external view returns (uint256) {
-        return _maxBorrowable(account, true);
-    }
-
-    /**
-     * @notice Returns the USD value of the user's collateral
-     * @param account Address of the user
-     * @return Value in USD (1e18 precision)
-     */
-    function positionValue(address account) external view returns (uint256) {
-        return _positionValue(account, true);
-    }
-
-    /**
-     * @notice Computes a user's health ratio (safety of collateral vs debt)
-     * @param account Address of the user
-     * @return Health ratio (1e18 base); higher is safer
-     */
-    function healthRatio(address account) external view returns (uint256) {
-        return _healthRatio(userDebt(account), collateralBalances[account], _collateralPrice(true));
-    }
+    // /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+    //                     PUBLIC VIEWS
+    // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
      * @notice Returns both user collateral balance and total system collateral
@@ -201,37 +174,6 @@ abstract contract Collateral is DebtIR, ICollateral {
      */
     function _collateralPrice(bool isNoFailMode) internal view returns (uint256) {
         return collatOracle.latestAnswer(isNoFailMode);
-    }
-
-    /**
-     * @dev Computes health ratio for a position
-     * @param userDebt_ Debt of the user
-     * @param collateralBalance Amount of collateral
-     * @return Health ratio (1e18 base)
-     */
-    function _healthRatio(uint256 userDebt_, uint256 collateralBalance, uint256 collatPrice) internal view returns (uint256) {
-        if (userDebt_ != 0) {
-            return (collateralBalance * 10 ** (18 - collatDecimals) * collatPrice * liquidationThreshold) / (userDebt_ * DENOMINATOR);
-        }
-        return MAX_UINT; // Fully healthy if no debt
-    }
-
-    /**
-     * @dev Internal view to calculate max borrowable USG for a user
-     * @param account Address of the user
-     * @return Max borrowable amount
-     */
-    function _maxBorrowable(address account, bool isNoFailMode) internal view returns (uint256) {
-        return _mulDiv(maxLTV, _positionValue(account, isNoFailMode), DENOMINATOR);
-    }
-
-    /**
-     * @dev Internal view to calculate position value in USD for a user
-     * @param account Address of the user
-     * @return Value in USD (1e18 base)
-     */
-    function _positionValue(address account, bool isNoFailMode) internal view returns (uint256) {
-        return _mulDiv(collateralBalances[account], _collateralPrice(isNoFailMode), 10 ** collatDecimals);
     }
 
     /**

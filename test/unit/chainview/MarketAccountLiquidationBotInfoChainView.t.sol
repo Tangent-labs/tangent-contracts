@@ -10,8 +10,8 @@ contract MarketAccountLiquidationBotInfoChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market2;
 
     function setUp() public {
-        market1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
-        market2 = deployConvexCurveLPMarket(AddrCurveStableLP.WETH_frxETH, true);
+        market1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
+        market2 = deployConvexCurveLPMarket(AddrCurveStableLP.WETH_frxETH);
     }
 
     // LIST
@@ -23,7 +23,7 @@ contract MarketAccountLiquidationBotInfoChainview is MarketDeploymentContext {
         usersMarkets[0] = GetAccountLiquidation.LendingPositionsIn({account: usr1, market: address(market1)});
         usersMarkets[1] = GetAccountLiquidation.LendingPositionsIn({account: usr1, market: address(market2)});
 
-        try new MarketAccountLiquidationBotInfo(markets, usersMarkets) {} catch (bytes memory reason) {
+        try new MarketAccountLiquidationBotInfo(markets, usersMarkets, marketViewer) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }

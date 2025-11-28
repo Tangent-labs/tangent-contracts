@@ -13,11 +13,11 @@ contract DepositAndBorrowCvxMarket is MarketDeploymentContext {
     HBorrow public hBorrow;
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
 
-        hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
-        hBorrow = new HBorrow(usr1, market);
+        hRewards = new HProcessRewards(usr1, market, rewardAccumulator, usg, marketViewer);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
+        hBorrow = new HBorrow(usr1, market, usg, marketViewer);
     }
 
     //
@@ -32,14 +32,14 @@ contract DepositAndBorrowCvxMarket is MarketDeploymentContext {
         verifyReceiveERC20(usg, usr1, borrowedAmount1, "User receives the borrowed amount");
 
         vm.startSnapshotGas("Deposit And Borrow", "First deposit and borrow ever on the market and stake");
-        hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1);
+        hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1, false);
         vm.stopSnapshotGas("Deposit And Borrow", "First deposit and borrow ever on the market and stake");
 
         assertEq(market.collateralBalances(usr1), collatDeposited1, "Collateral deposited must be equal to collateralBalances");
         assertEq(market.totalCollateral(), collatDeposited1, "Total collateral is not right");
-        assertEq(market.userDebt(usr1), borrowedAmount1, "Position debt should be equal to the borrowed amount");
+        assertEq(marketViewer.userDebt(market, usr1), borrowedAmount1, "Position debt should be equal to the borrowed amount");
         assertEq(market.userDebtShares(usr1), borrowedAmount1, "Position debt index should be 0");
-        assertEq(market.totalDebt(), borrowedAmount1, "Total debt should be 0");
+        assertEq(marketViewer.totalDebt(market), borrowedAmount1, "Total debt should be 0");
 
         skip(15 days);
 
@@ -52,16 +52,16 @@ contract DepositAndBorrowCvxMarket is MarketDeploymentContext {
         verifyReceiveERC20(usg, usr2, borrowedAmount2 + 12, "User receives 50 USG");
 
         hDeposit.setMsgSender(usr2);
-        hDeposit.depositAndBorrow(collatDeposited2, borrowedAmount2);
+        hDeposit.depositAndBorrow(collatDeposited2, borrowedAmount2, false);
 
         assertEq(market.collateralBalances(usr2), collatDeposited2, "Collateral deposited must be equal to collateralBalances");
         assertEq(market.totalCollateral(), collatDeposited1 + collatDeposited2, "Total collateral is not right");
 
-        assertApproxEqAbs(market.userDebt(usr2), borrowedAmount2, 1, "Position debt displays the real debt for a user");
+        assertApproxEqAbs(marketViewer.userDebt(market, usr2), borrowedAmount2, 1, "Position debt displays the real debt for a user");
 
         assertEq(market.totalDebtShares(), market.userDebtShares(usr1) + market.userDebtShares(usr2), "Total Debt shares equals sum of all user debt shares");
 
-        assertApproxEqAbs(market.totalDebt(), market.userDebt(usr1) + market.userDebt(usr2), 1, "Total Debt equals sum of all debt");
+        assertApproxEqAbs(marketViewer.totalDebt(market), marketViewer.userDebt(market, usr1) + marketViewer.userDebt(market, usr2), 1, "Total Debt equals sum of all debt");
 
         skip(1 days);
     }

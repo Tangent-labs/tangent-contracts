@@ -21,7 +21,7 @@ contract PointPricesChainviewTest is MarketDeploymentContext {
 
         PointPrices.AddressesInput memory addresses = PointPrices.AddressesInput({usg: address(usg), usgOracle: address(USGOracle), sUsg: address(sUSG), pegKeepers: pegKeepers});
 
-        MarketExternalActions m1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true);
+        MarketExternalActions m1 = deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD);
         MarketExternalActions m2 = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
 
         address[] memory markets = new address[](2);

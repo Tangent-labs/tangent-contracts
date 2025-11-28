@@ -75,8 +75,8 @@ contract ZapLeverage is MarketDeploymentContext {
         assertEq(market.collateralBalances(usr4), totalCollat);
         assertEq(market.totalCollateral(), totalCollat);
 
-        assertApproxEqAbs(market.userDebt(usr4), (shares * index) / RAY, 3);
-        assertApproxEqAbs(market.totalDebt(), (shares * index) / RAY, 3);
+        assertApproxEqAbs(marketViewer.userDebt(market, usr4), (shares * index) / RAY, 3);
+        assertApproxEqAbs(marketViewer.totalDebt(market), (shares * index) / RAY, 3);
 
         assertERC20Tracking();
     }
@@ -113,26 +113,29 @@ contract ZapLeverage is MarketDeploymentContext {
         assertEq(market.collateralBalances(usr4), totalCollat);
         assertEq(market.totalCollateral(), totalCollat);
 
-        assertApproxEqRel(market.userDebt(usr4), (shares * index) / RAY, 3);
-        assertApproxEqRel(market.totalDebt(), (shares * index) / RAY, 3);
+        assertApproxEqRel(marketViewer.userDebt(market, usr4), (shares * index) / RAY, 3);
+        assertApproxEqRel(marketViewer.totalDebt(market), (shares * index) / RAY, 3);
 
         assertERC20Tracking();
 
         skip(60 days);
 
         vm.startPrank(usr1);
-        uint256 uDebt = market.userDebt(usr4);
+        uint256 uDebt = marketViewer.userDebt(market, usr4);
 
         deal(address(usg), address(mockRouter), uDebt + (market.liquidationFee() * uDebt) / 100_000);
 
         market.liquidate(
             LiquidateIn({
                 account: usr4,
-                collatToLiquidate: market.collateralBalances(usr4),
-                minUSGOut: market.collateralBalances(usr4),
-                maxUSGToBurn: MAX_UINT,
-                minCollatValueToLiquidate: 0,
-                minCollatAmountToLiquidate: 0
+                postLiquidate: PostLiquidate({
+                    collatAmountToLiquidate: market.collateralBalances(usr4),
+                    minUsgOut: market.collateralBalances(usr4),
+                    maxUsgToBurn: MAX_UINT,
+                    minCollatAmountToLiquidate: 0,
+                    isReceiptOut: false
+                }),
+                minCollatValueToLiquidate: 0
             }),
             encoder.encodeSwapToMockRouter(address(mockRouter), collatToken, totalCollat, usg, usr1, uDebt + (market.liquidationFee() * uDebt) / 100_000)
         );
@@ -140,8 +143,8 @@ contract ZapLeverage is MarketDeploymentContext {
         assertEq(market.collateralBalances(usr4), 0);
         assertEq(market.totalCollateral(), 0);
 
-        assertEq(market.userDebt(usr4), 0);
-        assertEq(market.totalDebt(), 0);
+        assertEq(marketViewer.userDebt(market, usr4), 0);
+        assertEq(marketViewer.totalDebt(market), 0);
 
         assertEq(market.userDebtShares(usr4), 0);
         assertEq(market.totalDebtShares(), 0);

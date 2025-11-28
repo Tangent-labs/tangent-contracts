@@ -26,7 +26,7 @@ contract ProcessSimpleRewards is MarketDeploymentContext {
         // Perform staking
         deal(address(collatToken), usr1, 100_000 ether);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(10_000 ether, 5_000 ether);
+        market.depositAndBorrow(10_000 ether, 5_000 ether, false);
 
         // Deposit rewards on the market contract,ready to be processed
         IERC20[] memory rewardTokens = rewardAccumulator.getRewardTokens(address(market));
