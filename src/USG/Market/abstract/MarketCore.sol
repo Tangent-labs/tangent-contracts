@@ -231,7 +231,6 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         //  Cache the new value in USG of the debt
         uint256 newUserDebtShares = _convertToShares(usgToBorrow, newDebtIndex, Math.Rounding.Ceil);
-
         uint256 newTotalDebtShares = totalDebtShares + newUserDebtShares;
 
         _verifyDebtCap(newTotalDebtShares, newDebtIndex);
