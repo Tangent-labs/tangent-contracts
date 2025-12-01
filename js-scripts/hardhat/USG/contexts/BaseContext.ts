@@ -148,7 +148,7 @@ export class BaseContext extends MainSetup {
     async deployContracts2(USGOracle: AddressLike, lpDeployContext: LpDeployContext) {
         this.irCalculator = await (await ethers.getContractFactory("IRCalculator")).deploy(this.owner, this.controlTower, USGOracle, this.USG);
         await this.irCalculator.waitForDeployment();
-        await this.controlTower.toggleIRCalculator(this.irCalculator);
+        await this.USG.setIsIRProducer(this.irCalculator, true);
 
         this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, USGOracle);
         await this.rewardAccumulator.waitForDeployment();
@@ -187,10 +187,10 @@ export class BaseContext extends MainSetup {
 
         await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperUSG_USDC, this.pegKeeperUSG_wfrxUSD]);
 
-        await this.controlTower.connect(this.owner).togglePegKeeper(this.pegKeeperUSG_USDC);
-        await this.controlTower.connect(this.owner).togglePegKeeper(this.pegKeeperUSG_wfrxUSD);
+        await this.USG.connect(this.owner).setIsPegKeeper(this.pegKeeperUSG_USDC, true);
+        await this.USG.connect(this.owner).setIsPegKeeper(this.pegKeeperUSG_wfrxUSD, true);
 
-        await this.controlTower.connect(this.owner).toggleMarketCreator(this.marketCreator);
+        await this.controlTower.connect(this.owner).setIsMarketCreator(this.marketCreator, true);
 
         this.pendlePTRouter = await (await ethers.getContractFactory("PendlePTRouter")).deploy();
     }

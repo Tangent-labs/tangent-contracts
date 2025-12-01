@@ -55,8 +55,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.USDC_crvUSD.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.USDC_crvUSD.pid,
     },
     crvUSD_USDT: {
@@ -66,8 +65,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.USDT_crvUSD.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.USDT_crvUSD.pid,
     },
     USDC_USDT: {
@@ -77,8 +75,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.USDC_USDT_STRATEGICR.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.USDC_USDT_STRATEGICR.pid,
     },
     frxUSD_USDe: {
@@ -88,8 +85,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.frxUSD_USDe.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.frxUSD_USDe.pid,
     },
     // ETH STABLE
@@ -100,8 +96,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.WETH_frxETH.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.WETH_frxETH.pid,
     },
     pxETH_WETH: {
@@ -111,8 +106,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.WETH_pxETH.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.WETH_pxETH.pid,
     },
 
@@ -123,8 +117,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.pxETH_stETH.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.pxETH_stETH.pid,
     },
 
@@ -135,8 +128,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.cbBTC_WBTC.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.cbBTC_WBTC.pid,
     },
     // TRI CRYPTO
@@ -147,8 +139,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.USDT_WBTC_WETH.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.USDT_WBTC_WETH.pid,
     },
     USDC_WBTC_WETH: {
@@ -158,8 +149,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.USDC_WBTC_WETH.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.USDC_WBTC_WETH.pid,
     },
     crvUSD_ETH_CRV: {
@@ -169,8 +159,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.crvUSD_ETH_CRV.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.crvUSD_ETH_CRV.pid,
     },
     GHO_cbBTC_WETH: {
@@ -180,8 +169,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.GHO_cbBTC_WETH.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.GHO_cbBTC_WETH.pid,
     },
 
@@ -194,8 +182,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.CVX_ETH.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.CVX_ETH.pid,
     },
     USR_RLP: {
@@ -205,8 +192,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         maxLTV: 85_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
-        cvxRewardToken: ConvexCrvPools.USR_RLP.cvxRewardToken,
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         pid: ConvexCrvPools.USR_RLP.pid,
     },
 };
@@ -218,7 +204,7 @@ export const STATIC_CONFIG_CONVEX_FXN = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.FXN, commonERC20.CRV, commonERC20.CVX],
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX, commonERC20.FXN],
         pid: ConvexFxnPools.USDC_fxUSD.pid,
     },
 };
@@ -232,7 +218,7 @@ export const STATIC_CONFIG_CURVE_GAUGE = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.PYUSD, commonERC20.CRV],
+        rewardTokens: [commonERC20.PYUSD],
         gaugeToken: curveGauges.CURVE_PYUSD_USDC_GAUGE
     },
     RLUSD_USDC: {
@@ -242,7 +228,7 @@ export const STATIC_CONFIG_CURVE_GAUGE = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.RLUSD, commonERC20.CRV],
+        rewardTokens: [commonERC20.RLUSD, commonERC20.CRV],
         gaugeToken: curveGauges.CURVE_RLUSD_USDC_GAUGE
     }
 };
@@ -255,7 +241,7 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.USDC_crvUSD.stakeDaoVault
     },
     crvUSD_USDT: {
@@ -265,7 +251,7 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [commonERC20.CRV, commonERC20.CVX],
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.USDT_crvUSD.stakeDaoVault
     },
 };
@@ -278,7 +264,7 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [],
+        rewardTokens: [],
     },
 
     USDe_25_09_25: {
@@ -288,7 +274,7 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [],
+        rewardTokens: [],
     },
 
     wstUSR_25_09_25: {
@@ -298,7 +284,7 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [],
+        rewardTokens: [],
     },
 
     USR_04_09_25: {
@@ -308,7 +294,7 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [],
+        rewardTokens: [],
     },
     sUSDe_27_11_25: {
         collatName: "sUSDe 27/11/25",
@@ -317,7 +303,7 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [],
+        rewardTokens: [],
     },
     sUSDf_29_01_26: {
         collatName: "sUSDf 29/01/26",
@@ -326,7 +312,7 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [],
+        rewardTokens: [],
     },
     USDe_27_11_25: {
         collatName: "USDe 27/11/25",
@@ -335,7 +321,7 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
-        rewards: [],
+        rewardTokens: [],
     },
 
 };

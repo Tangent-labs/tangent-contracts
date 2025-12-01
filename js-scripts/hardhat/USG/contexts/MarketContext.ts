@@ -42,8 +42,9 @@ export class MarketContext {
             maxLTV: staticConfig.maxLTV,
             maxMarketDebt: staticConfig.maxMarketDebt,
             liquidationThreshold: staticConfig.liquidationThreshold,
-            liquidationFee: 1_000,
+            liquidationFee: 50_000,
             minimumLoan: staticConfig.minimumLoan,
+            rewardTokens: staticConfig.rewardTokens,
             name: name,
         };
     }
@@ -52,6 +53,7 @@ export class MarketContext {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key];
+
             const receipt = await (
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
@@ -64,7 +66,7 @@ export class MarketContext {
             ).wait();
 
             const market = await this.parseCreateMarketLogs(key, receipt!);
-            await baseContext.rewardAccumulator.connect(baseContext.owner).addNewRewards(market, [commonERC20.CRV, commonERC20.CVX]);
+
         }
     }
 
@@ -84,7 +86,6 @@ export class MarketContext {
                     )
             ).wait();
             const market = await this.parseCreateMarketLogs(key, receipt!);
-            await baseContext.rewardAccumulator.connect(baseContext.owner).addNewRewards(market, [commonERC20.CRV, commonERC20.FXN, commonERC20.CVX]);
         }
     }
 
