@@ -182,7 +182,7 @@ export class BaseContext extends MainSetup {
 
         this.pegKeeperUSG_wfrxUSD = (await (
             await ethers.getContractFactory("PegKeeperV2")
-        ).deploy(lpDeployContext.stableLp["USG-wcrvUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
+        ).deploy(lpDeployContext.stableLp["USG-frxUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
         await this.pegKeeperUSG_wfrxUSD.waitForDeployment();
 
         await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperUSG_USDC, this.pegKeeperUSG_wfrxUSD]);

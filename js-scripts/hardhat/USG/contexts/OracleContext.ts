@@ -78,6 +78,7 @@ export class OracleContext {
         await this.USGOracle.waitForDeployment();
 
         await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-USDC"]);
-        await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-wcrvUSD"]);
+        await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-frxUSD"]);
+
     }
 }

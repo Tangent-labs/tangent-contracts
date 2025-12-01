@@ -54,15 +54,6 @@ export async function deployUSG(userCount: number = 5) {
         // Stable BTC
         // "cbBTC_WBTC",
 
-        // TriCrypto
-        // "crvUSD_ETH_CRV",
-        // "GHO_cbBTC_WETH",
-        // "USDC_WBTC_WETH",
-        // "USDT_WBTC_WETH",
-
-        // DuoCrypto
-        // "USR_RLP",
-        // "CVX_ETH",
     ];
 
     const stakeDaoVaultMarkets: StakeDaoVaultV2MarketsKeys[] = [
