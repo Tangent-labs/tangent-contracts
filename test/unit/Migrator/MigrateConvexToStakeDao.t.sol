@@ -28,12 +28,12 @@ contract MigrateConvexToStakeDao is MarketDeploymentContext {
 
     function test_migrate_same_LP_Convex_to_StakeDao() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketConvex), address(marketStakeDao)]),
+            marketFrom: address(marketConvex),
+            marketTo: address(marketStakeDao),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRepay
         });
-
         verifyLostERC20(marketConvex.cvxRewardToken(), address(marketConvex), collatToWithdraw, "Convex market sent collateral in the migration");
         verifyReceiveERC20(marketStakeDao.vaultToken(), address(marketStakeDao), collatToWithdraw, "StakeDao market receives collateral in the migration");
 

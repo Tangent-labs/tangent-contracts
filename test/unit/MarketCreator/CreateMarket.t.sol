@@ -17,6 +17,7 @@ contract CreateMarket is MarketDeploymentContext {
             liquidationThreshold: 0,
             liquidationFee: 0,
             maxMarketDebt: 0,
+            rewardTokens: new IERC20[](0),
             minimumLoan: 0
         });
     IRParams public irParams = IRParams({isHEC: true, rMin: 4_000, rMax: 400_000, pMin: 980_000, pMax: 995_000, pInf: 990_000, a1: 2_000, a2: 2_000, k: 250});

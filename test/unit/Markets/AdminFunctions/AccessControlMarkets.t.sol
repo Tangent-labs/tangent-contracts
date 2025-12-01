@@ -47,7 +47,7 @@ contract AccessControlMarkets is MarketDeploymentContext {
 
     function test_initialize_alreadyInit_market() external {
         GlobalMarketInitParams memory _marketConstants = GlobalMarketInitParams(address(0), usg, controlTower, irCalculator, rewardAccumulator, zappingProxy);
-        MarketInit memory _marketInit = MarketInit(AddrClassicERC20.CRV, IPriceOracle(address(0)), 0, 0, 0, 0, 0, "");
+        MarketInit memory _marketInit = MarketInit(AddrClassicERC20.CRV, IPriceOracle(address(0)), 0, 0, 0, 0, 0, new IERC20[](0), "");
         vm.expectRevert(abi.encodeWithSelector(MarketCore.AlreadyInitialized.selector));
         marketCrv.initialize(_marketConstants, _marketInit, 0);
     }

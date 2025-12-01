@@ -142,10 +142,10 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         zappingProxy = new ZappingProxy(controlTower);
 
-        migratoor = new Migratoor(controlTower, zappingProxy);
+        migratoor = new Migratoor(owner, zappingProxy);
 
-        controlTower.togglePositionMigrator(address(migratoor));
-        controlTower.togglePauser(pauser);
+        controlTower.setIsPositionMigrator(address(migratoor), true);
+        controlTower.setIsPauser(pauser, true);
 
         sUSG = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(usg), "Staked USG", "sUSG", owner, 7 days));
 

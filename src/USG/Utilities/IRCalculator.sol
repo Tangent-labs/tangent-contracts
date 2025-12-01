@@ -127,13 +127,13 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
     }
 
     function _checkpointIR(address market) internal returns (uint256) {
-        require(controlTower.isMarket(market), NotAMarket());
+        uint256 oldIndex = debtIndexes[market];
+        // If the old index is 0, for `market`, it means it has never been initialized
+        require(oldIndex != 0, NotAMarket());
 
         IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
 
         irCheckpoints[market] = IRCheckpoint({ir: _computeIR(USGOracle.price_w(), irParams[market]), timestamp: uint40(block.timestamp)});
-
-        uint256 oldIndex = debtIndexes[market];
 
         uint256 newIndex = _computeNewDebtIndex(oldIndex, _irCheckpoint);
 
@@ -154,8 +154,6 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
      *  @param markets Markets to checkpoint the indexes for
      */
     function checkpointIRMulti(address[] calldata markets) external nonReentrant {
-        require(controlTower.areContractsMarkets(markets), NotAMarket());
-
         uint256 newUSGPrice = USGOracle.price_w();
         uint40 ts = uint40(block.timestamp);
 
@@ -167,6 +165,9 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
             irCheckpoints[market] = IRCheckpoint({ir: _computeIR(newUSGPrice, irParams[market]), timestamp: ts});
 
             uint256 oldIndex = debtIndexes[market];
+            // If the old index is 0, for `market`, it means it has never been initialized
+            require(oldIndex != 0, NotAMarket());
+
             uint256 newIndex = _computeNewDebtIndex(oldIndex, _irCheckpoint);
 
             uint256 interests = (IDebtIR(market).totalDebtShares() * (newIndex - oldIndex)) / RAY;

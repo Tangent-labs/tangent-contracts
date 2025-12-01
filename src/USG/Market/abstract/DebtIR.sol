@@ -143,7 +143,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @param amount  Amount of USG to burn
      */
     function _burnUSG(address account, uint256 amount) internal {
-        usg.burnFrom(account, amount);
+        usg.burnDebt(account, amount);
     }
 
     /**
@@ -153,7 +153,7 @@ abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient
      * @param amount  Amount of USG to mint
      */
     function _mintUSG(IUSG _usg, address account, uint256 amount) internal {
-        _usg.mint(account, amount);
+        _usg.mintDebt(account, amount);
     }
 
     /**

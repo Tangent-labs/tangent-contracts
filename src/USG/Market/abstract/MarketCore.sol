@@ -608,9 +608,9 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         return (collatBought, stakedAmount, newUserDebtShares);
     }
 
-    /* --------
-                        REWARDS
-                                                    ------ */
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                     REWARDS
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
     /**
      * @dev  Internal function called during 'claimUnderlyingRewards' external function.
      *
@@ -648,9 +648,9 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         return rewardAmounts;
     }
 
-    /* --------
-                        MIGRATE
-                                                    ------ */
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                    MIGRATE
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _verifySenderMigrator() internal view {
         require(controlTower.isPositionMigrator(msg.sender), NotAMigratoor());

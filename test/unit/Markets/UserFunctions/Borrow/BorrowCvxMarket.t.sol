@@ -24,7 +24,7 @@ contract BorrowCvxMarket is MarketDeploymentContext {
 
         ParamsInitConvexCurveLPMarket memory initP = cvxCurveLPMaps[address(collatToken)];
         irParams = IRParams({isHEC: false, rMin: 4_000, rMax: 400_000, pMin: 980_000, pMax: 1_000_000, pInf: 990_000, a1: 2_000, a2: 2_000, k: 250});
-        market = ConvexCrvLPMarket(marketCreator.createConvexCrvMarket(getMarketInit(initP.marketInit, collatToken), initP.pid, irParams, getBaseRCParams()));
+        market = ConvexCrvLPMarket(marketCreator.createConvexCrvMarket(getMarketInit(initP.marketInit, new IERC20[](0), collatToken), initP.pid, irParams, getBaseRCParams()));
         vm.stopPrank();
 
         labeliser.labeliseNewConvexCrvMarket(address(collatToken), "crvUSD-USDC", address(market), address(market.cvxRewardToken()));
@@ -106,8 +106,8 @@ contract BorrowCvxMarket is MarketDeploymentContext {
         repayAmount = bound(repayAmount, 1, maxRepayPartialAmount);
 
         vm.startPrank(owner);
-        controlTower.toggleMarket(owner);
-        usg.mint(usr1, repayAmount);
+        usg.setIsMinter(owner, true);
+        usg.mintDebt(usr1, repayAmount);
         vm.stopPrank();
 
         hRepay.repay(usr1, repayAmount);
@@ -119,7 +119,7 @@ contract BorrowCvxMarket is MarketDeploymentContext {
         assertEq(marketViewer.userDebt(market, usr1), marketViewer.totalDebt(market));
 
         vm.startPrank(owner);
-        usg.mint(usr1, marketViewer.userDebt(market, usr1));
+        usg.mintDebt(usr1, marketViewer.userDebt(market, usr1));
         vm.stopPrank();
 
         hRepay.repay(usr1, MAX_UINT);

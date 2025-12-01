@@ -122,9 +122,9 @@ abstract contract Collateral is DebtIR, ICollateral {
         collateralBalances[account] = newCollatBalance;
     }
 
-    // /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
-    //                     PUBLIC VIEWS
-    // =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                         PUBLIC VIEWS
+     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
      * @notice Returns both user collateral balance and total system collateral
@@ -168,13 +168,6 @@ abstract contract Collateral is DebtIR, ICollateral {
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         INTERNAL VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-
-    /**
-     * @dev Returns the current price of 1 unit of collateral in USD (1e18 precision)
-     */
-    function _collateralPrice(bool isNoFailMode) internal view returns (uint256) {
-        return collatOracle.latestAnswer(isNoFailMode);
-    }
 
     /**
      * @dev Fails if the amount of collateral to deposit or withdraw is null

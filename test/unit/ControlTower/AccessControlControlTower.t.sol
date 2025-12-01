@@ -2,27 +2,27 @@
 pragma solidity ^0.8.24;
 import {MarketDeploymentContext, ControlTower, LightOwnable} from "../../contexts/MarketDeploymentContext.sol";
 contract AccessControlControlTower is MarketDeploymentContext {
-    function test_toggleMarket_fails_as_not_owner_or_market_creator() external {
-        vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(ControlTower.CallerNotOwnerOrMarketCreator.selector, usr1));
-        controlTower.toggleMarket(usr2);
-    }
-
-    function test_toggleMarketCreator_fails_as_not_owner() external {
+    function test_setFeeTreasury_fails_as_not_owner() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        controlTower.toggleMarketCreator(usr2);
+        controlTower.setFeeTreasury(usr2);
     }
 
-    function test_togglePegKeeper_fails_as_not_owner() external {
+    function test_setIsMarketCreator_fails_as_not_owner() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        controlTower.togglePegKeeper(usr2);
+        controlTower.setIsMarketCreator(usr2, true);
     }
 
-    function test_toggleIRCalculator_fails_as_not_owner() external {
+    function test_setIsPositionMigrator_fails_as_not_owner() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        controlTower.toggleIRCalculator(usr2);
+        controlTower.setIsPositionMigrator(usr2, true);
+    }
+
+    function test_setIsPauser_fails_as_not_owner() external {
+        vm.startPrank(usr1);
+        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
+        controlTower.setIsPauser(usr2, true);
     }
 }

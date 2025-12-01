@@ -40,7 +40,8 @@ contract MigratoorCurveLPToCurveLP is MarketDeploymentContext {
         marketTo.depositAndBorrow(collatIn, 90_000 ether, false);
 
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: MAX_UINT,
             debtToRepay: MAX_UINT
@@ -82,7 +83,8 @@ contract MigratoorCurveLPToCurveLP is MarketDeploymentContext {
 
     function test_full_migrate_and_repay_0() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: collatIn,
             debtToRemove: MAX_UINT,
             debtToRepay: 0
@@ -125,7 +127,8 @@ contract MigratoorCurveLPToCurveLP is MarketDeploymentContext {
 
     function test_partial_migrate() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRepay
@@ -169,7 +172,8 @@ contract MigratoorCurveLPToCurveLP is MarketDeploymentContext {
     function test_migrate_only_collateral() external {
         uint256 collatToWithdraww = 10 ether;
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraww,
             debtToRemove: 0,
             debtToRepay: 0
@@ -217,7 +221,8 @@ contract MigratoorCurveLPToCurveLP is MarketDeploymentContext {
         marketTo.depositAndBorrow(100_000 ether, 80_000 ether, false);
 
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: 0,
             debtToRemove: 10_000 ether,
             debtToRepay: 0

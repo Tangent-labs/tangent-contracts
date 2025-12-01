@@ -9,21 +9,21 @@ import "../../src/interfaces/internals/USG/IIRCalculator.sol";
 contract MarketDeploymentContext is MarketInitParams {
     function deployConvexCurveLPMarket(IERC20Metadata collat) public returns (ConvexCrvLPMarket) {
         ParamsInitConvexCurveLPMarket memory initP = cvxCurveLPMaps[address(collat)];
+        IERC20[] memory curveConvexRewards = new IERC20[](2);
+        curveConvexRewards[0] = AddrClassicERC20.CRV;
+        curveConvexRewards[1] = AddrClassicERC20.CVX;
 
         vm.startPrank(owner);
 
         ConvexCrvLPMarket convexMarket = ConvexCrvLPMarket(
-            marketCreator.createConvexCrvMarket(getMarketInit(initP.marketInit, collat), initP.pid, getBaseIRParamsHEC(), getBaseRCParams())
+            marketCreator.createConvexCrvMarket(getMarketInit(initP.marketInit, curveConvexRewards, collat), initP.pid, getBaseIRParamsHEC(), getBaseRCParams())
         );
+
+        migratoor.setIsMarket(address(convexMarket), true);
 
         assertEq(address(convexMarket.collatOracle()), address(oracles[collat]), "Collat oracle address setup");
 
         verifyParams_and_dealCollat(initP.marketInit.collat);
-
-        IERC20[] memory curveConvexRewards = new IERC20[](2);
-        curveConvexRewards[0] = AddrClassicERC20.CRV;
-        curveConvexRewards[1] = AddrClassicERC20.CVX;
-        rewardAccumulator.addNewRewards(address(convexMarket), curveConvexRewards);
 
         vm.stopPrank();
 
@@ -35,19 +35,20 @@ contract MarketDeploymentContext is MarketInitParams {
     function deployConvexFxnLPMarket(IERC20Metadata collat) public returns (ConvexFxnLPMarket) {
         ParamsInitConvexFxnLPMarket memory initP = cvxFxnLPMaps[address(collat)];
 
-        vm.startPrank(owner);
-
-        ConvexFxnLPMarket convexMarket = ConvexFxnLPMarket(
-            marketCreator.createConvexFxnMarket(getMarketInit(initP.marketInit, collat), initP.pid, getBaseIRParamsLEC(), getBaseRCParams())
-        );
-
-        verifyParams_and_dealCollat(initP.marketInit.collat);
-
         IERC20[] memory curveConvexRewards = new IERC20[](3);
         curveConvexRewards[0] = AddrClassicERC20.CRV;
         curveConvexRewards[1] = AddrClassicERC20.CVX;
         curveConvexRewards[2] = AddrClassicERC20.FXN;
-        rewardAccumulator.addNewRewards(address(convexMarket), curveConvexRewards);
+
+        vm.startPrank(owner);
+
+        ConvexFxnLPMarket convexMarket = ConvexFxnLPMarket(
+            marketCreator.createConvexFxnMarket(getMarketInit(initP.marketInit, curveConvexRewards, collat), initP.pid, getBaseIRParamsLEC(), getBaseRCParams())
+        );
+        migratoor.setIsMarket(address(convexMarket), true);
+
+        verifyParams_and_dealCollat(initP.marketInit.collat);
+
         vm.stopPrank();
 
         labeliser.labeliseNewConvexFxnMarket(address(collat), collat.symbol(), address(convexMarket), address(convexMarket.stakingProxyVault()));
@@ -59,7 +60,10 @@ contract MarketDeploymentContext is MarketInitParams {
         MarketInitSimplified memory marketInit = basicERC20Maps[address(collat)];
         vm.startPrank(owner);
 
-        BasicERC20Market marketBasicERC20 = BasicERC20Market(marketCreator.createBasicERC20Market(getMarketInit(marketInit, collat), getBaseIRParamsLEC(), getBaseRCParams()));
+        BasicERC20Market marketBasicERC20 = BasicERC20Market(
+            marketCreator.createBasicERC20Market(getMarketInit(marketInit, new IERC20[](0), collat), getBaseIRParamsLEC(), getBaseRCParams())
+        );
+        migratoor.setIsMarket(address(marketBasicERC20), true);
 
         verifyParams_and_dealCollat(marketInit.collat);
 
@@ -74,12 +78,11 @@ contract MarketDeploymentContext is MarketInitParams {
         vm.startPrank(owner);
 
         CurveGaugeMarket gaugeMarket = CurveGaugeMarket(
-            marketCreator.createCurveGaugeMarket(getMarketInit(initP.marketInit, collat), initP.gaugeToken, getBaseIRParamsHEC(), getBaseRCParams())
+            marketCreator.createCurveGaugeMarket(getMarketInit(initP.marketInit, rewardTokens, collat), initP.gaugeToken, getBaseIRParamsHEC(), getBaseRCParams())
         );
+        migratoor.setIsMarket(address(gaugeMarket), true);
 
         assertEq(address(gaugeMarket.collatOracle()), address(oracles[collat]), "Collat oracle address setup");
-
-        rewardAccumulator.addNewRewards(address(gaugeMarket), rewardTokens);
 
         // Deal the lp token not the gauge token
         IERC20Metadata lp = initP.marketInit.collat;
@@ -96,17 +99,18 @@ contract MarketDeploymentContext is MarketInitParams {
     function deployStakeDaoVaultV2Market(IERC20Metadata collat) public returns (StakeDaoVaultV2Market) {
         ParamsInitStakeDaoVaultV2Market memory initP = stakeDaoVaultV2Maps[address(collat)];
         require(address(initP.marketInit.collat) != address(0), "Market not setup");
-        vm.startPrank(owner);
-
-        StakeDaoVaultV2Market vaultMarket = StakeDaoVaultV2Market(
-            marketCreator.createStakeDaoVaultV2Market(getMarketInit(initP.marketInit, collat), initP.vaultToken, getBaseIRParamsHEC(), getBaseRCParams())
-        );
-
-        assertEq(address(vaultMarket.collatOracle()), address(oracles[collat]), "Collat oracle address setup");
 
         IERC20[] memory rewards = new IERC20[](1);
         rewards[0] = AddrClassicERC20.CRV;
-        rewardAccumulator.addNewRewards(address(vaultMarket), rewards);
+
+        vm.startPrank(owner);
+
+        StakeDaoVaultV2Market vaultMarket = StakeDaoVaultV2Market(
+            marketCreator.createStakeDaoVaultV2Market(getMarketInit(initP.marketInit, rewards, collat), initP.vaultToken, getBaseIRParamsHEC(), getBaseRCParams())
+        );
+        migratoor.setIsMarket(address(vaultMarket), true);
+
+        assertEq(address(vaultMarket.collatOracle()), address(oracles[collat]), "Collat oracle address setup");
 
         // Deal the lp token not the gauge token
         IERC20Metadata lp = initP.marketInit.collat;
@@ -156,7 +160,7 @@ contract MarketDeploymentContext is MarketInitParams {
         }
     }
 
-    function getMarketInit(MarketInitSimplified memory init, IERC20 collat) public view returns (MarketInit memory) {
+    function getMarketInit(MarketInitSimplified memory init, IERC20[] memory rewardTokens, IERC20 collat) public view returns (MarketInit memory) {
         return
             MarketInit({
                 name: "",
@@ -166,7 +170,8 @@ contract MarketDeploymentContext is MarketInitParams {
                 maxMarketDebt: init.maxMarketDebt,
                 liquidationThreshold: init.liquidationThreshold,
                 liquidationFee: init.liquidationFee,
-                minimumLoan: init.minimumLoan
+                minimumLoan: init.minimumLoan,
+                rewardTokens: rewardTokens
             });
     }
 

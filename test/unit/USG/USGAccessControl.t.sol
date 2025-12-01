@@ -6,13 +6,13 @@ contract USGAccessControl is MarketDeploymentContext {
     uint256 amount;
     function test_mint_fails_call_not_by_a_market() external {
         vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(USG.OnlyMarketCaller.selector));
-        usg.mint(usr2, amount);
+        vm.expectRevert(abi.encodeWithSelector(USG.OnlyMinterCaller.selector));
+        usg.mintDebt(usr2, amount);
     }
 
     function test_mintIR_fails_call_not_by_an_IRCalculator() external {
         vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(USG.OnlyIRCalculator.selector));
+        vm.expectRevert(abi.encodeWithSelector(USG.OnlyIRProducer.selector));
         usg.mintIR(amount);
     }
 
@@ -30,7 +30,13 @@ contract USGAccessControl is MarketDeploymentContext {
 
     function test_burnFrom_fails_call_not_by_market() external {
         vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(USG.OnlyMarketCaller.selector));
-        usg.burnFrom(usr1, amount);
+        vm.expectRevert(abi.encodeWithSelector(USG.OnlyBurnerCaller.selector));
+        usg.burnDebt(usr1, amount);
+    }
+
+    function test_setIsBurner_fails_call_not_by_owner() external {
+        vm.startPrank(usr1);
+        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
+        usg.setIsBurner(usr1, true);
     }
 }

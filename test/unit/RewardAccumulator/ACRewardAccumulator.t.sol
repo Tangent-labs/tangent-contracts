@@ -40,8 +40,9 @@ contract ACRewardAccumulator is MarketDeploymentContext {
 
     function test_initializeMarket_fails_as_not_a_market_creator() external {
         vm.startPrank(usr1);
+
         vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.CallerNotMarketCreator.selector, usr1));
-        rewardAccumulator.initializeMarket(usr1, params);
+        rewardAccumulator.initializeMarket(usr1, new IERC20[](0), params);
     }
 
     function test_updateRCParams_fails_as_not_owner() external {

@@ -31,7 +31,8 @@ contract MigratoorSameCollateral is MarketDeploymentContext {
 
     function test_exchange_USDC_crvUSD() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRepay

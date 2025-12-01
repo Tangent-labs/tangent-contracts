@@ -25,6 +25,9 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
 
     IAggregatorStablePriceV3 public USGOracle;
 
+    /// @notice Addresses whitelisted that can claim and process rewards on this contract
+    mapping(address => bool) public isMarket;
+
     /// @notice Gives the parameter of the market
     mapping(address => RCParams) public rcParams;
 
@@ -146,7 +149,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     }
 
     function updateRewards(address account, uint256 collateralBalance, uint256 totalCollateral) external {
-        require(controlTower.isMarket(msg.sender), NotAMarketRewards());
+        require(isMarket[msg.sender], NotAMarketRewards());
         _updateReward(msg.sender, account, collateralBalance, totalCollateral);
     }
 
@@ -183,7 +186,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      *  @param market The erc20 to claim the rewards on
      */
     function claimSimple(address market) external {
-        require(controlTower.isMarket(market), NotAMarketRewards());
+        require(isMarket[market], NotAMarketRewards());
 
         TokenAmount[] memory tokenAmounts = _claimRewards(market, msg.sender);
 
@@ -204,9 +207,6 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      *                      Ex : Market A has CRV and CVX and Market B has FXN, hence the rewardLength is 3.
      */
     function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
-        // Reverts if one of the market passed in parameter is not one.
-        // It protects us agains a malicious user input.
-        require(controlTower.areContractsMarkets(markets), NotAMarketRewards());
         // We save this length on his own variable, to not miss with the assembly manipulations
         uint256 marketsLen = markets.length;
         // Initialize the final merged array containing the totals of rewards
@@ -216,6 +216,10 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         // Iterates through all of the markets to claim rewards
         for (uint256 marketIndex; marketIndex < marketsLen; ) {
             address market = markets[marketIndex];
+
+            // Reverts if one of the market passed in parameter is not one.
+            // It protects us agains a malicious user input.
+            require(isMarket[market], NotAMarketRewards());
 
             // Get and update the amount of rewards to claim
             TokenAmount[] memory tokenAmountsToClaim = _claimRewards(market, msg.sender);
@@ -255,7 +259,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         for (uint256 i; i < totals.length; ) {
             IERC20 token = totals[i].token;
             uint256 amount = totals[i].amount;
-            // If
+            // If only there are rewards to distribute we transfer reward tokens to the positions owner
             if (amount != 0) {
                 token.safeTransfer(msg.sender, amount);
             }
@@ -371,11 +375,15 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
-     * @notice Set the percentage of rewards to be sent to the splitter as a DAO fees.
-     * @param market          rewards percentage value
-     * @param newRewardTokens rewards percentage value
+     * @notice Add some new reward tokens to the stream of a market
+     * @param market          Address of the market to set the new rewards for
+     * @param newRewardTokens Addresses of the new reward tokens streamed on the market
      */
-    function addNewRewards(address market, IERC20[] calldata newRewardTokens) external onlyOwner {
+    function addNewRewards(address market, IERC20[] calldata newRewardTokens) public onlyOwner {
+        _addRewards(market, newRewardTokens);
+    }
+
+    function _addRewards(address market, IERC20[] calldata newRewardTokens) internal {
         IERC20 _collatToken = ICollateral(market).collatToken();
         for (uint256 i; i < newRewardTokens.length; ) {
             IERC20 _newRewardToken = newRewardTokens[i];
@@ -427,7 +435,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      * @param harvestFeeReceiver Receiver of the harvester fee
      */
     function processRewards(address market, address harvestFeeReceiver) public {
-        require(controlTower.isMarket(market), NotAMarketRewards());
+        require(isMarket[market], NotAMarketRewards());
         // Checkpoint the rewards
         _updateReward(market, address(0), 0, ICollateral(market).totalCollateral());
 
@@ -490,10 +498,6 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      *                           Ex : Market A has CRV and CVX and Market B has FXN, hence the rewardLength is 3.
      */
     function processMultiRewards(address[] calldata markets, address harvestFeeReceiver, uint256 rewardLength) external {
-        // Reverts if one of the market passed in parameter is not one.
-        // It protects us agains a malicious user input.
-        require(controlTower.areContractsMarkets(markets), NotAMarketRewards());
-
         // Retrive only once the usg price
         uint256 USGPrice = USGOracle.price_w();
 
@@ -504,6 +508,10 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         // For every markets
         for (uint256 i; i < markets.length; ) {
             address market = markets[i];
+
+            // Reverts if one of the market passed in parameter is not one.
+            // It protects us agains a malicious user input.
+            require(isMarket[market], NotAMarketRewards());
             // Checkpoint the rewards
             _updateReward(market, address(0), 0, ICollateral(market).totalCollateral());
             // Claim the rewards linked to the collateral from the underlying protocol
@@ -628,11 +636,13 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
                        REWARD CUT
    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function initializeMarket(address market, RCParams calldata _rcParam) external {
+    function initializeMarket(address market, IERC20[] calldata _rewardTokens, RCParams calldata _rcParam) external {
         _verifyRCParams(_rcParam);
         require(controlTower.isMarketCreator(msg.sender), CallerNotMarketCreator(msg.sender));
         lastRewardCuts[market] = _calculateRC(USGOracle.price_w(), _rcParam);
         rcParams[market] = _rcParam;
+        _addRewards(market, _rewardTokens);
+        isMarket[market] = true;
     }
 
     /**

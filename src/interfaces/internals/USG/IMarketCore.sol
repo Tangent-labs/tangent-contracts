@@ -85,5 +85,6 @@ struct MarketInit {
     uint256 liquidationFee;
     uint256 maxMarketDebt;
     uint256 minimumLoan;
+    IERC20[] rewardTokens;
     string name;
 }

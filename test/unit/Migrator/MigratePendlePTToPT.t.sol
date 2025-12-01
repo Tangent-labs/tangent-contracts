@@ -31,7 +31,8 @@ contract MigratePendlePTToPT is MarketDeploymentContext {
 
     function test_migrate_one_PT_to_other_PT_with_curve_swap() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRepay
@@ -72,7 +73,8 @@ contract MigratePendlePTToPT is MarketDeploymentContext {
 
     function test_migrate_one_PT_to_other_PT_without_curve_swap() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRepay

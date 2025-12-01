@@ -14,7 +14,7 @@ pragma solidity ^0.8.0;
 import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
-import {GlobalMarketInitParams, MarketInit, IRewardAccumulator, IERC20Metadata} from "../../interfaces/internals/USG/IMarketCore.sol";
+import {GlobalMarketInitParams, MarketInit, IRewardAccumulator, IERC20Metadata, IERC20} from "../../interfaces/internals/USG/IMarketCore.sol";
 import {IConvexCrvLPMarket, ICvxRewardToken} from "../../interfaces/internals/USG/IConvexCrvLPMarket.sol";
 import {ICurveGaugeMarket, IGauge} from "../../interfaces/internals/USG/ICurveGaugeMarket.sol";
 import {IStakeDaoVaultV2Market, IStakeDaoVaultV2} from "../../interfaces/internals/USG/IStakeDaoVaultV2Market.sol";
@@ -118,14 +118,10 @@ contract MarketCreator is LightOwnable {
      *  @param _irParams       Interest Rate parameters of the market
      *  @param _rcParams       Reward Cut parameters of the market
      */
-    function createConvexCrvMarket(MarketInit memory _marketInit, uint256 _pid, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
+    function createConvexCrvMarket(MarketInit calldata _marketInit, uint256 _pid, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
         address proxy = marketConvexCrv.clone();
         IConvexCrvLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _pid);
-
-        controlTower.toggleMarket(proxy);
-        irCalculator.initializeMarket(proxy, _irParams);
-        rewardAccumulator.initializeMarket(proxy, _rcParams);
-
+        _commonInitialize(proxy, _irParams, _marketInit.rewardTokens, _rcParams);
         emit MarketConvexCrvCreated(proxy, _marketInit.name);
         return proxy;
     }
@@ -138,14 +134,10 @@ contract MarketCreator is LightOwnable {
      *  @param _irParams       Interest Rate parameters of the market
      *  @param _rcParams       Reward Cut parameters of the market
      */
-    function createConvexFxnMarket(MarketInit memory _marketInit, uint256 _pid, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
+    function createConvexFxnMarket(MarketInit calldata _marketInit, uint256 _pid, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
         address proxy = marketConvexFxn.clone();
         IConvexFxnLPMarket(proxy).initialize(_getGlobalParams(), _marketInit, _pid);
-
-        controlTower.toggleMarket(proxy);
-        irCalculator.initializeMarket(proxy, _irParams);
-        rewardAccumulator.initializeMarket(proxy, _rcParams);
-
+        _commonInitialize(proxy, _irParams, _marketInit.rewardTokens, _rcParams);
         emit MarketConvexFxnCreated(proxy, _marketInit.name);
         return proxy;
     }
@@ -157,14 +149,10 @@ contract MarketCreator is LightOwnable {
      *  @param _irParams       Interest Rate parameters of the market
      *  @param _rcParams       Reward Cut parameters of the market
      */
-    function createCurveGaugeMarket(MarketInit memory _marketInit, IGauge _gauge, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
+    function createCurveGaugeMarket(MarketInit calldata _marketInit, IGauge _gauge, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
         address proxy = marketCurveGauge.clone();
         ICurveGaugeMarket(proxy).initialize(_getGlobalParams(), _marketInit, _gauge);
-
-        controlTower.toggleMarket(proxy);
-        irCalculator.initializeMarket(proxy, _irParams);
-        rewardAccumulator.initializeMarket(proxy, _rcParams);
-
+        _commonInitialize(proxy, _irParams, _marketInit.rewardTokens, _rcParams);
         emit MarketCurveGauge(proxy, _marketInit.name);
         return proxy;
     }
@@ -177,18 +165,14 @@ contract MarketCreator is LightOwnable {
      *  @param _rcParams       Reward Cut parameters of the market
      */
     function createStakeDaoVaultV2Market(
-        MarketInit memory _marketInit,
+        MarketInit calldata _marketInit,
         IStakeDaoVaultV2 _vault,
         IRParams calldata _irParams,
         RCParams calldata _rcParams
     ) external onlyOwner returns (address) {
         address proxy = marketStakeDaoVaultV2.clone();
         IStakeDaoVaultV2Market(proxy).initialize(_getGlobalParams(), _marketInit, _vault);
-
-        controlTower.toggleMarket(proxy);
-        irCalculator.initializeMarket(proxy, _irParams);
-        rewardAccumulator.initializeMarket(proxy, _rcParams);
-
+        _commonInitialize(proxy, _irParams, _marketInit.rewardTokens, _rcParams);
         emit MarketStakeDaoVaultV2(proxy, _marketInit.name);
         return proxy;
     }
@@ -200,15 +184,17 @@ contract MarketCreator is LightOwnable {
      *  @param _irParams       Interest Rate parameters of the market
      *  @param _rcParams       Reward Cut parameters of the market
      */
-    function createBasicERC20Market(MarketInit memory _marketInit, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
+    function createBasicERC20Market(MarketInit calldata _marketInit, IRParams calldata _irParams, RCParams calldata _rcParams) external onlyOwner returns (address) {
         address proxy = marketBasicERC20.clone();
         IBasicERC20Market(proxy).initialize(_getGlobalParams(), _marketInit);
-
-        controlTower.toggleMarket(proxy);
-        irCalculator.initializeMarket(proxy, _irParams);
-        rewardAccumulator.initializeMarket(proxy, _rcParams);
-
+        _commonInitialize(proxy, _irParams, _marketInit.rewardTokens, _rcParams);
         emit BasicERC20MarketCreated(proxy, _marketInit.name);
         return proxy;
+    }
+
+    function _commonInitialize(address newProxy, IRParams calldata _irParams, IERC20[] calldata rewardTokens, RCParams calldata _rcParams) internal {
+        USG.initializeMarket(newProxy);
+        irCalculator.initializeMarket(newProxy, _irParams);
+        rewardAccumulator.initializeMarket(newProxy, rewardTokens, _rcParams);
     }
 }

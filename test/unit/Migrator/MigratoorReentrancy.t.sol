@@ -41,7 +41,8 @@ contract MigratoorReentrancy is MarketDeploymentContext {
 
     function test_reenter_in_migrate() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: 0,
             debtToRemove: 3_000 ether,
             debtToRepay: 0
@@ -73,7 +74,8 @@ contract MigratoorReentrancy is MarketDeploymentContext {
         );
 
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: 0,
             debtToRemove: 3_000 ether,
             debtToRepay: 0

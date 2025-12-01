@@ -42,7 +42,7 @@ contract OraclesContext is USGDeployContext {
 
         irCalculator = new IRCalculator(owner, controlTower, USGOracle, usg);
 
-        controlTower.toggleIRCalculator(address(irCalculator));
+        usg.setIsIRProducer(address(irCalculator), true);
 
         rewardAccumulator = new RewardAccumulator(owner, controlTower, USGOracle);
 
@@ -61,7 +61,7 @@ contract OraclesContext is USGDeployContext {
             stakeDaoVaultV2MarketImplem,
             marketBasicERC20Implem
         );
-        controlTower.toggleMarketCreator(address(marketCreator));
+        controlTower.setIsMarketCreator(address(marketCreator), true);
 
         vm.label(address(marketCreator), "MarketCreator");
 
@@ -84,8 +84,8 @@ contract OraclesContext is USGDeployContext {
         pegKeeperUSG_USDC = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.USGLPs("USG-USDC"), 20000, pegKeeperRegulator, owner)));
         pegKeeperUSG_wcrvUSD = IPegKeeperV2(deployCode("PegKeeperV2", abi.encode(lpDeploymentContext.USGLPs("USG-wcrvUSD"), 20000, pegKeeperRegulator, owner)));
 
-        controlTower.togglePegKeeper(address(pegKeeperUSG_USDC));
-        controlTower.togglePegKeeper(address(pegKeeperUSG_wcrvUSD));
+        usg.setIsPegKeeper(address(pegKeeperUSG_USDC), true);
+        usg.setIsPegKeeper(address(pegKeeperUSG_wcrvUSD), true);
 
         address[] memory pairs = new address[](2);
         pairs[0] = address(pegKeeperUSG_USDC);
