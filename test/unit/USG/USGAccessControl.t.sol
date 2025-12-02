@@ -39,4 +39,10 @@ contract USGAccessControl is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
         usg.setIsBurner(usr1, true);
     }
+
+    function test_initializeMarket_fails_call_not_by_owner() external {
+        vm.startPrank(usr1);
+        vm.expectRevert(abi.encodeWithSelector(USG.OnlyMarketCreator.selector));
+        usg.initializeMarket(usr1);
+    }
 }
