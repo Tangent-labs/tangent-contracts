@@ -111,7 +111,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
     }
 
     function _getReceiptToken(address market) internal view returns (address) {
-        (bool ok, bytes memory data) = market.staticcall(abi.encodePacked(bytes4(keccak256("receipt()"))));
+        (bool ok, bytes memory data) = market.staticcall(abi.encodePacked(bytes4(keccak256("receiptToken()"))));
         if (ok) {
             return abi.decode(data, (address));
         }
