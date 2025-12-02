@@ -65,7 +65,7 @@ export class MarketContext {
                     )
             ).wait();
 
-            const market = await this.parseCreateMarketLogs(key, receipt!);
+            await this.parseCreateMarketLogs(key, receipt!);
 
         }
     }
@@ -85,7 +85,7 @@ export class MarketContext {
                         LEC_CONFIG_RC_PARAMS
                     )
             ).wait();
-            const market = await this.parseCreateMarketLogs(key, receipt!);
+            await this.parseCreateMarketLogs(key, receipt!);
         }
     }
 
@@ -156,22 +156,28 @@ export class MarketContext {
             const log = receipt!.logs[index];
             let parsedLog = iface.parseLog(log);
 
-            if (parsedLog?.name && ["MarketConvexCrvCreated", "MarketConvexFxnCreated", "BasicERC20MarketCreated", "MarketCurveGauge", "MarketStakeDaoVaultV2"].includes(parsedLog.name)) {
+            if (parsedLog && ["MarketConvexCrvCreated", "MarketConvexFxnCreated", "BasicERC20MarketCreated", "MarketCurveGauge", "MarketStakeDaoVaultV2"].includes(parsedLog.name)) {
                 marketAddress = parsedLog.args.proxy as string
-                if (STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys]) {
-                    this.convexCrvMarkets[key] = await ethers.getContractAt("ConvexCrvLPMarket", marketAddress);
-                } else if (STATIC_CONFIG_CONVEX_FXN[key as ConvexFxnMarketKeys]) {
-                    this.convexFxnMarkets[key] = await ethers.getContractAt("ConvexFxnLPMarket", marketAddress);
-                } else if (STATIC_CONFIG_BASIC_ERC20s[key as PendlePTMarketsKeys]) {
-                    this.basicERC20Markets[key] = await ethers.getContractAt("BasicERC20Market", marketAddress);
-                } else if (STATIC_CONFIG_CURVE_GAUGE[key as CurveGaugeMarketsKeys]) {
-                    this.curveGaugeMarkets[key] = await ethers.getContractAt("CurveGaugeMarket", marketAddress);
+                switch (parsedLog.name) {
+                    case "MarketConvexCrvCreated":
+                        this.convexCrvMarkets[key] = await ethers.getContractAt("ConvexCrvLPMarket", marketAddress);
+                        break;
+                    case "MarketConvexFxnCreated":
+                        this.convexFxnMarkets[key] = await ethers.getContractAt("ConvexFxnLPMarket", marketAddress);
+                        break;
+                    case "BasicERC20MarketCreated":
+                        this.basicERC20Markets[key] = await ethers.getContractAt("BasicERC20Market", marketAddress);
+                        break;
+                    case "MarketCurveGauge":
+                        this.curveGaugeMarkets[key] = await ethers.getContractAt("CurveGaugeMarket", marketAddress);
+                        break;
+                    case "MarketStakeDaoVaultV2":
+                        this.stakeDaoVaultMarkets[key] = await ethers.getContractAt("StakeDaoVaultV2Market", marketAddress);
+                        break;
+
                 }
             }
         }
         return marketAddress;
     }
-
-
-
 }

@@ -28,7 +28,7 @@ import {
 } from "../../../../typechain-types";
 import { LpDeployContext } from "./LPDeployContext";
 import { setStorageAt } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, MarketContext, PendlePTMarketsKeys } from "./MarketContext";
+import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, PendlePTMarketsKeys, StakeDaoVaultV2MarketsKeys } from "./MarketContext";
 import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CURVE_GAUGE, STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/market";
 import { OracleContext } from "./OracleContext";
 import { WStablesContext } from "./WStableContext";
@@ -256,15 +256,40 @@ export async function createJSONAddress(
             marketType: "Convex_CRV",
         });
     }
+
     for (const key in marketContext.convexFxnMarkets) {
-        const market = await marketContext.convexFxnMarkets[key].getAddress();
         const staticConfig = STATIC_CONFIG_CONVEX_FXN[key as ConvexFxnMarketKeys];
+        const market = await marketContext.convexFxnMarkets[key].getAddress();
 
         markets.push({
             marketAddress: market,
             collatName: staticConfig.collatName,
             collatAddress: staticConfig.collatToken,
             marketType: "Convex_FXN",
+        });
+    }
+
+    for (const key in marketContext.curveGaugeMarkets) {
+        const market = await marketContext.curveGaugeMarkets[key].getAddress();
+        const staticConfig = STATIC_CONFIG_CURVE_GAUGE[key as CurveGaugeMarketsKeys];
+
+        markets.push({
+            marketAddress: market,
+            collatName: staticConfig.collatName,
+            collatAddress: staticConfig.collatToken,
+            marketType: "CRV_Gauge",
+        });
+    }
+
+    for (const key in marketContext.stakeDaoVaultMarkets) {
+        const market = await marketContext.stakeDaoVaultMarkets[key].getAddress();
+        const staticConfig = STATIC_CONFIG_STAKEDAO_VAULT_V2[key as StakeDaoVaultV2MarketsKeys];
+
+        markets.push({
+            marketAddress: market,
+            collatName: staticConfig.collatName,
+            collatAddress: staticConfig.collatToken,
+            marketType: "STAKEDAO_CRV_Vault",
         });
     }
 

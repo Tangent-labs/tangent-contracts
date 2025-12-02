@@ -69,25 +69,30 @@ export async function deployUSG(userCount: number = 5) {
 
     const pendlePTMarkets: PendlePTMarketsKeys[] = ["USDe_27_11_25", "sUSDe_27_11_25"];
 
-    console.log("Deploy convex CRV markets");
+
     // Deploy Convex CRV markets
+    console.log("Deploy convex CRV markets");
     await marketContext.deployConvexCrvMarkets(convexCrvMarkets, baseContext, oracleContext);
 
-    console.log("Deploy convex FXN markets");
+
     // Deploy Convex FXN markets
+    console.log("Deploy convex FXN markets");
     await marketContext.deployConvexFxnMarkets(convexFxnMarkets, baseContext, oracleContext);
 
-    console.log("Deploy Curve Gauge markets");
     // Deploy Curve Gauge markets
+    console.log("Deploy Curve Gauge markets");
     await marketContext.deployCurveGaugeMarkets(curveGaugeMarkets, baseContext, oracleContext);
 
-    console.log("Deploy StakeDao VaultV2 markets");
+
     // Deploy StakeDAO Vault markets
+    console.log("Deploy StakeDao VaultV2 markets");
     await marketContext.deployStakeDaoVaultV2Markets(stakeDaoVaultMarkets, baseContext, oracleContext);
 
-    console.log("Deploy Pendle PT markets");
+
     // Deploy Pendle PT markets
+    console.log("Deploy Pendle PT markets");
     await marketContext.deployBasicERC20Markets(pendlePTMarkets, baseContext, oracleContext);
+
 
     // Approve LPs with test users
     await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-USDC"].getAddress());
