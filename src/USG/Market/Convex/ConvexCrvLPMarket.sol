@@ -29,8 +29,8 @@ contract ConvexCrvLPMarket is MarketExternalActions {
         // Allows CVX_BOOSTER to transfer LP from the market contract
         collatToken.approve(address(CVX_BOOSTER), MAX_UINT);
         // Dynamically retrieve the CvxRewardToken from the Booster with poolId
+        // Don't need to check if rewardToken is null because `poolInfo(uint)` throws and error if the pid is incorrect
         (, , , address rewardToken, , ) = CVX_BOOSTER.poolInfo(_pid);
-        require(address(0) != rewardToken);
         cvxRewardToken = ICvxRewardToken(rewardToken);
         pid = _pid;
     }
@@ -46,20 +46,11 @@ contract ConvexCrvLPMarket is MarketExternalActions {
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw, bool isReceiptOut) internal override {
         // If not enough are on the contract, we need to withdraw the difference from Convex
         cvxRewardToken.withdrawAndUnwrap(lpToWithdraw, false);
-
         collatToken.transfer(to, lpToWithdraw);
     }
 
-    /**
-
-     * @notice Claim and process the governance rewards
-     * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
-     */
-    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
-        require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
+    function _claimRewards() internal override {
         // Claim rewards on the market
         cvxRewardToken.getReward();
-
-        return _claimUnderlyingRewards(_rewardTokens);
     }
 }

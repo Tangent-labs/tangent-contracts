@@ -41,7 +41,6 @@ contract USG is ERC20, IUSG, LightOwnable {
 
     /**
      * @notice Markets call this function to mint USG when users borrow.
-     * @dev    Only callable by a minter
      * @param to     Receiver of the USG
      * @param amount Amount of USG borrowed to mint
      */
@@ -77,9 +76,8 @@ contract USG is ERC20, IUSG, LightOwnable {
 
     /**
      * @notice Markets call this function to burn USG when users repay their loans.
-     * @dev    Only callable by the DAO
-     * @param from      Address to burn the USG from
-     * @param amount    Amount of USG to burn from the address
+     * @param from    Address to burn the USG from
+     * @param amount  Amount of USG to burn from the address
      */
     function burnDebt(address from, uint256 amount) external {
         require(isBurner[msg.sender], OnlyBurnerCaller());
@@ -100,9 +98,8 @@ contract USG is ERC20, IUSG, LightOwnable {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     /**
-     *  @notice Toggle boolean linked to an address to flag it as market or no.
-     *  @dev    Callable only by the owner or a MarketCreator.
-     *  @param  market  Address to toggle.
+     *  @notice Called by a Market Creator to set a new market as minter and burner
+     *  @param  market  Address set as minter and burner
      */
     function initializeMarket(address market) external {
         require(controlTower.isMarketCreator(msg.sender), OnlyMarketCreator());

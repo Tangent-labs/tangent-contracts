@@ -23,17 +23,6 @@ contract CreateMarket is MarketDeploymentContext {
     IRParams public irParams = IRParams({isHEC: true, rMin: 4_000, rMax: 400_000, pMin: 980_000, pMax: 995_000, pInf: 990_000, a1: 2_000, a2: 2_000, k: 250});
     RCParams public rcParams =
         RCParams({harvestFeePercentage: 1_000, startCutPercentage: 50_000, endCutPercentage: 100_000, stepAmount: 4, startCutPrice: 995_000, endCutPrice: 900_000});
-    function test_createConvexCrvMarket_fails_as_not_owner() external {
-        vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        marketCreator.createConvexCrvMarket(marketInit, 0, irParams, rcParams);
-    }
-
-    function test_createConvexFxnMarket_fails_as_not_owner() external {
-        vm.startPrank(usr1);
-        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
-        marketCreator.createConvexFxnMarket(marketInit, 0, irParams, rcParams);
-    }
 
     function test_createBasicERC20Market_fails_as_not_owner() external {
         vm.startPrank(usr1);

@@ -646,6 +646,10 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         return rewardAmounts;
     }
+    /**
+     * @dev  Function to override to claim rewards given by the collateral
+     */
+    function _claimRewards() internal virtual {}
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     MIGRATE

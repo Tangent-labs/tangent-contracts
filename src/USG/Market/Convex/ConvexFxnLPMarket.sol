@@ -40,16 +40,8 @@ contract ConvexFxnLPMarket is MarketExternalActions {
         collatToken.transfer(to, lpToWithdraw);
     }
 
-    /**
-     * @notice Claim and process the governance rewards
-     * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
-     *      Anyone can trigger this function and will be incentivized with a processor fee.
-     */
-    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
-        require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
+    function _claimRewards() internal override {
         // Claim rewards of Convex FXN market
         stakingProxyVault.getReward();
-
-        return _claimUnderlyingRewards(_rewardTokens);
     }
 }

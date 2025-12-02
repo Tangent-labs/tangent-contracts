@@ -35,7 +35,7 @@ contract MigrateConvexToStakeDao is MarketDeploymentContext {
             debtToRepay: debtToRepay
         });
         verifyLostERC20(marketConvex.cvxRewardToken(), address(marketConvex), collatToWithdraw, "Convex market sent collateral in the migration");
-        verifyReceiveERC20(marketStakeDao.vaultToken(), address(marketStakeDao), collatToWithdraw, "StakeDao market receives collateral in the migration");
+        verifyReceiveERC20(IERC20(marketStakeDao.receiptToken()), address(marketStakeDao), collatToWithdraw, "StakeDao market receives collateral in the migration");
 
         vm.startPrank(usr1);
         migratoor.migrate(migrateStruct, ZapMigrateStruct({zap: ZapStruct({router: address(0), routerCall: ""}), minCollatToOut: 0}));

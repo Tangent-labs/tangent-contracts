@@ -12,7 +12,7 @@ contract LeverageStakeDaoVaultV2Market is MarketDeploymentContext {
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
         market = deployStakeDaoVaultV2Market(collatToken);
-        vault = market.vaultToken();
+        vault = IERC20(market.receiptToken());
         hLpManipulator = new HLPManipulator(usr2);
         hLpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-USDC"), 1, 0, 400_000 ether);
         skip(30 minutes);

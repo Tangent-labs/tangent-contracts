@@ -79,7 +79,7 @@ contract ProcessMultiRewards is MarketDeploymentContext {
         market4.stakingProxyVault().getReward();
         vm.startPrank(address(market5));
         address[] memory gauges = new address[](1);
-        gauges[0] = address(market5.vaultToken().gauge());
+        gauges[0] = address(IStakeDaoVaultV2(market5.receiptToken()).gauge());
         IAccountant(0x93b4B9bd266fFA8AF68e39EDFa8cFe2A62011Ce0).claim(gauges, new bytes[](1));
         vm.stopPrank();
 

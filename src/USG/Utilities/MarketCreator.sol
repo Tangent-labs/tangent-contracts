@@ -193,8 +193,11 @@ contract MarketCreator is LightOwnable {
     }
 
     function _commonInitialize(address newProxy, IRParams calldata _irParams, IERC20[] calldata rewardTokens, RCParams calldata _rcParams) internal {
+        // Set market as minter and burner of USG
         USG.initializeMarket(newProxy);
+        // Set up IRParams and initialize debt index for the market
         irCalculator.initializeMarket(newProxy, _irParams);
+        // Set up RewardCut params and initialize debt index for the market
         rewardAccumulator.initializeMarket(newProxy, rewardTokens, _rcParams);
     }
 }

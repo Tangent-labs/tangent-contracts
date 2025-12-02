@@ -14,38 +14,38 @@ import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 /// @author Tangent Finance
 /// @notice Lending Market of a Curve Gauge of a Curve LP. Used when there is no reward to boost throuh StakeDao or Convex.
 contract StakeDaoVaultV2Market is MarketExternalActions {
-    IStakeDaoVaultV2 public vaultToken;
+    address public receiptToken;
     IAccountant constant accountant = IAccountant(0x93b4B9bd266fFA8AF68e39EDFa8cFe2A62011Ce0);
 
     error WrongVaultToken();
-    function initialize(GlobalMarketInitParams memory _marketConstants, MarketInit memory _marketInit, IStakeDaoVaultV2 _vault) external {
+    function initialize(GlobalMarketInitParams memory _marketConstants, MarketInit memory _marketInit, address _receipt) external {
         // Common
         _initializationCommon(_marketConstants, _marketInit);
-        require(_vault.asset() == address(collatToken), WrongVaultToken());
+        require(IStakeDaoVaultV2(_receipt).asset() == address(collatToken), WrongVaultToken());
 
-        collatToken.approve(address(_vault), MAX_UINT);
-        vaultToken = _vault;
+        collatToken.approve(address(_receipt), MAX_UINT);
+        receiptToken = _receipt;
     }
 
     function _transferCollateralDeposit(uint256 collatToDeposit, bool isReceiptIn) internal override {
-        IERC20 _tokenIn = isReceiptIn ? vaultToken : collatToken;
+        IERC20 _tokenIn = isReceiptIn ? IERC20(receiptToken) : collatToken;
         _tokenIn.transferFrom(msg.sender, address(this), collatToDeposit);
     }
 
     function _postDeposit(IERC20 _collatToken, bool isReceiptIn) internal override {
         if (!isReceiptIn) {
             // Deposit the whole balance of LP StakeDao Vault
-            vaultToken.deposit(_collatToken.balanceOf(address(this)), address(this));
+            IStakeDaoVaultV2(receiptToken).deposit(_collatToken.balanceOf(address(this)), address(this));
         }
     }
 
     function _transferCollateralWithdraw(address to, uint256 collatToWithdraw, bool isReceipt) internal override {
         if (isReceipt) {
             // Transfer the vault token to receiver
-            vaultToken.transfer(to, collatToWithdraw);
+            IStakeDaoVaultV2(receiptToken).transfer(to, collatToWithdraw);
         } else {
             // Withdraw the LP from the Vault to the receiver
-            vaultToken.withdraw(collatToWithdraw, to, address(this));
+            IStakeDaoVaultV2(receiptToken).withdraw(collatToWithdraw, to, address(this));
         }
     }
 
@@ -53,20 +53,12 @@ contract StakeDaoVaultV2Market is MarketExternalActions {
                         CLAIM  
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    /**
-
-     * @notice Claim and process the rewards from StakeDao
-     * @dev Claim rewards from the corresponding StakeDao Vault SC and streams them for the stakers.
-     */
-    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
-        require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
-
+    function _claimRewards() internal override {
         address[] memory gauges = new address[](1);
-        gauges[0] = address(vaultToken.gauge());
+        gauges[0] = address(IStakeDaoVaultV2(receiptToken).gauge());
 
         // Harvest and claim CRV for the market
         try accountant.claim(gauges, new bytes[](1)) {} catch {}
-        return _claimUnderlyingRewards(_rewardTokens);
     }
 
     /**
@@ -75,6 +67,6 @@ contract StakeDaoVaultV2Market is MarketExternalActions {
      */
     function claimExtraRewards(IERC20[] calldata rewards) external {
         // Claim the extra rewards
-        vaultToken.claim(rewards, address(this));
+        IStakeDaoVaultV2(receiptToken).claim(rewards, address(this));
     }
 }
