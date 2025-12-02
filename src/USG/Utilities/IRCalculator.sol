@@ -14,6 +14,7 @@ import {IUSG} from "../../interfaces/internals/USG/IUSG.sol";
 import {ABDKMath64x64} from "../../libs/ABDKMath64x64.sol";
 
 /// @title IRCalculator
+/// @author Tangent Finance
 /// @notice Calculates and stores interest rates for all markets.
 contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransient {
     uint256 public constant DENOMINATOR = 100_000;

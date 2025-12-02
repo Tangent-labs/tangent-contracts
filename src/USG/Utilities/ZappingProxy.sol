@@ -10,6 +10,7 @@ import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {LightReentrancyGuardTransient} from "../Utilities/abstract/LightReentrancyGuardTransient.sol";
 
 /// @title ZappingProxy
+/// @author Tangent Finance
 /// @notice This contract is used to zap tokens in and out of the system. Tokens are transiting to this contract and are pulled by the router passed in parameters.
 ///         NO TOKENS SHOULD BE SEND DIRECTLY HERE OR THEY WILL BE POTENTIALLY IMMEDIATLY STOLEN
 contract ZappingProxy is IZappingProxy, LightReentrancyGuardTransient {

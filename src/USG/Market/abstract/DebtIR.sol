@@ -10,6 +10,7 @@ import {LightOwnable} from "../../Utilities/abstract/LightOwnable.sol";
 import {LightReentrancyGuardTransient} from "../../Utilities/abstract/LightReentrancyGuardTransient.sol";
 
 /// @title DebtIR - Computes debts for a market
+/// @author Tangent Finance
 /// @notice Abstract contract to track debt issuance and bad debt
 /// @dev Inherits access control (LightOwnable) and reentrancy protection
 abstract contract DebtIR is LightOwnable, IDebtIR, LightReentrancyGuardTransient {

@@ -9,6 +9,7 @@ import {IRewardAccumulator} from "../../../interfaces/internals/USG/IRewardAccum
 import {DebtIR} from "./DebtIR.sol";
 
 /// @title Collateral
+/// @author Tangent Finance
 /// @notice Abstract contract that defines collateral management logic
 abstract contract Collateral is DebtIR, ICollateral {
     /// @dev Maximum uint256 value

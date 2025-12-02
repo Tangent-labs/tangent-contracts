@@ -15,7 +15,8 @@ import {ZapStruct} from "../../interfaces/internals/ICommonStruct.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title  Migratoor
-/// @notice This contract is used fully or partially migrate a position to an other market.
+/// @author Tangent Finance
+/// @notice This contract can be used to fully or partially migrate a position to an other market.
 ///         It prevent user to repay, withdraw, swap his collateral by himself etc.
 contract Migratoor is LightOwnable, LightReentrancyGuardTransient {
     IZappingProxy public zappingProxy;

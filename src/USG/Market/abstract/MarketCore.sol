@@ -27,6 +27,8 @@ import {
     IERC20
 } from "../../../interfaces/internals/USG/IMarketCore.sol";
 
+/// @title MarketCore
+/// @author Tangent Finance
 /// @notice Abstract base contract implementing core functionality for USG markets.
 /// @dev Inherits PauseSettings, Collateral and ZappingUtil to provide collateral management
 /// Includes core logic for deposits, withdrawals, borrowing, repayment, liquidation, and leverage.
@@ -409,6 +411,11 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             // As it's a partial liquidation, we have to compute the amount of shares to remove that match with the USG amount to repay.
             debtSharesToRemove = _convertToShares(usgToRepay, selfLiquidateStruct.newDebtIndex, Math.Rounding.Floor);
 
+            // In case the usgToRepay is very small, we don't want debtShares being equal to 0
+            if (usgToRepay != 0) {
+                require(debtSharesToRemove != 0, ZeroDebtAmount());
+            }
+
             uint256 newUserDebt = selfLiquidateStruct.userDebt - usgToRepay;
             // Ensure that the remaining debt is bigger than a minimum in order to leave profitable liquidation
 
@@ -416,8 +423,6 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             // Verify that maxLTV condition is still respected
             _verifyMaxLTV(newCollatBalance, newUserDebt, false);
         }
-
-        require(debtSharesToRemove != 0, ZeroDebtAmount());
 
         uint256 newUserDebtShares = selfLiquidateStruct._userDebtShares - debtSharesToRemove;
 

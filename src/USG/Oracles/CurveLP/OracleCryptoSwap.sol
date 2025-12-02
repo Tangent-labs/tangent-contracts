@@ -5,7 +5,8 @@ import {ICurveTriCryptoSwap} from "../../../interfaces/externals/Curve/ICurveTri
 import {OracleBase} from "../OracleBase.sol";
 
 /// @title OracleCryptoSwap
-/// @notice This contract provides price oracle functionality for a dual pool cryptoswap of Curve Finance.
+/// @author Tangent Finance
+/// @notice This contract provides price oracle functionality for a cryptoswap pool of Curve Finance.
 contract OracleCryptoSwap is OracleBase {
     struct OracleCryptoSwapStruct {
         address lp;

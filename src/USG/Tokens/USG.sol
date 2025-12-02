@@ -7,7 +7,9 @@ import {IUSG} from "../../interfaces/internals/USG/IUSG.sol";
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 import {LightOwnable} from "../../USG/Utilities/abstract/LightOwnable.sol";
 
-/// @notice Tangent Stablecoin - USG
+/// @title Tangent USG
+/// @author Tangent Finance
+/// @notice Locking NFT contract of TAN.
 contract USG is ERC20, IUSG, LightOwnable {
     IControlTower public controlTower;
 

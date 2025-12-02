@@ -13,6 +13,7 @@ struct OracleChainlinkWrapperStruct {
 }
 
 /// @title OracleChainlinkWrapper
+/// @author Tangent Finance
 /// @notice This contract is a wrapper of a Chainlink aggregator checking if the last price is stale or invalid.
 contract OracleChainlinkWrapper is OracleBase {
     error InvalidAggregatorValue();

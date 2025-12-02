@@ -8,6 +8,7 @@ import {IPendleMarketV3} from "../../../interfaces/externals/Pendle/IPendleMarke
 import {OracleBase} from "../OracleBase.sol";
 
 /// @title OraclePendlePTLinearDiscount
+/// @author Tangent Finance
 /// @notice This contract prices a PT of Pendle in $. An exponation of its price compared to the underlying is used, going to 1 at maturity.
 contract OraclePendlePTLinearDiscount is OracleBase {
     OraclePendlePTLinearDiscountStruct public params;

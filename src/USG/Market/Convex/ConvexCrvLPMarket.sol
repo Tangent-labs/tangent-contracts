@@ -10,7 +10,9 @@ import {GlobalMarketInitParams, MarketInit} from "../../../interfaces/internals/
 import {MarketExternalActions} from "../abstract/MarketExternalActions.sol";
 import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 
-/// @notice Lending Market of a Curve LP on Convex
+/// @title ConvexCrvLPMarket
+/// @author Tangent Finance
+/// @notice USG lending market with a Curve LP staked on Convex as collateral
 contract ConvexCrvLPMarket is MarketExternalActions {
     /// @notice Booster contract of Convex Curve. Used for depositing assets into pools.
     ICvxBooster constant CVX_BOOSTER = ICvxBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);

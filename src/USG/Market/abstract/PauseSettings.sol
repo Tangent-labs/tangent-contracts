@@ -4,6 +4,8 @@ pragma solidity ^0.8.22;
 import {LightOwnable} from "../../Utilities/abstract/LightOwnable.sol";
 import {IControlTower} from "../../../interfaces/internals/USG/IControlTower.sol";
 
+/// @author Tangent Finance
+
 abstract contract PauseSettings is LightOwnable {
     enum PauseEnum {
         DepositPaused,

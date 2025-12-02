@@ -12,6 +12,7 @@ import {IMarketExternalActions} from "../../interfaces/internals/USG/IMarketExte
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 
 /// @title RewardAccumulator
+/// @author Tangent Finance
 /// @notice Manages processing, streaming and claiming of the rewards.
 contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     using SafeERC20 for IERC20;

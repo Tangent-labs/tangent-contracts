@@ -8,7 +8,9 @@ import {MarketInit, GlobalMarketInitParams} from "../../../interfaces/internals/
 import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 import {MarketExternalActions} from "../abstract/MarketExternalActions.sol";
 
-/// @notice Lending Market of a FXN LP on Convex
+/// @title ConvexCrvLPMarket
+/// @author Tangent Finance
+/// @notice USG lending market with a Curve LP staked on Convex/FXN as collateral
 contract ConvexFxnLPMarket is MarketExternalActions {
     ICvxFxnBooster constant CVX_BOOSTER = ICvxFxnBooster(0xAffe966B27ba3E4Ebb8A0eC124C7b7019CC762f8);
     IStakingProxyERC20 public stakingProxyVault;

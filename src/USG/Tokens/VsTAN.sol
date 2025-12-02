@@ -35,6 +35,7 @@ struct KickParams {
 }
 
 /// @title VsTAN
+/// @author Tangent Finance
 /// @notice Locking NFT contract of TAN.
 contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable, ZappingUtil, IVsTan {
     using SafeERC20 for IERC20;

@@ -1,106 +1,102 @@
- // TODO When we'll deploy
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+import "../../../contexts/MarketDeploymentContext.sol";
+import "../../../handler/Curve/HLPManipulator.sol";
 
-// // SPDX-License-Identifier: MIT
-// pragma solidity ^0.8.24;
-// import "../../../contexts/MarketDeploymentContext.sol";
-// import "../../../handler/Curve/HLPManipulator.sol";
+contract CryptoSwapOracleTest is MarketDeploymentContext {
+    address[] cryptoSwaps;
 
-// contract CryptoSwapOracleTest is MarketDeploymentContext {
-//     address[] cryptoSwaps;
+    function setUp() external {
+        // // TRI POOL
+        cryptoSwaps.push(address(AddrCryptoSwapLP.USDT_WBTC_ETH));
+        cryptoSwaps.push(address(AddrCryptoSwapLP.USDC_WBTC_ETH));
+        cryptoSwaps.push(address(AddrCryptoSwapLP.crvUSD_ETH_CRV));
+        cryptoSwaps.push(address(AddrCryptoSwapLP.GHO_cbBTC_ETH));
 
-//     function setUp() external {
-//         // // TRI POOL
-//         cryptoSwaps.push(address(AddrCryptoSwapLP.USDT_WBTC_ETH));
-//         cryptoSwaps.push(address(AddrCryptoSwapLP.USDC_WBTC_ETH));
-//         cryptoSwaps.push(address(AddrCryptoSwapLP.crvUSD_ETH_CRV));
-//         cryptoSwaps.push(address(AddrCryptoSwapLP.GHO_cbBTC_ETH));
+        // DUO POOL
+        cryptoSwaps.push(address(AddrCryptoSwapLP.CVX_ETH_POOL));
+    }
+    /// WARNING THIS IS ONLY USED FOR TESTING PURPOSE
+    /// THIS METHOD CAN BE MANIPULATED IN PROD
+    function approximateLPValue(ICurveTriCryptoSwap pool) public view returns (uint256, IERC20) {
+        IERC20Metadata lpToken = getLpToken(pool);
+        uint256 totalSupply = lpToken.totalSupply();
 
-//         // DUO POOL
-//         cryptoSwaps.push(address(AddrCryptoSwapLP.USR_RLP));
-//         cryptoSwaps.push(address(AddrCryptoSwapLP.CVX_ETH_POOL));
-//     }
-//     /// WARNING THIS IS ONLY USED FOR TESTING PURPOSE
-//     /// THIS METHOD CAN BE MANIPULATED IN PROD
-//     function approximateLPValue(ICurveTriCryptoSwap pool) public view returns (uint256, IERC20) {
-//         IERC20Metadata lpToken = getLpToken(pool);
-//         uint256 totalSupply = lpToken.totalSupply();
+        return ((approximateTotalLPValue(pool) * 1e18) / totalSupply, lpToken);
+    }
 
-//         return ((approximateTotalLPValue(pool) * 1e18) / totalSupply, lpToken);
-//     }
+    function getLpToken(ICurveTriCryptoSwap pool) public view returns (IERC20Metadata) {
+        (, bytes memory totalSupplyBytes) = address(pool).staticcall(abi.encodeWithSelector(bytes4(keccak256("totalSupply()"))));
 
-//     function getLpToken(ICurveTriCryptoSwap pool) public view returns (IERC20Metadata) {
-//         (, bytes memory totalSupplyBytes) = address(pool).staticcall(abi.encodeWithSelector(bytes4(keccak256("totalSupply()"))));
+        // For the LP that are not merged with the token
+        if (totalSupplyBytes.length == 0) {
+            (, bytes memory lpTokenBytes) = address(pool).staticcall(abi.encodeWithSelector(bytes4(keccak256("token()"))));
+            return IERC20Metadata(abi.decode(lpTokenBytes, (address)));
+        } else {
+            return pool;
+        }
+    }
 
-//         // For the LP that are not merged with the token
-//         if (totalSupplyBytes.length == 0) {
-//             (, bytes memory lpTokenBytes) = address(pool).staticcall(abi.encodeWithSelector(bytes4(keccak256("token()"))));
-//             return IERC20Metadata(abi.decode(lpTokenBytes, (address)));
-//         } else {
-//             return pool;
-//         }
-//     }
+    function approximateTotalLPValue(ICurveTriCryptoSwap lp) public view returns (uint256) {
+        uint256 usdValue;
+        for (uint256 i = 0; i < 5; i++) {
+            IERC20Metadata coin;
 
-//     function approximateTotalLPValue(ICurveTriCryptoSwap lp) public view returns (uint256) {
-//         uint256 usdValue;
-//         for (uint256 i = 0; i < 5; i++) {
-//             IERC20Metadata coin;
+            try lp.coins(i) {
+                coin = IERC20Metadata(lp.coins(i));
+            } catch {
+                break;
+            }
+            IPriceOracle oracle = oracles[coin];
+            assertNotEq(address(oracle), address(0), "Oracle not setup");
+            uint256 price = oracle.latestAnswer(true) * 10 ** (18 - oracle.decimals());
 
-//             try lp.coins(i) {
-//                 coin = IERC20Metadata(lp.coins(i));
-//             } catch {
-//                 break;
-//             }
-//             IPriceOracle oracle = oracles[coin];
-//             assertNotEq(address(oracle), address(0), "Oracle not setup");
-//             uint256 price = oracle.latestAnswer(true) * 10 ** (18 - oracle.decimals());
+            usdValue += (price * lp.balances(i) * (10 ** (18 - coin.decimals()))) / 1e18;
+        }
 
-//             usdValue += (price * lp.balances(i) * (10 ** (18 - coin.decimals()))) / 1e18;
-//         }
+        return usdValue;
+    }
+    function test_flash_exploit_TriCryptoSwap_oracle() external {
+        HLPManipulator lpManipulator = new HLPManipulator(usr1);
 
-//         return usdValue;
-//     }
-//     function test_flash_exploit_TriCryptoSwap_oracle() external {
-//         HLPManipulator lpManipulator = new HLPManipulator(usr1);
+        for (uint256 i = 0; i < cryptoSwaps.length; i++) {
+            ICurveTriCryptoSwap pool = ICurveTriCryptoSwap(cryptoSwaps[i]);
+            IERC20Metadata lpToken = getLpToken(pool);
 
-//         for (uint256 i = 0; i < cryptoSwaps.length; i++) {
-//             ICurveTriCryptoSwap pool = ICurveTriCryptoSwap(cryptoSwaps[i]);
-//             IERC20Metadata lpToken = getLpToken(pool);
+            uint256 oracleValueBeforeSwap = oracles[lpToken].latestAnswer(true);
+            uint256 totalLPValue = approximateTotalLPValue(pool);
 
-//             uint256 oracleValueBeforeSwap = oracles[lpToken].latestAnswer(true);
-//             uint256 totalLPValue = approximateTotalLPValue(pool);
+            IERC20Metadata coin1 = IERC20Metadata(pool.coins(1));
+            IPriceOracle oracle = oracles[coin1];
+            uint256 price = oracle.latestAnswer(true) * 10 ** (18 - oracle.decimals());
 
-//             IERC20Metadata coin1 = IERC20Metadata(pool.coins(1));
-//             IPriceOracle oracle = oracles[coin1];
-//             uint256 price = oracle.latestAnswer(true) * 10 ** (18 - oracle.decimals());
+            // Sell the equivalent of the totality of the LP should increase or decrease very hard if the exploit was doable
+            uint256 amountCoin1ToSellWei = (totalLPValue * 10 ** 18) / price;
+            uint256 amountCoin1ToSell = amountCoin1ToSellWei / 10 ** (18 - coin1.decimals());
 
-//             // Sell the equivalent of the totality of the LP should increase or decrease very hard if the exploit was doable
-//             uint256 amountCoin1ToSellWei = (totalLPValue * 10 ** 18) / price;
-//             uint256 amountCoin1ToSell = amountCoin1ToSellWei / 10 ** (18 - coin1.decimals());
+            lpManipulator.dumTriCryptoSwapPool(pool, 1, 0, amountCoin1ToSell);
+            // This is normal because the sell of the token generated swap fee reported to lpPrice.
+            assertLt(oracleValueBeforeSwap, oracles[lpToken].latestAnswer(true), "Oracle price is always bigger as swap occured in the LP");
 
-//             lpManipulator.dumTriCryptoSwapPool(pool, 1, 0, amountCoin1ToSell);
-//             // This is normal because the sell of the token generated swap fee reported to lpPrice.
-//             assertLt(oracleValueBeforeSwap, oracles[lpToken].latestAnswer(true), "Oracle price is always bigger as swap occured in the LP");
+            uint256 oracleValueAfterSwap = oracles[lpToken].latestAnswer(true);
 
-//             uint256 oracleValueAfterSwap = oracles[lpToken].latestAnswer(true);
+            // This shouldnt change it more than 1.5%
+            assertApproxEqRel(oracleValueBeforeSwap, oracleValueAfterSwap, 30e15);
 
-//             // This shouldnt change it more than 1.5%
-//             assertApproxEqRel(oracleValueBeforeSwap, oracleValueAfterSwap, 30e15);
+            //TODO Verify these assert. The price of the Lp should for me change
+            (uint256 newApprox, IERC20 _lp) = approximateLPValue(pool);
 
-//             //TODO Verify these assert. The price of the Lp should for me change
-//             uint256 newApprox = approximateLPValue(pool);
-//             skip(80000);
-//             pool.price_oracle(0);
-//             pool.price_oracle(1);
-//             assertEq(oracleValueAfterSwap, oracles[pool].latestAnswer(), "After some time, oracle pricing should change");
-//             assertApproxEqRel(newApprox, oracles[pool].latestAnswer(), 3e15, "After some time the price should have change");
-//         }
-//     }
-//     function test_atomic_verification() external view {
-//         for (uint256 i = 0; i < cryptoSwaps.length; i++) {
-//             ICurveTriCryptoSwap lp = ICurveTriCryptoSwap(cryptoSwaps[i]);
-//             (uint256 approx, IERC20 lpToken) = approximateLPValue(lp);
+            skip(80000);
+            assertEq(oracleValueAfterSwap, oracles[_lp].latestAnswer(true), "After some time, oracle pricing should change");
+            // assertApproxEqRel(newApprox, oracles[pool].latestAnswer(true), 3e15, "After some time the price should have change");
+        }
+    }
+    function test_atomic_verification() external view {
+        for (uint256 i = 0; i < cryptoSwaps.length; i++) {
+            ICurveTriCryptoSwap lp = ICurveTriCryptoSwap(cryptoSwaps[i]);
+            (uint256 approx, IERC20 lpToken) = approximateLPValue(lp);
 
-//             assertApproxEqRel(approx, oracles[lpToken].latestAnswer(true), 18e15); // 1.8% maximum
-//         }
-//     }
-// }
+            assertApproxEqRel(approx, oracles[lpToken].latestAnswer(true), 18e15); // 1.8% maximum
+        }
+    }
+}
