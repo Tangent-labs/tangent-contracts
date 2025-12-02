@@ -81,12 +81,12 @@ export async function deployUSG(userCount: number = 5) {
 
     // Deploy Curve Gauge markets
     console.log("Deploy Curve Gauge markets");
-    await marketContext.deployCurveGaugeMarkets(curveGaugeMarkets, baseContext, oracleContext);
+    await marketContext.deployCurveGaugeMarkets(curveGaugeMarkets, baseContext, oracleContext, baseContext.users);
 
 
     // Deploy StakeDAO Vault markets
     console.log("Deploy StakeDao VaultV2 markets");
-    await marketContext.deployStakeDaoVaultV2Markets(stakeDaoVaultMarkets, baseContext, oracleContext);
+    await marketContext.deployStakeDaoVaultV2Markets(stakeDaoVaultMarkets, baseContext, oracleContext, baseContext.users);
 
 
     // Deploy Pendle PT markets

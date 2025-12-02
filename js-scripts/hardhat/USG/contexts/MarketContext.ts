@@ -1,9 +1,6 @@
 import { ethers } from "hardhat";
-import { AddressLike, ContractTransactionReceipt, Interface } from "ethers";
+import { AddressLike, ContractTransactionReceipt, Interface, MaxUint256, Signer } from "ethers";
 import { ConvexCrvLPMarket, ConvexFxnLPMarket, BasicERC20Market, CurveGaugeMarket, StakeDaoVaultV2Market } from "../../../../typechain-types";
-
-import { commonERC20 } from "@tangent/defi-resources";
-
 import { BaseContext } from "./BaseContext";
 import { OracleContext } from "./OracleContext";
 import {
@@ -89,7 +86,7 @@ export class MarketContext {
         }
     }
 
-    async deployCurveGaugeMarkets(keys: CurveGaugeMarketsKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
+    async deployCurveGaugeMarkets(keys: CurveGaugeMarketsKeys[], baseContext: BaseContext, oracleContext: OracleContext, users: Signer[]) {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_CURVE_GAUGE[key];
@@ -106,10 +103,19 @@ export class MarketContext {
             ).wait();
 
             await this.parseCreateMarketLogs(key, receipt!);
+
+            const market = this.curveGaugeMarkets[key]
+            const gauge = await ethers.getContractAt("IGauge", await market.receiptToken())
+            const collat = await ethers.getContractAt("IERC20", staticConfig.collatToken)
+            for (let index = 0; index < users.length; index++) {
+                const user = users[index];
+                await collat.connect(user).approve(gauge, MaxUint256);
+                await gauge.connect(user)["deposit(uint256)"](await collat.balanceOf(user) / 2n)
+            }
         }
     }
 
-    async deployStakeDaoVaultV2Markets(keys: StakeDaoVaultV2MarketsKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
+    async deployStakeDaoVaultV2Markets(keys: StakeDaoVaultV2MarketsKeys[], baseContext: BaseContext, oracleContext: OracleContext, users: Signer[]) {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_STAKEDAO_VAULT_V2[key];
@@ -125,7 +131,18 @@ export class MarketContext {
                     )
             ).wait();
 
+
             await this.parseCreateMarketLogs(key, receipt!);
+
+
+            const market = this.stakeDaoVaultMarkets[key]
+            const vault = await ethers.getContractAt("IStakeDaoVaultV2", await market.receiptToken())
+            const collat = await ethers.getContractAt("IERC20", staticConfig.collatToken)
+            for (let index = 0; index < users.length; index++) {
+                const user = users[index];
+                await collat.connect(user).approve(vault, MaxUint256);
+                await vault.connect(user)["deposit(uint256,address)"](await collat.balanceOf(user) / 2n, user)
+            }
         }
     }
 
