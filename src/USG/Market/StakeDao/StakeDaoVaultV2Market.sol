@@ -12,7 +12,7 @@ import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 
 /// @title  StakeDaoVaultV2Market
 /// @author Tangent Finance
-/// @notice Lending Market of a Curve Gauge of a Curve LP. Used when there is no reward to boost throuh StakeDao or Convex.
+/// @notice Lending Market of a StakeDao Vault boosting CRV rewards of a Curve LP.
 contract StakeDaoVaultV2Market is MarketExternalActions {
     address public receiptToken;
     IAccountant constant accountant = IAccountant(0x93b4B9bd266fFA8AF68e39EDFa8cFe2A62011Ce0);
@@ -34,7 +34,7 @@ contract StakeDaoVaultV2Market is MarketExternalActions {
 
     function _postDeposit(IERC20 _collatToken, bool isReceiptIn) internal override {
         if (!isReceiptIn) {
-            // Deposit the whole balance of LP StakeDao Vault
+            // Deposit the whole balance of LP into the StakeDao Vault
             IStakeDaoVaultV2(receiptToken).deposit(_collatToken.balanceOf(address(this)), address(this));
         }
     }
@@ -57,15 +57,16 @@ contract StakeDaoVaultV2Market is MarketExternalActions {
         address[] memory gauges = new address[](1);
         gauges[0] = address(IStakeDaoVaultV2(receiptToken).gauge());
 
-        // Harvest and claim CRV for the market
+        // When nothing is claimable, accountant.claim() revert
+        // However, to be able to change reward cut, we want to be able to call processRewards at any moment.
         try accountant.claim(gauges, new bytes[](1)) {} catch {}
     }
 
     /**
      * @notice Claim the extra rewards from StakeDao Vault.
-     *         Extra rewards can be CVX ( from OnlyBoost and Convex ) or any other rewards streamed in the
+     *         Extra rewards can be CVX ( from OnlyBoost and Convex ) or any other rewards streamed in the vault
      */
-    function claimExtraRewards(IERC20[] calldata rewards) external {
+    function claimExtraRewards(IERC20[] calldata rewards) external nonReentrant {
         // Claim the extra rewards
         IStakeDaoVaultV2(receiptToken).claim(rewards, address(this));
     }

@@ -28,6 +28,18 @@ contract USGAccessControl is MarketDeploymentContext {
         usg.mintPegKeeper(usr1, amount);
     }
 
+    function test_burnPegKeeper_fails_call_not_by_owner() external {
+        vm.startPrank(usr1);
+        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
+        usg.burnPegKeeper(usr1, amount);
+    }
+
+    function test_burnPegKeeper_fails_burn_not_from_pegKeeper() external {
+        vm.startPrank(owner);
+        vm.expectRevert(abi.encodeWithSelector(USG.BurnOnlyFromPegKeeper.selector));
+        usg.burnPegKeeper(usr1, amount);
+    }
+
     function test_burnFrom_fails_call_not_by_market() external {
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(USG.OnlyBurnerCaller.selector));

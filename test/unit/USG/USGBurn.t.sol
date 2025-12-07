@@ -28,4 +28,15 @@ contract USGBurn is MarketDeploymentContext {
         usg.burn(amount);
         assertERC20Tracking();
     }
+
+    function test_burnPegkeeper_USG() external {
+        vm.startPrank(owner);
+        usg.mintPegKeeper(address(pegKeeperUSG_USDC), amount);
+        verifyLostERC20(usg, address(pegKeeperUSG_USDC), amount);
+        verifyBurnERC20(usg, amount);
+        usg.burnPegKeeper(address(pegKeeperUSG_USDC), amount);
+        assertERC20Tracking();
+        vm.expectRevert();
+        usg.burnPegKeeper(address(pegKeeperUSG_USDC), 1);
+    }
 }

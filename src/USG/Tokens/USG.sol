@@ -26,6 +26,7 @@ contract USG is ERC20, IUSG, LightOwnable {
     error OnlyIRProducer();
     error OnlyMarketCreator();
     error MintOnlyOnPegKeeper();
+    error BurnOnlyFromPegKeeper();
 
     /**
      * @notice Constructor of USG
@@ -84,6 +85,17 @@ contract USG is ERC20, IUSG, LightOwnable {
     function burnDebt(address from, uint256 amount) external {
         require(isBurner[msg.sender], OnlyBurnerCaller());
         _burn(from, amount);
+    }
+
+    /**
+     * @notice Burn USG from a pegKeeper if we deprecate a pegkeeper or want to reduce debt to be allocated to peg keeping
+     * @dev    Only callable by the DAO.
+     * @param pegKeeper PegKeeper address to burn USG from
+     * @param amount    Amount of USG to burn from the pegKeeper
+     */
+    function burnPegKeeper(address pegKeeper, uint256 amount) external onlyOwner {
+        require(isPegKeeper[pegKeeper], BurnOnlyFromPegKeeper());
+        _burn(pegKeeper, amount);
     }
 
     /**

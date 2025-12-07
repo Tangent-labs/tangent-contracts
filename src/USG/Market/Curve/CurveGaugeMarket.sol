@@ -25,17 +25,15 @@ contract CurveGaugeMarket is MarketExternalActions {
         receiptToken = _gauge;
     }
 
-    function _transferCollateralDeposit(uint256 collatToDeposit, bool isReceipt) internal override {
-        if (isReceipt) {
-            // Transfer the gauge token from the user to the market
-            IGauge(receiptToken).transferFrom(msg.sender, address(this), collatToDeposit);
-        } else {
-            // Transfer the LP token from the user to the market
-            collatToken.transferFrom(msg.sender, address(this), collatToDeposit);
-        }
+    function _transferCollateralDeposit(uint256 collatToDeposit, bool isReceiptIn) internal override {
+        // Map the right token to transfer
+        IERC20 _tokenIn = isReceiptIn ? IERC20(receiptToken) : collatToken;
+        // Transfer the token from the caller to the market
+        _tokenIn.transferFrom(msg.sender, address(this), collatToDeposit);
     }
 
     function _postDeposit(IERC20 _collatToken, bool isReceiptIn) internal override {
+        // Only deposit if the tokenIn is not the receipt as the receipt is already the staked position
         if (!isReceiptIn) {
             // Deposit the whole balance of LP into the curve gauge
             IGauge(receiptToken).deposit(_collatToken.balanceOf(address(this)));

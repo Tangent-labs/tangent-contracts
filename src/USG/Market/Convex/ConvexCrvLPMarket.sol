@@ -46,8 +46,9 @@ contract ConvexCrvLPMarket is MarketExternalActions {
     }
 
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw, bool isReceiptOut) internal override {
-        // If not enough are on the contract, we need to withdraw the difference from Convex
+        // Withdraw LP from convex to the market
         cvxRewardToken.withdrawAndUnwrap(lpToWithdraw, false);
+        // Transfer the LP from the market to the receiver
         collatToken.transfer(to, lpToWithdraw);
     }
 
