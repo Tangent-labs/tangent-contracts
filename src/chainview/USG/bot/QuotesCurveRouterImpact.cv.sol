@@ -12,7 +12,7 @@ struct QuoteWithImpact {
 
 contract QuotesCurveRouterImpact {
     ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
-    uint256 private constant MARGINAL_AMOUNT = 1 wei;
+    uint256 private constant MARGINAL_AMOUNT = 100_000 wei;
 
     error QuotesCurveRouterImpactError(QuoteWithImpact[] outputs);
 
@@ -33,7 +33,7 @@ contract QuotesCurveRouterImpact {
                     if (marginalQuote > 0 && curveQuote._amount > 0) {
                         // Expected output at marginal price (no slippage)
                         uint256 expectedOutput = (curveQuote._amount * marginalQuote) / MARGINAL_AMOUNT;
-                        priceImpact = (int256(expectedOutput) - int256(quote)) * int256(1e18) / int256(expectedOutput);
+                        priceImpact = (int256(expectedOutput) - int256(quote)) * int256(MARGINAL_AMOUNT * 1e18) / int256(expectedOutput);
                     } 
                 } catch {
                    // no price impact

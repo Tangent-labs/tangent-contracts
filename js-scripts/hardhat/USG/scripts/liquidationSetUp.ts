@@ -1,5 +1,6 @@
 import {LiquidationContext} from "../contexts/LiquidationContext";
 import * as fs from "fs";
+import {network} from "hardhat";
 import * as path from "path";
 
 async function main() {
@@ -19,5 +20,7 @@ async function main() {
 
     await liquidationContext.setOraclesToMock();
     console.info("\x1b[32m%s\x1b[0m", "mockOracle OK");
+
+    await network.provider.send("evm_setAutomine", [false]);
 }
 main();
