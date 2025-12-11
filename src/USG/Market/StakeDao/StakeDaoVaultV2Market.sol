@@ -35,7 +35,7 @@ contract StakeDaoVaultV2Market is MarketExternalActions {
     function _postDeposit(IERC20 _collatToken, bool isReceiptIn) internal override {
         if (!isReceiptIn) {
             // Deposit the whole balance of LP into the StakeDao Vault
-            IStakeDaoVaultV2(receiptToken).deposit(_collatToken.balanceOf(address(this)), address(this));
+            IStakeDaoVaultV2(receiptToken).deposit(_collatToken.balanceOf(address(this)), address(this), controlTower.feeTreasury());
         }
     }
 
@@ -66,7 +66,7 @@ contract StakeDaoVaultV2Market is MarketExternalActions {
      * @notice Claim the extra rewards from StakeDao Vault.
      *         Extra rewards can be CVX ( from OnlyBoost and Convex ) or any other rewards streamed in the vault
      */
-    function claimExtraRewards(IERC20[] calldata rewards) external nonReentrant {
+    function claimExtraRewards(address[] calldata rewards) external nonReentrant {
         // Claim the extra rewards
         IStakeDaoVaultV2(receiptToken).claim(rewards, address(this));
     }

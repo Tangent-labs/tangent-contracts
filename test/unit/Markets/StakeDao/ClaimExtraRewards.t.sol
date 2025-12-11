@@ -34,8 +34,8 @@ contract ClaimExtraRewards is MarketDeploymentContext {
         assertERC20Tracking();
 
         skip(1 weeks);
-        IERC20[] memory tokens = new IERC20[](1);
-        tokens[0] = AddrClassicERC20.CVX;
+        address[] memory tokens = new address[](1);
+        tokens[0] = address(AddrClassicERC20.CVX);
 
         market.claimExtraRewards(tokens);
 

@@ -17,8 +17,8 @@ interface IStakeDaoVaultV2 is IERC20Metadata {
     function asset() external view returns (address);
     function balanceOf(address account) external view returns (uint256);
     function checkpoint(address account) external;
-    function claim(IERC20[] memory tokens, address receiver) external returns (uint256[] memory amounts);
-    function claim(address account, address[] memory tokens, address receiver) external returns (uint256[] memory amounts);
+    function claim(address[] calldata tokens, address receiver) external returns (uint256[] memory amounts);
+    function claim(address account, address[] calldata tokens, address receiver) external returns (uint256[] memory amounts);
     function convertToAssets(uint256 shares) external pure returns (uint256);
     function convertToShares(uint256 assets) external pure returns (uint256);
     function decimals() external view returns (uint8);
