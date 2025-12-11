@@ -4,6 +4,7 @@ import {network} from "hardhat";
 import * as path from "path";
 
 async function main() {
+    await network.provider.send("evm_mine", []);
     const liquidationContext = new LiquidationContext();
     await liquidationContext.doDeploy();
 

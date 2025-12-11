@@ -162,10 +162,21 @@ export class LiquidationContext {
                 // we deposit the equivalent of 10_000 USD in collateral
                 const position10000Value = (USD * 10n ** DECIMALS * 10n ** 18n + PRICE - 1n) / PRICE;
                 deposit = position10000Value.toString();
+               
+
+                
+                // we deposit the equivalent of USD amount in collateral
+                const positionValue = (USD * 10n ** DECIMALS * 10n ** 18n + PRICE - 1n) / PRICE;
+                deposit = positionValue.toString();
 
                 currentMarketDeposit[userAddress] = formatEther(deposit);
-                // borrow 6800 for liquidate & 8500 for  seizing
-                currentMarketBorrow[userAddress] = userIndex % 2 === 0 ? "6800" : "8500";
+                // User 0: borrow 6800 (68% of 10k), User 1: borrow 68% of 150k = 102000 (68% TLV for split route test)
+                if (userIndex === 1) {
+                    // 68% of 150,000 = 102,000
+                    currentMarketBorrow[userAddress] = userIndex === 1 ? "800000" : "10200";
+                } else {
+                    currentMarketBorrow[userAddress] = "6800";
+                }
             }
             depositParams[marketaddress] = currentMarketDeposit;
             borrowParams[marketaddress] = currentMarketBorrow;
