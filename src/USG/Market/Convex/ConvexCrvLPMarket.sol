@@ -23,6 +23,8 @@ contract ConvexCrvLPMarket is MarketExternalActions {
     /// @notice Id of the Curve pool on Convex
     uint256 public pid;
 
+    error WrongPoolId();
+
     function initialize(GlobalMarketInitParams memory _marketConstants, MarketInit memory _marketInit, uint256 _pid) external {
         // Common
         _initializationCommon(_marketConstants, _marketInit);
@@ -32,7 +34,9 @@ contract ConvexCrvLPMarket is MarketExternalActions {
         collatToken.approve(address(CVX_BOOSTER), MAX_UINT);
         // Dynamically retrieve the CvxRewardToken from the Booster with poolId
         // Don't need to check if rewardToken is null because `poolInfo(uint)` throws and error if the pid is incorrect
-        (, , , address rewardToken, , ) = CVX_BOOSTER.poolInfo(_pid);
+        (address lpToken, , , address rewardToken, , ) = CVX_BOOSTER.poolInfo(_pid);
+        // Verify that the lpToken linked to the pid is the same as the collatToken
+        require(lpToken == address(_marketInit.collatToken), WrongPoolId());
         cvxRewardToken = ICvxRewardToken(rewardToken);
         pid = _pid;
     }
