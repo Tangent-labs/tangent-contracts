@@ -28,6 +28,11 @@ contract USG is ERC20, IUSG, LightOwnable {
     error MintOnlyOnPegKeeper();
     error BurnOnlyFromPegKeeper();
 
+    event SetIsMinter(address minter, bool isMinter);
+    event SetIsBurner(address burner, bool isBurner);
+    event SetIsIRProducer(address irProducer, bool isIRProducer);
+    event SetIsPegKeeper(address pegKeeper, bool isPegKeeper);
+
     /**
      * @notice Constructor of USG
      * @param _dao           Address of the DAO that becomes the owner of the contract
@@ -129,6 +134,7 @@ contract USG is ERC20, IUSG, LightOwnable {
      */
     function setIsMinter(address minter, bool _isMinter) external onlyOwner {
         isMinter[minter] = _isMinter;
+        emit SetIsMinter(minter, _isMinter);
     }
 
     /**
@@ -139,6 +145,7 @@ contract USG is ERC20, IUSG, LightOwnable {
      */
     function setIsBurner(address burner, bool _isBurner) external onlyOwner {
         isBurner[burner] = _isBurner;
+        emit SetIsBurner(burner, _isBurner);
     }
 
     /**
@@ -149,6 +156,7 @@ contract USG is ERC20, IUSG, LightOwnable {
      */
     function setIsIRProducer(address irProducer, bool _isIRProducer) external onlyOwner {
         isIRProducer[irProducer] = _isIRProducer;
+        emit SetIsIRProducer(irProducer, _isIRProducer);
     }
 
     /**
@@ -159,5 +167,6 @@ contract USG is ERC20, IUSG, LightOwnable {
      */
     function setIsPegKeeper(address pegKeeper, bool _isPegKeeper) external onlyOwner {
         isPegKeeper[pegKeeper] = _isPegKeeper;
+        emit SetIsPegKeeper(pegKeeper, _isPegKeeper);
     }
 }
