@@ -30,8 +30,11 @@ contract ConvexFxnLPMarket is MarketExternalActions {
                         DEPOSIT  
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function _postDeposit(IERC20 _collatToken, bool isReceiptIn) internal override {
-        stakingProxyVault.deposit(_collatToken.balanceOf(address(this)), true);
+    function _postDeposit(IERC20 _collatToken) internal override {
+        uint256 collatBalance = _collatToken.balanceOf(address(this));
+        if (collatBalance != 0) {
+            stakingProxyVault.deposit(collatBalance, true);
+        }
     }
 
     function _transferCollateralWithdraw(address to, uint256 lpToWithdraw, bool isReceiptOut) internal override {

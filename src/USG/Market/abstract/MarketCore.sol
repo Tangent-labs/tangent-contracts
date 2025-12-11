@@ -137,16 +137,15 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // Increase collateral balance of the position and update total debt
         _updateCollateral(_for, collateralBalances[_for] + amountDeposited, totalCollateral + amountDeposited);
 
-        _postDeposit(_collatToken, isReceiptIn);
+        _postDeposit(_collatToken);
     }
 
     /**
      * @dev Hook after deposit to allow extended logic such as staking the collateral in an underlying protocol.
      *      When not override, does nothing. Otherwise, refers to the overriding implementation.
      * @param _collatToken Collateral token being deposited.
-     * @param isReceiptIn  Gives the information if the receipt or the LP has been given
      */
-    function _postDeposit(IERC20 _collatToken, bool isReceiptIn) internal virtual {}
+    function _postDeposit(IERC20 _collatToken) internal virtual {}
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                         WITHDRAW
@@ -270,7 +269,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         _updateCollatAndDebts(msg.sender, newCollatAmount, totalCollateral + amountDeposited, newUserDebtShare, newTotalDebtShares);
 
-        _postDeposit(_collatToken, isReceiptIn);
+        _postDeposit(_collatToken);
 
         return newUserDebtShare;
     }
@@ -744,10 +743,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
 
         _updateCollatAndDebts(account, newCollatBalance, totalCollateral + collatToAdd, newUserDebtShares, newTotalDebtShares);
 
-        // Don't need to pass here when there is no collat to add
-        if (collatToAdd != 0) {
-            _postDeposit(collatToken, false);
-        }
+        _postDeposit(collatToken);
 
         return newUserDebtShares;
     }

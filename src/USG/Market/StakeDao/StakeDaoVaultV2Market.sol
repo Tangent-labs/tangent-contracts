@@ -32,10 +32,11 @@ contract StakeDaoVaultV2Market is MarketExternalActions {
         _tokenIn.transferFrom(msg.sender, address(this), collatToDeposit);
     }
 
-    function _postDeposit(IERC20 _collatToken, bool isReceiptIn) internal override {
-        if (!isReceiptIn) {
+    function _postDeposit(IERC20 _collatToken) internal override {
+        uint256 collatBalance = _collatToken.balanceOf(address(this));
+        if (collatBalance != 0) {
             // Deposit the whole balance of LP into the StakeDao Vault
-            IStakeDaoVaultV2(receiptToken).deposit(_collatToken.balanceOf(address(this)), address(this), controlTower.feeTreasury());
+            IStakeDaoVaultV2(receiptToken).deposit(collatBalance, address(this), controlTower.feeTreasury());
         }
     }
 
