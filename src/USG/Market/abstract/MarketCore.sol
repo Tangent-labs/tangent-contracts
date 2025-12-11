@@ -46,6 +46,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
     error NotEnoughCollateralToLiquidate(uint256 collatBalance);
     error CollatValueToLiquidateTooLow(uint256 collatValue);
     error MinCollatToLiquidate(uint256 collatAmount);
+    error NoZapLiquidateWithReceipt();
 
     /// @notice Constructor marks the contract as initialized.
     constructor() {
@@ -537,6 +538,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         // When liquidator is not zero, it allows to the LiquidatorProxy to receive the collateral.
         // Then, if needed, liquidator will allow the custom Liquidator to sell the collateral for USG in the same transaction.
         if (liquidationCall.router != address(0)) {
+            // Block the zap liquidation with the receipt, can only be done with the collateral directly.
+            require(!postLiquidate.isReceiptOut, NoZapLiquidateWithReceipt());
             _zappingProxy.zapProxy(collatToken, usg, postLiquidate.minUsgOut, msg.sender, liquidationCall);
         }
 
