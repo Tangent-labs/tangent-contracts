@@ -53,6 +53,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     event RewardNotified(address market, IERC20 _token, uint256 streamed, uint256 harvesterFee, uint256 rewardCut);
     event RewardPaid(address market, address _user, IERC20 _rewardToken, uint256 _reward);
     event AddReward(address market, IERC20 reward);
+    event RemoveReward(address market, address reward);
     event SetRCParams(address market, RCParams rcParams);
 
     error NoRewardsToClaimFromContract(address contractAddr);
@@ -60,7 +61,6 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     error NoRewardToMultiClaim();
     error NoRewardToSimpleClaim();
     error NotAMarketRewards();
-    error CantAddCollatTokenAsReward();
 
     error HarvesterFeeTooHigh();
     error NothingToProcess();
@@ -385,12 +385,10 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
     }
 
     function _addRewards(address market, IERC20[] calldata newRewardTokens) internal {
-        IERC20 _collatToken = ICollateral(market).collatToken();
         for (uint256 i; i < newRewardTokens.length; ) {
             IERC20 _newRewardToken = newRewardTokens[i];
             /// If lastUpdateTime is equal to 0, it means the token is not already added as a reward
             require(rewardData[market][_newRewardToken].lastUpdateTime == 0, RewardAlreadyAdded(_newRewardToken));
-            require(_collatToken != _newRewardToken, CantAddCollatTokenAsReward());
 
             rewardTokens[market].push(_newRewardToken);
             rewardData[market][_newRewardToken].lastUpdateTime = uint128(block.timestamp);
@@ -399,6 +397,26 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
                 ++i;
             }
             emit AddReward(market, _newRewardToken);
+        }
+    }
+
+    /**
+     * @notice Remove a reward associated to a market
+     * @dev    This should be called ONLY if a reward token is not transferable anymore, blocking actions on a specific market.
+     * @param market          Address of the market where the reward token will be removed
+     * @param tokenToRemove   Address of the reward token to remove
+     */
+    function removeReward(address market, address tokenToRemove) external onlyOwner {
+        IERC20[] storage tokens = rewardTokens[market];
+        uint256 length = tokens.length;
+
+        for (uint256 i; i < length; i++) {
+            if (address(tokens[i]) == tokenToRemove) {
+                tokens[i] = tokens[length - 1];
+                tokens.pop();
+                emit RemoveReward(market, tokenToRemove);
+                break;
+            }
         }
     }
 

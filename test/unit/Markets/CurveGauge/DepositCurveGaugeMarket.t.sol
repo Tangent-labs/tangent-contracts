@@ -13,8 +13,9 @@ contract DepositCurveGaugeMarket is MarketDeploymentContext {
     function setUp() public {
         gaugeToken = AddrCurveGauge.PYUSD_USDC;
         collatToken = AddrCurveStableLP.PYUSD_USDC;
-        IERC20[] memory tokens = new IERC20[](1);
+        IERC20[] memory tokens = new IERC20[](2);
         tokens[0] = AddrClassicERC20.PYUSD;
+        tokens[1] = AddrClassicERC20.CRV;
         market = deployCurveGaugeMarket(collatToken, tokens);
     }
 
@@ -65,6 +66,8 @@ contract DepositCurveGaugeMarket is MarketDeploymentContext {
         assertERC20Tracking();
 
         skip(1 weeks);
+
+        market.claimCRV();
 
         rewardAccumulator.processRewards(address(market), usr1);
 

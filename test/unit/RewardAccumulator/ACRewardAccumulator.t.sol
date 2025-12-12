@@ -74,10 +74,17 @@ contract ACRewardAccumulator is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableInvalidOwner.selector, address(0)));
         rewardAccumulator.transferOwnership(address(0));
     }
+
     function test_transferOwnership_sucess() external {
         vm.startPrank(owner);
         rewardAccumulator.transferOwnership(usr1);
 
         assertEq(usr1, rewardAccumulator.owner());
+    }
+
+    function test_removeReward_fails_as_not_owner() external {
+        vm.startPrank(usr1);
+        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
+        rewardAccumulator.removeReward(address(market), address(AddrClassicERC20.CRV));
     }
 }

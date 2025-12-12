@@ -45,4 +45,25 @@ contract CreateConvexCrvMarket is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
         marketCreator.createConvexCrvMarket(marketInit, PidCvxCrvBooster.USDC_crvUSD_LP, irParams, rcParams);
     }
+
+    function test_createConvexCrvMarket_fails_when_collatToken_and_lpToken_not_same() external {
+        IERC20[] memory rewardTokens = new IERC20[](2);
+        rewardTokens[0] = AddrClassicERC20.CRV;
+        rewardTokens[1] = AddrClassicERC20.CVX;
+        vm.startPrank(owner);
+        marketInit = MarketInit({
+            name: "",
+            collatToken: AddrCurveStableLP.USDT_crvUSD,
+            collatOracle: IPriceOracle(address(0)),
+            maxLTV: 0,
+            liquidationThreshold: 95_000,
+            liquidationFee: 0,
+            maxMarketDebt: 0,
+            rewardTokens: rewardTokens,
+            minimumLoan: 0
+        });
+
+        vm.expectRevert(abi.encodeWithSelector(ConvexCrvLPMarket.WrongPoolId.selector));
+        marketCreator.createConvexCrvMarket(marketInit, PidCvxCrvBooster.USDC_crvUSD_LP, irParams, rcParams);
+    }
 }
