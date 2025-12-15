@@ -7,7 +7,7 @@ contract ACRewardAccumulator is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
     }
 
     function test_claimSimple_fails_on_not_a_market() external {
@@ -40,8 +40,9 @@ contract ACRewardAccumulator is MarketDeploymentContext {
 
     function test_initializeMarket_fails_as_not_a_market_creator() external {
         vm.startPrank(usr1);
+
         vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.CallerNotMarketCreator.selector, usr1));
-        rewardAccumulator.initializeMarket(usr1, params);
+        rewardAccumulator.initializeMarket(usr1, new IERC20[](0), params);
     }
 
     function test_updateRCParams_fails_as_not_owner() external {
@@ -73,10 +74,17 @@ contract ACRewardAccumulator is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableInvalidOwner.selector, address(0)));
         rewardAccumulator.transferOwnership(address(0));
     }
+
     function test_transferOwnership_sucess() external {
         vm.startPrank(owner);
         rewardAccumulator.transferOwnership(usr1);
 
         assertEq(usr1, rewardAccumulator.owner());
+    }
+
+    function test_removeReward_fails_as_not_owner() external {
+        vm.startPrank(usr1);
+        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
+        rewardAccumulator.removeReward(address(market), address(AddrClassicERC20.CRV));
     }
 }

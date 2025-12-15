@@ -5,6 +5,7 @@ import {IAggregatorV3} from "../../../interfaces/externals/Chainlink/IAggregator
 import {IRedstonePriceFeedAdapter} from "../../../interfaces/externals/Redstone/IRedstonePriceFeedAdapter.sol";
 
 /// @title  OracleRedstoneWrapperFallback
+/// @author Tangent Finance
 /// @notice This contract is a fallback of a Chainlink price feed using Redstone.
 /// @dev    It'll not be plugged directly as an oracle to a market collateral
 contract OracleRedstoneWrapperFallback {

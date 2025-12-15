@@ -8,7 +8,7 @@ contract ZapDepositAndBorrow is MarketDeploymentContext {
     IERC20Metadata public collatToken = AddrCurveStableLP.WETH_frxETH;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
     }
 
     function test_zap_depositAndBorrow_with_eth_and_stake() external {

@@ -24,14 +24,15 @@ contract MigratePendlePTToPT is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(collatTokenFrom), usr1, collatIn);
         collatTokenFrom.approve(address(marketFrom), MAX_UINT);
-        marketFrom.depositAndBorrow(collatIn, 50_000 ether);
+        marketFrom.depositAndBorrow(collatIn, 50_000 ether, false);
 
         swapParams.push(Array.memoryUint256([uint256(0), uint256(1), uint256(9), uint256(0), uint256(0)]));
     }
 
     function test_migrate_one_PT_to_other_PT_with_curve_swap() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRepay
@@ -72,7 +73,8 @@ contract MigratePendlePTToPT is MarketDeploymentContext {
 
     function test_migrate_one_PT_to_other_PT_without_curve_swap() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRepay

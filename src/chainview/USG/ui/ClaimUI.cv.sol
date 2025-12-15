@@ -2,6 +2,7 @@
 pragma solidity ^0.8.27;
 
 import {ICollateral} from "../../../interfaces/internals/USG/ICollateral.sol";
+import {IMarketViewer} from "../../../interfaces/internals/USG/IMarketViewer.sol";
 import {IRewardAccumulator} from "../../../interfaces/internals/USG/IRewardAccumulator.sol";
 
 import {ERC20Infos, IERC20, TokenAmount, ERC20AmountInfos} from "../../ERC20Infos.sol";
@@ -16,11 +17,10 @@ contract ClaimUI is ERC20Infos {
 
     error ClaimUIOutError(ClaimUIOut[] output);
 
-    constructor(address account, address[] memory markets) {
-        uint256 marketLength = markets.length;
-        ClaimUIOut[] memory output = new ClaimUIOut[](marketLength);
+    constructor(address account, address[] memory markets, IMarketViewer marketViewer) {
+        ClaimUIOut[] memory output = new ClaimUIOut[](markets.length);
 
-        for (uint256 i; i < marketLength; ) {
+        for (uint256 i; i < markets.length; ) {
             address market = markets[i];
             IRewardAccumulator rewardAccumulator = IRewardAccumulator(ICollateral(market).rewardAccumulator());
 
@@ -37,7 +37,7 @@ contract ClaimUI is ERC20Infos {
 
             output[i] = ClaimUIOut({
                 marketAddress: market,
-                collatStakedUsdValue: ICollateral(market).positionValue(account),
+                collatStakedUsdValue: marketViewer.positionValue(ICollateral(market), account),
                 collatStaked: getERC20AmountInfos(TokenAmount({token: ICollateral(market).collatToken(), amount: ICollateral(market).collateralBalances(account)})),
                 claimableTokens: claimableTokens
             });

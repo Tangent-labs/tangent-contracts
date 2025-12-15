@@ -25,18 +25,18 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         lpUSG_USDC = lpDeploymentContext.USGLPs("USG-USDC");
         lpUSG_wfrxUSD = lpDeploymentContext.USGLPs("USG-wcrvUSD");
 
-        market_crvUSD_USDC = deployConvexCurveLPMarket(collatToken, true);
+        market_crvUSD_USDC = deployConvexCurveLPMarket(collatToken);
         market_fxUSD_USDC = deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD);
 
-        hDeposit_crvUSD_USDC = new HDepositConvexCrvLP(usr1, market_crvUSD_USDC);
-        hDeposit_fxUSD_USDC = new HDepositConvexFxnLP(usr1, market_fxUSD_USDC);
+        hDeposit_crvUSD_USDC = new HDepositConvexCrvLP(usr1, market_crvUSD_USDC, usg, marketViewer);
+        hDeposit_fxUSD_USDC = new HDepositConvexFxnLP(usr1, market_fxUSD_USDC, usg, marketViewer);
 
         hLpManipulator = new HLPManipulator(usr1);
     }
 
     function test_secondaryLiquidator_liquidate_with_secondary_liquidator_crvUSD_USDC() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit_crvUSD_USDC.depositAndBorrow(collatDeposited, 4_250 ether);
+        hDeposit_crvUSD_USDC.depositAndBorrow(collatDeposited, 4_250 ether, false);
 
         irCalculator.checkpointIR(address(market_crvUSD_USDC));
 
@@ -56,8 +56,8 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         // Skip time to be able to liquidate
         skip(50 days);
 
-        assertLe(market_crvUSD_USDC.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
-        assertGe(market_crvUSD_USDC.userDebt(usr1), (collatDeposited * 93) / 100, "Debt is getting over the 93% of the collateral");
+        assertLe(marketViewer.healthRatio(address(market_crvUSD_USDC), usr1), 1 ether, "Health ratio is lower than 1");
+        assertGe(marketViewer.userDebt(market_crvUSD_USDC, usr1), (collatDeposited * 93) / 100, "Debt is getting over the 93% of the collateral");
 
         hLpManipulator.dumpCrvPool(lpUSG_wfrxUSD, 0, 1, 20_000 ether);
 
@@ -88,11 +88,14 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         market_crvUSD_USDC.liquidate(
             LiquidateIn({
                 account: usr1,
-                collatToLiquidate: collatDeposited,
-                minUSGOut: 5200 ether,
-                maxUSGToBurn: MAX_UINT,
-                minCollatValueToLiquidate: 0,
-                minCollatAmountToLiquidate: 0
+                postLiquidate: PostLiquidate({
+                    collatAmountToLiquidate: collatDeposited,
+                    minUsgOut: 5200 ether,
+                    maxUsgToBurn: MAX_UINT,
+                    minCollatAmountToLiquidate: 0,
+                    isReceiptOut: false
+                }),
+                minCollatValueToLiquidate: 0
             }),
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
@@ -110,8 +113,8 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
             })
         );
 
-        assertEq(market_crvUSD_USDC.userDebt(usr1), 0);
-        assertEq(market_crvUSD_USDC.totalDebt(), 0);
+        assertEq(marketViewer.userDebt(market_crvUSD_USDC, usr1), 0);
+        assertEq(marketViewer.totalDebt(market_crvUSD_USDC), 0);
         assertEq(market_crvUSD_USDC.totalCollateral(), 0);
         assertEq(market_crvUSD_USDC.collateralBalances(usr1), 0);
         vm.stopPrank();
@@ -119,7 +122,7 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
     function test_secondaryLiquidator_liquidate_with_secondary_liquidator_fxUSD_USDC() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit_fxUSD_USDC.depositAndBorrow(collatDeposited, 4_250 ether);
+        hDeposit_fxUSD_USDC.depositAndBorrow(collatDeposited, 4_250 ether, false);
 
         irCalculator.checkpointIR(address(market_fxUSD_USDC));
 
@@ -139,8 +142,8 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
         // Skip time to be able to liquidate
         skip(35 days);
 
-        assertLe(market_fxUSD_USDC.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
-        assertGe(market_fxUSD_USDC.userDebt(usr1), (collatDeposited * 93) / 100, "Debt is getting over the 93% of the collateral");
+        assertLe(marketViewer.healthRatio(address(market_fxUSD_USDC), usr1), 1 ether, "Health ratio is lower than 1");
+        assertGe(marketViewer.userDebt(market_fxUSD_USDC, usr1), (collatDeposited * 93) / 100, "Debt is getting over the 93% of the collateral");
 
         hLpManipulator.dumpCrvPool(lpUSG_wfrxUSD, 0, 1, 20_000 ether);
 
@@ -165,16 +168,17 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
 
         irCalculator.mintIR();
 
-        // skip(365 days);
-
         market_fxUSD_USDC.liquidate(
             LiquidateIn({
                 account: usr1,
-                collatToLiquidate: collatDeposited,
-                minUSGOut: 5000 ether,
-                maxUSGToBurn: MAX_UINT,
-                minCollatValueToLiquidate: 0,
-                minCollatAmountToLiquidate: 0
+                postLiquidate: PostLiquidate({
+                    collatAmountToLiquidate: collatDeposited,
+                    minUsgOut: 5000 ether,
+                    maxUsgToBurn: MAX_UINT,
+                    minCollatAmountToLiquidate: 0,
+                    isReceiptOut: false
+                }),
+                minCollatValueToLiquidate: 0
             }),
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
@@ -192,11 +196,11 @@ contract SecondaryLiqdtCurveLp is MarketDeploymentContext {
             })
         );
 
-        // assertEq(market_fxUSD_USDC.userDebt(usr1), 0);
-        // assertEq(market_fxUSD_USDC.totalDebt(), 0);
-        // assertEq(market_fxUSD_USDC.totalCollateral(), 0);
-        // assertEq(market_fxUSD_USDC.collateralBalances(usr1), 0);
+        assertEq(marketViewer.userDebt(market_fxUSD_USDC, usr1), 0);
+        assertEq(marketViewer.totalDebt(market_fxUSD_USDC), 0);
+        assertEq(market_fxUSD_USDC.totalCollateral(), 0);
+        assertEq(market_fxUSD_USDC.collateralBalances(usr1), 0);
 
-        // vm.stopPrank();
+        vm.stopPrank();
     }
 }

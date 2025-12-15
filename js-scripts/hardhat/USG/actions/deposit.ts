@@ -1,13 +1,15 @@
-import {ethers} from "hardhat";
-import {MainSetup} from "../../Main.setup";
-import {prepareUserAmountByMarket, loadAddresses} from "./common";
-import {Market} from "../contexts/BaseContext";
-import {parseEther} from "ethers";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import { ethers } from "hardhat";
+import { MainSetup } from "../../Main.setup";
+import { prepareUserAmountByMarket, loadAddresses } from "./common";
+import { Market } from "../contexts/BaseContext";
+import { parseEther } from "ethers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: Record<string, Record<string, string>>) {
     try {
         const addresses = loadAddresses();
+        const marketViewer = await ethers.getContractAt("MarketViewer", addresses.utilities.marketViewer as string);
+
         const collatTokenCache: Record<string, any> = {};
         const errorMarkets = new Map<string, number>();
 
@@ -42,11 +44,8 @@ export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: 
                         await collatToken.connect(user).approve(market, 0n);
                         await collatToken.connect(user).approve(market, ethers.MaxUint256);
 
-                        await market.connect(user).deposit(user.address, parsedAmount);
+                        await market.connect(user).deposit(user.address, parsedAmount, false);
 
-                        const positionValue = await market.positionValue(user.address);
-                        const maxBorrowable = await market.maxBorrowable(user.address);
-                        // console.log("deposited", collatName || "-", i, parsedAmount, positionValue, maxBorrowable);
                         const current = okDeposit.get(marketAddress) || 0;
                         okDeposit.set(marketAddress, current + 1);
                     } catch (e) {
@@ -121,7 +120,7 @@ export async function depositAndBorrow(mainSetup: MainSetup, userAmountByMarket:
                         // For depositAndBorrow, we need to specify how much USG to borrow
                         // Using a default of 50% of the deposited amount as USG to borrow
                         const debtBorrow = parsedAmount / 3n;
-                        await market.connect(user).depositAndBorrow(parsedAmount, debtBorrow);
+                        await market.connect(user).depositAndBorrow(parsedAmount, debtBorrow, false);
                     } catch (e) {
                         const current = errorMarkets.get(marketAddress) || 0;
                         errorMarkets.set(marketAddress, current + 1);

@@ -6,7 +6,8 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 
-/// @title WStable
+/// @title  WStable
+/// @author Tangent Finance
 /// @notice Wrapper for stable allowing to capture yield of underlying ERC4626.
 contract WStable is ERC20, LightOwnable {
     uint256 constant MAX_UINT = uint256(int256(-1));

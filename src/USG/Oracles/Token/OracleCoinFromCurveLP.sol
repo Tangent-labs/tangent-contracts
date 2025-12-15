@@ -13,7 +13,8 @@ struct OracleCoinFromCurveLPStruct {
     uint8 isReversed;
 }
 /// @title OracleCoinFromCurveLP
-/// @notice This contract provides price oracle functionality for an ERC20, from a pool of Curve
+/// @author Tangent Finance
+/// @notice Delivers reliable price oracle data for an ERC20 token, based on pricing information from a Curve pool.
 contract OracleCoinFromCurveLP is OracleBase {
     OracleCoinFromCurveLPStruct public oracleParams;
     constructor(address _lp, IPriceOracle _otherStableOracle, uint8 isReversed, string memory _oracleName) OracleBase(_oracleName) {

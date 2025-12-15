@@ -23,13 +23,18 @@ export async function lockVeTokensForAllUsers(signers: Signer[]) {
                 break;
             }
 
+            try {
+                // // Get the token
+                // await giveTokenToAddress(signer, locker.symbol, amountToLock);
+                // Approve
+                await erc20.connect(signer).approve(locker.locker, 0);
+                await erc20.connect(signer).approve(locker.locker, MaxUint256);
+                //  Lock
+                await veToken.connect(signer).create_lock(amountToLock, now + 365 * 24 * 3600 * 3);
+            }
+            catch (e) { }
 
-            // // Get the token
-            // await giveTokenToAddress(signer, locker.symbol, amountToLock);
-            // Approve
-            await erc20.connect(signer).approve(locker.locker, MaxUint256);
-            //  Lock
-            await veToken.connect(signer).create_lock(amountToLock, now + 365 * 24 * 3600 * 3);
+
         }
     }
 }

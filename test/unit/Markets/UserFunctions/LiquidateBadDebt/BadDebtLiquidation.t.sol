@@ -26,15 +26,15 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
     function setUp() public {
         collatToken = AddrCurveStableLP.WETH_frxETH;
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
 
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
-        hBorrow = new HBorrow(usr1, market);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
+        hBorrow = new HBorrow(usr1, market, usg, marketViewer);
         hLpManipulator = new HLPManipulator(usr1);
 
         skip(1 hours);
 
-        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed);
+        hDeposit.depositAndBorrow(collatDeposited, USGBorrowed, false);
     }
 
     function test_liquidateBadDebt_fails_because_no_bad_debt() external {
@@ -49,7 +49,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
     function test_liquidateBadDebt_a_position_in_bad_debt() external {
         vm.startPrank(usr1);
 
-        assertGt(market.positionValue(usr1), market.userDebt(usr1), "Position value is still bigger than the debt");
+        assertGt(marketViewer.positionValue(market, usr1), marketViewer.userDebt(market, usr1), "Position value is still bigger than the debt");
 
         // Dump a lot of FRXETH in the LP to depeg FRXETH
         hLpManipulator.dumpCrvPool(AddrCurveStableLP.WETH_frxETH, 1, 0, 2_400 ether);
@@ -60,18 +60,18 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
         skip(30 days);
 
-        assertLt(market.positionValue(usr1), market.userDebt(usr1), "Position value is now lower than the debt");
+        assertLt(marketViewer.positionValue(market, usr1), marketViewer.userDebt(market, usr1), "Position value is now lower than the debt");
 
         verifyReceiveERC20(collatToken, controlTower.feeTreasury(), collatDeposited, "Collateral is requisitioned by the DAO");
 
-        uint256 debtToRepay = market.userDebt(usr1);
+        uint256 debtToRepay = marketViewer.userDebt(market, usr1);
         // Liquidation passes
         market.seizeCollateral(usr1);
         assertERC20Tracking();
 
         assertEq(market.totalCollateral(), 0, "No more collateral on the market");
-        assertEq(market.positionValue(usr1), 0, "Position value is now 0");
-        assertEq(market.userDebt(usr1), 0, "Position debt is now 0");
+        assertEq(marketViewer.positionValue(market, usr1), 0, "Position value is now 0");
+        assertEq(marketViewer.userDebt(market, usr1), 0, "Position debt is now 0");
 
         assertEq(market.badDebt(), debtToRepay, "Amount of bad debt is now equal to the debt of the position liquidated");
 
@@ -83,7 +83,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
 
         skip(1 days);
         hDeposit.setMsgSender(usr2);
-        hDeposit.depositAndBorrow(10 ether, USGBorrowed);
+        hDeposit.depositAndBorrow(10 ether, USGBorrowed, false);
 
         verifyLostERC20(usg, usr2, badDebtToRepay, "Verify that the usr2 loose the USG");
         verifyBurnERC20(usg, badDebtToRepay, "Verify that the supply of USG is reduced");

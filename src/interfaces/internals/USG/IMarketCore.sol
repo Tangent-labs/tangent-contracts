@@ -20,10 +20,7 @@ struct LiquidationPre {
 
 struct LiquidateIn {
     address account;
-    uint256 collatToLiquidate;
-    uint256 minUSGOut;
-    uint256 maxUSGToBurn;
-    uint256 minCollatAmountToLiquidate;
+    PostLiquidate postLiquidate;
     uint256 minCollatValueToLiquidate;
 }
 
@@ -38,11 +35,20 @@ struct LiquidateTransitionStruct {
     uint256 userDebt;
 }
 
+struct PostLiquidate {
+    uint256 collatAmountToLiquidate;
+    uint256 minUsgOut;
+    uint256 maxUsgToBurn;
+    uint256 minCollatAmountToLiquidate;
+    bool isReceiptOut;
+}
+
 struct SelfLiquidateIn {
     uint256 collatAmountToLiquidate;
     uint256 usgToRepay;
-    uint256 maxUSGToBurn;
-    uint256 minUSGOut;
+    uint256 maxUsgToBurn;
+    uint256 minUsgOut;
+    bool isReceiptOut;
 }
 
 struct SelfLiquidateTransitionStruct {
@@ -53,6 +59,13 @@ struct SelfLiquidateTransitionStruct {
     uint256 _userDebtShares;
     uint256 _totalDebtShares;
     uint256 userDebt;
+}
+
+struct LeverageIn {
+    uint256 collatToDeposit;
+    uint256 usgToFlashMint;
+    uint256 minCollatAmountOut;
+    bool isReceiptIn;
 }
 
 struct GlobalMarketInitParams {
@@ -72,5 +85,6 @@ struct MarketInit {
     uint256 liquidationFee;
     uint256 maxMarketDebt;
     uint256 minimumLoan;
+    IERC20[] rewardTokens;
     string name;
 }

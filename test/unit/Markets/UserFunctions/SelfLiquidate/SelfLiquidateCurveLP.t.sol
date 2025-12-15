@@ -26,10 +26,10 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         lpUSG_USDC = lpDeploymentContext.USGLPs("USG-USDC");
         lpUSG_wfrxUSD = lpDeploymentContext.USGLPs("USG-wcrvUSD");
 
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
 
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
-        hBorrow = new HBorrow(usr1, market);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
+        hBorrow = new HBorrow(usr1, market, usg, marketViewer);
         hLpManipulator = new HLPManipulator(usr1);
 
         uint256 zero = 0;
@@ -39,7 +39,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         swapParams.push(unwrapLPToUSDC);
         swapParams.push(swapUsdcToUSG);
 
-        hDeposit.depositAndBorrow(collatDeposited, initialDebt);
+        hDeposit.depositAndBorrow(collatDeposited, initialDebt, false);
 
         route.push(address(AddrCurveStableLP.USDC_crvUSD));
         route.push(address(AddrCurveStableLP.USDC_crvUSD));
@@ -53,7 +53,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         uint256 collatToDump = market.collateralBalances(usr1);
 
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUSGToBurn: MAX_UINT, minUSGOut: 4250 ether}),
+            SelfLiquidateIn({collatAmountToLiquidate: collatDeposited, usgToRepay: MAX_UINT, maxUsgToBurn: MAX_UINT, minUsgOut: 4250 ether, isReceiptOut: false}),
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
                 routerCall: encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, collatToDump, 4_250 ether, usr1))
@@ -62,8 +62,8 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
 
         assertEq(market.collateralBalances(usr1), 0);
         assertEq(market.totalCollateral(), 0);
-        assertEq(market.userDebt(usr1), 0);
-        assertEq(market.totalDebt(), 0);
+        assertEq(marketViewer.userDebt(market, usr1), 0);
+        assertEq(marketViewer.totalDebt(market), 0);
 
         vm.stopPrank();
     }
@@ -77,7 +77,7 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
         uint256 surplus = usg.balanceOf(usr1);
 
         market.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: amountToLiquidate, usgToRepay: amountToRepay, maxUSGToBurn: MAX_UINT, minUSGOut: 0}),
+            SelfLiquidateIn({collatAmountToLiquidate: amountToLiquidate, usgToRepay: amountToRepay, maxUsgToBurn: MAX_UINT, minUsgOut: 0, isReceiptOut: false}),
             ZapStruct({
                 router: address(AddrRouter.ROUTER_CURVE),
                 routerCall: encoder.encodeLiquidateCallForCurveLP(encoder.createCurveRouterStruct(route, swapParams, amountToLiquidate, 0, usr1))
@@ -89,8 +89,8 @@ contract SelfLiquidateCurveLP is MarketDeploymentContext {
 
         assertEq(market.collateralBalances(usr1), collatDeposited - amountToLiquidate);
         assertEq(market.totalCollateral(), collatDeposited - amountToLiquidate);
-        assertEq(market.userDebt(usr1), initialDebt - amountToRepay);
-        assertEq(market.totalDebt(), initialDebt - amountToRepay);
+        assertEq(marketViewer.userDebt(market, usr1), initialDebt - amountToRepay);
+        assertEq(marketViewer.totalDebt(market), initialDebt - amountToRepay);
 
         vm.stopPrank();
     }

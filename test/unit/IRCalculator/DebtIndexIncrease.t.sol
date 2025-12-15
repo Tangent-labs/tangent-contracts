@@ -10,7 +10,7 @@ contract DebtIndexIncrease is MarketDeploymentContext {
 
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
     }
 
     function test_debtIndex_increases(uint40 secondsToSkip1, uint40 secondsToSkip2) external {

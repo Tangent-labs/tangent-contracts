@@ -17,11 +17,11 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
 
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
 
-        hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
-        hBorrow = new HBorrow(usr1, market);
+        hRewards = new HProcessRewards(usr1, market, rewardAccumulator, usg, marketViewer);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
+        hBorrow = new HBorrow(usr1, market, usg, marketViewer);
     }
 
     function test_deposit_stake() external {
@@ -30,7 +30,7 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
         verifyLostERC20(collatToken, usr1, 100 ether, "Verify that user sent its LP");
 
         vm.startSnapshotGas("Deposit", "First deposit ever on the market and stake");
-        hDeposit.deposit(usr1, 100 ether);
+        hDeposit.deposit(usr1, 100 ether, false);
         vm.stopSnapshotGas();
 
         skip(100);
@@ -38,14 +38,14 @@ contract DepositCvxCrvMarket is MarketDeploymentContext {
         assertEq(market.collateralBalances(usr1), 100 ether, "Collateral deposited must be equal to collateralBalances");
         assertEq(market.totalCollateral(), 100 ether, "Total collateral is not right");
 
-        assertEq(market.userDebt(usr1), 0, "Position debt should be 0");
+        assertEq(marketViewer.userDebt(market, usr1), 0, "Position debt should be 0");
         assertEq(market.userDebtShares(usr1), 0, "Position debt index should be 0");
-        assertEq(market.totalDebt(), 0, "Total debt should be 0");
+        assertEq(marketViewer.totalDebt(market), 0, "Total debt should be 0");
 
-        assertEq(market.healthRatio(usr1), MAX_UINT);
+        assertEq(marketViewer.healthRatio(address(market), usr1), MAX_UINT);
 
         vm.startSnapshotGas("Deposit", "Second user deposit and stake");
-        hDeposit.deposit(usr1, 100 ether);
+        hDeposit.deposit(usr1, 100 ether, false);
         vm.stopSnapshotGas();
     }
 }

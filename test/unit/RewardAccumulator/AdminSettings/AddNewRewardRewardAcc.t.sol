@@ -8,7 +8,7 @@ contract AddNewRewardRewardAcc is MarketDeploymentContext {
     RCParams public rcParam;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
         rcParam = rewardAccumulator.getRCParams(address(market));
     }
 
@@ -37,11 +37,11 @@ contract AddNewRewardRewardAcc is MarketDeploymentContext {
 
         vm.startPrank(usr1);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(amountStaked * 2, borrowed);
+        market.depositAndBorrow(amountStaked * 2, borrowed, false);
 
         vm.startPrank(usr2);
         collatToken.approve(address(market), MAX_UINT);
-        market.depositAndBorrow(amountStaked, borrowed);
+        market.depositAndBorrow(amountStaked, borrowed, false);
 
         vm.startPrank(owner);
         uint256 distributed = 10_000 ether;
@@ -135,14 +135,20 @@ contract AddNewRewardRewardAcc is MarketDeploymentContext {
         }
     }
 
-    function test_addNewRewards_fails_when_collateral_is_added() external {
+    function test_removeReward_1() external {
         vm.startPrank(owner);
-        IERC20[] memory tokensToAdd = new IERC20[](2);
-        tokensToAdd[0] = AddrClassicERC20.DOLA;
-        tokensToAdd[1] = collatToken;
+        assertEq(rewardAccumulator.getRewardTokens(address(market)).length, 2);
+        rewardAccumulator.removeReward(address(market), address(AddrClassicERC20.CVX));
+        assertEq(rewardAccumulator.getRewardTokens(address(market)).length, 1);
+        assertEq(address(rewardAccumulator.rewardTokens(address(market), 0)), address(AddrClassicERC20.CRV));
+    }
 
-        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.CantAddCollatTokenAsReward.selector));
-        rewardAccumulator.addNewRewards(address(market), tokensToAdd);
+    function test_removeReward_2() external {
+        vm.startPrank(owner);
+        assertEq(rewardAccumulator.getRewardTokens(address(market)).length, 2);
+        rewardAccumulator.removeReward(address(market), address(AddrClassicERC20.CRV));
+        assertEq(rewardAccumulator.getRewardTokens(address(market)).length, 1);
+        assertEq(address(rewardAccumulator.rewardTokens(address(market), 0)), address(AddrClassicERC20.CVX));
     }
 
     function test_addNewRewards_fails_when_the_reward_is_already_added() external {

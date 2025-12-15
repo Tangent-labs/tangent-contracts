@@ -1,13 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.22;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-/// @notice
+
+/// @title  TAN
+/// @author Tangent Finance
+/// @notice Tangent Governance token
 contract TAN is ERC20 {
     error ZeroAmount();
 
     /**
      * @notice All tokens are minted at launch on the DAO.
-     *         The DAO creates the liquidity and dispatch TAN to the airdrop.
+     *         The DAO creates the liquidity and dispatch TAN on the airdrop.
      * @param dao address receiving the totality of the supply at launch.
      */
     constructor(address dao) ERC20("Tangent Token", "TAN") {

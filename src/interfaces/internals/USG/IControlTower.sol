@@ -6,23 +6,11 @@ import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extens
 import {IDebtIR} from "./IDebtIR.sol";
 
 interface IControlTower {
-    function isMarket(address market) external view returns (bool);
-
     function isMarketCreator(address marketCreator) external view returns (bool);
 
-    function areContractsMarkets(address[] calldata _markets) external view returns (bool);
-
-    function isPegKeeper(address pegKeeper) external view returns (bool);
-
     function isPositionMigrator(address migrator) external view returns (bool);
-
-    function isIRCalculator(address irCalculator) external view returns (bool);
 
     function isPauser(address pauser) external view returns (bool);
 
     function feeTreasury() external view returns (address);
-
-    function toggleMarket(address market) external;
-
-    function getFeeTreasuryAndIsIRCalculator(address irCalculator) external view returns (address, bool);
 }

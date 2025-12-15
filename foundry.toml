@@ -19,7 +19,7 @@ ignored_error_codes = [
 ]
 
 # optimizer = true
-# optimizer-runs = 10_000_000
+# optimizer-runs = 1_000_000
 # dynamic_test_linking=true
 fs_permissions = [{ access = "read-write", path = "./" }]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
@@ -34,7 +34,7 @@ remappings = [
 
 [rpc_endpoints]
 forkito = 'http://127.0.0.1:8545'
-mainnet = 'https://mainnet.infura.io/v3/ae4b64bed2884c5c87b4acbb4f062682'
+mainnet = 'https://eth-mainnet.g.alchemy.com/v2/-B6yE_6-PCUSNtRIaezM-XpqioX_Ysgu'
 
 base = 'https://base.llamarpc.com'
 
@@ -49,5 +49,6 @@ depth = 10
 dictionary_weight = 80
 preserve_state = true
 # fail_on_revert = true
-shrink_run_limit = 1
-fuzz_runs = 2
+shrink_run_limit = 3
+fuzz_runs = 5
+

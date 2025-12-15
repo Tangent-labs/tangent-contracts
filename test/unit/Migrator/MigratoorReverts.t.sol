@@ -16,8 +16,8 @@ contract MigratoorReverts is MarketDeploymentContext {
     uint256 constant debtToRepay = 10_000 ether;
 
     function setUp() public {
-        marketFrom = deployConvexCurveLPMarket(collatToken, true);
-        marketTo = deployConvexCurveLPMarket(collatToken, true);
+        marketFrom = deployConvexCurveLPMarket(collatToken);
+        marketTo = deployConvexCurveLPMarket(collatToken);
 
         vm.startPrank(usr1);
         deal(address(collatToken), usr1, 2 * collatIn);
@@ -25,13 +25,14 @@ contract MigratoorReverts is MarketDeploymentContext {
         collatToken.approve(address(marketFrom), MAX_UINT);
         collatToken.approve(address(marketTo), MAX_UINT);
 
-        marketFrom.depositAndBorrow(collatIn, debtInFrom);
-        marketTo.depositAndBorrow(collatIn, debtInTo);
+        marketFrom.depositAndBorrow(collatIn, debtInFrom, false);
+        marketTo.depositAndBorrow(collatIn, debtInTo, false);
     }
 
     function test_migrate_marketFrom_not_a_market_fails() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(usr1), address(marketTo)]),
+            marketFrom: address(usr1),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRepay
@@ -46,7 +47,8 @@ contract MigratoorReverts is MarketDeploymentContext {
 
     function test_migrate_marketTo_not_a_market_fails() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(usr1)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(usr1),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRepay
@@ -61,7 +63,8 @@ contract MigratoorReverts is MarketDeploymentContext {
 
     function test_migrate_identical_markets_fails() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketFrom)]),
+            marketFrom: address(marketTo),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRepay
@@ -76,7 +79,8 @@ contract MigratoorReverts is MarketDeploymentContext {
 
     function test_migrate_with_debtToRepay_bigger_than_debt_on_marketFrom() external {
         MigrateStruct memory migrateStruct = MigrateStruct({
-            markets: Array.memoryAddress([address(marketFrom), address(marketTo)]),
+            marketFrom: address(marketFrom),
+            marketTo: address(marketTo),
             collatToWithdraw: collatToWithdraw,
             debtToRemove: debtToRemove,
             debtToRepay: debtToRemove + 1

@@ -19,6 +19,9 @@ export const chainlinkOracleParams: {
         { key: "USR", oracleName: "USR_USD", heatbeat: ONE_YEAR_IN_SECONDS, oracleAggregator: CHAINLINK_PRICE_FEEDS.USR_USD, fallbackKey: "USR_USR_RED" },
         { key: "GHO", oracleName: "GHO_USD", heatbeat: ONE_YEAR_IN_SECONDS, oracleAggregator: CHAINLINK_PRICE_FEEDS.GHO_USD, fallbackKey: ZeroAddress },
         { key: "USDe", oracleName: "USDe_USD", heatbeat: ONE_YEAR_IN_SECONDS, oracleAggregator: CHAINLINK_PRICE_FEEDS.USDe_USD, fallbackKey: "USDe_USD_RED" },
+
+        { key: "PYUSD", oracleName: "PYUSD_USD", heatbeat: ONE_YEAR_IN_SECONDS, oracleAggregator: CHAINLINK_PRICE_FEEDS.PYUSD_USD, fallbackKey: ZeroAddress },
+        { key: "RLUSD", oracleName: "RLUSD_USD", heatbeat: ONE_YEAR_IN_SECONDS, oracleAggregator: CHAINLINK_PRICE_FEEDS.RLUSD_USD, fallbackKey: ZeroAddress },
         // ETH
         { key: "ETH", oracleName: "ETH_USD", heatbeat: ONE_YEAR_IN_SECONDS, oracleAggregator: CHAINLINK_PRICE_FEEDS.ETH_USD, fallbackKey: "ETH_USD_RED" },
         { key: "stETH", oracleName: "stETH_USD", heatbeat: ONE_YEAR_IN_SECONDS, oracleAggregator: CHAINLINK_PRICE_FEEDS.stETH_USD, fallbackKey: ZeroAddress },
@@ -41,28 +44,30 @@ export const redstonOracles: {
     ];
 
 export const oracleERC4626Params = [
-    { erc4626: "sUSDe", underlyingOracle: "USDe" },
-    { erc4626: "wstUSR", underlyingOracle: "USR" },
+    { erc4626: "sUSDe", oracleName: 'sUSDe / USD', underlyingOracle: "USDe" },
+    { erc4626: "wstUSR", oracleName: 'wstUSR / USD', underlyingOracle: "USR" },
 ];
 
 export const oracleCoinFromCurveLPParams = [
-    { key: "frxUSD", lp: "CRV_DUO_FRAX_frxUSD", coin0Oracle: "FRAX", isReversed: false },
-    { key: "fxUSD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", isReversed: false },
-    { key: "frxETH", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", isReversed: false },
-    { key: "pxETH", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", isReversed: false },
+    { key: "frxUSD", oracleName: 'frxUSD / USD', lp: "CRV_DUO_FRAX_frxUSD", coin0Oracle: "FRAX", isReversed: 0 },
+    { key: "fxUSD", oracleName: 'fxUSD / USD', lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", isReversed: 0 },
+    { key: "frxETH", oracleName: 'frxETH / USD', lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", isReversed: 0 },
+    { key: "pxETH", oracleName: 'pxETH / USD', lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", isReversed: 0 },
 ];
 
 export const oracleDuoPoolStableParams = [
     // USD
-    { key: "crvUSD_USDC", lp: "crvUSD_USDC", coin0Oracle: "USDC", coin1Oracle: "crvUSD" },
-    { key: "crvUSD_USDT", lp: "crvUSD_USDT", coin0Oracle: "USDT", coin1Oracle: "crvUSD" },
-    { key: "USDC_fxUSD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", coin1Oracle: "fxUSD" },
-    { key: "USDC_USDT", lp: "CRV_DUO_USDC_USDT", coin0Oracle: "USDC", coin1Oracle: "USDT" },
-    { key: "frxUSD_USDe", lp: "CRV_DUO_frxUSD_USDe", coin0Oracle: "frxUSD", coin1Oracle: "USDe" },
+    { key: "crvUSD_USDC", oracleName: "crvUSD_USDC / USD", lp: "crvUSD_USDC", coin0Oracle: "USDC", coin1Oracle: "crvUSD" },
+    { key: "crvUSD_USDT", oracleName: "crvUSD_USDT / USD", lp: "crvUSD_USDT", coin0Oracle: "USDT", coin1Oracle: "crvUSD" },
+    { key: "USDC_fxUSD", oracleName: "USDC_fxUSD / USD", lp: "CRV_LP_USDC_fxUSD", coin0Oracle: "USDC", coin1Oracle: "fxUSD" },
+    { key: "USDC_USDT", oracleName: "USDC_USDT / USD", lp: "CRV_DUO_USDC_USDT", coin0Oracle: "USDC", coin1Oracle: "USDT" },
+    { key: "frxUSD_USDe", oracleName: "frxUSD_USDe / USD", lp: "CRV_DUO_frxUSD_USDe", coin0Oracle: "frxUSD", coin1Oracle: "USDe" },
+    { key: "RLUSD_USDC", oracleName: "RLUSD_USDC / USD", lp: "CRV_DUO_RLUSD_USDC", coin0Oracle: "PYUSD", coin1Oracle: "USDC" },
+    { key: "PYUSD_USDC", oracleName: "PYUSD_USDC / USD", lp: "CRV_DUO_PYUSD_USDC", coin0Oracle: "RLUSD", coin1Oracle: "USDC" },
     // ETH
-    { key: "frxETH_WETH", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", coin1Oracle: "frxETH" },
-    { key: "pxETH_WETH", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", coin1Oracle: "ETH" },
-    { key: "pxETH_stETH", lp: "CRV_LP_pxETH_stETH", coin0Oracle: "pxETH", coin1Oracle: "stETH" },
+    { key: "frxETH_WETH", oracleName: "frxETH_WETH / USD", lp: "CRV_LP_WETH_frxETH", coin0Oracle: "ETH", coin1Oracle: "frxETH" },
+    { key: "pxETH_WETH", oracleName: "pxETH_WETH / USD", lp: "CRV_LP_pxETH_WETH", coin0Oracle: "ETH", coin1Oracle: "ETH" },
+    { key: "pxETH_stETH", oracleName: "pxETH_stETH / USD", lp: "CRV_LP_pxETH_stETH", coin0Oracle: "pxETH", coin1Oracle: "stETH" },
     // BTC
     // { key: "cbBTC_WBTC", lp: "CRV_DUO_cbBTC_WBTC", coin0Oracle: "cbBTC", coin1Oracle: "BTC" },
 ];
@@ -79,6 +84,6 @@ export const oracleCryptoSwapParams = [
 ];
 
 export const oraclePendlePTParams = [
-    { key: "sUSDe 27/11/25", underlyingOracle: "sUSDe" },
-    { key: "USDe 27/11/25", underlyingOracle: "USDe" },
+    { key: "sUSDe 27/11/25", oracleName: "PT sUSDe_27_11_25 / USD", underlyingOracle: "sUSDe" },
+    { key: "USDe 27/11/25", oracleName: "PT USDe_27_11_25 / USD", underlyingOracle: "USDe" },
 ];

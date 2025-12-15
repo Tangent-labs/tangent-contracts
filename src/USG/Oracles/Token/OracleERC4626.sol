@@ -10,6 +10,7 @@ struct OracleERC4626Struct {
     uint96 underlyingOracleDecimals;
 }
 /// @title OracleERC4626
+/// @author Tangent Finance
 /// @notice This contract provides price oracle functionality for an ERC4626.
 contract OracleERC4626 is OracleBase {
     OracleERC4626Struct public params;

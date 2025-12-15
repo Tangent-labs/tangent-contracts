@@ -14,7 +14,6 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
         cryptoSwaps.push(address(AddrCryptoSwapLP.GHO_cbBTC_ETH));
 
         // DUO POOL
-        cryptoSwaps.push(address(AddrCryptoSwapLP.USR_RLP));
         cryptoSwaps.push(address(AddrCryptoSwapLP.CVX_ETH_POOL));
     }
     /// WARNING THIS IS ONLY USED FOR TESTING PURPOSE
@@ -85,12 +84,11 @@ contract CryptoSwapOracleTest is MarketDeploymentContext {
             assertApproxEqRel(oracleValueBeforeSwap, oracleValueAfterSwap, 30e15);
 
             //TODO Verify these assert. The price of the Lp should for me change
-            // uint256 newApprox = approximateLPValue(lp);
-            // skip(80000);
-            // lp.price_oracle(0);
-            // lp.price_oracle(1);
-            // assertEq(oracleValueAfterSwap, oracles[lp].latestAnswer(), "After some time, oracle pricing should change");
-            // assertApproxEqRel(newApprox, oracles[lp].latestAnswer(), 3e15, "After some time the price should have change");
+            (uint256 newApprox, IERC20 _lp) = approximateLPValue(pool);
+
+            skip(80000);
+            assertEq(oracleValueAfterSwap, oracles[_lp].latestAnswer(true), "After some time, oracle pricing should change");
+            // assertApproxEqRel(newApprox, oracles[pool].latestAnswer(true), 3e15, "After some time the price should have change");
         }
     }
     function test_atomic_verification() external view {

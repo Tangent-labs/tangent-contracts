@@ -6,7 +6,7 @@ contract MockETHReceiverSender {
     receive() external payable {}
 
     fallback() external payable {
-        payable(msg.sender).call{value: address(this).balance}("");
+        (bool isSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
     }
 
     function errorPath() external payable {

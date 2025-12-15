@@ -13,9 +13,9 @@ contract ClaimWhenTotalCollatIsZero is MarketDeploymentContext {
     HBorrow public hBorrow;
     function setUp() public {
         collatToken = AddrCurveStableLP.USDC_crvUSD;
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
 
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
     }
 
     //
@@ -23,7 +23,7 @@ contract ClaimWhenTotalCollatIsZero is MarketDeploymentContext {
         uint256 collatDeposited1 = 5_000 ether;
         uint256 borrowedAmount1 = 3_440 ether;
 
-        hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1);
+        hDeposit.depositAndBorrow(collatDeposited1, borrowedAmount1, false);
         skip(7 days);
 
         vm.startPrank(usr1);
@@ -31,14 +31,14 @@ contract ClaimWhenTotalCollatIsZero is MarketDeploymentContext {
         skip(7 days);
 
         // Total collateral becomes 0
-        market.repayAndWithdraw(collatDeposited1, MAX_UINT);
+        market.repayAndWithdraw(collatDeposited1, MAX_UINT, false);
         vm.stopPrank();
 
         vm.startPrank(usr2);
 
         hDeposit.setMsgSender(usr2);
 
-        hDeposit.deposit(usr2, 5_000 ether);
+        hDeposit.deposit(usr2, 5_000 ether, false);
         skip(7 days);
 
         IERC20[] memory tokens = new IERC20[](2);

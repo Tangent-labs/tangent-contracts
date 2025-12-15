@@ -17,25 +17,23 @@ contract DepositCvxCrvMarketpxETHWETH is MarketDeploymentContext {
 
     function setUp() public {
         collatToken = AddrCurveStableLP.WETH_frxETH;
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
 
-        hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
-        hDeposit = new HDepositConvexCrvLP(usr1, market);
-        hBorrow = new HBorrow(usr1, market);
+        hRewards = new HProcessRewards(usr1, market, rewardAccumulator, usg, marketViewer);
+        hDeposit = new HDepositConvexCrvLP(usr1, market, usg, marketViewer);
+        hBorrow = new HBorrow(usr1, market, usg, marketViewer);
     }
 
-   function test_market_deposit() external {
-    
+    function test_market_deposit() external {
+        deal(address(collatToken), address(usr1), 100 ether);
 
-    deal(address(collatToken), address(usr1), 100 ether);
-  
-    vm.startPrank(usr1);
-      collatToken.approve(address(market), 50 ether);
-    vm.startSnapshotGas("Deposit", "First deposit ever on the market and stake");
-    market.deposit(address(usr1), 50 ether);
-    vm.stopPrank();
-    vm.stopSnapshotGas();
-   }
+        vm.startPrank(usr1);
+        collatToken.approve(address(market), 50 ether);
+        vm.startSnapshotGas("Deposit", "First deposit ever on the market and stake");
+        market.deposit(address(usr1), 50 ether, false);
+        vm.stopPrank();
+        vm.stopSnapshotGas();
+    }
 
     function test_deposit_stake() external {
         verifyReceiveERC20(market.cvxRewardToken(), address(market), 100 ether, "Verify that market receives Cvx Reward tokens");
@@ -43,7 +41,7 @@ contract DepositCvxCrvMarketpxETHWETH is MarketDeploymentContext {
         verifyLostERC20(collatToken, usr1, 100 ether, "Verify that user sent its LP");
 
         vm.startSnapshotGas("Deposit", "First deposit ever on the market and stake");
-        hDeposit.deposit(usr1, 100 ether);
+        hDeposit.deposit(usr1, 100 ether, false);
         vm.stopSnapshotGas();
 
         skip(100);
@@ -51,14 +49,14 @@ contract DepositCvxCrvMarketpxETHWETH is MarketDeploymentContext {
         assertEq(market.collateralBalances(usr1), 100 ether, "Collateral deposited must be equal to collateralBalances");
         assertEq(market.totalCollateral(), 100 ether, "Total collateral is not right");
 
-        assertEq(market.userDebt(usr1), 0, "Position debt should be 0");
+        assertEq(marketViewer.userDebt(market, usr1), 0, "Position debt should be 0");
         assertEq(market.userDebtShares(usr1), 0, "Position debt index should be 0");
-        assertEq(market.totalDebt(), 0, "Total debt should be 0");
+        assertEq(marketViewer.totalDebt(market), 0, "Total debt should be 0");
 
-        assertEq(market.healthRatio(usr1), MAX_UINT);
+        assertEq(marketViewer.healthRatio(address(market), usr1), MAX_UINT);
 
         vm.startSnapshotGas("Deposit", "Second user deposit and stake");
-        hDeposit.deposit(usr1, 100 ether);
+        hDeposit.deposit(usr1, 100 ether, false);
         vm.stopSnapshotGas();
     }
 }

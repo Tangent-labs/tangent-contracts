@@ -11,6 +11,7 @@ import "../../src/libs/Resources/ResourcesConvex.sol";
 import "../../src/libs/Resources/ResourcesCurveLP.sol";
 import "../../src/libs/Resources/ResourcesPendle.sol";
 import "../../src/libs/Resources/ResourcesYearn.sol";
+import "../../src/libs/Resources/ResourcesStakeDao.sol";
 
 import "../../src/USG/Tokens/VsTAN.sol";
 import "../../src/USG/Tokens/TAN.sol";
@@ -19,6 +20,7 @@ import "../../src/USG/Tokens/WStable.sol";
 import "../../src/USG/Utilities/RewardAccumulator.sol";
 import "../../src/USG/Utilities/ControlTower.sol";
 import "../../src/USG/Utilities/MarketCreator.sol";
+import "../../src/USG/Utilities/MarketViewer.sol";
 import "../../src/USG/Utilities/ZappingProxy.sol";
 import "../../src/USG/Utilities/Migratoor.sol";
 import "../../src/USG/Utilities/abstract/LightReentrancyGuardTransient.sol";
@@ -28,6 +30,10 @@ import "../mocks/MockRouter.sol";
 
 import "../../src/USG/Market/Convex/ConvexCrvLPMarket.sol";
 import "../../src/USG/Market/Convex/ConvexFxnLPMarket.sol";
+import "../../src/USG/Market/BasicERC20Market.sol";
+import "../../src/USG/Market/Curve/CurveGaugeMarket.sol";
+import "../../src/USG/Market/StakeDao/StakeDaoVaultV2Market.sol";
+
 import "../../src/USG/Market/BasicERC20Market.sol";
 import "../../src/USG/Market/abstract/MarketCore.sol";
 import "../../src/USG/Market/abstract/DebtIR.sol";
@@ -72,9 +78,13 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     ControlTower public controlTower;
     MarketCreator public marketCreator;
+    MarketViewer public marketViewer;
+
     address public convexCrvLPMarketImplem;
     address public convexFxnLPMarketImplem;
     address public marketBasicERC20Implem;
+    address public curveGaugeMarketImplem;
+    address public stakeDaoVaultV2MarketImplem;
 
     USG public usg;
     TAN public tan;
@@ -106,6 +116,10 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         convexFxnLPMarketImplem = address(new ConvexFxnLPMarket());
         marketBasicERC20Implem = address(new BasicERC20Market());
 
+        curveGaugeMarketImplem = address(new CurveGaugeMarket());
+        stakeDaoVaultV2MarketImplem = address(new StakeDaoVaultV2Market());
+        marketViewer = new MarketViewer();
+
         encoder = new Encoder();
         ensoUtils = new EnsoUtils();
         labeliser = new Labeliser();
@@ -128,10 +142,10 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
         zappingProxy = new ZappingProxy(controlTower);
 
-        migratoor = new Migratoor(controlTower, zappingProxy);
+        migratoor = new Migratoor(owner, zappingProxy);
 
-        controlTower.togglePositionMigrator(address(migratoor));
-        controlTower.togglePauser(pauser);
+        controlTower.setIsPositionMigrator(address(migratoor), true);
+        controlTower.setIsPauser(pauser, true);
 
         sUSG = IYearnV3Vault(AddrYearnFi.VAULT_FACTORY.deploy_new_vault(address(usg), "Staked USG", "sUSG", owner, 7 days));
 
@@ -201,7 +215,6 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
     function getBytecodeWithConstructorArgs() public view returns (bytes memory) {
         string memory json = vm.readFile("./out/USG.sol/USG.json");
         bytes memory bytecode = abi.decode(vm.parseJson(json, ".bytecode.object"), (bytes));
-        // console.logBytes(bytecode);
 
         // Encodez les arguments pour le constructeur
         bytes memory constructorArgs = abi.encode(owner, controlTower);

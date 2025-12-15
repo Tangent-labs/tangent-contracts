@@ -7,7 +7,7 @@ contract UpdateRCParams is MarketDeploymentContext {
     ConvexCrvLPMarket public market;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
     }
 
     RCParams params = RCParams({harvestFeePercentage: 0, stepAmount: 1, startCutPercentage: 0, endCutPercentage: 0, startCutPrice: 0, endCutPrice: 0});

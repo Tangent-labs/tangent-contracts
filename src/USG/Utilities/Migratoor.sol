@@ -5,6 +5,7 @@ import {LightReentrancyGuardTransient} from "../Utilities/abstract/LightReentran
 
 import {IMarketExternalActions} from "../../interfaces/internals/USG/IMarketExternalActions.sol";
 import {ICollateral} from "../../interfaces/internals/USG/ICollateral.sol";
+import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 
 import {MigrateStruct, ZapMigrateStruct} from "../../interfaces/internals/USG/IMigratoor.sol";
 import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
@@ -14,17 +15,34 @@ import {ZapStruct} from "../../interfaces/internals/ICommonStruct.sol";
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @title  Migratoor
-/// @notice This contract is used fully or partially migrate a position to an other market.
+/// @author Tangent Finance
+/// @notice This contract can be used to fully or partially migrate a position to an other market.
 ///         It prevent user to repay, withdraw, swap his collateral by himself etc.
-contract Migratoor is LightReentrancyGuardTransient {
-    IControlTower public controlTower;
+contract Migratoor is LightOwnable, LightReentrancyGuardTransient {
     IZappingProxy public zappingProxy;
+
+    mapping(address => bool) public isMarket;
 
     error NotAMarket();
     error IdenticalMarkets();
-    constructor(IControlTower _controlTower, IZappingProxy _zappingProxy) {
-        controlTower = _controlTower;
+    error CallerNotOwner();
+
+    event SetIsMarket(address market, bool _isMarket);
+    constructor(address owner, IZappingProxy _zappingProxy) {
         zappingProxy = _zappingProxy;
+        _transferOwnership(owner);
+    }
+
+    /**
+     * @notice Sets or removes the market flag for a given address
+     * @dev    Restricted to the contract owner or addresses with the MarketCreator role.
+     *         Emits a {SetIsMarket} event on success.
+     * @param _market     The address to update the market status for
+     *         Whether the address should be flagged as a market (true) or not (false)
+     */
+    function setIsMarket(address _market, bool _isMarket) external onlyOwner {
+        isMarket[_market] = _isMarket;
+        emit SetIsMarket(_market, _isMarket);
     }
 
     /**
@@ -41,11 +59,13 @@ contract Migratoor is LightReentrancyGuardTransient {
      *                          - minCollatToOut : Minimum amount of collatTo received by the marketTo
      */
     function migrate(MigrateStruct calldata migrationData, ZapMigrateStruct calldata zapCollatData) external nonReentrant {
-        IMarketExternalActions marketFrom = IMarketExternalActions(migrationData.markets[0]);
-        IMarketExternalActions marketTo = IMarketExternalActions(migrationData.markets[1]);
+        IMarketExternalActions marketFrom = IMarketExternalActions(migrationData.marketFrom);
+        IMarketExternalActions marketTo = IMarketExternalActions(migrationData.marketTo);
 
-        // Verify that both contracts are vevrified markets in the ControlTower
-        require(controlTower.areContractsMarkets(migrationData.markets), NotAMarket());
+        // Verify that marketFrom is flagged as a Market
+        require(isMarket[address(marketFrom)], NotAMarket());
+        // Verify that marketTo is flagged as a Market
+        require(isMarket[address(marketTo)], NotAMarket());
         // Verify that both markets are different
         require(marketFrom != marketTo, IdenticalMarkets());
 

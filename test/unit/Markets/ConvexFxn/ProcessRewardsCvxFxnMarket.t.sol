@@ -17,9 +17,9 @@ contract ProcessRewardsCvxFxnMarket is MarketDeploymentContext {
         collatToken = AddrCurveStableLP.USDC_fxUSD;
         market = deployConvexFxnLPMarket(collatToken);
 
-        hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
-        hDeposit = new HDepositConvexFxnLP(usr1, market);
-        hBorrow = new HBorrow(usr1, market);
+        hRewards = new HProcessRewards(usr1, market, rewardAccumulator, usg, marketViewer);
+        hDeposit = new HDepositConvexFxnLP(usr1, market, usg, marketViewer);
+        hBorrow = new HBorrow(usr1, market, usg, marketViewer);
         minimumLoan = market.minimumLoan();
     }
 
@@ -31,7 +31,7 @@ contract ProcessRewardsCvxFxnMarket is MarketDeploymentContext {
         borrowedAmount = bound(borrowedAmount, minimumLoan, market.maxMarketDebt());
         collatDeposited = bound(collatDeposited, minimumCollatForDebt(borrowedAmount), 2_000_000 ether);
 
-        hDeposit.deposit(usr1, collatDeposited);
+        hDeposit.deposit(usr1, collatDeposited, false);
 
         vm.startPrank(usr1);
         hBorrow.borrow(usr2, borrowedAmount);

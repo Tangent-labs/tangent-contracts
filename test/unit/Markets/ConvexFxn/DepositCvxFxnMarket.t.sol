@@ -20,11 +20,11 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         collatToken = AddrCurveStableLP.USDC_fxUSD;
         market = deployConvexFxnLPMarket(collatToken);
 
-        hBorrow = new HBorrow(usr1, market);
-        hRewards = new HProcessRewards(usr1, market, rewardAccumulator);
+        hBorrow = new HBorrow(usr1, market, usg, marketViewer);
+        hRewards = new HProcessRewards(usr1, market, rewardAccumulator, usg, marketViewer);
 
-        hDeposit = new HDepositConvexFxnLP(usr1, market);
-        hWithdraw = new HWithdrawConvexFxnLP(usr1, market);
+        hDeposit = new HDepositConvexFxnLP(usr1, market, usg, marketViewer);
+        hWithdraw = new HWithdrawConvexFxnLP(usr1, market, usg, marketViewer);
 
         minimumLoan = market.minimumLoan();
     }
@@ -33,7 +33,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount);
+        hDeposit.depositAndBorrow(amountIn, borrowedAmount, false);
 
         uint256 withdrawnAmount = 1_000 ether;
 
@@ -42,7 +42,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         verifyReceiveERC20(collatToken, usr1, withdrawnAmount, "Verify that user 1 retrieve its collateral");
 
         vm.startSnapshotGas("Withdraw", "Withdraw fully from staked collat");
-        hWithdraw.withdraw(withdrawnAmount);
+        hWithdraw.withdraw(withdrawnAmount, false);
         vm.stopSnapshotGas();
 
         assertERC20Tracking();
@@ -52,7 +52,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountIn = 10_000 ether;
         uint256 borrowedAmount = 5_000 ether;
 
-        hDeposit.depositAndBorrow(amountIn, borrowedAmount);
+        hDeposit.depositAndBorrow(amountIn, borrowedAmount, false);
 
         uint256 withdrawnAmount = 1_000 ether;
 
@@ -60,7 +60,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         verifyReceiveERC20(collatToken, usr1, withdrawnAmount, "Verify that user 1 retrieve its collateral");
 
         vm.startSnapshotGas("Withdraw", "Withdraw fully from unstaked collat");
-        hWithdraw.withdraw(withdrawnAmount);
+        hWithdraw.withdraw(withdrawnAmount, false);
         vm.stopSnapshotGas();
 
         assertERC20Tracking();
@@ -72,8 +72,8 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         uint256 amountInStaked = 10_000 ether;
         uint256 borrowedAmount1 = 5_000 ether;
         uint256 borrowedAmount2 = 1_000 ether;
-        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount1);
-        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount2);
+        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount1, false);
+        hDeposit.depositAndBorrow(amountInStaked, borrowedAmount2, false);
 
         uint256 withdrawnAmount = 12_000 ether;
         uint256 availableAmount = market.collatToken().balanceOf(address(market));
@@ -86,7 +86,7 @@ contract DepositCvxFxnMarket is MarketDeploymentContext {
         verifyReceiveERC20(collatToken, usr1, withdrawnAmount, "Verify that user 1 retrieve its collateral");
 
         vm.startSnapshotGas("Withdraw", "Withdraw from staked and unstaked collat");
-        hWithdraw.withdraw(withdrawnAmount);
+        hWithdraw.withdraw(withdrawnAmount, false);
         vm.stopSnapshotGas();
 
         assertERC20Tracking();

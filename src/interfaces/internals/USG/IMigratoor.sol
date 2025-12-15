@@ -5,7 +5,8 @@ import {IMarketExternalActions} from "./IMarketExternalActions.sol";
 
 import {ZapStruct} from "../ICommonStruct.sol";
 struct MigrateStruct {
-    address[] markets;
+    address marketFrom;
+    address marketTo;
     uint256 collatToWithdraw;
     uint256 debtToRemove;
     uint256 debtToRepay;

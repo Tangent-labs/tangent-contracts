@@ -21,20 +21,24 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         lp = lpDeploymentContext.USGLPs("USG-USDC");
         market = deployConvexFxnLPMarket(collatToken);
 
-        hDeposit = new HDepositConvexFxnLP(usr1, market);
-        hBorrow = new HBorrow(usr1, market);
+        hDeposit = new HDepositConvexFxnLP(usr1, market, usg, marketViewer);
+        hBorrow = new HBorrow(usr1, market, usg, marketViewer);
         hLpManipulator = new HLPManipulator(usr1);
     }
 
     function test_liquidate_all_after_USG_depegs() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether);
+        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether, false);
 
         // Liquidation shoudn't pass as HR is ok
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatDeposited, minUsgOut: 0, maxUsgToBurn: 0, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
         vm.stopPrank();
@@ -46,7 +50,11 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         // Liquidation doesn't pass because price_oracle is not updated yet
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: 0, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatDeposited, minUsgOut: 0, maxUsgToBurn: 0, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
@@ -65,36 +73,44 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         // Liquidation doesn't pass, the HR is very close to 1 but still >
         vm.expectRevert(abi.encodeWithSelector(MarketCore.NotLiquidablePosition.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatDeposited, minUsgOut: 0, maxUsgToBurn: MAX_UINT, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
 
         // The position from this point liquidable
         skip(15 days);
 
-        deal(address(usg), usr1, market.userDebt(usr1));
+        deal(address(usg), usr1, marketViewer.userDebt(market, usr1));
 
-        assertLe(market.healthRatio(usr1), 1 ether, "Health ratio is lower than 1");
-        assertGe(market.userDebt(usr1), 4650 ether, "Debt is getting over the 93% of the collateral");
+        assertLe(marketViewer.healthRatio(address(market), usr1), 1 ether, "Health ratio is lower than 1");
+        assertGe(marketViewer.userDebt(market, usr1), 4650 ether, "Debt is getting over the 93% of the collateral");
 
-        verifyLostERC20(usg, usr1, market.userDebt(usr1), "USG burnt from sender");
+        verifyLostERC20(usg, usr1, marketViewer.userDebt(market, usr1), "USG burnt from sender");
         verifyReceiveERC20(collatToken, usr1, market.collateralBalances(usr1), "USG burnt from sender");
         // Liquidation passes after IR increased the user debt over the liquidation threshold
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: collatDeposited, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatDeposited, minUsgOut: 0, maxUsgToBurn: MAX_UINT, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
         assertERC20Tracking();
 
-        assertEq(market.userDebt(usr1), 0);
-        assertEq(market.totalDebt(), 0);
+        assertEq(marketViewer.userDebt(market, usr1), 0);
+        assertEq(marketViewer.totalDebt(market), 0);
 
         vm.stopPrank();
     }
 
     function test_liquidate_fails_because_minAmountToLiquidate_slippage() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether);
+        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether, false);
 
         // Dumps USG for USDC => Depegs USG
         hLpManipulator.dumpCrvPool(lp, 1, 0, 450_500 ether);
@@ -108,17 +124,20 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         // Go to the limit of the health ratio
         skip(300 days);
 
-        deal(address(usg), usr1, market.userDebt(usr1));
+        deal(address(usg), usr1, marketViewer.userDebt(market, usr1));
         // Liquidation doesn't pass, the HR is very close to 1 but still >
         vm.expectRevert(abi.encodeWithSelector(MarketCore.MinCollatToLiquidate.selector, collatDeposited));
         market.liquidate(
             LiquidateIn({
                 account: usr1,
-                collatToLiquidate: MAX_UINT,
-                minUSGOut: 0,
-                maxUSGToBurn: MAX_UINT,
-                minCollatValueToLiquidate: 0,
-                minCollatAmountToLiquidate: collatDeposited + 1
+                postLiquidate: PostLiquidate({
+                    collatAmountToLiquidate: MAX_UINT,
+                    minUsgOut: 0,
+                    maxUsgToBurn: MAX_UINT,
+                    minCollatAmountToLiquidate: collatDeposited + 1,
+                    isReceiptOut: false
+                }),
+                minCollatValueToLiquidate: 0
             }),
             ZapStruct({router: address(0), routerCall: ""})
         );
@@ -126,7 +145,7 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
 
     function test_liquidate_fails_when_debtShares_are_zero() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether);
+        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether, false);
 
         // Dumps USG for USDC => Depegs USG
         hLpManipulator.dumpCrvPool(lp, 1, 0, 450_500 ether);
@@ -140,18 +159,22 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         // Go to the limit of the health ratio
         skip(300 days);
 
-        deal(address(usg), usr1, market.userDebt(usr1));
+        deal(address(usg), usr1, marketViewer.userDebt(market, usr1));
         // Liquidation doesn't pass, the HR is very close to 1 but still >
         vm.expectRevert(abi.encodeWithSelector(DebtIR.ZeroDebtAmount.selector));
         market.liquidate(
-            LiquidateIn({account: usr1, collatToLiquidate: 1, minUSGOut: 0, maxUSGToBurn: MAX_UINT, minCollatValueToLiquidate: 0, minCollatAmountToLiquidate: 0}),
+            LiquidateIn({
+                account: usr1,
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: 1, minUsgOut: 0, maxUsgToBurn: MAX_UINT, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: 0
+            }),
             ZapStruct({router: address(0), routerCall: ""})
         );
     }
 
     function test_liquidate_fails_when_collatValue_is_too_low() external {
         uint256 collatDeposited = 5_000 ether;
-        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether);
+        hDeposit.depositAndBorrow(collatDeposited, 4_248 ether, false);
 
         // Dumps USG for USDC => Depegs USG
         hLpManipulator.dumpCrvPool(lp, 1, 0, 450_500 ether);
@@ -165,18 +188,15 @@ contract LiquidateDebtGoHigh is MarketDeploymentContext {
         // Go to the limit of the health ratio
         skip(16 days);
 
-        deal(address(usg), usr1, market.userDebt(usr1));
+        deal(address(usg), usr1, marketViewer.userDebt(market, usr1));
         uint256 collatValue = (market.collatOracle().latestAnswer(true) * collatDeposited) / 1e18;
-        // Liquidation doesn't pass, the HR is very close to 1 but still >
+
         vm.expectRevert(abi.encodeWithSelector(MarketCore.CollatValueToLiquidateTooLow.selector, collatValue));
         market.liquidate(
             LiquidateIn({
                 account: usr1,
-                collatToLiquidate: collatDeposited,
-                minUSGOut: 0,
-                maxUSGToBurn: MAX_UINT,
-                minCollatValueToLiquidate: collatValue + 1,
-                minCollatAmountToLiquidate: 0
+                postLiquidate: PostLiquidate({collatAmountToLiquidate: collatDeposited, minUsgOut: 0, maxUsgToBurn: MAX_UINT, minCollatAmountToLiquidate: 0, isReceiptOut: false}),
+                minCollatValueToLiquidate: collatValue + 1
             }),
             ZapStruct({router: address(0), routerCall: ""})
         );

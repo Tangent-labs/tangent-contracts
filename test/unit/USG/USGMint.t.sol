@@ -10,18 +10,18 @@ contract USGMint is MarketDeploymentContext {
 
     function test_mint_USG() external {
         vm.prank(owner);
-        controlTower.toggleMarket(usr1);
+        usg.setIsMinter(usr1, true);
 
         verifyReceiveERC20(usg, usr2, 10 ether);
         verifyMintERC20(usg, 10 ether);
         vm.prank(usr1);
-        usg.mint(usr2, 10 ether);
+        usg.mintDebt(usr2, 10 ether);
         assertERC20Tracking();
     }
 
     function test_mintIR_USG() external {
         vm.prank(owner);
-        controlTower.toggleIRCalculator(usr1);
+        usg.setIsIRProducer(usr1, true);
 
         verifyReceiveERC20(usg, controlTower.feeTreasury(), 10 ether);
         verifyMintERC20(usg, 10 ether);

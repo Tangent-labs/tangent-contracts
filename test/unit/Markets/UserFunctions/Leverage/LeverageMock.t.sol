@@ -40,9 +40,7 @@ contract LeverageMock is MarketDeploymentContext {
         // Revert beaucause LTV is too low
         vm.expectRevert(abi.encodeWithSelector(Collateral.OverMaxLTV.selector));
         market.leverage(
-            collatToDeposit,
-            USGToFlashMint,
-            minCollatOut,
+            LeverageIn({collatToDeposit: collatToDeposit, usgToFlashMint: USGToFlashMint, minCollatAmountOut: minCollatOut, isReceiptIn: false}),
             // Simulate zap call with a transfer to the market
             ZapStruct({router: address(collatToken), routerCall: abi.encodeWithSelector(bytes4(keccak256("transfer(address,uint256)")), address(market), minCollatOut)})
         );
@@ -67,9 +65,7 @@ contract LeverageMock is MarketDeploymentContext {
         verifyLostERC20(collatToken, usr3, collatToDeposit, "Collat token taken from usr1");
 
         market.leverage(
-            collatToDeposit,
-            USGToFlashMint,
-            collatReceived,
+            LeverageIn({collatToDeposit: collatToDeposit, usgToFlashMint: USGToFlashMint, minCollatAmountOut: collatReceived, isReceiptIn: false}),
             // Simulate zap call with a transfer to the market
             encoder.encodeSwapToMockRouter(address(mockRouter), usg, USGToFlashMint, collatToken, address(market), collatReceived)
         );
@@ -102,9 +98,7 @@ contract LeverageMock is MarketDeploymentContext {
         verifyMintERC20(usg, USGToFlashMint, "Some USG are minted during leverage");
 
         market.leverage(
-            collatToDeposit,
-            USGToFlashMint,
-            collatReceived,
+            LeverageIn({collatToDeposit: collatToDeposit, usgToFlashMint: USGToFlashMint, minCollatAmountOut: collatReceived, isReceiptIn: false}),
             // Simulate zap call with a transfer to the market
             ZapStruct({router: address(collatToken), routerCall: abi.encodeWithSelector(bytes4(keccak256("transfer(address,uint256)")), address(market), collatReceived)})
         );
@@ -112,7 +106,7 @@ contract LeverageMock is MarketDeploymentContext {
         assertEq(IERC20(address(stakingProxy.gaugeAddress())).balanceOf(address(stakingProxy)), collatReceived + collatToDeposit, "Convex staking proxy received Fxn Gauge");
         assertEq(market.collateralBalances(usr1), collatToDeposit + collatReceived);
         assertEq(market.totalCollateral(), collatToDeposit + collatReceived);
-        assertApproxEqAbs(market.userDebt(usr1), USGToFlashMint, 5);
+        assertApproxEqAbs(marketViewer.userDebt(market, usr1), USGToFlashMint, 5);
 
         assertERC20Tracking();
 
@@ -128,9 +122,7 @@ contract LeverageMock is MarketDeploymentContext {
         rewardAccumulator.claimSimple(address(market));
 
         market.leverage(
-            0,
-            15_000 ether,
-            0,
+            LeverageIn({collatToDeposit: 0, usgToFlashMint: 15_000 ether, minCollatAmountOut: 0, isReceiptIn: false}),
             // Simulate zap call with a transfer to the market
             ZapStruct({router: address(collatToken), routerCall: abi.encodeWithSelector(bytes4(keccak256("transfer(address,uint256)")), address(market), 14_000 ether)})
         );
@@ -149,15 +141,13 @@ contract LeverageMock is MarketDeploymentContext {
         // Put some collat on the mocked router, ready to be sent back to the market
         deal(address(collatToken), address(mockRouter), collatToDeposit);
 
-        market.depositAndBorrow(collatToDeposit, initialBorrow);
+        market.depositAndBorrow(collatToDeposit, initialBorrow, false);
 
         verifyMintERC20(usg, USGToFlashMint, "Some USG are minted during leverage");
         verifyBalERC20NotChanging(collatToken, usr1, "No collat token taken from usr1");
 
         market.leverage(
-            0,
-            USGToFlashMint,
-            collatReceived,
+            LeverageIn({collatToDeposit: 0, usgToFlashMint: USGToFlashMint, minCollatAmountOut: collatReceived, isReceiptIn: false}),
             // Simulate zap call with a transfer to the market
             encoder.encodeSwapToMockRouter(address(mockRouter), usg, USGToFlashMint, collatToken, address(market), collatReceived)
         );
@@ -167,8 +157,8 @@ contract LeverageMock is MarketDeploymentContext {
         assertEq(market.collateralBalances(usr1), collatToDeposit + collatReceived);
         assertEq(market.totalCollateral(), collatToDeposit + collatReceived);
 
-        assertApproxEqAbs(market.userDebt(usr1), USGToFlashMint + initialBorrow, 5, "UserDebt");
-        assertApproxEqAbs(market.totalDebt(), USGToFlashMint + initialBorrow, 5, "Total debt");
+        assertApproxEqAbs(marketViewer.userDebt(market, usr1), USGToFlashMint + initialBorrow, 5, "UserDebt");
+        assertApproxEqAbs(marketViewer.totalDebt(market), USGToFlashMint + initialBorrow, 5, "Total debt");
 
         uint256 expectedShares = ((initialBorrow * RAY) / index) + ((USGToFlashMint * RAY) / index);
 

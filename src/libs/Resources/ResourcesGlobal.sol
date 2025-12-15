@@ -28,6 +28,8 @@ library AddrClassicERC20 {
     IERC20Metadata constant stUSR = IERC20Metadata(0x6c8984bc7DBBeDAf4F6b2FD766f16eBB7d10AAb4);
     IERC20Metadata constant USDe = IERC20Metadata(0x4c9EDD5852cd905f086C759E8383e09bff1E68B3);
     IERC20Metadata constant USDS = IERC20Metadata(0xdC035D45d973E3EC169d2276DDab16f1e407384F);
+    IERC20Metadata constant PYUSD = IERC20Metadata(0x6c3ea9036406852006290770BEdFcAbA0e23A0e8);
+    IERC20Metadata constant RLUSD = IERC20Metadata(0x8292Bb45bf1Ee4d140127049757C2E0fF06317eD);
 
     // Volatiles
     IERC20Metadata constant AAVE = IERC20Metadata(0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9);
@@ -77,7 +79,9 @@ library AddrChainlinkOracle {
     IAggregatorV3 constant USDS = IAggregatorV3(0xfF30586cD0F29eD462364C7e81375FC0C71219b1);
     IAggregatorV3 constant USDP = IAggregatorV3(0x09023c0DA49Aaf8fc3fA3ADF34C6A7016D38D5e3);
     IAggregatorV3 constant USDe = IAggregatorV3(0xa569d910839Ae8865Da8F8e70FfFb0cBA869F961);
-    IAggregatorV3 constant USR = IAggregatorV3(0x34ad75691e25A8E9b681AAA85dbeB7ef6561B42c); //TODO High Market risk
+    IAggregatorV3 constant USR = IAggregatorV3(0x34ad75691e25A8E9b681AAA85dbeB7ef6561B42c);
+    IAggregatorV3 constant PYUSD = IAggregatorV3(0x8f1dF6D7F2db73eECE86a18b4381F4707b918FB1);
+    IAggregatorV3 constant RLUSD = IAggregatorV3(0x26C46B7aD0012cA71F2298ada567dC9Af14E7f2A);
 
     // ETH
     IAggregatorV3 constant ETH = IAggregatorV3(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);

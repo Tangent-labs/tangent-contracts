@@ -13,7 +13,7 @@ contract ZapDeposit is MarketDeploymentContext {
     MockETHReceiverSender public mockEthReceiver;
 
     function setUp() public {
-        market = deployConvexCurveLPMarket(collatToken, true);
+        market = deployConvexCurveLPMarket(collatToken);
         mockEthReceiver = new MockETHReceiverSender();
     }
 
@@ -148,7 +148,7 @@ contract ZapDeposit is MarketDeploymentContext {
                 tokenIn: AddrClassicERC20.CVX,
                 amountIn: 1,
                 minAmountOut: 0,
-                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(bytes4(keccak256("deposit(address,uint256)")), usr1, 1_000 ether, false)})
+                zap: ZapStruct({router: address(market), routerCall: abi.encodeWithSelector(MarketExternalActions.deposit.selector, usr1, 1_000 ether, false, false)})
             })
         );
     }

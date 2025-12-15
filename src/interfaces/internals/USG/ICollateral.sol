@@ -12,9 +12,7 @@ interface ICollateral {
 
     function collatToken() external view returns (IERC20Metadata);
 
-    function healthRatio(address account) external view returns (uint256);
-
-    function positionValue(address account) external view returns (uint256);
+    function collatDecimals() external view returns (uint256);
 
     function collateralBalances(address account) external view returns (uint256);
 
@@ -27,6 +25,4 @@ interface ICollateral {
     function rewardAccumulator() external view returns (IRewardAccumulator);
 
     function getBalanceAndTotalCollateral(address account) external view returns (uint256, uint256);
-
-    function maxBorrowable(address account) external view returns (uint256);
 }

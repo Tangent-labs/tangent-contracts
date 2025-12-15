@@ -13,10 +13,10 @@ contract USGIndexingGlobalDataChainview is MarketDeploymentContext {
     MarketAPRInput[] marketsInput;
     address[] markets;
     function setUp() public {
-        marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD, true)), aprComputationType: 0}));
-        marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexCurveLPMarket(AddrCurveStableLP.WETH_frxETH, true)), aprComputationType: 0}));
+        marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexCurveLPMarket(AddrCurveStableLP.USDC_crvUSD)), aprComputationType: 0}));
+        marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexCurveLPMarket(AddrCurveStableLP.WETH_frxETH)), aprComputationType: 0}));
         marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexFxnLPMarket(AddrCurveStableLP.USDC_fxUSD)), aprComputationType: 1}));
-        marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD, true)), aprComputationType: 0}));
+        marketsInput.push(MarketAPRInput({marketAddress: address(deployConvexCurveLPMarket(AddrCurveStableLP.USDT_crvUSD)), aprComputationType: 0}));
 
         vm.startPrank(usr1);
 
@@ -27,7 +27,7 @@ contract USGIndexingGlobalDataChainview is MarketDeploymentContext {
             IERC20 collatToken = market.collatToken();
             deal(address(collatToken), usr1, 100_000 ether);
             collatToken.approve(address(market), MAX_UINT);
-            market.deposit(usr1, 100_000 ether);
+            market.deposit(usr1, 100_000 ether, false);
 
             IERC20[] memory rewardTokens = rewardAccumulator.getRewardTokens(address(market));
             // Distribute rewards
@@ -48,7 +48,8 @@ contract USGIndexingGlobalDataChainview is MarketDeploymentContext {
                 usg,
                 sUSG,
                 Array.memoryAddress([address(pegKeeperUSG_USDC), address(pegKeeperUSG_wcrvUSD)]),
-                USGOracle
+                USGOracle,
+                marketViewer
             )
         {} catch (bytes memory reason) {
             USGIndexingGlobalDataOut memory result = abi.decode(removeFirst4Bytes(reason), (USGIndexingGlobalDataOut));

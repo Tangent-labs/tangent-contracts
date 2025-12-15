@@ -7,21 +7,21 @@ import "../../../../src/USG/Market/Convex/ConvexFxnLPMarket.sol";
 
 contract HWithdrawConvexFxnLP is HMarketBase {
     ConvexFxnLPMarket marketFxnLP;
-    constructor(address _sender, ConvexFxnLPMarket _market) HandlerBase(_sender, _market) {
+    constructor(address _sender, ConvexFxnLPMarket _market, IERC20 _usg, MarketViewer _marketViewer) HandlerBase(_sender, _market, _usg, _marketViewer) {
         marketFxnLP = ConvexFxnLPMarket(address(_market));
     }
-    function withdraw(uint256 lpToWithdraw) external handler {
+    function withdraw(uint256 lpToWithdraw, bool isReceiptOut) external handler {
         (uint256 totalCollateralBefore, uint256 balanceCollateralBefore) = _beforeWithdrawCheck(lpToWithdraw);
 
-        marketFxnLP.withdraw(lpToWithdraw);
+        marketFxnLP.withdraw(lpToWithdraw, isReceiptOut);
 
         _afterWithdrawCheck(lpToWithdraw, totalCollateralBefore, balanceCollateralBefore);
     }
 
-    function repayAndWithdraw(uint256 lpToWithdraw, uint256 debtRepay) external handler {
+    function repayAndWithdraw(uint256 lpToWithdraw, uint256 debtRepay, bool isReceiptOut) external handler {
         (uint256 totalCollateralBefore, uint256 balanceCollateralBefore) = _beforeWithdrawCheck(lpToWithdraw);
 
-        marketFxnLP.repayAndWithdraw(lpToWithdraw, debtRepay);
+        marketFxnLP.repayAndWithdraw(lpToWithdraw, debtRepay, isReceiptOut);
 
         _afterWithdrawCheck(lpToWithdraw, totalCollateralBefore, balanceCollateralBefore);
     }
@@ -33,8 +33,6 @@ contract HWithdrawConvexFxnLP is HMarketBase {
         balanceCollateralBefore = marketFxnLP.collateralBalances(sender);
 
         verifyReceiveERC20(collatToken, sender, lpToWithdraw, "Collat is withdrawn and sent to sender");
-
-        // TODO Verify withdraw occurs properly by withdrawing first non staked assets
     }
 
     function _afterWithdrawCheck(uint256 lpToWithdraw, uint256 totalCollateralBefore, uint256 balanceCollateralBefore) internal view {

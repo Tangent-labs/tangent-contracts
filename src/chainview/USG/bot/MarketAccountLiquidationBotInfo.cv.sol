@@ -4,6 +4,8 @@ pragma solidity ^0.8.27;
 import {GetMarketLiquidation} from "../GetMarketLiquidation.sol";
 import {GetAccountLiquidation} from "../GetAccountLiquidation.sol";
 
+import {IMarketViewer} from "../../../interfaces/internals/USG/IMarketViewer.sol";
+
 contract MarketAccountLiquidationBotInfo is GetMarketLiquidation, GetAccountLiquidation {
     struct MarketAccountLiquidationBotInfoOut {
         MarketLiquidationInfo[] markets;
@@ -12,13 +14,10 @@ contract MarketAccountLiquidationBotInfo is GetMarketLiquidation, GetAccountLiqu
 
     error MarketLiquidationBotInfoError(MarketAccountLiquidationBotInfoOut output);
 
-    constructor(address[] memory markets, LendingPositionsIn[] memory usersMarkets) {
-
-     
-
+    constructor(address[] memory markets, LendingPositionsIn[] memory usersMarkets, IMarketViewer _marketViewer) {
         MarketAccountLiquidationBotInfoOut memory out = MarketAccountLiquidationBotInfoOut({
             markets: getMarketsLiquidationInfo(markets),
-            accounts: getAccountLiquidationInfo(usersMarkets)
+            accounts: getAccountLiquidationInfo(usersMarkets, _marketViewer)
         });
 
         revert MarketLiquidationBotInfoError(out);

@@ -6,7 +6,9 @@ import {MarketInit, GlobalMarketInitParams} from "../../interfaces/internals/USG
 import {TokenAmount} from "../../interfaces/internals/ICommonStruct.sol";
 import {MarketExternalActions} from "./abstract/MarketExternalActions.sol";
 
-/// @notice
+/// @title BasicERC20Market
+/// @author Tangent Finance
+/// @notice Lending Market for a token that is not a staked position and doesn't have rewards to claim when held.
 contract BasicERC20Market is MarketExternalActions {
     function initialize(GlobalMarketInitParams memory _marketConstants, MarketInit memory _marketInit) external {
         // Common

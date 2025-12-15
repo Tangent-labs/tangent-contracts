@@ -31,13 +31,13 @@ export class LpDeployContext {
             "0"
         );
 
-        const USG_wcrvUSD = "USG-wcrvUSD";
-        const wcrvUSD = "wcrvUSD";
-        this.stableLp[USG_wcrvUSD] = await this.deployStableLP(
+        const USG_frxUSD = "USG-frxUSD";
+        const frxUSD = "USGfrxUSD";
+        this.stableLp[USG_frxUSD] = await this.deployStableLP(
             baseContext,
-            USG_wcrvUSD,
-            wcrvUSD,
-            [wStableContext.wStable.wcrvUSD, baseContext.USG],
+            USG_frxUSD,
+            frxUSD,
+            [baseContext.coins.frxUSD, baseContext.USG],
             [amount, amount],
             "500",
             "1000000",

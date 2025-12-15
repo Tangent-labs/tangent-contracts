@@ -18,8 +18,11 @@ contract ProcessMultiRewards is MarketDeploymentContext {
     IERC20Metadata public collatToken4 = AddrCurveStableLP.USDC_fxUSD;
     ConvexFxnLPMarket public market4;
 
-    IERC20Metadata public collatToken5 = AddrCurveStableLP.sUSDS_USDT;
-    ConvexCrvLPMarket public market5;
+    IERC20Metadata public collatToken5 = AddrCurveStableLP.USDC_crvUSD;
+    StakeDaoVaultV2Market public market5;
+
+    IERC20Metadata public collatToken6 = AddrCurveStableLP.PYUSD_USDC;
+    CurveGaugeMarket public market6;
 
     MarketExternalActions[] markets;
 
@@ -33,16 +36,20 @@ contract ProcessMultiRewards is MarketDeploymentContext {
 
         // Deploy several markets
         market1 = deployBasicERC20Market(collatToken1);
-        market2 = deployConvexCurveLPMarket(collatToken2, true);
-        market3 = deployConvexCurveLPMarket(collatToken3, true);
+        market2 = deployConvexCurveLPMarket(collatToken2);
+        market3 = deployConvexCurveLPMarket(collatToken3);
         market4 = deployConvexFxnLPMarket(collatToken4);
-        market5 = deployConvexCurveLPMarket(collatToken5, false);
+        market5 = deployStakeDaoVaultV2Market(collatToken5);
+        IERC20[] memory r = new IERC20[](1);
+        r[0] = AddrClassicERC20.PYUSD;
+        market6 = deployCurveGaugeMarket(collatToken6, r);
 
         markets.push(market1);
         markets.push(market2);
         markets.push(market3);
         markets.push(market4);
         markets.push(market5);
+        markets.push(market6);
 
         // Perform staking
         vm.startPrank(usr1);
@@ -53,7 +60,7 @@ contract ProcessMultiRewards is MarketDeploymentContext {
             // Perform staking
             deal(address(collatToken), usr1, 100_000 ether);
             collatToken.approve(address(market), MAX_UINT);
-            market.depositAndBorrow(10_000 ether, 5_000 ether);
+            market.depositAndBorrow(10_000 ether, 5_000 ether, false);
 
             // Deposit rewards on the market contract,ready to be processed
             IERC20[] memory rewardTokens = rewardAccumulator.getRewardTokens(address(market));
@@ -70,9 +77,17 @@ contract ProcessMultiRewards is MarketDeploymentContext {
         market2.cvxRewardToken().getReward(address(market2), true);
         market3.cvxRewardToken().getReward(address(market3), true);
         market4.stakingProxyVault().getReward();
+        vm.startPrank(address(market5));
+        address[] memory gauges = new address[](1);
+        gauges[0] = address(IStakeDaoVaultV2(market5.receiptToken()).gauge());
+        IAccountant(0x93b4B9bd266fFA8AF68e39EDFa8cFe2A62011Ce0).claim(gauges, new bytes[](1));
+        vm.stopPrank();
 
         processableAmountsExpected = [
-            AddrClassicERC20.CRV.balanceOf(address(market2)) + AddrClassicERC20.CRV.balanceOf(address(market3)) + AddrClassicERC20.CRV.balanceOf(address(market4)),
+            AddrClassicERC20.CRV.balanceOf(address(market2)) +
+                AddrClassicERC20.CRV.balanceOf(address(market3)) +
+                AddrClassicERC20.CRV.balanceOf(address(market4)) +
+                AddrClassicERC20.CRV.balanceOf(address(market5)),
             AddrClassicERC20.CVX.balanceOf(address(market2)) + AddrClassicERC20.CVX.balanceOf(address(market3)) + AddrClassicERC20.CVX.balanceOf(address(market4)),
             AddrClassicERC20.FXN.balanceOf(address(market4))
         ];
@@ -97,33 +112,42 @@ contract ProcessMultiRewards is MarketDeploymentContext {
 
         uint256 lastRewardCutPercentage = rewardAccumulator.lastRewardCuts(address(market1));
 
-        rewardAccumulator.processMultiRewards(Array.memoryAddress([address(market1), address(market2), address(market3), address(market4), address(market5)]), usr2, 3);
+        rewardAccumulator.processMultiRewards(
+            Array.memoryAddress([address(market1), address(market2), address(market3), address(market4), address(market5), address(market6)]),
+            usr2,
+            4
+        );
 
         assertLt(lastRewardCutPercentage, rewardAccumulator.lastRewardCuts(address(market1)));
 
         for (uint256 i; i < processedR.length; i++) {
-            IERC20 rewardToken = rewardAccumulator.rewardTokens(address(market4), i);
-            assertApproxEqAbs((processedR[i] * lastRewardCutPercentage) / 100_000, rewardAccumulator.cutFeeForToken(rewardToken), 1_000_000);
+            IERC20Metadata rewardToken = IERC20Metadata(address(rewardAccumulator.rewardTokens(address(market4), i)));
+            assertApproxEqAbs(
+                (processedR[i] * lastRewardCutPercentage) / 100_000,
+                rewardAccumulator.cutFeeForToken(rewardToken),
+                1_000_000,
+                string.concat("Cut fee percentage for ", rewardToken.symbol())
+            );
         }
 
         assertERC20Tracking();
     }
 
     function test_processMultiRewards_fails_if_one_market_in_params_is_not_a_market() external {
-        address[] memory _markets = Array.memoryAddress([address(market1), address(market2), address(market3), address(usr2), address(market5)]);
+        address[] memory _markets = Array.memoryAddress([address(market1), address(market2), address(market3), address(usr2)]);
         vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.NotAMarketRewards.selector));
         rewardAccumulator.processMultiRewards(_markets, usr2, 3);
     }
 
     function test_processMultiRewards_fails_if_the_amount_of_erc20_passed_is_too_small() external {
-        address[] memory _markets = Array.memoryAddress([address(market1), address(market2), address(market3), address(market4), address(market5)]);
+        address[] memory _markets = Array.memoryAddress([address(market1), address(market2), address(market3), address(market4), address(market5), address(market6)]);
         vm.expectRevert();
         rewardAccumulator.processMultiRewards(_markets, usr2, 2);
     }
 
     function test_processMultiRewards_fails_if_the_amount_of_erc20_passed_is_too_big() external {
-        address[] memory _markets = Array.memoryAddress([address(market1), address(market2), address(market3), address(market4), address(market5)]);
-        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.IncorrectRewardLength.selector, 4, 3));
-        rewardAccumulator.processMultiRewards(_markets, usr2, 4);
+        address[] memory _markets = Array.memoryAddress([address(market1), address(market2), address(market3), address(market4), address(market5), address(market6)]);
+        vm.expectRevert(abi.encodeWithSelector(RewardAccumulator.IncorrectRewardLength.selector, 5, 4));
+        rewardAccumulator.processMultiRewards(_markets, usr2, 5);
     }
 }

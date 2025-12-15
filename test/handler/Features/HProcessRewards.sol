@@ -8,7 +8,13 @@ import "../../../src/USG/Utilities/RewardAccumulator.sol";
 contract HProcessRewards is HandlerBase {
     MarketExternalActions marketRewards;
     RewardAccumulator rewardAccumulator;
-    constructor(address _sender, MarketExternalActions _market, RewardAccumulator _rewardAccumulator) HandlerBase(_sender, _market) {
+    constructor(
+        address _sender,
+        MarketExternalActions _market,
+        RewardAccumulator _rewardAccumulator,
+        IERC20 _usg,
+        MarketViewer _marketViewer
+    ) HandlerBase(_sender, _market, _usg, _marketViewer) {
         marketRewards = MarketExternalActions(address(_market));
         rewardAccumulator = _rewardAccumulator;
     }

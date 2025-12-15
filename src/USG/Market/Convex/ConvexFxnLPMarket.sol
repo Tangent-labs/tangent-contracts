@@ -8,7 +8,9 @@ import {MarketInit, GlobalMarketInitParams} from "../../../interfaces/internals/
 import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
 import {MarketExternalActions} from "../abstract/MarketExternalActions.sol";
 
-/// @notice Lending Market of a FXN LP on Convex
+/// @title ConvexCrvLPMarket
+/// @author Tangent Finance
+/// @notice USG lending market with a Curve LP staked on Convex/FXN as collateral
 contract ConvexFxnLPMarket is MarketExternalActions {
     ICvxFxnBooster constant CVX_BOOSTER = ICvxFxnBooster(0xAffe966B27ba3E4Ebb8A0eC124C7b7019CC762f8);
     IStakingProxyERC20 public stakingProxyVault;
@@ -29,10 +31,13 @@ contract ConvexFxnLPMarket is MarketExternalActions {
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
     function _postDeposit(IERC20 _collatToken) internal override {
-        stakingProxyVault.deposit(_collatToken.balanceOf(address(this)), true);
+        uint256 collatBalance = _collatToken.balanceOf(address(this));
+        if (collatBalance != 0) {
+            stakingProxyVault.deposit(collatBalance, true);
+        }
     }
 
-    function _transferCollateralWithdraw(address to, uint256 lpToWithdraw) internal override {
+    function _transferCollateralWithdraw(address to, uint256 lpToWithdraw, bool isReceiptOut) internal override {
         // Withdraw from Convex vault
         stakingProxyVault.withdraw(lpToWithdraw);
 
@@ -40,16 +45,8 @@ contract ConvexFxnLPMarket is MarketExternalActions {
         collatToken.transfer(to, lpToWithdraw);
     }
 
-    /**
-     * @notice Claim and process the governance rewards
-     * @dev Claim rewards from the corresponding ConvexReward SC and streams them for the stakers.
-     *      Anyone can trigger this function and will be incentivized with a processor fee.
-     */
-    function claimUnderlyingRewards(IERC20[] memory _rewardTokens) external override nonReentrant updateRewards(address(0)) returns (TokenAmount[] memory) {
-        require(msg.sender == address(rewardAccumulator), NotRewardAccumulator());
+    function _claimRewards() internal override {
         // Claim rewards of Convex FXN market
         stakingProxyVault.getReward();
-
-        return _claimUnderlyingRewards(_rewardTokens);
     }
 }

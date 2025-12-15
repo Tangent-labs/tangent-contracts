@@ -41,7 +41,7 @@ interface IRewardAccumulator {
 
     function computeRCForMarket(address market) external returns (uint256);
 
-    function initializeMarket(address market, RCParams calldata _rcParams) external;
+    function initializeMarket(address market, IERC20[] calldata rewardTokens, RCParams calldata _rcParams) external;
 
     function getRCParams(address markets) external view returns (RCParams memory);
 }
