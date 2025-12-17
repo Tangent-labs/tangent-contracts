@@ -14,34 +14,35 @@ export async function executeBoostContext() {
     for (let i = 0; i < onchainBoostUserConfig.length; i++) {
         const user = signers[i]
         const config = onchainBoostUserConfig[i];
+
         if (config.llamaNFT) {
             await mintLlamaNFT(user, config.llamaNFT)
         }
-        else if (config.veYFI) {
+        if (config.veYFI) {
             await lockYFI(parseEther(config.veYFI.toString()), user, now)
         }
-        else if (config.vlCVX) {
+        if (config.vlCVX) {
             await lockCVX(parseEther(config.vlCVX.toString()), user)
         }
-        else if (config.vePENDLE) {
-            await lockPENDLE(parseEther(config.vePENDLE.toString()), user)
+        if (config.vePENDLE) {
+            await lockPENDLE(parseEther(config.vePENDLE.toString()), user, now)
         }
-        else if (config.veCRV) {
+        if (config.veCRV) {
             await lockClassicVe("veCRV", parseEther(config.veCRV.toString()), user, now)
         }
-        else if (config.veSDT) {
+        if (config.veSDT) {
             await lockClassicVe("veSDT", parseEther(config.veSDT.toString()), user, now)
         }
-        else if (config.veFXN) {
+        if (config.veFXN) {
             await lockClassicVe("veFXN", parseEther(config.veFXN.toString()), user, now)
         }
-        else if (config.sINV) {
+        if (config.sINV) {
             await giveTokenToAddress(user, "sINV", parseEther(config.sINV.toString()))
         }
-        else if (config.stRESOLV) {
+        if (config.stRESOLV) {
             await giveTokenToAddress(user, "stRESOLV", parseEther(config.stRESOLV.toString()))
         }
-        else if (config.stRSUP) {
+        if (config.stRSUP) {
             await stakeRSUP(user, parseEther(config.stRSUP.toString()))
         }
     }

@@ -3,6 +3,8 @@ pragma solidity ^0.8.27;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
+import {IVlCVX} from "../../../interfaces/externals/Convex/IVlCVX.sol";
+
 struct TokenBalance {
     address token;
     uint256 balance;
@@ -13,9 +15,6 @@ struct BoostBalancesSnapshotsOut {
     TokenBalance[] tokenBalance;
 }
 
-interface IVlCVX {
-    function lockedBalanceOf(address balance) external view returns (uint256);
-}
 contract BoostBalancesSnapshots {
     error BoostBalancesSnapshotsError(uint256 timestamp, BoostBalancesSnapshotsOut[] out);
 

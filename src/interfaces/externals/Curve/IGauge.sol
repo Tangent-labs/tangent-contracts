@@ -52,6 +52,5 @@ interface IGauge is IERC20Metadata {
     function reward_integral_for(address arg0, address arg1) external view returns (uint256);
     function is_killed() external view returns (bool);
     function factory() external view returns (address);
-
     function staking_token() external view returns (address);
 }

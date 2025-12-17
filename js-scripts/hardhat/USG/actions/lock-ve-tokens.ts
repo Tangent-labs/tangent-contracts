@@ -1,5 +1,5 @@
 import { commonERC20, veTokens } from "@tangent/defi-resources";
-import { ONE_YEAR_IN_SECONDS } from "@tangent/defi-resources/build/utils/durations";
+import { ONE_WEEK_IN_SECONDS, ONE_YEAR_IN_SECONDS } from "@tangent/defi-resources/build/utils/durations";
 import { AddressLike, Contract, MaxUint256, parseEther, Signer } from "ethers";
 import { ethers } from "hardhat";
 
@@ -89,7 +89,7 @@ export async function lockYFI(amount: bigint, signer: Signer, now: number) {
     await approveMax(signer, commonERC20.YFI, veTokens.veYFI)
 
     const veYFI = new Contract(veTokens.veYFI, abiVeYFI)
-    await veYFI.connect(signer).modify_lock(amount, now + 365 * 24 * 3600 * 3)
+    await veYFI.connect(signer).modify_lock(amount, now + 365 * 24 * 3600)
 }
 
 
@@ -100,11 +100,11 @@ export async function lockCVX(amount: bigint, signer: Signer) {
     await vlCVX.connect(signer).lock(await signer.getAddress(), amount, 0)
 }
 
-export async function lockPENDLE(amount: bigint, signer: Signer) {
+export async function lockPENDLE(amount: bigint, signer: Signer, now: number) {
     await approveMax(signer, commonERC20.PENDLE, veTokens.vePENDLE)
 
-    const vePENDLE = new Contract(veTokens.vePENDLE, abiVlCVX)
-    await vePENDLE.connect(signer).lock(await signer.getAddress(), amount, 0)
+    const vePENDLE = await ethers.getContractAt("IVePENDLE", veTokens.vePENDLE)
+    await vePENDLE.connect(signer).increaseLockPosition(amount, Math.trunc(now / ONE_WEEK_IN_SECONDS) * ONE_WEEK_IN_SECONDS + ONE_WEEK_IN_SECONDS * 100)
 }
 
 export async function lockClassicVe(veToken: "veCRV" | "veSDT" | "veFXN", amount: bigint, signer: Signer, now: number) {
@@ -118,7 +118,7 @@ export async function lockClassicVe(veToken: "veCRV" | "veSDT" | "veFXN", amount
         veTokenAddress = veTokens.veFXN
     } else if (veToken == "veSDT") {
         tokenAddress = commonERC20.SDT
-        veTokenAddress = veTokens.vePENDLE
+        veTokenAddress = veTokens.veSDT
     }
 
     await approveMax(signer, tokenAddress, veTokenAddress)
