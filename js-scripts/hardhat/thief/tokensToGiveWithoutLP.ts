@@ -64,6 +64,21 @@ export function TOKENS_TO_GIVE_WITHOUT_LP(mintedAmount: number) {
             ...obj.FXN,
             amount: mintedAmount,
         },
-
+        {
+            ...obj.SDT,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.YFI,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.PENDLE,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.RSUP,
+            amount: mintedAmount,
+        },
     ];
 }

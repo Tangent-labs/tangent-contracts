@@ -1,7 +1,7 @@
-import {AddressLike} from "ethers";
-import {ethers} from "hardhat";
-import {setStorageAt} from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import {GlobalHelper} from "../GlobalHelper";
+import { AddressLike } from "ethers";
+import { ethers } from "hardhat";
+import { setStorageAt } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { GlobalHelper } from "../GlobalHelper";
 
 interface Tokens {
     address: string;
@@ -24,7 +24,7 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
             let storageSlot;
             if (token.isVyper) {
                 storageSlot = GlobalHelper.calculateStorageSlotEthersVyper(RANDOM_ADDRESS, k);
-            } else if (token.address === "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110") {
+            } else if (token.address === "0xfe4bce4b3949c35fb17691d8b03c3cadbe2e5e23") {
                 storageSlot = GlobalHelper.calculateERC20OZUpgradeable(RANDOM_ADDRESS);
             } else {
                 storageSlot = GlobalHelper.calculateStorageSlotEthersSolidity(RANDOM_ADDRESS, k);
@@ -44,7 +44,9 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
     return result;
 }
 
-getSlot([{address: "0x04C154b66CB340F3Ae24111CC767e0184Ed00Cc6", isVyper: false}]).catch((error) => {
+getSlot([
+    { address: "0xfe4bce4b3949c35fb17691d8b03c3cadbe2e5e23", isVyper: false }
+]).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

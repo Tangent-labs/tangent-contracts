@@ -4,6 +4,7 @@ import { MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys, PendlePTMarket
 import { OracleContext } from "../contexts/OracleContext";
 import { LpDeployContext } from "../contexts/LPDeployContext";
 import { WStablesContext } from "../contexts/WStableContext";
+import { executeBoostContext } from "../contexts/OnchainBoostContext";
 
 export async function deployUSG(userCount: number = 5) {
     const baseContext = new BaseContext(userCount);
@@ -22,6 +23,9 @@ export async function deployUSG(userCount: number = 5) {
     console.log("Give ERC20 to users");
     // Give ERC20 to users
     await baseContext.setUpERC20();
+
+    console.log("Setup the context for Onchain boost ( lockers + stAssets + NFT)");
+    await executeBoostContext()
 
     console.log("Deploy WStables");
     await wStableContext.deployWStables(baseContext);
