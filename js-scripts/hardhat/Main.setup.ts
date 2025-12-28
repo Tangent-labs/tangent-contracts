@@ -1,23 +1,33 @@
-import { giveTokensToAddresses } from "./thief/thief";
-import { ethers } from "hardhat";
+import {giveTokensToAddresses} from "./thief/thief";
+import {ethers} from "hardhat";
 
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { commonERC20 } from "@tangent/defi-resources";
-import { MaxUint256 } from "ethers";
-import { TOKENS_TO_GIVE_WITH_LP } from "./thief/tokensToGiveWithLP";
-import { TOKENS_TO_GIVE_WITHOUT_LP } from "./thief/tokensToGiveWithoutLP";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import {commonERC20} from "@tangent/defi-resources";
+import {MaxUint256, parseEther} from "ethers";
+import {TOKENS_TO_GIVE_WITH_LP} from "./thief/tokensToGiveWithLP";
+import {TOKENS_TO_GIVE_WITHOUT_LP} from "./thief/tokensToGiveWithoutLP";
+import {setBalance} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 export class MainSetup {
     users: HardhatEthersSigner[] = [];
     userCount: number;
     erc20Minted = 1_000_000_000;
 
-    constructor(userCount?: number) {
+    constructor(userCount?: number, excludedTokens: string[] = []) {
         this.userCount = userCount || 5;
     }
 
     async setupTestUsers() {
         this.users = (await ethers.getSigners()).slice(0, this.userCount);
+        console.log("users count", this.users.length);
+        if (this.users.length > 20) {
+            console.log("setting balance for users", this.users.length - 20);
+            for (let i = 19; i < this.users.length; i++) {
+                const user = this.users[i];
+                const userAddress = await user.getAddress();
+                await setBalance(userAddress, parseEther("1000000000000000000000"));
+            }
+        }
     }
 
     async giveTokens(
@@ -27,7 +37,6 @@ export class MainSetup {
             slotBalance: number;
             address: string;
             decimals: number;
-            name: string
             amount: number;
         }[]
     ) {

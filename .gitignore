@@ -34,5 +34,7 @@ pyproject.toml
 requirements*
 
 
+borrowParams.json
+
 js-scripts/hardhat/USG/routing/Curve/data/finalRoutesTestRepport.json
 js-scripts/hardhat/USG/routing/Curve/data/singleSwaps.json

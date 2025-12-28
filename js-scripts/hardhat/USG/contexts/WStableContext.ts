@@ -1,14 +1,14 @@
-import { ethers } from "hardhat";
-import { WStable } from "../../../../typechain-types";
-import { BaseContext } from "./BaseContext";
-import { MaxUint256 } from "ethers";
+import {ethers} from "hardhat";
+import {WStable} from "../../../../typechain-types";
+import {BaseContext} from "./BaseContext";
+import {MaxUint256} from "ethers";
 
 export class WStablesContext {
-    wStable: { [key: string]: WStable } = {};
+    wStable: {[key: string]: WStable} = {};
 
     async deployWStables(baseContext: BaseContext) {
         const wStableFactory = await ethers.getContractFactory("WStable");
-        const amount = ethers.parseEther("5000000");
+        const amount = ethers.parseEther("2500000");
 
         // const wfrxUSD = "wfrxUSD";
         // const wfrxUSDContract = await wStableFactory.deploy(wfrxUSD, wfrxUSD, baseContext.controlTower, baseContext.coins.frxUSD, baseContext.coins.sfrxUSD, baseContext.owner);

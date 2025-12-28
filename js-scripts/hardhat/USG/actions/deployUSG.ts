@@ -6,7 +6,8 @@ import { LpDeployContext } from "../contexts/LPDeployContext";
 import { WStablesContext } from "../contexts/WStableContext";
 import { executeBoostContext } from "../contexts/OnchainBoostContext";
 
-export async function deployUSG(userCount: number = 5) {
+export async function deployUSG(userCount: number = 5, baseLpDeposit?: number) {
+    console.log("Deploy USG with", userCount, "users");
     const baseContext = new BaseContext(userCount);
     const oracleContext = new OracleContext();
     const marketContext = new MarketContext();
@@ -32,7 +33,7 @@ export async function deployUSG(userCount: number = 5) {
 
     console.log("Deploy LPs");
     // Create USG LP
-    await lpDeployContext.deployAllTangentLps(baseContext, wStableContext);
+    await lpDeployContext.deployAllTangentLps(baseContext, wStableContext, baseLpDeposit);
 
     console.log("Deploy and setup Oracles");
     // Setup and create all oracles

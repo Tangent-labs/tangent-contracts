@@ -1,10 +1,11 @@
 import {LiquidationChaosContext} from "../contexts/LiquidationChaosContext";
 import * as fs from "fs";
-import {network} from "hardhat";
+import {ethers, network} from "hardhat";
 import * as path from "path";
 
 async function main() {
     await network.provider.send("evm_mine", []);
+
     const liquidationContext = new LiquidationChaosContext();
     await liquidationContext.doDeploy();
 
@@ -25,4 +26,3 @@ async function main() {
     await network.provider.send("evm_setAutomine", [false]);
 }
 main();
-
