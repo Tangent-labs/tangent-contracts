@@ -1,0 +1,1 @@
+export const EXPLOIT_BLOCK = 20_434_300

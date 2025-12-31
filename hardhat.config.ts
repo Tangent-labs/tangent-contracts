@@ -53,17 +53,18 @@ const config: HardhatUserConfig = {
             },
         ],
     },
+    // NOTE : Block exploit CVG :20_434_300
     networks: {
         localhost: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "http://127.0.0.1:8545",
             mining: {
-                auto: false,
+                auto: true,
                 interval: 12_000,
             },
             forking: {
-                url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
-                blockNumber: Number(process.env.STARTING_BLOCK!),
+                url: `https://mainnet.infura.io/v3/ae4b64bed2884c5c87b4acbb4f062682`,
+                blockNumber: 20434300,
             },
             timeout: 100_000_000,
         },
@@ -73,8 +74,8 @@ const config: HardhatUserConfig = {
                 interval: 12_000,
             },
             forking: {
-                url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
-                blockNumber: Number(process.env.STARTING_BLOCK!),
+                url: `https://mainnet.infura.io/v3/ae4b64bed2884c5c87b4acbb4f062682`,
+                blockNumber: 20434300,
             },
         },
         tangent: {
