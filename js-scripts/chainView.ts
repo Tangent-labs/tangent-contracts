@@ -1,12 +1,34 @@
-import {ContractFactory, Interface, InterfaceAbi, ContractMethodArgs, BytesLike, Fragment, ZeroAddress, BigNumberish} from "ethers";
+import {ContractFactory, Interface, InterfaceAbi, ContractMethodArgs, BytesLike, Fragment, ZeroAddress, BigNumberish, Provider} from "ethers";
 import {ethers} from "hardhat";
 export const chainView = async <A extends any[], R>(
-    abi: InterfaceAbi,
-    bytecode: BytesLike,
-    params: ContractMethodArgs<A>,
-    options: {from?: string; value?: bigint; blockTag?: BigNumberish} = {}
+    providerOrAbi: Provider | InterfaceAbi,
+    abiOrBytecode: InterfaceAbi | BytesLike,
+    bytecodeOrParams: BytesLike | ContractMethodArgs<A>,
+    paramsOrOptions?: ContractMethodArgs<A> | {from?: string; value?: bigint; blockTag?: BigNumberish},
+    options?: {from?: string; value?: bigint; blockTag?: BigNumberish}
 ): Promise<R> => {
-    const provider = ethers.provider;
+    // Support both old signature (without provider) and new signature (with provider)
+    let provider: Provider;
+    let abi: InterfaceAbi;
+    let bytecode: BytesLike;
+    let params: ContractMethodArgs<A>;
+    let opts: {from?: string; value?: bigint; blockTag?: BigNumberish} = {};
+
+    if (typeof providerOrAbi === "object" && "call" in providerOrAbi) {
+        // New signature: chainView(provider, abi, bytecode, params, options?)
+        provider = providerOrAbi as Provider;
+        abi = abiOrBytecode as InterfaceAbi;
+        bytecode = bytecodeOrParams as BytesLike;
+        params = paramsOrOptions as ContractMethodArgs<A>;
+        opts = options || {};
+    } else {
+        // Old signature: chainView(abi, bytecode, params, options?)
+        provider = ethers.provider;
+        abi = providerOrAbi as InterfaceAbi;
+        bytecode = abiOrBytecode as BytesLike;
+        params = bytecodeOrParams as ContractMethodArgs<A>;
+        opts = paramsOrOptions as {from?: string; value?: bigint; blockTag?: BigNumberish} || {};
+    }
 
     const ChainViewInterface = new Interface(abi);
     const errorNamesExpected = ChainViewInterface.fragments.filter((f): f is Fragment & {name: string} => f.type === "error").map((error) => error.name);
@@ -14,10 +36,10 @@ export const chainView = async <A extends any[], R>(
 
     //get deploy data transaction
     const deploy = await ChainView.getDeployTransaction(...params);
-    deploy.from = options.from || ZeroAddress;
-    deploy.value = options.value || 0n;
-    if (options.blockTag) {
-        deploy.blockTag = options.blockTag;
+    deploy.from = opts.from || ZeroAddress;
+    deploy.value = opts.value || 0n;
+    if (opts.blockTag) {
+        deploy.blockTag = opts.blockTag;
     }
 
     //simulate the deployment of the contract

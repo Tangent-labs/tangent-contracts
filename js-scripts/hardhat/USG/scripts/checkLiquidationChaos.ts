@@ -1,9 +1,9 @@
 import {chainView} from "../../../chainView";
 import chainViewMarketAccountArtifact from "../../../../artifacts/src/chainview/USG/bot/MarketAccountLiquidationBotInfo.cv.sol/MarketAccountLiquidationBotInfo.json";
-import {LiquidationUserInInfo, LiquidationMarketAccountInfo} from "../contexts/LiquidationContext";
+import {LiquidationUserInInfo, LiquidationMarketAccountInfo, LiquidationContext} from "../contexts/LiquidationContext";
 import * as fs from "fs";
 import {ethers} from "hardhat";
-import {LiquidationChaosContext} from "../contexts/LiquidationChaosContext";
+import {CHAOS_CONFIG} from "./liquidationSetUpChaos";
 
 // DENOMINATOR from Collateral.sol (100_000 = 100%)
 const DENOMINATOR = 100_000n;
@@ -35,13 +35,13 @@ async function main() {
 
     // Fetch liquidation data from chain using chain view
     console.log("📊 Fetching liquidation data from chain...");
-    const liquidationContext = new LiquidationChaosContext();
+    const liquidationContext = new LiquidationContext(CHAOS_CONFIG);
 
     // Get market addresses from the loaded data
     const marketAddresses = addresses.markets?.map((market: any) => market.marketAddress) || [];
-    // Use all 300 users for chaos mode
+    // Use all users for chaos mode
     const allSigners = await ethers.getSigners();
-    const users = allSigners.slice(0, liquidationContext.userCount); // Use all 300 users
+    const users = allSigners.slice(0, CHAOS_CONFIG.USER_COUNT); // Use all users from config
 
     const userAddresses = await Promise.all(users.map((user: any) => user.getAddress()));
     console.log(`📊 Checking ${userAddresses.length} users across ${marketAddresses.length} markets`);
@@ -53,6 +53,13 @@ async function main() {
 
     console.log(`📈 Found ${marketAddresses.length} markets and ${userAddresses.length} users`);
 
+    // Get marketViewer address
+    const marketViewerAddress = addresses.utilities?.marketViewer;
+    if (!marketViewerAddress) {
+        console.log("❌ MarketViewer address not found in addresses.json");
+        return;
+    }
+
     // Batch size for processing users
     const BATCH_SIZE = 10;
     const totalBatches = Math.ceil(userAddresses.length / BATCH_SIZE);
@@ -63,6 +70,9 @@ async function main() {
         let aggregatedMarkets: any[] = [];
         let aggregatedAccounts: any[] = [];
         let allParams: LiquidationUserInInfo[] = [];
+
+        // Get provider
+        const provider = ethers.provider;
 
         // Process users in batches
         for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
@@ -85,10 +95,11 @@ async function main() {
                 .flat();
 
             // Execute chain view for this batch
-            const batchData = await chainView<[string[], LiquidationUserInInfo[]], [LiquidationMarketAccountInfo]>(
+            const batchData = await chainView<[string[], LiquidationUserInInfo[], string], [LiquidationMarketAccountInfo]>(
+                provider,
                 chainViewMarketAccountArtifact.abi,
                 chainViewMarketAccountArtifact.bytecode,
-                [marketAddresses, batchParams]
+                [marketAddresses, batchParams, marketViewerAddress]
             );
 
             if (!batchData || !batchData[0]) {

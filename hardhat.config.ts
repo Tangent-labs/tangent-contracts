@@ -57,10 +57,10 @@ const config: HardhatUserConfig = {
         localhost: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "http://127.0.0.1:8545",
-            mining: {
-                auto: false,
-                interval: 12_000,
-            },
+            // mining: {
+            //     auto: false,
+            //     interval: 12_000,
+            // },
             accounts: {
                 mnemonic: "test test test test test test test test test test test junk",
                 count: 300, // 👈 get as many as you want

@@ -4,7 +4,6 @@ pragma solidity ^0.8.27;
 import {ICurveRouter} from "../../../interfaces/externals/Curve/ICurveRouter.sol";
 import {CurveQuote} from "../../../interfaces/internals/USG/ICurveLPLiquidator.sol";
 import {ICurveStableSwapNG} from "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
-import {console} from "hardhat/console.sol";
 
 
 struct QuoteWithImpact {
@@ -34,8 +33,6 @@ contract QuotesCurveRouterImpact {
                 try CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, MARGINAL_AMOUNT, curveQuote._pools) returns (uint256 marginalQuote) {
 
                   
-                        console.log( "marginalQuote: ", marginalQuote);
-                        console.log( "quote: ", quote);
                       //  console.logInt(  priceImpact);
                     if (marginalQuote > 0 && curveQuote._amount > 0) {
                         // Expected output at marginal price (no slippage)
@@ -43,7 +40,6 @@ contract QuotesCurveRouterImpact {
                         if (expectedOutput > 0) {
                             // Price impact as percentage: (expected - actual) / expected * 1e18
                             priceImpact = (int256(expectedOutput) - int256(quote)) * 1e18 / int256(expectedOutput);
-                            console.logInt(  priceImpact);
                         }
                      
                     } 
