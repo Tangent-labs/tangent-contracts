@@ -32,7 +32,6 @@ import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, Market
 import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CURVE_GAUGE, STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/market";
 import { OracleContext } from "./OracleContext";
 import { WStablesContext } from "./WStableContext";
-import { lockVeTokensForAllUsers } from "../actions/lock-ve-tokens";
 
 export class BaseContext extends MainSetup {
     owner!: HardhatEthersSigner;
@@ -219,8 +218,6 @@ export class BaseContext extends MainSetup {
 
         await this.giveTokens(this.users, [{ address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser, name: "usg" }]);
         await setStorageAt(await this.USG.getAddress(), 2, parseEther((USGToGivePerUser * this.users.length).toString()));
-
-        await lockVeTokensForAllUsers(this.users);
 
     }
 

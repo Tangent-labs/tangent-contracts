@@ -11,6 +11,9 @@ export interface TokenAmounts {
     isVyper: boolean;
     amount: number;
 }
+const UpgradeableAddresses = ["0x15700b564ca08d9439c58ca5053166e8317aa138", "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110", "0xfe4bce4b3949c35fb17691d8b03c3cadbe2e5e23"];
+
+
 // tokens used must be in the TOKEN config to be able to retrieve the slot of the balanceMapping
 export async function giveTokensToAddresses(users: Signer[], tokensAmounts: TokenAmounts[]) {
     for (let i = 0; i < users.length; i++) {
@@ -21,12 +24,11 @@ export async function giveTokensToAddresses(users: Signer[], tokensAmounts: Toke
                 let storageSlot = "";
                 if (tokenAmount.isVyper) {
                     storageSlot = GlobalHelper.calculateStorageSlotEthersVyper(userAddress, tokenAmount.slotBalance);
-                } else if (tokenAmount.address === "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110") {
+                } else if (UpgradeableAddresses.includes(tokenAmount.address)) {
                     storageSlot = GlobalHelper.calculateERC20OZUpgradeable(userAddress);
                 } else {
                     storageSlot = GlobalHelper.calculateStorageSlotEthersSolidity(userAddress, tokenAmount.slotBalance);
                 }
-
                 await setStorageAt(tokenAmount.address, storageSlot, parseUnits(tokenAmount.amount.toString(), tokenAmount.decimals));
             } catch (e) {
                 console.error(`error token : ${tokenAmount.address} , ${tokenAmount.amount} , ${tokenAmount.slotBalance || "--"} `);
@@ -37,7 +39,6 @@ export async function giveTokensToAddresses(users: Signer[], tokensAmounts: Toke
 
 export async function giveTokenToAddresss(user: Signer, address: string, amount: bigint, slotBalance: number, isVyper: boolean) {
     const userAddress = await user.getAddress();
-    const UpgradeableAddresses = ["0x15700b564ca08d9439c58ca5053166e8317aa138", "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110"];
     let storageSlot = "";
     if (isVyper) {
         storageSlot = GlobalHelper.calculateStorageSlotEthersVyper(userAddress, slotBalance);
@@ -54,7 +55,6 @@ export async function giveTokenToAddress(user: Signer, tokenName: string, amount
     const config = THIEF_TOKEN_CONFIG[tokenName];
     const erc20 = config.address;
     const userAddress = await user.getAddress();
-    const UpgradeableAddresses = ["0x15700b564ca08d9439c58ca5053166e8317aa138", "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110"];
     let storageSlot = "";
     if (config.isVyper) {
         storageSlot = GlobalHelper.calculateStorageSlotEthersVyper(userAddress, config.slotBalance);
