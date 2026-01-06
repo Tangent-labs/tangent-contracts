@@ -1,0 +1,18 @@
+{
+  "balances": {
+    "0x8e17390d5c3cd2fdde0567fed11ee883b654b33a": {
+      "balBigInt": "4324359812423161408842",
+      "balNumber": 4324.359812423161
+    },
+    "0x7b465174a93a6d0602fd4ea99eec86c07e5e1568": {
+      "balBigInt": "27873394980746429606058",
+      "balNumber": 27873.39498074643
+    },
+    "0x3acc2bffa4a5e75fd4b7709a6fa2c3eed94f664c": {
+      "balBigInt": "12081691347871330279004",
+      "balNumber": 12081.69134787133
+    }
+  },
+  "totalBigInt": "44279446141040921293904",
+  "totalNumber": 44279.44614104092
+}

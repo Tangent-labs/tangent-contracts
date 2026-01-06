@@ -5,16 +5,16 @@ import path from "path"
 
 import * as VestingCvgAbi from "./abis/VestingCvg.json"
 
-export async function seedSnapshot(vestingName: string, vestingId: number) {
-    const preseed = await ethers.getContractAt("ERC721Enumerable", "0x06FEB7a047e540B8d92620a2c13Ec96e1FF5E19b")
+export async function vestingSnapshot(vestingName: string, vestingId: number, contractAddress: string) {
+    const nft = await ethers.getContractAt("ERC721Enumerable", contractAddress)
     const vesting = new Contract("0xC929bA60ef82fE55De3bC848dd9453B3b12a0c30", VestingCvgAbi.abi, ethers.provider)
 
     const snapshotBigInt: { [address: string]: { totalBought: bigint, releasable: bigint, redeemed: bigint, accountedBalance: bigint, positionAmount: number } } = {}
-    const totalSupply = await preseed.totalSupply()
+    const totalSupply = await nft.totalSupply()
     let totalUnclaimed = 0n
     let totalBought = 0n
     for (let tokenId = 1; tokenId <= totalSupply; tokenId++) {
-        const owner = (await preseed.ownerOf(tokenId)).toLowerCase()
+        const owner = (await nft.ownerOf(tokenId)).toLowerCase()
         if (!snapshotBigInt[owner]) {
             snapshotBigInt[owner] = { redeemed: 0n, releasable: 0n, totalBought: 0n, accountedBalance: 0n, positionAmount: 0 }
         }
@@ -74,13 +74,3 @@ export async function seedSnapshot(vestingName: string, vestingId: number) {
     );
 }
 
-export async function presaleWlSnapshot() {
-    const preseed = await ethers.getContractAt("ERC721Enumerable", "0xc9740aa94A8A02a3373f5F1b493D7e10d99AE811")
-    const vesting = new Contract("0xC929bA60ef82fE55De3bC848dd9453B3b12a0c30", VestingCvgAbi.abi, ethers.provider)
-
-    const totalSupply = await preseed.totalSupply()
-    for (let tokenId = 1; tokenId < totalSupply; tokenId++) {
-        const owner = await preseed.ownerOf(tokenId)
-        const { amountReleasable, totalCvg, amountRedeemed } = await vesting.getInfoVestingTokenId(tokenId, 1)
-    }
-}

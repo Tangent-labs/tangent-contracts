@@ -3,364 +3,364 @@
     "accountedBalance": "664216689375000000000000",
     "positionAmount": 2,
     "redeemed": "85783310625000000000000",
-    "releasable": "52116369675000000000000",
+    "releasable": "52154413612500000000000",
     "totalBought": "750000000000000000000000"
   },
   "0x6ee73c4d8f165f88f20ca2fd2c63d5d039cd0f63": {
     "accountedBalance": "558019590934550000000000",
     "positionAmount": 4,
     "redeemed": "120480409065450000000000",
-    "releasable": "4272835045950000000000",
+    "releasable": "4307252128075000000000",
     "totalBought": "678500000000000000000000"
   },
   "0x0dd57ead63f90bc7ad25be74b6626bb8e8e59ac7": {
     "accountedBalance": "423734745300000000000000",
     "positionAmount": 2,
     "redeemed": "76265254700000000000000",
-    "releasable": "15667865500000000000000",
+    "releasable": "15693228125000000000000",
     "totalBought": "500000000000000000000000"
   },
   "0x9a062a10a6c4c60f0a7265204bd79b2f1183f1a3": {
     "accountedBalance": "1137812518380769230769232",
     "positionAmount": 4,
     "redeemed": "246802866234615384615383",
-    "releasable": "7781158934615384615385",
+    "releasable": "7851393896153846153847",
     "totalBought": "1384615384615384615384615"
   },
   "0x8228e68d6de0c5cbbbc46d52d72d90e9b2bb249f": {
     "accountedBalance": "42015892318875000000000",
     "positionAmount": 2,
     "redeemed": "4484107681125000000000",
-    "releasable": "4065672497475000000000",
+    "releasable": "4068031221600000000000",
     "totalBought": "46500000000000000000000"
   },
   "0x6406459a3cfc8ef866b5522dc2527e5abb6e1210": {
     "accountedBalance": "25000000000000000000000",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "4596656010000000000000",
+    "releasable": "4597924141250000000000",
     "totalBought": "25000000000000000000000"
   },
   "0x65a6c998175afad3dd179a535cf5f76f4bb374f5": {
     "accountedBalance": "500000000000000000000000",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "91933120200000000000000",
+    "releasable": "91958482825000000000000",
     "totalBought": "500000000000000000000000"
   },
   "0x8ce17ff2c7376e9adfe9c63c47a801097fa6c525": {
     "accountedBalance": "12694047951538461538462",
     "positionAmount": 2,
     "redeemed": "2690567433076923076922",
-    "releasable": "138143957692307692308",
+    "releasable": "138924346153846153846",
     "totalBought": "15384615384615384615384"
   },
   "0xb0fabe3bcac50f065dbf68c0b271118ddc005402": {
     "accountedBalance": "32885912244230769230769",
     "positionAmount": 2,
     "redeemed": "5575626217307692307692",
-    "releasable": "1496152259615384615384",
+    "releasable": "1498103230769230769230",
     "totalBought": "38461538461538461538461"
   },
   "0x7cc6fcb7ad4aa5ac1274e350ac24a3f8c5a04239": {
     "accountedBalance": "38461538461538461538461",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "7071778476923076923076",
+    "releasable": "7073729448076923076922",
     "totalBought": "38461538461538461538461"
   },
   "0x795f50722cf5ad82f78dda8dc8f7b235332977c3": {
     "accountedBalance": "63796604876923076923077",
     "positionAmount": 2,
     "redeemed": "13126472046153846153846",
-    "releasable": "1017084907692307692307",
+    "releasable": "1020986850000000000000",
     "totalBought": "76923076923076923076923"
   },
   "0x156e6c5a2fac34bb2fcf2ac1bbaa0e75bde3ac4f": {
     "accountedBalance": "253151994215384615384616",
     "positionAmount": 2,
     "redeemed": "54540313476923076923076",
-    "releasable": "2033914338461538461538",
+    "releasable": "2049522107692307692308",
     "totalBought": "307692307692307692307692"
   },
   "0x2d6b114c77f3355f204c37f657c680157e85dfa5": {
     "accountedBalance": "37685715080769230769231",
     "positionAmount": 2,
     "redeemed": "8468131073076923076922",
-    "releasable": "18003099230769230769",
+    "releasable": "20344264615384615384",
     "totalBought": "46153846153846153846153"
   },
   "0x363faeeae3ab75845afc1cc6abf1678300a1000e": {
     "accountedBalance": "38461538461538461538461",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "7071778476923076923076",
+    "releasable": "7073729448076923076922",
     "totalBought": "38461538461538461538461"
   },
   "0x574b4546cb756a8d36edf5907f4cc963a3cab612": {
     "accountedBalance": "32498739890384615384615",
     "positionAmount": 2,
     "redeemed": "5962798571153846153846",
-    "releasable": "1108979905769230769230",
+    "releasable": "1110930876923076923076",
     "totalBought": "38461538461538461538461"
   },
   "0x461e76a4fe9f27605d4097a646837c32f1ccc31c": {
     "accountedBalance": "76923076923076923076923",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "14143556953846153846153",
+    "releasable": "14147458896153846153846",
     "totalBought": "76923076923076923076923"
   },
   "0x12799e9d0f3ae4cd3ca348b4b907344c37331f6e": {
     "accountedBalance": "38461538461538461538461",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "7071778476923076923076",
+    "releasable": "7073729448076923076922",
     "totalBought": "38461538461538461538461"
   },
   "0x24f4ff043f2faf071dcb030c246db11370ffd086": {
     "accountedBalance": "34615384615384615384614",
     "positionAmount": 4,
     "redeemed": "0",
-    "releasable": "6364600629230769230767",
+    "releasable": "6366356503269230769228",
     "totalBought": "34615384615384615384614"
   },
   "0x90c0bf8d71369d21f8addf0da33d21dcb0b1c384": {
     "accountedBalance": "43582616801538461538462",
     "positionAmount": 2,
     "redeemed": "2571229352307692307691",
-    "releasable": "5914904820000000000000",
+    "releasable": "5917245985384615384615",
     "totalBought": "46153846153846153846153"
   },
   "0x54dc6782d6fc5fc05f8486d365186ff25cc44ba7": {
     "accountedBalance": "251299539230769230769232",
     "positionAmount": 2,
     "redeemed": "56392768461538461538460",
-    "releasable": "181459353846153846154",
+    "releasable": "197067123076923076924",
     "totalBought": "307692307692307692307692"
   },
   "0x93fc1f35f53a9553534979233caf273214c51fd7": {
     "accountedBalance": "76923076923076923076923",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "14143556953846153846153",
+    "releasable": "14147458896153846153846",
     "totalBought": "76923076923076923076923"
   },
   "0xf7476db5b717ac661c027e684456115ab1e728c3": {
     "accountedBalance": "32780401809615384615385",
     "positionAmount": 2,
     "redeemed": "5681136651923076923076",
-    "releasable": "1390641825000000000000",
+    "releasable": "1392592796153846153846",
     "totalBought": "38461538461538461538461"
   },
   "0x33401f1152f82687b6fb9bed3f21df1139a8473d": {
     "accountedBalance": "36525481359615384615385",
     "positionAmount": 2,
     "redeemed": "1936057101923076923076",
-    "releasable": "5135721375000000000000",
+    "releasable": "5137672346153846153846",
     "totalBought": "38461538461538461538461"
   },
   "0xaaac34d30d6938787c653aafb922bc20bfa9c512": {
     "accountedBalance": "35721556246153846153846",
     "positionAmount": 2,
     "redeemed": "2739982215384615384615",
-    "releasable": "4331796261538461538461",
+    "releasable": "4333747232692307692307",
     "totalBought": "38461538461538461538461"
   },
   "0xbe0c04ec30d93fec3384f070ddb0252dde38b4fe": {
     "accountedBalance": "222177415653846153846154",
     "positionAmount": 2,
     "redeemed": "47053353576923076923076",
-    "releasable": "2449095761538461538461",
+    "releasable": "2462752559615384615384",
     "totalBought": "269230769230769230769230"
   },
   "0x01974549c9b9a30d47c548a16b120b1caa7b586c": {
     "accountedBalance": "100000000000000000000000",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "18386624040000000000000",
+    "releasable": "18391696565000000000000",
     "totalBought": "100000000000000000000000"
   },
   "0x48d0297a8946525d098fc7167374f987010a3c82": {
     "accountedBalance": "38461538461538461538461",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "7071778476923076923076",
+    "releasable": "7073729448076923076922",
     "totalBought": "38461538461538461538461"
   },
   "0xe2853983a077b3e76a0876f4d6426b985f587ef4": {
     "accountedBalance": "23641304832153846153847",
     "positionAmount": 4,
     "redeemed": "4051002860153846153844",
-    "releasable": "1040677643230769230770",
+    "releasable": "1042082342461538461538",
     "totalBought": "27692307692307692307691"
   },
   "0xcf23fbbbc532e49815f2c2855a8f72051f578b64": {
     "accountedBalance": "13269217471538461538462",
     "positionAmount": 2,
     "redeemed": "2115397913076923076922",
-    "releasable": "713313477692307692308",
+    "releasable": "714093866153846153846",
     "totalBought": "15384615384615384615384"
   },
   "0x69d08a457b0ff73291e0cb741cb863825561f616": {
     "accountedBalance": "135790410592307692307693",
     "positionAmount": 2,
     "redeemed": "18055743253846153846153",
-    "releasable": "10231370653846153846154",
+    "releasable": "10239174538461538461539",
     "totalBought": "153846153846153846153846"
   },
   "0x75e70db620d5491f69526e22355236f65b46834e": {
     "accountedBalance": "458393156290384615384616",
     "positionAmount": 6,
     "redeemed": "80068382171153846153844",
-    "releasable": "18936516505769230769231",
+    "releasable": "18963830101923076923076",
     "totalBought": "538461538461538461538460"
   },
   "0x6ce49a4e52d081e480ecef87db009e12a4799c96": {
     "accountedBalance": "132505783400000000000001",
     "positionAmount": 2,
     "redeemed": "21340370446153846153845",
-    "releasable": "6946743461538461538462",
+    "releasable": "6954547346153846153847",
     "totalBought": "153846153846153846153846"
   },
   "0x9d269caf80970c7e854c99db8b0c20868825546b": {
     "accountedBalance": "115384615384615384615384",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "21215335430769230769230",
+    "releasable": "21221188344230769230768",
     "totalBought": "115384615384615384615384"
   },
   "0x35e55a4227160d4d4f1b1732318d5062f348b354": {
     "accountedBalance": "189795790557692307692308",
     "positionAmount": 2,
     "redeemed": "40973440211538461538461",
-    "releasable": "1457230650000000000000",
+    "releasable": "1468936476923076923077",
     "totalBought": "230769230769230769230769"
   },
   "0xb1f18296e90e059edbc5ca7e6b9b9a14163c5661": {
     "accountedBalance": "153846153846153846153846",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "28287113907692307692307",
+    "releasable": "28294917792307692307692",
     "totalBought": "153846153846153846153846"
   },
   "0x6afaf8548fde98036cb07a039a63a960607c4d04": {
     "accountedBalance": "34726413196153846153846",
     "positionAmount": 2,
     "redeemed": "3735125265384615384615",
-    "releasable": "3336653211538461538461",
+    "releasable": "3338604182692307692307",
     "totalBought": "38461538461538461538461"
   },
   "0x6261f3806c74455921a0daaa1576988f896e22d0": {
     "accountedBalance": "20601513243153846153846",
     "positionAmount": 2,
     "redeemed": "1706179064538461538461",
-    "releasable": "2395452452076923076923",
+    "releasable": "2396584015346153846153",
     "totalBought": "22307692307692307692307"
   },
   "0x8b71030848f0af16866f71f69add2c97896c4d27": {
     "accountedBalance": "38461538461538461538461",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "7071778476923076923076",
+    "releasable": "7073729448076923076922",
     "totalBought": "38461538461538461538461"
   },
   "0xf6a8f98b4b2c660cfd33b6df17ecbb0a419855c0": {
     "accountedBalance": "1538461538461538461538461",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "282871139076923076923076",
+    "releasable": "282949177923076923076922",
     "totalBought": "1538461538461538461538461"
   },
   "0x50d66426b6f62f8a4d5733363582c08eecbeada5": {
     "accountedBalance": "243103857031615384615385",
     "positionAmount": 8,
     "redeemed": "42280758352999999999999",
-    "releasable": "10191837945769230769231",
+    "releasable": "10206314151730769230769",
     "totalBought": "285384615384615384615384"
   },
   "0x611509cfbe8a865bc02542d6b13a75f5d4799415": {
     "accountedBalance": "13569017799230769230769",
     "positionAmount": 2,
     "redeemed": "1815597585384615384615",
-    "releasable": "1013113805384615384615",
+    "releasable": "1013894193846153846153",
     "totalBought": "15384615384615384615384"
   },
   "0xf04786bb519ea78eaab624d451d620292264ada7": {
     "accountedBalance": "3576923076923076923076",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "657675398353846153845",
+    "releasable": "657856838671153846152",
     "totalBought": "3576923076923076923076"
   },
   "0x1d1661cb61bf5e3066f17f82099786d0fcc49d46": {
     "accountedBalance": "3167893917565384615385",
     "positionAmount": 2,
     "redeemed": "409029159357692307691",
-    "releasable": "248646238996153846154",
+    "releasable": "248827679313461538461",
     "totalBought": "3576923076923076923076"
   },
   "0x6e2a640bfb481a552246ad7a9494f47b7398bc4c": {
     "accountedBalance": "10730769230769230769230",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "1973026195061538461537",
+    "releasable": "1973570516013461538460",
     "totalBought": "10730769230769230769230"
   },
   "0x71787035c504d2ec176c48a91bdd3359f5de3077": {
     "accountedBalance": "3882019707913846153847",
     "positionAmount": 2,
     "redeemed": "410287984393846153845",
-    "releasable": "378922493630769230769",
+    "releasable": "379140222011538461539",
     "totalBought": "4292307692307692307692"
   },
   "0x514c4c39fb04729559a28cd250b1c8d6a02e5028": {
     "accountedBalance": "2500000000000000000000",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "459665601000000000000",
+    "releasable": "459792414125000000000",
     "totalBought": "2500000000000000000000"
   },
   "0xaa5bf97a4b5a0165846b3e2016321e24a33be2ce": {
     "accountedBalance": "7153846153846153846153",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "1315350796707692307691",
+    "releasable": "1315713677342307692306",
     "totalBought": "7153846153846153846153"
   },
   "0x10cc31f17dc35c25d76cb006e038c8d30cc2603f": {
     "accountedBalance": "14307692307692307692307",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "2630701593415384615384",
+    "releasable": "2631427354684615384614",
     "totalBought": "14307692307692307692307"
   },
   "0xf18c111a6fe63e63df8a1dff05f5140a6748658d": {
     "accountedBalance": "35064055655769230769231",
     "positionAmount": 2,
     "redeemed": "3397482805769230769230",
-    "releasable": "3674295671153846153846",
+    "releasable": "3676246642307692307692",
     "totalBought": "38461538461538461538461"
   },
   "0x649f69ccd077da03dfb11f4b1daab4b625f5e9a3": {
     "accountedBalance": "51276923076923076923076",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "9428095065433846153845",
+    "releasable": "9430696100176153846152",
     "totalBought": "51276923076923076923076"
   },
   "0x26602bf417c4e57ba3d2268d7f93a1e16f29e069": {
     "accountedBalance": "44012024762772307692308",
     "positionAmount": 2,
     "redeemed": "7280282929535384615384",
-    "releasable": "2150640847289230769230",
+    "releasable": "2153242662420000000000",
     "totalBought": "51292307692307692307692"
   },
   "0xee91610b6664325b50e7b1de6d46897f9ee305ac": {
     "accountedBalance": "51276923076923076923076",
     "positionAmount": 2,
     "redeemed": "0",
-    "releasable": "9428095065433846153845",
+    "releasable": "9430696100176153846152",
     "totalBought": "51276923076923076923076"
   }
 }

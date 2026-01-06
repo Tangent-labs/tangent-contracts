@@ -7,7 +7,7 @@
       "accountedBalance": 1538461.5384615385,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 282871.1390769231,
+      "releasable": 282949.1779230769,
       "totalBought": 1538461.5384615385
     },
     {
@@ -15,7 +15,7 @@
       "accountedBalance": 1137812.5183807693,
       "positionAmount": 4,
       "redeemed": 246802.8662346154,
-      "releasable": 7781.158934615384,
+      "releasable": 7851.393896153846,
       "totalBought": 1384615.3846153845
     },
     {
@@ -23,7 +23,7 @@
       "accountedBalance": 664216.689375,
       "positionAmount": 2,
       "redeemed": 85783.310625,
-      "releasable": 52116.369675,
+      "releasable": 52154.4136125,
       "totalBought": 750000
     },
     {
@@ -31,7 +31,7 @@
       "accountedBalance": 558019.59093455,
       "positionAmount": 4,
       "redeemed": 120480.40906545,
-      "releasable": 4272.83504595,
+      "releasable": 4307.252128075,
       "totalBought": 678500
     },
     {
@@ -39,7 +39,7 @@
       "accountedBalance": 500000,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 91933.1202,
+      "releasable": 91958.482825,
       "totalBought": 500000
     },
     {
@@ -47,7 +47,7 @@
       "accountedBalance": 458393.1562903846,
       "positionAmount": 6,
       "redeemed": 80068.38217115385,
-      "releasable": 18936.516505769232,
+      "releasable": 18963.83010192308,
       "totalBought": 538461.5384615385
     },
     {
@@ -55,7 +55,7 @@
       "accountedBalance": 423734.7453,
       "positionAmount": 2,
       "redeemed": 76265.2547,
-      "releasable": 15667.8655,
+      "releasable": 15693.228125,
       "totalBought": 500000
     },
     {
@@ -63,7 +63,7 @@
       "accountedBalance": 253151.99421538462,
       "positionAmount": 2,
       "redeemed": 54540.313476923075,
-      "releasable": 2033.9143384615384,
+      "releasable": 2049.5221076923076,
       "totalBought": 307692.3076923077
     },
     {
@@ -71,7 +71,7 @@
       "accountedBalance": 251299.53923076924,
       "positionAmount": 2,
       "redeemed": 56392.768461538464,
-      "releasable": 181.45935384615385,
+      "releasable": 197.06712307692308,
       "totalBought": 307692.3076923077
     },
     {
@@ -79,7 +79,7 @@
       "accountedBalance": 243103.8570316154,
       "positionAmount": 8,
       "redeemed": 42280.758353,
-      "releasable": 10191.83794576923,
+      "releasable": 10206.314151730769,
       "totalBought": 285384.6153846154
     },
     {
@@ -87,7 +87,7 @@
       "accountedBalance": 222177.41565384614,
       "positionAmount": 2,
       "redeemed": 47053.35357692308,
-      "releasable": 2449.0957615384614,
+      "releasable": 2462.7525596153846,
       "totalBought": 269230.76923076925
     },
     {
@@ -95,7 +95,7 @@
       "accountedBalance": 189795.79055769232,
       "positionAmount": 2,
       "redeemed": 40973.44021153846,
-      "releasable": 1457.23065,
+      "releasable": 1468.936476923077,
       "totalBought": 230769.23076923078
     },
     {
@@ -103,7 +103,7 @@
       "accountedBalance": 153846.15384615384,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 28287.113907692306,
+      "releasable": 28294.917792307693,
       "totalBought": 153846.15384615384
     },
     {
@@ -111,7 +111,7 @@
       "accountedBalance": 135790.4105923077,
       "positionAmount": 2,
       "redeemed": 18055.743253846154,
-      "releasable": 10231.370653846154,
+      "releasable": 10239.174538461539,
       "totalBought": 153846.15384615384
     },
     {
@@ -119,7 +119,7 @@
       "accountedBalance": 132505.7834,
       "positionAmount": 2,
       "redeemed": 21340.370446153847,
-      "releasable": 6946.743461538462,
+      "releasable": 6954.547346153846,
       "totalBought": 153846.15384615384
     },
     {
@@ -127,7 +127,7 @@
       "accountedBalance": 115384.61538461539,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 21215.33543076923,
+      "releasable": 21221.18834423077,
       "totalBought": 115384.61538461539
     },
     {
@@ -135,7 +135,7 @@
       "accountedBalance": 100000,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 18386.62404,
+      "releasable": 18391.696565,
       "totalBought": 100000
     },
     {
@@ -143,7 +143,7 @@
       "accountedBalance": 76923.07692307692,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 14143.556953846153,
+      "releasable": 14147.458896153847,
       "totalBought": 76923.07692307692
     },
     {
@@ -151,7 +151,7 @@
       "accountedBalance": 76923.07692307692,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 14143.556953846153,
+      "releasable": 14147.458896153847,
       "totalBought": 76923.07692307692
     },
     {
@@ -159,7 +159,7 @@
       "accountedBalance": 63796.60487692308,
       "positionAmount": 2,
       "redeemed": 13126.472046153845,
-      "releasable": 1017.0849076923076,
+      "releasable": 1020.98685,
       "totalBought": 76923.07692307692
     },
     {
@@ -167,7 +167,7 @@
       "accountedBalance": 51276.92307692308,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 9428.095065433847,
+      "releasable": 9430.696100176154,
       "totalBought": 51276.92307692308
     },
     {
@@ -175,7 +175,7 @@
       "accountedBalance": 51276.92307692308,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 9428.095065433847,
+      "releasable": 9430.696100176154,
       "totalBought": 51276.92307692308
     },
     {
@@ -183,7 +183,7 @@
       "accountedBalance": 44012.02476277231,
       "positionAmount": 2,
       "redeemed": 7280.282929535385,
-      "releasable": 2150.640847289231,
+      "releasable": 2153.24266242,
       "totalBought": 51292.307692307695
     },
     {
@@ -191,7 +191,7 @@
       "accountedBalance": 43582.61680153846,
       "positionAmount": 2,
       "redeemed": 2571.2293523076924,
-      "releasable": 5914.90482,
+      "releasable": 5917.245985384616,
       "totalBought": 46153.846153846156
     },
     {
@@ -199,7 +199,7 @@
       "accountedBalance": 42015.892318875,
       "positionAmount": 2,
       "redeemed": 4484.107681125,
-      "releasable": 4065.672497475,
+      "releasable": 4068.0312216,
       "totalBought": 46500
     },
     {
@@ -207,7 +207,7 @@
       "accountedBalance": 38461.53846153846,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 7071.778476923077,
+      "releasable": 7073.729448076923,
       "totalBought": 38461.53846153846
     },
     {
@@ -215,7 +215,7 @@
       "accountedBalance": 38461.53846153846,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 7071.778476923077,
+      "releasable": 7073.729448076923,
       "totalBought": 38461.53846153846
     },
     {
@@ -223,7 +223,7 @@
       "accountedBalance": 38461.53846153846,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 7071.778476923077,
+      "releasable": 7073.729448076923,
       "totalBought": 38461.53846153846
     },
     {
@@ -231,7 +231,7 @@
       "accountedBalance": 38461.53846153846,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 7071.778476923077,
+      "releasable": 7073.729448076923,
       "totalBought": 38461.53846153846
     },
     {
@@ -239,7 +239,7 @@
       "accountedBalance": 38461.53846153846,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 7071.778476923077,
+      "releasable": 7073.729448076923,
       "totalBought": 38461.53846153846
     },
     {
@@ -247,7 +247,7 @@
       "accountedBalance": 37685.71508076923,
       "positionAmount": 2,
       "redeemed": 8468.131073076924,
-      "releasable": 18.00309923076923,
+      "releasable": 20.344264615384617,
       "totalBought": 46153.846153846156
     },
     {
@@ -255,7 +255,7 @@
       "accountedBalance": 36525.48135961538,
       "positionAmount": 2,
       "redeemed": 1936.057101923077,
-      "releasable": 5135.721375,
+      "releasable": 5137.672346153846,
       "totalBought": 38461.53846153846
     },
     {
@@ -263,7 +263,7 @@
       "accountedBalance": 35721.55624615384,
       "positionAmount": 2,
       "redeemed": 2739.9822153846153,
-      "releasable": 4331.796261538461,
+      "releasable": 4333.747232692308,
       "totalBought": 38461.53846153846
     },
     {
@@ -271,7 +271,7 @@
       "accountedBalance": 35064.05565576923,
       "positionAmount": 2,
       "redeemed": 3397.4828057692307,
-      "releasable": 3674.2956711538463,
+      "releasable": 3676.246642307692,
       "totalBought": 38461.53846153846
     },
     {
@@ -279,7 +279,7 @@
       "accountedBalance": 34726.413196153844,
       "positionAmount": 2,
       "redeemed": 3735.1252653846154,
-      "releasable": 3336.6532115384616,
+      "releasable": 3338.604182692308,
       "totalBought": 38461.53846153846
     },
     {
@@ -287,7 +287,7 @@
       "accountedBalance": 34615.38461538462,
       "positionAmount": 4,
       "redeemed": 0,
-      "releasable": 6364.600629230769,
+      "releasable": 6366.35650326923,
       "totalBought": 34615.38461538462
     },
     {
@@ -295,7 +295,7 @@
       "accountedBalance": 32885.91224423077,
       "positionAmount": 2,
       "redeemed": 5575.626217307692,
-      "releasable": 1496.1522596153845,
+      "releasable": 1498.1032307692308,
       "totalBought": 38461.53846153846
     },
     {
@@ -303,7 +303,7 @@
       "accountedBalance": 32780.40180961538,
       "positionAmount": 2,
       "redeemed": 5681.136651923077,
-      "releasable": 1390.641825,
+      "releasable": 1392.5927961538462,
       "totalBought": 38461.53846153846
     },
     {
@@ -311,7 +311,7 @@
       "accountedBalance": 32498.739890384615,
       "positionAmount": 2,
       "redeemed": 5962.798571153846,
-      "releasable": 1108.9799057692308,
+      "releasable": 1110.930876923077,
       "totalBought": 38461.53846153846
     },
     {
@@ -319,7 +319,7 @@
       "accountedBalance": 25000,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 4596.65601,
+      "releasable": 4597.92414125,
       "totalBought": 25000
     },
     {
@@ -327,7 +327,7 @@
       "accountedBalance": 23641.304832153844,
       "positionAmount": 4,
       "redeemed": 4051.002860153846,
-      "releasable": 1040.6776432307693,
+      "releasable": 1042.0823424615385,
       "totalBought": 27692.30769230769
     },
     {
@@ -335,7 +335,7 @@
       "accountedBalance": 20601.513243153848,
       "positionAmount": 2,
       "redeemed": 1706.1790645384615,
-      "releasable": 2395.4524520769232,
+      "releasable": 2396.584015346154,
       "totalBought": 22307.69230769231
     },
     {
@@ -343,7 +343,7 @@
       "accountedBalance": 14307.692307692309,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 2630.7015934153847,
+      "releasable": 2631.4273546846152,
       "totalBought": 14307.692307692309
     },
     {
@@ -351,7 +351,7 @@
       "accountedBalance": 13569.017799230769,
       "positionAmount": 2,
       "redeemed": 1815.5975853846153,
-      "releasable": 1013.1138053846154,
+      "releasable": 1013.8941938461538,
       "totalBought": 15384.615384615385
     },
     {
@@ -359,7 +359,7 @@
       "accountedBalance": 13269.21747153846,
       "positionAmount": 2,
       "redeemed": 2115.397913076923,
-      "releasable": 713.3134776923077,
+      "releasable": 714.0938661538462,
       "totalBought": 15384.615384615385
     },
     {
@@ -367,7 +367,7 @@
       "accountedBalance": 12694.047951538461,
       "positionAmount": 2,
       "redeemed": 2690.567433076923,
-      "releasable": 138.14395769230768,
+      "releasable": 138.92434615384616,
       "totalBought": 15384.615384615385
     },
     {
@@ -375,7 +375,7 @@
       "accountedBalance": 10730.76923076923,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 1973.0261950615384,
+      "releasable": 1973.5705160134614,
       "totalBought": 10730.76923076923
     },
     {
@@ -383,7 +383,7 @@
       "accountedBalance": 7153.846153846154,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 1315.3507967076923,
+      "releasable": 1315.7136773423076,
       "totalBought": 7153.846153846154
     },
     {
@@ -391,7 +391,7 @@
       "accountedBalance": 3882.019707913846,
       "positionAmount": 2,
       "redeemed": 410.28798439384616,
-      "releasable": 378.9224936307692,
+      "releasable": 379.14022201153847,
       "totalBought": 4292.307692307692
     },
     {
@@ -399,7 +399,7 @@
       "accountedBalance": 3576.923076923077,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 657.6753983538462,
+      "releasable": 657.8568386711538,
       "totalBought": 3576.923076923077
     },
     {
@@ -407,7 +407,7 @@
       "accountedBalance": 3167.8939175653845,
       "positionAmount": 2,
       "redeemed": 409.0291593576923,
-      "releasable": 248.64623899615384,
+      "releasable": 248.82767931346154,
       "totalBought": 3576.923076923077
     },
     {
@@ -415,7 +415,7 @@
       "accountedBalance": 2500,
       "positionAmount": 2,
       "redeemed": 0,
-      "releasable": 459.665601,
+      "releasable": 459.792414125,
       "totalBought": 2500
     }
   ]

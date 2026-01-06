@@ -1,0 +1,13 @@
+{
+  "total": 27873.39498074643,
+  "balances": [
+    {
+      "address": "0x1ee8d379e374a4a00e7d79af4bf2ed2b591561c2",
+      "value": 27869.39498074643
+    },
+    {
+      "address": "0x5180db0237291a6449dda9ed33ad90a38787621c",
+      "value": 4
+    }
+  ]
+}
