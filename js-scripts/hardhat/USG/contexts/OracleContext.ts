@@ -113,18 +113,25 @@ export class OracleContext {
         const OraclePendlePTFactory = await ethers.getContractFactory("OraclePendlePT");
         for (let index = 0; index < oraclePendlePTParams.length; index++) {
             const item = oraclePendlePTParams[index];
-            const marketAddress = PENDLE_POOLS[item.key].MARKET
-            if (!marketAddress) {
-                throw Error(`Key ${item.key} can't be find in PENDLE_POOLS mapping for ${item.oracleName}`)
-            }
-            const underlyingOracle = this.oracles[item.underlyingOracle]
-            if (!underlyingOracle) {
-                throw Error(`Underlying oracle ${item.underlyingOracle} can't be find for ${item.oracleName}`)
-            }
-            this.oracles[item.key] = (await OraclePendlePTFactory.deploy(marketAddress, underlyingOracle, 900, item.decimalsDelta, item.oracleName)) as unknown as IPriceOracle;
-
+            this.oracles[item.key] = (await OraclePendlePTFactory.deploy(PendlePools[item.key].MARKET, this.oracles[item.underlyingOracle], 900, 18, item.oracleName)) as unknown as IPriceOracle;
         }
     }
 
+    async deployAndSetupOracles(baseContext: BaseContext, lpDeployContext: LpDeployContext) {
+        await this.deployChainlinkWrappers();
+        await this.deployOracleCoinFromCurveLP();
+        await this.deployOracleDuoPoolStable();
+        // await this.deployOracleCryptoSwap();
+        await this.deployOracleCoinERC4626();
+        await this.deployOraclePendlePT();
 
+        this.USGOracle = (await (
+            await ethers.getContractFactory("AggregatorStablePriceV3")
+        ).deploy(baseContext.USG, "1000000000000000", baseContext.owner)) as unknown as IAggregatorStablePriceV3;
+        await this.USGOracle.waitForDeployment();
+
+        await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-USDC"]);
+        await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-frxUSD"]);
+
+    }
 }
