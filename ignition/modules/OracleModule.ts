@@ -1,9 +1,8 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
 import { chainlinkOracleParams, oracleCoinFromCurveLPParams, oracleDuoPoolStableParams, oracleERC4626Params, oraclePendlePTParams, redstonOracles } from "../../js-scripts/hardhat/USG/contexts/oracleParams";
-import { commonERC20, curveLp, PendlePools, CHAINLINK_PRICE_FEEDS, REDSTONE_PRICE_FEEDS } from "@tangent/defi-resources";
+import { commonERC20, curveLp, PENDLE_POOLS, CHAINLINK_PRICE_FEEDS, REDSTONE_PRICE_FEEDS } from "@tangent/defi-resources";
 import { ZeroAddress } from "ethers";
-import { PROD_ADDRESSES } from "../prod_addresses";
 
 type StringRecord = Record<string, string>;
 
@@ -51,7 +50,7 @@ export default buildModule("OracleModule", (m) => {
     for (let i = 0; i < oraclePendlePTParams.length; i++) {
         const param = oraclePendlePTParams[i];
         const formattedKey = param.key.replace(' ', '_').replace('/', '_').replace('/', '_')
-        oracles[formattedKey] = m.contract("OraclePendlePT", [PendlePools[param.key].MARKET, oracles[param.underlyingOracle], 900, 18], { id: formattedKey })
+        oracles[formattedKey] = m.contract("OraclePendlePT", [PENDLE_POOLS[param.key].MARKET, oracles[param.underlyingOracle], 900, 18], { id: formattedKey })
     }
 
     return {};

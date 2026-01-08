@@ -11,6 +11,8 @@ contract PendleZappingDeposit is MarketDeploymentContext {
         vm.startPrank(usr1);
         deal(address(usdc), usr1, 10 ether);
         usdc.approve(address(market), MAX_UINT);
+        deal(address(AddrClassicERC20.USDe), usr1, 10 ether);
+        AddrClassicERC20.USDe.approve(address(market), MAX_UINT);
     }
 
     function test_zapDeposit_to_PT() external {
@@ -61,4 +63,35 @@ contract PendleZappingDeposit is MarketDeploymentContext {
             })
         );
     }
+
+    // THIS IS NOT WORKING BECAUSE WE CANOT SWAP THROUGH THE ROUTER WITH AN UNDERLYIN
+    // IT'S MANDATORY TO SWAP THROUGH CURVE ROUTER BECAUSE OF THE IMPLEMENTATION MADE
+    // function test_zapDeposit_to_PT_TokenIn_is_underlying() external {
+    //     vm.startPrank(usr1);
+
+    //     uint256[][] memory swapParams = new uint256[][](0);
+
+    //     market.zapDeposit(
+    //         usr1,
+    //         ZapStructDeposit({
+    //             tokenIn: AddrClassicERC20.USDe,
+    //             amountIn: 10 ** 18,
+    //             minAmountOut: 0,
+    //             zap: ZapStruct({
+    //                 router: address(pendlePTRouter),
+    //                 routerCall: encoder.encodeSwapTokenForPT(
+    //                     encoder.createCurveRouterNoReceiverNoMinDyStruct(Array.memoryAddress([address(AddrClassicERC20.USDe)]), new uint256[][](0), 10 ** 18),
+    //                     PendleSYToPT({
+    //                         market: AddrMarketPendle.USDe_27_11_25,
+    //                         pt: AddrPTPendle.USDe_27_11_25,
+    //                         sy: AddrSYPendle.USDe_27_11_25,
+    //                         underlyingIn: address(AddrClassicERC20.USDe),
+    //                         receiver: address(market),
+    //                         minPTOut: 0
+    //                     })
+    //                 )
+    //             })
+    //         })
+    //     );
+    // }
 }

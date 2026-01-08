@@ -20,7 +20,7 @@ import { MarketInitStruct } from "../../../../typechain-types/src/USG/Market/Bas
 
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;
-export type PendlePTMarketsKeys = keyof typeof STATIC_CONFIG_BASIC_ERC20s;
+export type BasicERC20MarketKeys = keyof typeof STATIC_CONFIG_BASIC_ERC20s;
 export type CurveGaugeMarketsKeys = keyof typeof STATIC_CONFIG_CURVE_GAUGE;
 export type StakeDaoVaultV2MarketsKeys = keyof typeof STATIC_CONFIG_STAKEDAO_VAULT_V2;
 
@@ -50,12 +50,18 @@ export class MarketContext {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key];
-
+            if (!staticConfig) {
+                throw Error(`No static config for ${key} market`)
+            }
+            const oracle = oracleContext.oracles[staticConfig.collatName]
+            if (!oracle) {
+                throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
+            }
             const receipt = await (
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
                     .createConvexCrvMarket(
-                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], "Convex CRV - " + staticConfig.collatName),
+                        this.marketInit(staticConfig, oracle, "Convex CRV - " + staticConfig.collatName),
                         staticConfig.pid,
                         HEC_CONFIG_IR_PARAMS,
                         HEC_CONFIG_RC_PARAMS
@@ -71,12 +77,19 @@ export class MarketContext {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_CONVEX_FXN[key];
+            if (!staticConfig) {
+                throw Error(`No static config for ${key} market`)
+            }
+            const oracle = oracleContext.oracles[staticConfig.collatName]
+            if (!oracle) {
+                throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
+            }
 
             const receipt = await (
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
                     .createConvexFxnMarket(
-                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], "Convex FXN - " + staticConfig.collatName),
+                        this.marketInit(staticConfig, oracle, "Convex FXN - " + staticConfig.collatName),
                         staticConfig.pid,
                         LEC_CONFIG_IR_PARAMS,
                         LEC_CONFIG_RC_PARAMS
@@ -90,12 +103,20 @@ export class MarketContext {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_CURVE_GAUGE[key];
+            if (!staticConfig) {
+                throw Error(`No static config for ${key} market`)
+            }
+            const oracle = oracleContext.oracles[staticConfig.collatName]
+            if (!oracle) {
+                throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
+            }
+
 
             const receipt = await (
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
                     .createCurveGaugeMarket(
-                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], key),
+                        this.marketInit(staticConfig, oracle, `Curve Gauge - ${key}`),
                         staticConfig.gaugeToken,
                         LEC_CONFIG_IR_PARAMS,
                         LEC_CONFIG_RC_PARAMS,
@@ -119,12 +140,19 @@ export class MarketContext {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_STAKEDAO_VAULT_V2[key];
+            if (!staticConfig) {
+                throw Error(`No static config for ${key} market`)
+            }
+            const oracle = oracleContext.oracles[staticConfig.collatName]
+            if (!oracle) {
+                throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
+            }
 
             const receipt = await (
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
                     .createStakeDaoVaultV2Market(
-                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], key),
+                        this.marketInit(staticConfig, oracle, `StakeDao Vault - ${key}`),
                         staticConfig.vaultToken,
                         LEC_CONFIG_IR_PARAMS,
                         LEC_CONFIG_RC_PARAMS,
@@ -146,16 +174,23 @@ export class MarketContext {
         }
     }
 
-    async deployBasicERC20Markets(keys: PendlePTMarketsKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
+    async deployBasicERC20Markets(keys: BasicERC20MarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
         for (let index = 0; index < keys.length; index++) {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_BASIC_ERC20s[key];
+            if (!staticConfig) {
+                throw Error(`No static config for ${key} market`)
+            }
+            const oracle = oracleContext.oracles[staticConfig.collatName]
+            if (!oracle) {
+                throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
+            }
 
             const receipt = await (
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
                     .createBasicERC20Market(
-                        this.marketInit(staticConfig, oracleContext.oracles[staticConfig.collatName], key),
+                        this.marketInit(staticConfig, oracle, key),
                         LEC_CONFIG_IR_PARAMS,
                         LEC_CONFIG_RC_PARAMS
                     )
@@ -173,7 +208,7 @@ export class MarketContext {
             const log = receipt!.logs[index];
             let parsedLog = iface.parseLog(log);
 
-            if (parsedLog && ["MarketConvexCrvCreated", "MarketConvexFxnCreated", "BasicERC20MarketCreated", "MarketCurveGauge", "MarketStakeDaoVaultV2"].includes(parsedLog.name)) {
+            if (parsedLog && ["MarketConvexCrvCreated", "MarketConvexFxnCreated", "BasicERC20MarketCreated", "MarketCurveGaugeCreated", "MarketStakeDaoVaultV2Created"].includes(parsedLog.name)) {
                 marketAddress = parsedLog.args.proxy as string
                 switch (parsedLog.name) {
                     case "MarketConvexCrvCreated":
@@ -185,10 +220,10 @@ export class MarketContext {
                     case "BasicERC20MarketCreated":
                         this.basicERC20Markets[key] = await ethers.getContractAt("BasicERC20Market", marketAddress);
                         break;
-                    case "MarketCurveGauge":
+                    case "MarketCurveGaugeCreated":
                         this.curveGaugeMarkets[key] = await ethers.getContractAt("CurveGaugeMarket", marketAddress);
                         break;
-                    case "MarketStakeDaoVaultV2":
+                    case "MarketStakeDaoVaultV2Created":
                         this.stakeDaoVaultMarkets[key] = await ethers.getContractAt("StakeDaoVaultV2Market", marketAddress);
                         break;
 

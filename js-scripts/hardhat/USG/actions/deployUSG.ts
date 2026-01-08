@@ -1,6 +1,6 @@
 import { curveLp } from "@tangent/defi-resources";
 import { BaseContext } from "../contexts/BaseContext";
-import { MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys, PendlePTMarketsKeys, StakeDaoVaultV2MarketsKeys, CurveGaugeMarketsKeys } from "../contexts/MarketContext";
+import { MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys, BasicERC20MarketKeys, StakeDaoVaultV2MarketsKeys, CurveGaugeMarketsKeys } from "../contexts/MarketContext";
 import { OracleContext } from "../contexts/OracleContext";
 import { LpDeployContext } from "../contexts/LPDeployContext";
 import { WStablesContext } from "../contexts/WStableContext";
@@ -56,28 +56,38 @@ export async function deployUSG(userCount: number = 5) {
         "pxETH_stETH",
 
         // Stable BTC
-        // "cbBTC_WBTC",
+        // "cbBTC_WBTC
 
     ];
 
     const stakeDaoVaultMarkets: StakeDaoVaultV2MarketsKeys[] = [
         "crvUSD_USDC",
         "crvUSD_USDT",
+        "GHO_crvUSD",
+        "frxUSD_msUSD",
+        "msETH_OETH",
+        "ETHPlus_WETH",
+        "tBTC_cbBTC"
     ];
 
     const curveGaugeMarkets: CurveGaugeMarketsKeys[] = [
         "PYUSD_USDC",
         "RLUSD_USDC",
+        "stUSDS_USDS"
     ];
-    const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD"];
+    const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD", "fxUSD_reUSD", "GHO_fxUSD", "msUSD_fxUSD"];
 
-    const pendlePTMarkets: PendlePTMarketsKeys[] = ["USDe_27_11_25", "sUSDe_27_11_25"];
+    const pendlePTMarkets: BasicERC20MarketKeys[] = [
+        "Pendle PT - reUSD 25/06/26",
+        "Pendle PT - wstUSR 29/01/26",
+        "Pendle PT - sUSDe 05/02/26",
+        // "Pendle PT - wstETH 25_06_26"
+    ];
 
 
     // Deploy Convex CRV markets
     console.log("Deploy convex CRV markets");
     await marketContext.deployConvexCrvMarkets(convexCrvMarkets, baseContext, oracleContext);
-
 
     // Deploy Convex FXN markets
     console.log("Deploy convex FXN markets");
@@ -87,11 +97,9 @@ export async function deployUSG(userCount: number = 5) {
     console.log("Deploy Curve Gauge markets");
     await marketContext.deployCurveGaugeMarkets(curveGaugeMarkets, baseContext, oracleContext, baseContext.users);
 
-
     // Deploy StakeDAO Vault markets
     console.log("Deploy StakeDao VaultV2 markets");
     await marketContext.deployStakeDaoVaultV2Markets(stakeDaoVaultMarkets, baseContext, oracleContext, baseContext.users);
-
 
     // Deploy Pendle PT markets
     console.log("Deploy Pendle PT markets");
