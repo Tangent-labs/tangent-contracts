@@ -71,9 +71,6 @@ async function main() {
         let aggregatedAccounts: any[] = [];
         let allParams: LiquidationUserInInfo[] = [];
 
-        // Get provider
-        const provider = ethers.provider;
-
         // Process users in batches
         for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
             const startIndex = batchIndex * BATCH_SIZE;
@@ -94,9 +91,8 @@ async function main() {
                 )
                 .flat();
 
-            // Execute chain view for this batch
-            const batchData = await chainView<[string[], LiquidationUserInInfo[], string], [LiquidationMarketAccountInfo]>(
-                provider,
+            // Execute chain view for this batch (using old signature with ethers.provider by default)
+            const batchData = await chainView<[LiquidationMarketAccountInfo]>(
                 chainViewMarketAccountArtifact.abi,
                 chainViewMarketAccountArtifact.bytecode,
                 [marketAddresses, batchParams, marketViewerAddress]
