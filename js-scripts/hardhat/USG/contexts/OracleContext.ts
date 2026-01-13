@@ -121,7 +121,7 @@ export class OracleContext {
             if (!underlyingOracle) {
                 throw Error(`Underlying oracle ${item.underlyingOracle} can't be find for ${item.oracleName}`)
             }
-            this.oracles[item.key] = (await OraclePendlePTFactory.deploy(marketAddress, underlyingOracle, 900, 18, item.oracleName)) as unknown as IPriceOracle;
+            this.oracles[item.key] = (await OraclePendlePTFactory.deploy(marketAddress, underlyingOracle, 900, item.decimalsDelta, item.oracleName)) as unknown as IPriceOracle;
         }
     }
 
