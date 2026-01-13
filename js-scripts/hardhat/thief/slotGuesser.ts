@@ -20,7 +20,7 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
     for (let i = 0; i < tokens.length; i++) {
         const token = tokens[i];
         const erc20 = await ethers.getContractAt("ERC20", tokens[i].address);
-        for (let k = 0; k < 100_000; k++) {
+        for (let k = 0; k < 100; k++) {
             let storageSlot;
             if (token.isVyper) {
                 storageSlot = GlobalHelper.calculateStorageSlotEthersVyper(RANDOM_ADDRESS, k);

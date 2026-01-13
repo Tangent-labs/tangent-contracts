@@ -1,4 +1,4 @@
-import { commonERC20, ConvexCrvPools, ConvexFxnPools, curveLp, PendlePools, curveGauges, CURVE_CONTEXT } from "@tangent/defi-resources";
+import { commonERC20, ConvexCrvPools, ConvexFxnPools, curveLp, PENDLE_POOLS, curveGauges, CURVE_CONTEXT } from "@tangent/defi-resources";
 import { parseEther } from "ethers";
 import { IRParamsStruct, RCParamsStruct } from "../../../../typechain-types/src/chainview/USG/GetMarketDetails";
 
@@ -207,6 +207,36 @@ export const STATIC_CONFIG_CONVEX_FXN = {
         rewardTokens: [commonERC20.CRV, commonERC20.CVX, commonERC20.FXN],
         pid: ConvexFxnPools.USDC_fxUSD.pid,
     },
+    GHO_fxUSD: {
+        collatName: "USDC_fxUSD",
+        collatToken: ConvexFxnPools.USDC_fxUSD.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX, commonERC20.FXN],
+        pid: ConvexFxnPools.USDC_fxUSD.pid,
+    },
+    fxUSD_reUSD: {
+        collatName: "USDC_fxUSD",
+        collatToken: ConvexFxnPools.fxUSD_reUSD.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX, commonERC20.FXN],
+        pid: ConvexFxnPools.fxUSD_reUSD.pid,
+    },
+    msUSD_fxUSD: {
+        collatName: "msUSD_fxUSD",
+        collatToken: ConvexFxnPools.msUSD_fxUSD.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [commonERC20.CRV, commonERC20.CVX, commonERC20.FXN],
+        pid: ConvexFxnPools.msUSD_fxUSD.pid,
+    },
 };
 
 
@@ -230,6 +260,17 @@ export const STATIC_CONFIG_CURVE_GAUGE = {
         minimumLoan: parseEther("3000"),
         rewardTokens: [commonERC20.RLUSD, commonERC20.CRV],
         gaugeToken: curveGauges.CURVE_RLUSD_USDC_GAUGE
+    },
+
+    stUSDS_USDS: {
+        collatName: "stUSDS_USDS",
+        collatToken: curveLp.CRV_DUO_stUSDS_USDS,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [commonERC20.USDS],
+        gaugeToken: curveGauges.CRV_GAUGE_stUSDS_USDS
     }
 };
 
@@ -254,22 +295,117 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         rewardTokens: [commonERC20.CRV, commonERC20.CVX],
         vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.USDT_crvUSD.stakeDaoVault
     },
+    GHO_crvUSD: {
+        collatName: "GHO_crvUSD",
+        collatToken: ConvexCrvPools.USDT_crvUSD.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [commonERC20.CRV],
+        vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.USDT_crvUSD.stakeDaoVault
+    },
+    reUSD_sfrxUSD: {
+        collatName: "reUSD_sfrxUSD",
+        collatToken: ConvexCrvPools.reUSD_sfrxUSD.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [commonERC20.CRV],
+        vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.reUSD_sfrxUSD.stakeDaoVault
+    },
+    frxUSD_msUSD: {
+        collatName: "frxUSD_msUSD",
+        collatToken: ConvexCrvPools.frxUSD_msUSD.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [commonERC20.CRV],
+        vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.frxUSD_msUSD.stakeDaoVault
+    },
+    ETHPlus_WETH: {
+        collatName: "ETH+_WETH",
+        collatToken: ConvexCrvPools.ETHPlus_WETH.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [commonERC20.CRV],
+        vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.ETHPlus_WETH.stakeDaoVault
+    },
+    tBTC_cbBTC: {
+        collatName: "tBTC_cbBTC",
+        collatToken: ConvexCrvPools.tBTC_cbBTC.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [commonERC20.CRV],
+        vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.tBTC_cbBTC.stakeDaoVault
+    },
+    msETH_OETH: {
+        collatName: "msETH_OETH",
+        collatToken: ConvexCrvPools.msETH_OETH.lpToken,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [commonERC20.CRV],
+        vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.msETH_OETH.stakeDaoVault
+    },
 };
 
 export const STATIC_CONFIG_BASIC_ERC20s = {
-    sUSDe_25_09_25: {
+    "Pendle PT - wstETH 25/06/26": {
+        collatName: "wstETH 25/06/26",
+        collatToken: PENDLE_POOLS["wstETH 25/06/26"].PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [],
+    },
+    "Pendle PT - wstUSR 29/01/26": {
+        collatName: "wstUSR 29/01/26",
+        collatToken: PENDLE_POOLS["wstUSR 29/01/26"].PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [],
+    },
+    "Pendle PT - reUSD 25/06/26": {
+        collatName: "reUSD 25/06/26",
+        collatToken: PENDLE_POOLS["reUSD 25/06/26"].PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [],
+    },
+    "Pendle PT - sUSDe 05/02/26": {
+        collatName: "sUSDe 05/02/26",
+        collatToken: PENDLE_POOLS["sUSDe 05/02/26"].PT,
+        liquidationThreshold: 94_000,
+        maxLTV: 90_000,
+        maxMarketDebt: parseEther("1000000"),
+        minimumLoan: parseEther("3000"),
+        rewardTokens: [],
+    },
+    "Pendle PT - sUSDe 25/09/25": {
         collatName: "sUSDe 09/25/25",
-        collatToken: PendlePools["sUSDe 09/25/25"].PT,
+        collatToken: PENDLE_POOLS["sUSDe 09/25/25"].PT,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
         rewardTokens: [],
     },
-
-    USDe_25_09_25: {
+    "Pendle PT - USDe 25/09/25": {
         collatName: "USDe 09/25/25",
-        collatToken: PendlePools["USDe 09/25/25"].PT,
+        collatToken: PENDLE_POOLS["USDe 09/25/25"].PT,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
@@ -277,9 +413,9 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         rewardTokens: [],
     },
 
-    wstUSR_25_09_25: {
-        collatName: "wstUSR 09/25/25",
-        collatToken: PendlePools["wstUSR 09/25/25"].PT,
+    "Pendle PT - wstUSR_25_09_25": {
+        collatName: "Pendle PT - wstUSR 09/25/25",
+        collatToken: PENDLE_POOLS["wstUSR 09/25/25"].PT,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
@@ -287,36 +423,36 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         rewardTokens: [],
     },
 
-    USR_04_09_25: {
-        collatName: "USR 09/04/25",
-        collatToken: PendlePools["USR 09/04/25"].PT,
+    "Pendle PT - USR_04_09_25": {
+        collatName: "Pendle PT - USR 09/04/25",
+        collatToken: PENDLE_POOLS["USR 09/04/25"].PT,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
         rewardTokens: [],
     },
-    sUSDe_27_11_25: {
-        collatName: "sUSDe 27/11/25",
-        collatToken: PendlePools["sUSDe 27/11/25"].PT,
+    "Pendle PT - sUSDe_27_11_25": {
+        collatName: "Pendle PT - sUSDe 27/11/25",
+        collatToken: PENDLE_POOLS["sUSDe 27/11/25"].PT,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
         rewardTokens: [],
     },
-    sUSDf_29_01_26: {
-        collatName: "sUSDf 29/01/26",
-        collatToken: PendlePools["sUSDf 29/01/26"].PT,
+    "Pendle PT - sUSDf_29_01_26": {
+        collatName: "Pendle PT - sUSDf 29/01/26",
+        collatToken: PENDLE_POOLS["sUSDf 29/01/26"].PT,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),
         minimumLoan: parseEther("3000"),
         rewardTokens: [],
     },
-    USDe_27_11_25: {
-        collatName: "USDe 27/11/25",
-        collatToken: PendlePools["USDe 27/11/25"].PT,
+    "Pendle PT - USDe_27_11_25": {
+        collatName: "Pendle PT - USDe 27/11/25",
+        collatToken: PENDLE_POOLS["USDe 27/11/25"].PT,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("1000000"),

@@ -64,8 +64,8 @@ contract MarketCreator is LightOwnable {
 
     event MarketConvexCrvCreated(address proxy, string name);
     event MarketConvexFxnCreated(address proxy, string name);
-    event MarketCurveGauge(address proxy, string name);
-    event MarketStakeDaoVaultV2(address proxy, string name);
+    event MarketCurveGaugeCreated(address proxy, string name);
+    event MarketStakeDaoVaultV2Created(address proxy, string name);
     event BasicERC20MarketCreated(address proxy, string name);
 
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
@@ -153,7 +153,7 @@ contract MarketCreator is LightOwnable {
         address proxy = marketCurveGauge.clone();
         ICurveGaugeMarket(proxy).initialize(_getGlobalParams(), _marketInit, _gauge);
         _commonInitialize(proxy, _irParams, _marketInit.rewardTokens, _rcParams);
-        emit MarketCurveGauge(proxy, _marketInit.name);
+        emit MarketCurveGaugeCreated(proxy, _marketInit.name);
         return proxy;
     }
 
@@ -173,7 +173,7 @@ contract MarketCreator is LightOwnable {
         address proxy = marketStakeDaoVaultV2.clone();
         IStakeDaoVaultV2Market(proxy).initialize(_getGlobalParams(), _marketInit, _vault);
         _commonInitialize(proxy, _irParams, _marketInit.rewardTokens, _rcParams);
-        emit MarketStakeDaoVaultV2(proxy, _marketInit.name);
+        emit MarketStakeDaoVaultV2Created(proxy, _marketInit.name);
         return proxy;
     }
 

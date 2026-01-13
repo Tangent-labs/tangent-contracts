@@ -28,7 +28,7 @@ import {
 } from "../../../../typechain-types";
 import { LpDeployContext } from "./LPDeployContext";
 import { setStorageAt } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, PendlePTMarketsKeys, StakeDaoVaultV2MarketsKeys } from "./MarketContext";
+import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, BasicERC20MarketKeys, StakeDaoVaultV2MarketsKeys } from "./MarketContext";
 import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CURVE_GAUGE, STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/market";
 import { OracleContext } from "./OracleContext";
 import { WStablesContext } from "./WStableContext";
@@ -292,7 +292,7 @@ export async function createJSONAddress(
 
     for (const key in marketContext.basicERC20Markets) {
         const market = await marketContext.basicERC20Markets[key].getAddress();
-        const staticConfig = STATIC_CONFIG_BASIC_ERC20s[key as PendlePTMarketsKeys];
+        const staticConfig = STATIC_CONFIG_BASIC_ERC20s[key as BasicERC20MarketKeys];
 
         markets.push({
             marketAddress: market,
