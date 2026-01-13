@@ -132,7 +132,7 @@ export const oraclePendlePTParams: {
     decimalsDelta: number;
 }[] = [
         { key: "sUSDe 05/02/26", oracleName: "sUSDe_05_02_26 / USD", underlyingOracle: "sUSDe", decimalsDelta: 18 },
-        { key: "reUSD 25/06/26", oracleName: "reUSD 25_06_26 / USD", underlyingOracle: "reUSD", decimalsDelta: 6 },
+        { key: "reUSD 25/06/26", oracleName: "reUSD 25_06_26 / USD", underlyingOracle: "reUSD", decimalsDelta: 30 },
         { key: "wstUSR 29/01/26", oracleName: "wstUSR 29_01_26 / USD", underlyingOracle: "wstUSR", decimalsDelta: 18 },
         // { key: "wstETH 25/06/26", oracleName: "PT wstETH 25_06_26 / USD", underlyingOracle: "wstETH" },
     ];

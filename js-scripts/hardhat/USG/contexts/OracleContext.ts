@@ -21,13 +21,13 @@ export class OracleContext {
 
         await this.deployOraclePendlePT();
 
-        this.USGOracle = (await (
-            await ethers.getContractFactory("AggregatorStablePriceV3")
-        ).deploy(baseContext.USG, "1000000000000000", baseContext.owner)) as unknown as IAggregatorStablePriceV3;
-        await this.USGOracle.waitForDeployment();
+        // this.USGOracle = (await (
+        //     await ethers.getContractFactory("AggregatorStablePriceV3")
+        // ).deploy(baseContext.USG, "1000000000000000", baseContext.owner)) as unknown as IAggregatorStablePriceV3;
+        // await this.USGOracle.waitForDeployment();
 
-        await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-USDC"]);
-        await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-frxUSD"]);
+        // await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-USDC"]);
+        // await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-frxUSD"]);
 
     }
 
@@ -122,6 +122,9 @@ export class OracleContext {
                 throw Error(`Underlying oracle ${item.underlyingOracle} can't be find for ${item.oracleName}`)
             }
             this.oracles[item.key] = (await OraclePendlePTFactory.deploy(marketAddress, underlyingOracle, 900, item.decimalsDelta, item.oracleName)) as unknown as IPriceOracle;
+
+            console.log(item.key)
+            console.log(await this.oracles[item.key].latestAnswer(true))
         }
     }
 
