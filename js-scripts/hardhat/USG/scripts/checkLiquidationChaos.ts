@@ -35,7 +35,6 @@ async function main() {
 
     // Fetch liquidation data from chain using chain view
     console.log("📊 Fetching liquidation data from chain...");
-    const liquidationContext = new LiquidationContext(CHAOS_CONFIG);
 
     // Get market addresses from the loaded data
     const marketAddresses = addresses.markets?.map((market: any) => market.marketAddress) || [];
@@ -60,68 +59,42 @@ async function main() {
         return;
     }
 
-    // Batch size for processing users
-    const BATCH_SIZE = 10;
-    const totalBatches = Math.ceil(userAddresses.length / BATCH_SIZE);
-    console.log(`📦 Processing ${totalBatches} batches of up to ${BATCH_SIZE} users each`);
-
     try {
-        // Aggregate results from all batches
-        let aggregatedMarkets: any[] = [];
-        let aggregatedAccounts: any[] = [];
-        let allParams: LiquidationUserInInfo[] = [];
+        console.log(`\n📦 Processing all ${userAddresses.length} users...`);
 
-        // Process users in batches
-        for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
-            const startIndex = batchIndex * BATCH_SIZE;
-            const endIndex = Math.min(startIndex + BATCH_SIZE, userAddresses.length);
-            const batchUserAddresses = userAddresses.slice(startIndex, endIndex);
+        // Create parameters for all users
+        const allParams: LiquidationUserInInfo[] = marketAddresses
+            .map((marketAddress: string) =>
+                userAddresses.map((userAddress: string) => {
+                    return {
+                        account: userAddress,
+                        market: marketAddress,
+                    };
+                })
+            )
+            .flat();
 
-            console.log(`\n📦 Processing batch ${batchIndex + 1}/${totalBatches} (users ${startIndex + 1}-${endIndex})...`);
+        // Execute chain view for all users
+        const data = await chainView<[LiquidationMarketAccountInfo]>(chainViewMarketAccountArtifact.abi, chainViewMarketAccountArtifact.bytecode, [
+            marketAddresses,
+            allParams,
+            marketViewerAddress,
+        ]);
 
-            // Create parameters for this batch
-            const batchParams = marketAddresses
-                .map((marketAddress: string) =>
-                    batchUserAddresses.map((userAddress: string) => {
-                        return {
-                            account: userAddress,
-                            market: marketAddress,
-                        };
-                    })
-                )
-                .flat();
-
-            // Execute chain view for this batch (using old signature with ethers.provider by default)
-            const batchData = await chainView<[LiquidationMarketAccountInfo]>(
-                chainViewMarketAccountArtifact.abi,
-                chainViewMarketAccountArtifact.bytecode,
-                [marketAddresses, batchParams, marketViewerAddress]
-            );
-
-            if (!batchData || !batchData[0]) {
-                console.log(`⚠️  No data returned for batch ${batchIndex + 1}`);
-                continue;
-            }
-
-            // Aggregate markets (only need to store once, they're the same for all batches)
-            if (aggregatedMarkets.length === 0) {
-                aggregatedMarkets = batchData[0].markets?.map((m) => m.toObject()) || [];
-            }
-
-            // Aggregate accounts from this batch
-            const batchAccounts = batchData[0]?.accounts?.map((a) => a.toObject()) || [];
-            aggregatedAccounts = aggregatedAccounts.concat(batchAccounts);
-            allParams = allParams.concat(batchParams);
-
-            console.log(`✅ Batch ${batchIndex + 1} completed: ${batchAccounts.length} accounts processed`);
+        if (!data || !data[0]) {
+            console.log("❌ No liquidation data returned from chain view");
+            return;
         }
+
+        const aggregatedMarkets = data[0].markets?.map((m) => m.toObject()) || [];
+        const aggregatedAccounts = data[0]?.accounts?.map((a) => a.toObject()) || [];
 
         if (aggregatedAccounts.length === 0) {
             console.log("❌ No liquidation data returned from chain view");
             return;
         }
 
-        console.log(`\n✅ All batches processed. Total accounts: ${aggregatedAccounts.length}`);
+        console.log(`\n✅ Processing completed. Total accounts: ${aggregatedAccounts.length}`);
         console.log("\n📋 LIQUIDATION STATUS REPORT");
         console.log("=".repeat(50));
 
@@ -212,8 +185,12 @@ async function main() {
         // list of the seizing market by distinct name
         const seizingMarkets = [...new Set(seizingList.map((a) => addresses.markets?.find((m: any) => m.marketAddress === a.market)?.collatName))];
         console.log(`🔴 Seizing markets: ${seizingMarkets.join(", ")}`);
+
+        // Force exit to close all connections
+        process.exit(0);
     } catch (error) {
         console.error("❌ Error checking liquidation status:", error);
+        process.exit(1);
     }
 }
 

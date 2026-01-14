@@ -1,34 +1,8 @@
 import {ContractFactory, Interface, InterfaceAbi, BytesLike, Fragment, ZeroAddress, BigNumberish, Provider} from "ethers";
 import {ethers} from "hardhat";
-export const chainView = async <R = any>(
-    providerOrAbi: Provider | InterfaceAbi,
-    abiOrBytecode: InterfaceAbi | BytesLike,
-    bytecodeOrParams: BytesLike | any[],
-    paramsOrOptions?: any[] | {from?: string; value?: bigint; blockTag?: BigNumberish},
-    options?: {from?: string; value?: bigint; blockTag?: BigNumberish}
-): Promise<R> => {
-    // Support both old signature (without provider) and new signature (with provider)
-    let provider: Provider;
-    let abi: InterfaceAbi;
-    let bytecode: BytesLike;
-    let params: any[];
-    let opts: {from?: string; value?: bigint; blockTag?: BigNumberish} = {};
-
-    if (typeof providerOrAbi === "object" && "call" in providerOrAbi) {
-        // New signature: chainView(provider, abi, bytecode, params, options?)
-        provider = providerOrAbi as Provider;
-        abi = abiOrBytecode as InterfaceAbi;
-        bytecode = bytecodeOrParams as BytesLike;
-        params = paramsOrOptions as any[];
-        opts = options || {};
-    } else {
-        // Old signature: chainView(abi, bytecode, params, options?)
-        provider = ethers.provider;
-        abi = providerOrAbi as InterfaceAbi;
-        bytecode = abiOrBytecode as BytesLike;
-        params = bytecodeOrParams as any[];
-        opts = (paramsOrOptions as {from?: string; value?: bigint; blockTag?: BigNumberish}) || {};
-    }
+export const chainView = async <R = any>(abi: InterfaceAbi, bytecode: BytesLike, params: any[], options?: {from?: string; value?: bigint; blockTag?: BigNumberish}): Promise<R> => {
+    const provider = ethers.provider;
+    const opts: {from?: string; value?: bigint; blockTag?: BigNumberish} = options || {};
 
     const ChainViewInterface = new Interface(abi);
     const errorNamesExpected = ChainViewInterface.fragments.filter((f): f is Fragment & {name: string} => f.type === "error").map((error) => error.name);

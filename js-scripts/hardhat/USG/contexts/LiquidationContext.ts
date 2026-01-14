@@ -323,7 +323,7 @@ export class LiquidationContext {
             const PRICE = marketInfo.collateralPrice;
             const DECIMALS = marketInfo.collatDecimals;
             // we deposit the equivalent of 10_000 USD in collateral
-            const position10000Value = (USD * 10n ** DECIMALS * 10n ** 18n + PRICE - 1n) / PRICE;
+            const position10000Value = (USD * 10n ** DECIMALS * 10n ** 18n) / PRICE;
             const depositAmount = position10000Value;
 
             // Check if users have enough tokens before creating positions
@@ -430,7 +430,7 @@ export class LiquidationContext {
         const {collateralPrice, collatDecimals} = await this.getMarketInfo(marketAddress);
 
         const usd = getRandomPositionSizeUSD(this.config);
-        const positionValue = (usd * 10n ** collatDecimals * 10n ** 18n + collateralPrice - 1n) / collateralPrice;
+        const positionValue = (usd * 10n ** collatDecimals * 10n ** 18n) / collateralPrice;
 
         const {intent, borrowPercentage} = getRandomPositionType(this.config);
         const effectiveMinBorrow = limits.minimumLoan > (this.config.MIN_BORROW_USG || 0n) ? limits.minimumLoan : this.config.MIN_BORROW_USG || 0n;
