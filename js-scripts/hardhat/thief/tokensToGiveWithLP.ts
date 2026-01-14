@@ -1,4 +1,4 @@
-import {PendlePools, thiefConfig} from "@tangent/defi-resources";
+import {PENDLE_POOLS, thiefConfig, curveLp} from "@tangent/defi-resources";
 
 export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;
@@ -62,15 +62,33 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
         },
         {
             ...pendlePTconfig,
-            address: PendlePools["USDe 27/11/25"].PT,
+            address: PENDLE_POOLS["USDe 27/11/25"].PT,
             amount: mintedAmount,
             name: "USDe_27_11_25",
         },
         {
             ...pendlePTconfig,
-            address: PendlePools["sUSDe 27/11/25"].PT,
+            address: PENDLE_POOLS["sUSDe 27/11/25"].PT,
             amount: mintedAmount,
             name: "sUSDe_27_11_25",
+        },
+        {
+            ...pendlePTconfig,
+            address: PENDLE_POOLS["reUSD 25/06/26"]?.PT,
+            amount: mintedAmount,
+            name: "reUSD_25_06_26",
+        },
+        {
+            ...pendlePTconfig,
+            address: PENDLE_POOLS["wstUSR 29/01/26"]?.PT,
+            amount: mintedAmount,
+            name: "wstUSR_29_01_26",
+        },
+        {
+            ...pendlePTconfig,
+            address: PENDLE_POOLS["sUSDe 05/02/26"]?.PT,
+            amount: mintedAmount,
+            name: "sUSDe_05_02_26",
         },
 
         {
@@ -164,6 +182,66 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             name: "CVX_ETH",
         },
 
+        // Curve Gauge LP tokens
+        {
+            slotBalance: 0,
+            decimals: 18,
+            isVyper: false,
+            address: curveLp.CRV_DUO_PYUSD_USDC,
+            amount: mintedAmount,
+            name: "PYUSD_USDC",
+        },
+        {
+            slotBalance: 0,
+            decimals: 18,
+            isVyper: false,
+            address: curveLp.CRV_DUO_RLUSD_USDC,
+            amount: mintedAmount,
+            name: "RLUSD_USDC",
+        },
+        {
+            slotBalance: 0,
+            decimals: 18,
+            isVyper: false,
+            address: curveLp.CRV_DUO_stUSDS_USDS,
+            amount: mintedAmount,
+            name: "stUSDS_USDS",
+        },
+
+        // StakeDao Vault LP tokens (Curve LP tokens)
+        {
+            slotBalance: 0,
+            decimals: 18,
+            isVyper: false,
+            address: curveLp.CRV_DUO_frxUSD_msUSD,
+            amount: mintedAmount,
+            name: "frxUSD_msUSD",
+        },
+        {
+            slotBalance: 0,
+            decimals: 18,
+            isVyper: false,
+            address: curveLp.CRV_DUO_ETHplus_WETH,
+            amount: mintedAmount,
+            name: "ETH+_WETH",
+        },
+        {
+            slotBalance: 0,
+            decimals: 18,
+            isVyper: false,
+            address: curveLp.CRV_DUO_tBTC_cbBTC,
+            amount: mintedAmount,
+            name: "tBTC_cbBTC",
+        },
+        {
+            slotBalance: 0,
+            decimals: 18,
+            isVyper: false,
+            address: curveLp.CRV_DUO_msETH_OETH,
+            amount: mintedAmount,
+            name: "msETH_OETH",
+        },
+
         // BOOSTERS
         {
             ...obj.CRV,
@@ -221,7 +299,18 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             amount: mintedAmount,
             name: "SDT",
         },
-
+        {
+            ...obj.YFI,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.PENDLE,
+            amount: mintedAmount,
+        },
+        {
+            ...obj.RSUP,
+            amount: mintedAmount,
+        },
         {
             ...obj.CVX,
             amount: mintedAmount,

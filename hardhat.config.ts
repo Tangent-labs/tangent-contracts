@@ -1,4 +1,4 @@
-import { HardhatUserConfig } from "hardhat/config";
+import {HardhatUserConfig} from "hardhat/config";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
@@ -61,11 +61,11 @@ const config: HardhatUserConfig = {
             //     auto: false,
             //     interval: 12_000,
             // },
-            accounts: {
-                mnemonic: "test test test test test test test test test test test junk",
-                count: 300, // 👈 get as many as you want
-                path: "m/44'/60'/0'/0",
-            },
+            // accounts: {
+            //     mnemonic: "test test test test test test test test test test test junk",
+            //     count: 300, // 👈 get as many as you want
+            //     path: "m/44'/60'/0'/0",
+            // },
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
                 blockNumber: Number(process.env.STARTING_BLOCK!),
@@ -95,7 +95,7 @@ const config: HardhatUserConfig = {
         },
     },
     paths: {
-        cache: "cache_hardhat",  // ← FORCE LE DOSSIER
+        cache: "cache_hardhat", // ← FORCE LE DOSSIER
     },
 };
 

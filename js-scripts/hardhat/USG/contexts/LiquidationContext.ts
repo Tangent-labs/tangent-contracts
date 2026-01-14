@@ -204,7 +204,8 @@ export class LiquidationContext {
             ...Object.values(this.marketContext.convexFxnMarkets),
             ...Object.values(this.marketContext.convexCrvMarkets),
             ...Object.values(this.marketContext.basicERC20Markets),
-            ...(this.config.MODE === "simple" ? [...Object.values(this.marketContext.curveGaugeMarkets), ...Object.values(this.marketContext.stakeDaoVaultMarkets)] : []),
+            ...Object.values(this.marketContext.curveGaugeMarkets),
+            ...Object.values(this.marketContext.stakeDaoVaultMarkets),
         ];
 
         this.marketAddresses = await Promise.all(markets.map((m) => m.getAddress()));
@@ -328,24 +329,25 @@ export class LiquidationContext {
             // Check if users have enough tokens before creating positions
             for (let userIndex = 0; userIndex < userAddresses.length; userIndex++) {
                 const userAddress = userAddresses[userIndex];
-                const user = await ethers.getSigner(userAddress);
+
                 const balance = await collatToken.balanceOf(userAddress);
+                console.log("balance", marketInfo.collatName, balance);
 
                 if (balance >= depositAmount) {
                     hasEnoughTokens = true;
                     currentMarketDeposit[userAddress] = formatEther(depositAmount);
 
                     // Create different position types:
-                    // User 0: LIQUIDATABLE position (60% LTV = 6000 USD)
-                    //   - After 66% price drop: positionValue = 6600 USD, debt = 6000 USD
-                    //   - healthRatio < 1 but debt < positionValue → LIQUIDATABLE
-                    // User 1: SEIZABLE position (80% LTV = 8000 USD, or maxLTV if lower)
+                    // Most users: LIQUIDATABLE position (64% LTV = 6400 USD)
+                    //   - After 66% price drop: positionValue = 6600 USD, debt = 6400 USD
+                    //   - healthRatio = (6600 * 0.94) / 6400 = 0.97 < 1 → LIQUIDATABLE
+                    //   - debt (6400) < positionValue (6600) → not seizable, just liquidatable
+                    // Last user only (if 3+ users): SEIZABLE position (80% LTV = 8000 USD, or maxLTV if lower)
                     //   - After 66% price drop: positionValue = 6600 USD, debt >= 6600 USD
                     //   - debt >= positionValue → SEIZABLE
-                    if (userIndex === 0) {
-                        // LIQUIDATABLE: 60% LTV = 6000 USD
-                        currentMarketBorrow[userAddress] = "6000";
-                    } else {
+                    // This ensures more liquidatable positions than seizable ones
+                    const isLastUser = userIndex === userAddresses.length - 1;
+                    if (isLastUser && userAddresses.length >= 3) {
                         // SEIZABLE: 80% LTV = 8000 USD (or maxLTV if it's lower than 80%)
                         // maxLTV is in basis points (100_000 = 100%)
                         const DENOMINATOR = 100_000n;
@@ -355,6 +357,11 @@ export class LiquidationContext {
                         const seizableBorrowUSD = maxBorrowUSD < targetSeizableBorrowUSD ? maxBorrowUSD : targetSeizableBorrowUSD;
                         // Borrow is in USD (not wei), so convert to string directly
                         currentMarketBorrow[userAddress] = seizableBorrowUSD.toString();
+                    } else {
+                        // LIQUIDATABLE: 64% LTV = 6400 USD
+                        // This ensures healthRatio < 1 after 66% price drop even with 94% liquidation threshold
+                        // healthRatio = (6600 * 0.94) / 6400 = 0.97 < 1 ✓
+                        currentMarketBorrow[userAddress] = "6400";
                     }
                 }
             }
