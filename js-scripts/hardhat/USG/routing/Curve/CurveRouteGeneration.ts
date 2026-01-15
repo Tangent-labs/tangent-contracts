@@ -389,13 +389,11 @@ export class CurveRouteGeneration {
                 if (singleSwap) {
                     if (i === 0) {
                         finalDisplay = `${singleSwapDisplay} >> `;
-
                         routeAddresses.push(singleSwap?.route.in);
                         routeAddresses.push(singleSwap?.route.pool);
                         routeAddresses.push(singleSwap?.route.out);
                     } else {
                         finalDisplay += `${routeString.pool} >> ${routeString.out} >> `;
-
                         routeAddresses.push(singleSwap?.route?.pool);
                         routeAddresses.push(singleSwap?.route?.out);
                     }
@@ -554,6 +552,7 @@ export const liquidationAssets: Record<string, string> = {
     "msETH/OETH": curveLp.CRV_DUO_msETH_OETH,
     "msETH/WETH": curveLp.CRV_DUO_msETH_WETH,
     "OETH/WETH": curveLp.CRV_DUO_OETH_WETH,
+    "DOLA/wstUSR": curveLp.CRV_DUO_DOLA_wstUSR,
 };
 
 export type LiquidationAsset = keyof typeof liquidationAssets;
