@@ -70,19 +70,22 @@ export class BaseContext extends MainSetup {
         this.pauser = this.users[1];
         this.feeTreso = this.users[4];
 
+   
         this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
         await this.controlTower.waitForDeployment();
 
         this.marketViewer = await (await ethers.getContractFactory("MarketViewer")).deploy();
         await this.marketViewer.waitForDeployment();
 
+
         this.USG = await (await ethers.getContractFactory("USG")).deploy(this.owner, this.controlTower);
         await this.USG.waitForDeployment();
 
+
         this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy(this.controlTower);
         await this.zappingProxy.waitForDeployment();
-
         await this.deploy_sUSG();
+
 
         this.TAN = await (await ethers.getContractFactory("TAN")).deploy(this.owner);
         await this.TAN.waitForDeployment();
