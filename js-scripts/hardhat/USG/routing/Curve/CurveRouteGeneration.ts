@@ -1,10 +1,10 @@
-import { AddressLike, MaxUint256, ZeroAddress } from "ethers";
+import {AddressLike, MaxUint256, ZeroAddress} from "ethers";
 import fs from "fs";
-import { ethers } from "hardhat";
+import {ethers} from "hardhat";
 import path from "path";
-import { giveTokenToAddresss } from "../../../thief/thief";
-import { commonERC20, routers, thiefConfig, curveLp, PendlePools } from "@tangent/defi-resources";
-import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
+import {giveTokenToAddresss} from "../../../thief/thief";
+import {commonERC20, routers, thiefConfig, curveLp }from "@tangent/defi-resources";
+import {SignerWithAddress} from "@nomicfoundation/hardhat-ethers/signers";
 
 // https://api.curve.fi/v1/documentation/#/Pools/get_getPools_big__blockchainId_
 
@@ -50,7 +50,7 @@ export class CurveRouteGeneration {
         fs.writeFileSync(this.PATHS[type], JSON.stringify(data));
     }
 
-    async loadDynamicAssets(addressesData: { lps: Record<string, string>; wStables: Record<string, string>; tokens: { USG: string; TAN: string } }) {
+    async loadDynamicAssets(addressesData: {lps: Record<string, string>; wStables: Record<string, string>; tokens: {USG: string; TAN: string}}) {
         try {
             // Add LP tokens
             if (addressesData.lps) {
@@ -117,7 +117,7 @@ export class CurveRouteGeneration {
             }
         });
 
-        return { csv: formattedCsv, valid: (missings.size || 0) === 0, missing: missings };
+        return {csv: formattedCsv, valid: (missings.size || 0) === 0, missing: missings};
     }
 
     loadRoutesFromCSV(csvData: string[][]): RouteParams[] {
@@ -139,7 +139,7 @@ export class CurveRouteGeneration {
         let display = "";
 
         // Iterate over Row and cell from A to Z
-        for (let i = 0; i < row.length - 1;) {
+        for (let i = 0; i < row.length - 1; ) {
             const tokenIn = row[i];
             const pool = row[i + 1];
             const out = row[i + 2];
@@ -193,7 +193,7 @@ export class CurveRouteGeneration {
     async testRouteSteps(singleSwaps: SingleSwap[]): Promise<SingleSwapProcessResult> {
         const pools = new Map<string, SingleSwap>();
         const params: VerifiedSingleSwap[] = [];
-        const errors: { route: SingleSwap; error: string }[] = [];
+        const errors: {route: SingleSwap; error: string}[] = [];
 
         // Extract pools and their respective input/output tokens
         singleSwaps.forEach((singleSwap) => {
@@ -202,32 +202,32 @@ export class CurveRouteGeneration {
 
         let coins: string[] = [];
         for (const [_, route] of pools.entries()) {
-            const thiefData = ThiefConfig.find((token) => token.address.toLowerCase() === route.in.toLowerCase());
+            const thiefData = ThiefConfig.find((token) => route?.in && token?.address && token.address.toLowerCase() === route.in.toLowerCase());
             try {
                 coins = ["noONe"];
                 // No more RPC call; we use tokenIn & tokenOut from JSON
                 if (separatedCurvePoolToken[route.pool]) {
                     route.pool = separatedCurvePoolToken[route.pool];
                 }
-                const { coins: _coins } = await this._getPoolInfo(route.pool);
+                const {coins: _coins} = await this._getPoolInfo(route.pool);
                 coins = _coins;
                 const result = await this._determineSwapParams(route.pool, route, thiefData, _coins);
-                params.push({ route, result: { coins: result.coins, swapParams: result.swapParams } });
+                params.push({route, result: {coins: result.coins, swapParams: result.swapParams}});
             } catch (error: any) {
-                errors.push({ error: error.message, route });
+                errors.push({error: error.message, route});
             }
         }
-        return { success: params, errors };
+        return {success: params, errors};
     }
 
-    async _getPoolInfo(poolAddress: AddressLike): Promise<{ coins: string[]; lp: string; symbol: string }> {
+    async _getPoolInfo(poolAddress: AddressLike): Promise<{coins: string[]; lp: string; symbol: string}> {
         const poolAbi = ["function coins(uint256) external view returns (address)", "function symbol() external view returns (string memory)"];
 
         const poolContract = await ethers.getContractAt(poolAbi, poolAddress as string);
         let symbol = "";
         try {
             symbol = await poolContract.symbol();
-        } catch (e) { }
+        } catch (e) {}
         const coinCount = 4;
         const coins: string[] = [];
 
@@ -235,11 +235,11 @@ export class CurveRouteGeneration {
             try {
                 const coinAddress = await poolContract.coins(i);
                 coins.push(coinAddress);
-            } catch { }
+            } catch {}
         }
         let lp = "";
 
-        return { coins, lp, symbol };
+        return {coins, lp, symbol};
     }
 
     async prepareUserForExchange(
@@ -249,12 +249,12 @@ export class CurveRouteGeneration {
         amount: string,
         thiefConfig:
             | {
-                token: string;
-                address: string;
-                slot: number;
-                isVyper: boolean;
-                decimals: number;
-            }
+                  token: string;
+                  address: string;
+                  slot: number;
+                  isVyper: boolean;
+                  decimals: number;
+              }
             | undefined
     ) {
         const isTgAsset = display.split(">>")[0].trim().endsWith("*");
@@ -289,12 +289,12 @@ export class CurveRouteGeneration {
         route: SingleSwap,
         thiefData:
             | {
-                token: string;
-                address: string;
-                slot: number;
-                isVyper: boolean;
-                decimals: number;
-            }
+                  token: string;
+                  address: string;
+                  slot: number;
+                  isVyper: boolean;
+                  decimals: number;
+              }
             | undefined,
         coins: string[]
     ) {
@@ -350,7 +350,7 @@ export class CurveRouteGeneration {
 
                         if (isInETH) {
                             //@ts-ignore
-                            await router.connect(user).exchange(routeAddresses!, swapParamsFull!, amountIn, dy - (dy * 1n) / 1000n, zapPools, user.address, { value: amountIn });
+                            await router.connect(user).exchange(routeAddresses!, swapParamsFull!, amountIn, dy - (dy * 1n) / 1000n, zapPools, user.address, {value: amountIn});
                         } else {
                             //@ts-ignore
                             await router.connect(user).exchange(routeAddresses!, swapParamsFull!, amountIn, dy - (dy * 1n) / 1000n, zapPools, user.address);
@@ -360,12 +360,12 @@ export class CurveRouteGeneration {
                         deltaOutBalance = (isOutETH ? await ethers.provider.getBalance(user.address) : await outContract.balanceOf(user.address)) - deltaOutBalance;
 
                         if (deltaInBalance === 0n || deltaOutBalance === 0n) {
-                            console.log("try", { swap: swapParamsFull.at(0), amountIn, error: "No balance change", output });
+                            console.log("try", {swap: swapParamsFull.at(0), amountIn, error: "No balance change", output});
                             continue;
                         } else {
-                            return { swapType: swapTypes[j], poolType: poolTypes[i], swapParams: currentSwapParams, ...route, coins };
+                            return {swapType: swapTypes[j], poolType: poolTypes[i], swapParams: currentSwapParams, ...route, coins};
                         }
-                    } catch (e: any) { }
+                    } catch (e: any) {}
                 }
             }
         }
@@ -439,16 +439,16 @@ export class CurveRouteGeneration {
                         finalHydratedRoutes[tokenInAddress][tokenOutAddress] = [paramsAndDisplay];
                     }
                 } else {
-                    finalHydratedRoutes[tokenInAddress] = { [tokenOutAddress]: [paramsAndDisplay] };
+                    finalHydratedRoutes[tokenInAddress] = {[tokenOutAddress]: [paramsAndDisplay]};
                 }
             }
         });
-        return { success: finalHydratedRoutes, errors };
+        return {success: finalHydratedRoutes, errors};
     };
 }
 
 // Link Pools and tokens that are not the same contract
-export const separatedCurvePoolToken: { [lpToken: string]: string } = {
+export const separatedCurvePoolToken: {[lpToken: string]: string} = {
     [curveLp.FRAX_USDC_LP]: curveLp.CRV_DUO_FRAXBP_POOL,
     [curveLp.CRV_DUO_stETH_ETH]: "0xDC24316b9AE028F1497c275EB9192a3Ea0f67022",
 };
@@ -554,6 +554,7 @@ export const liquidationAssets: Record<string, string> = {
     "msETH/OETH": curveLp.CRV_DUO_msETH_OETH,
     "msETH/WETH": curveLp.CRV_DUO_msETH_WETH,
     "OETH/WETH": curveLp.CRV_DUO_OETH_WETH,
+    "DOLA/wstUSR": curveLp.CRV_DUO_DOLA_wstUSR,
 };
 
 export type LiquidationAsset = keyof typeof liquidationAssets;
@@ -562,7 +563,7 @@ export type RouteParams = {
     display: string;
     in: LiquidationAsset;
     out: LiquidationAsset;
-    singleSwaps: { in: LiquidationAsset; pool: LiquidationAsset; out: LiquidationAsset }[];
+    singleSwaps: {in: LiquidationAsset; pool: LiquidationAsset; out: LiquidationAsset}[];
 };
 
 export interface SingleSwap {
@@ -584,7 +585,7 @@ type VerifiedSingleSwap = {
 
 export type SingleSwapProcessResult = {
     success: VerifiedSingleSwap[];
-    errors: { route: SingleSwap; error: string }[];
+    errors: {route: SingleSwap; error: string}[];
 };
 
 type FinalRouteParams = {
