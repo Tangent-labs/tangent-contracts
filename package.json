@@ -19,7 +19,7 @@
     "time-travel": "npx hardhat run js-scripts/hardhat/USG/actions/time-travel.ts --network localhost",
     "liquidation-context": "npx hardhat run js-scripts/hardhat/USG/scripts/liquidationSetUp.ts --network localhost",
     "liquidation-context-chaos": "npx hardhat run js-scripts/hardhat/USG/scripts/liquidationSetUpChaos.ts --network localhost",
-    "tangent:check-liquidation": "npx hardhat run js-scripts/hardhat/USG/scripts/checkLiquidationChaos.ts --network localhost",
+    "liquidation-check": "npx hardhat run js-scripts/hardhat/USG/scripts/LiquidationCheck.ts --network localhost",
     "saving-account-context": "npx hardhat run js-scripts/hardhat/USG/scripts/savingaccountSetUp.ts --network localhost",
     "routing:generate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/generateCurveRoutes.ts --network localhost",
     "routing:hydrate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/hydrateFinalRoutes.ts --network localhost",

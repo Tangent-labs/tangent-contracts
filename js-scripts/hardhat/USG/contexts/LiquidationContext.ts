@@ -30,6 +30,7 @@ export type LiquidationConfig = {
     DEBT_SAFETY_MARGIN_PERCENT?: bigint;
     SKIP_USER_PROBABILITY?: number;
     EXCLUDED_MARKETS?: readonly string[];
+    INCLUDED_MARKETS?: readonly string[];
     // Simple mode specific
     BASE_DEPOSIT?: number;
     USERS_TO_USE?: number; // Number of users to actually use (for simple mode)
@@ -153,12 +154,21 @@ function getRandomPositionType(config: LiquidationConfig): {intent: PositionInte
     };
 }
 
-async function getExcludedAddresses(config: LiquidationConfig): Promise<string[]> {
-    if (!config.EXCLUDED_MARKETS || config.EXCLUDED_MARKETS.length === 0) {
-        return [];
-    }
+async function getFilteredMarkets(config: LiquidationConfig): Promise<string[]> {
     const addresses = await loadAddresses();
-    return config.EXCLUDED_MARKETS.map((name) => addresses.markets.find((m: {collatName: string}) => m.collatName === name)?.marketAddress).filter(Boolean);
+
+    // If INCLUDED_MARKETS is specified, only include those markets
+    if (config.INCLUDED_MARKETS && config.INCLUDED_MARKETS.length > 0) {
+        return config.INCLUDED_MARKETS.map((name) => addresses.markets.find((m: {collatName: string}) => m.collatName === name)?.marketAddress).filter(Boolean);
+    }
+
+    // Otherwise, exclude markets from EXCLUDED_MARKETS
+    if (!config.EXCLUDED_MARKETS || config.EXCLUDED_MARKETS.length === 0) {
+        return addresses.markets.map((m: {marketAddress: string}) => m.marketAddress);
+    }
+
+    const excludedAddresses = config.EXCLUDED_MARKETS.map((name) => addresses.markets.find((m: {collatName: string}) => m.collatName === name)?.marketAddress).filter(Boolean);
+    return addresses.markets.map((m: {marketAddress: string}) => m.marketAddress).filter((addr: string)  => !excludedAddresses.includes(addr));
 }
 
 // ============================================================================
@@ -457,8 +467,9 @@ export class LiquidationContext {
     }
 
     private async getBorrowAndDepositParamsChaos(): Promise<{depositParams: UserMarketParams; borrowParams: UserMarketParams}> {
-        const excludedAddresses = await getExcludedAddresses(this.config);
-        const marketLimits = await this.buildMarketLimits(this.marketAddresses, excludedAddresses);
+        const filteredMarketAddresses = await getFilteredMarkets(this.config);
+
+        const marketLimits = await this.buildMarketLimits(filteredMarketAddresses, []);
 
         const depositParams: UserMarketParams = {};
         const borrowParams: UserMarketParams = {};
@@ -466,8 +477,7 @@ export class LiquidationContext {
         let positionCount = 0;
         const maxPositionCount = this.config.MAX_POSITION_COUNT || Infinity;
 
-        for (const marketAddress of this.marketAddresses) {
-            if (excludedAddresses.includes(marketAddress)) continue;
+        for (const marketAddress of filteredMarketAddresses) {
             if (positionCount >= maxPositionCount) break;
 
             const limits = marketLimits[marketAddress];
@@ -517,11 +527,14 @@ export class LiquidationContext {
             throw new Error("Contracts not deployed");
         }
 
+        // Apply market filtering based on INCLUDED_MARKETS or EXCLUDED_MARKETS
+        const filteredMarketAddresses = await getFilteredMarkets(this.config);
+
         let depositParams: UserMarketParams;
         let borrowParams: UserMarketParams;
 
         if (this.config.MODE === "simple") {
-            const result = await this.getBorrowAndDepositParamsSimple(this.marketAddresses, this.userAddresses);
+            const result = await this.getBorrowAndDepositParamsSimple(filteredMarketAddresses, this.userAddresses);
             depositParams = result.depositParams;
             borrowParams = result.borrowParams;
         } else {
