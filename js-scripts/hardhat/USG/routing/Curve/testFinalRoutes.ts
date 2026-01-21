@@ -1,9 +1,10 @@
-import {CurveRouteGeneration, RouteResult, ThiefConfig} from "./CurveRouteGeneration";
+import { CurveRouteService, RouteResult } from "./CurveRouteService";
 import liquidationAddresses from "../../../../../addresses.json";
-import {ethers} from "hardhat";
-import {routers} from "@tangent/defi-resources";
-import {AddressLike, ZeroAddress} from "ethers";
-const svc = new CurveRouteGeneration();
+import { ethers } from "hardhat";
+import { routers } from "@tangent/defi-resources";
+import { AddressLike, ZeroAddress } from "ethers";
+import { ThiefConfig } from "./config";
+const svc = new CurveRouteService();
 svc.loadDynamicAssets(liquidationAddresses);
 
 main();
@@ -20,7 +21,7 @@ async function main() {
     // TODO Need to connect it to the markets to see how much
     const amount = "1";
 
-    const errors: {display: string; error: string}[] = [];
+    const errors: { display: string; error: string }[] = [];
 
     // Iterate through rawRoutes and find associated route in finalRoutes
 

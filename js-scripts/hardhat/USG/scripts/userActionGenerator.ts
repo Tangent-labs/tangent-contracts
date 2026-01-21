@@ -121,7 +121,7 @@ ${actions.map((action) => this.generateActionCode(action)).join("\n\n")}
 }
 
 async function main() {
-    const generator = new BlockchainScriptGenerator("14kY9R4FzMriJ_vo-rt5yISM0pFIMJdkklcEf-wAlG70", "0");
+    const generator = new BlockchainScriptGenerator("14kY9R4FzMriJ_vo-rt5yISM0pFIMJdkklcEf-wAlG70", "25851155");
     await generator.generateScript();
 }
 

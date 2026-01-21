@@ -237,6 +237,16 @@ contract MarketInitParams is WStableContext {
     }
 
     function initStakeDaoVaultV2Params() public {
+        // Pendle - sUSDe_27_11_25
+        basicERC20Maps[address(AddrPTPendle.sUSDe_27_11_25)] = MarketInitSimplified({
+            name: "Pendle - sUSDe 11/27/25",
+            collat: AddrPTPendle.sUSDe_27_11_25,
+            maxLTV: 85_000,
+            liquidationThreshold: 93_000,
+            liquidationFee: 2_000,
+            minimumLoan: 3_000 ether,
+            maxMarketDebt: 1_000_000 ether
+        });
         // StakeDao - CRVUSD-USDC
         stakeDaoVaultV2Maps[address(AddrCurveStableLP.USDC_crvUSD)] = ParamsInitStakeDaoVaultV2Market({
             marketInit: MarketInitSimplified({
@@ -267,6 +277,17 @@ contract MarketInitParams is WStableContext {
     }
 
     function initBasicERC20Market() public {
+        // Pendle - wstUSR_29_01_26
+        basicERC20Maps[address(AddrPTPendle.wstUSR_29_01_26)] = MarketInitSimplified({
+            name: "Pendle - wstUSR 29/01/26",
+            collat: AddrPTPendle.wstUSR_29_01_26,
+            maxLTV: 85_000,
+            liquidationThreshold: 93_000,
+            liquidationFee: 2_000,
+            minimumLoan: 3_000 ether,
+            maxMarketDebt: 1_000_000 ether
+        });
+
         // LP Curve - sUSDS/USDT
         basicERC20Maps[address(AddrCurveStableLP.sUSDS_USDT)] = MarketInitSimplified({
             name: "Convex CRV - sUSDS-USDT",

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 
-import {USGIndexingGlobalData, TVLAprs, MarketAPRInput, USGIndexingGlobalDataOut} from "../../../src/chainview/USG/bot/USGIndexingGlobalData.cv.sol";
+import {USGIndexingGlobalData, TVLAprs, MarketAPRInput, USGIndexingGlobalDataOut, USGContractsIn} from "../../../src/chainview/USG/bot/USGIndexingGlobalData.cv.sol";
 
 contract USGIndexingGlobalDataChainview is MarketDeploymentContext {
     ConvexCrvLPMarket public market1;
@@ -43,13 +43,9 @@ contract USGIndexingGlobalDataChainview is MarketDeploymentContext {
         try
             new USGIndexingGlobalData(
                 marketsInput,
-                rewardAccumulator,
-                irCalculator,
-                usg,
-                sUSG,
+                USGContractsIn({rewardAccumulator: rewardAccumulator, irCalculator: irCalculator, usg: usg, sUSG: sUSG, usgOracle: USGOracle, _marketViewer: marketViewer}),
                 Array.memoryAddress([address(pegKeeperUSG_USDC), address(pegKeeperUSG_wcrvUSD)]),
-                USGOracle,
-                marketViewer
+                Array.memoryAddress([address(wcrvUSD), address(wUSDE), address(wDOLA), address(wUSR)])
             )
         {} catch (bytes memory reason) {
             USGIndexingGlobalDataOut memory result = abi.decode(removeFirst4Bytes(reason), (USGIndexingGlobalDataOut));
