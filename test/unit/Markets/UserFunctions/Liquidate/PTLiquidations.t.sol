@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "../../../../contexts/MarketDeploymentContext.sol";
+import "../../../../../src/mock/MockOracle.sol";
 
 contract PTLiquidations is MarketDeploymentContext {
     BasicERC20Market public marketSUSDe;
@@ -27,13 +28,24 @@ contract PTLiquidations is MarketDeploymentContext {
     }
 
     function test_liquidate_PT_not_expired_2() external {
+       
+        vm.stopPrank();
+        // Mirror LiquidationContext.ts (setOracleToMock) snippet: capture last price and seed a mock oracle with it
+        IPriceOracle oracle = marketwstUSR.collatOracle();
+        uint256 lastPrice = oracle.latestAnswer(true);
+        MockOracle mockOracle = new MockOracle();
+        mockOracle.setLastAnswer(lastPrice * 30 / 100);
+        vm.prank(owner);
+        marketwstUSR.setCollatOracle(IPriceOracle(mockOracle));
+        vm.startPrank(usr1);
+
         uint256[][] memory swapParams = new uint256[][](4);
         swapParams[0] = Array.memoryUint256([uint256(1), uint256(0), uint256(1), uint256(1), uint256(2)]);
         swapParams[1] = Array.memoryUint256([uint256(0), uint256(1), uint256(1), uint256(1), uint256(2)]);
         swapParams[2] = Array.memoryUint256([uint256(1), uint256(0), uint256(1), uint256(1), uint256(2)]);
         swapParams[3] = Array.memoryUint256([uint256(0), uint256(1), uint256(1), uint256(1), uint256(2)]);
-        marketwstUSR.selfLiquidate(
-            SelfLiquidateIn({collatAmountToLiquidate: 50_000 ether, usgToRepay: 20_000 ether, maxUsgToBurn: MAX_UINT, minUsgOut: 0, isReceiptOut: false}),
+        marketwstUSR.liquidate(
+            LiquidateIn({account: address(usr1), postLiquidate: PostLiquidate({collatAmountToLiquidate: 50_000 ether, minUsgOut: 0, maxUsgToBurn: MAX_UINT, minCollatAmountToLiquidate: 0, isReceiptOut: false}), minCollatValueToLiquidate: 0}),
             ZapStruct({
                 router: address(pendlePTRouter),
                 routerCall: encoder.encodeSwapPTForToken(
@@ -61,7 +73,7 @@ contract PTLiquidations is MarketDeploymentContext {
                         ),
                         swapParams,
                         0,
-                        usr1
+                        owner
                     )
                 )
             })
