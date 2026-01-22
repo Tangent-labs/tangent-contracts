@@ -90,8 +90,6 @@ interface IDistributedToken {
     function rate() external view returns (uint256);
 }
 
-import "hardhat/console.sol";
-
 contract USGIndexingGlobalData is UsgInfo {
     uint256 constant ONE_YEAR = 365 days;
     error MarketCurrentAPRError(USGIndexingGlobalDataOut);
