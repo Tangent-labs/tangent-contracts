@@ -15,9 +15,9 @@ library AddrMarketPendle {
     IPendleMarketV3 constant USDe_25_09_25 = IPendleMarketV3(0x6d98a2b6CDbF44939362a3E99793339Ba2016aF4);
     IPendleMarketV3 constant wstUSR_25_09_25 = IPendleMarketV3(0x09fA04Aac9c6d1c6131352EE950CD67ecC6d4fB9);
     IPendleMarketV3 constant USR_04_09_25 = IPendleMarketV3(0x33BdA865c6815c906e63878357335B28f063936c);
-
     IPendleMarketV3 constant USDe_27_11_25 = IPendleMarketV3(0x4eaA571EaFCD96f51728756BD7F396459BB9B869);
     IPendleMarketV3 constant sUSDe_27_11_25 = IPendleMarketV3(0xb6aC3d5da138918aC4E84441e924a20daA60dBdd);
+    IPendleMarketV3 constant wstUSR_29_01_26 = IPendleMarketV3(0x39C3F8e0E7C6F44Dc8F0397FEb124517ba82e26E);
 }
 
 library AddrPTPendle {
@@ -29,8 +29,8 @@ library AddrPTPendle {
     IPendlePTToken constant wstUSR_25_09_25 = IPendlePTToken(0x23E60d1488525bf4685f53b3aa8E676c30321066);
     IPendlePTToken constant USR_04_09_25 = IPendlePTToken(0x5a5b93F762739fa94F3EcC0b34Af2e56702E7f70);
     IPendlePTToken constant sUSDe_27_11_25 = IPendlePTToken(0xe6A934089BBEe34F832060CE98848359883749B3);
-
     IPendlePTToken constant USDe_27_11_25 = IPendlePTToken(0x62C6E813b9589C3631Ba0Cdb013acdB8544038B7);
+    IPendlePTToken constant wstUSR_29_01_26 = IPendlePTToken(0xfCeEB7586bab730fA400A5BF3FcF298d0DB4c7e7);
 }
 
 library AddrSYPendle {
@@ -40,8 +40,8 @@ library AddrSYPendle {
     IPendleSYToken constant wstUSR_25_09_25 = IPendleSYToken(0x6c78661c00D797C9c7fCBE4BCacbD9612A61C07f);
     IPendleSYToken constant USR_04_09_25 = IPendleSYToken(0x6AFde97a0c27e57cf0582373F9D7dc2b9f1CC3A3);
     IPendleSYToken constant sUSDe_27_11_25 = IPendleSYToken(0xAbf8165dD7a90ab75878161db15Bf85F6F781d9b);
-
     IPendleSYToken constant USDe_27_11_25 = IPendleSYToken(0x925a15bD6A1582fa7c0EbbFc3Dbd29c34f58340e);
+    IPendleSYToken constant wstUSR_29_01_26 = IPendleSYToken(0x6c78661c00D797C9c7fCBE4BCacbD9612A61C07f);
 }
 library AddrYTPendle {
     IPendleYTToken constant sUSDe_31_07_25 = IPendleYTToken(0xb7E51D15161C49C823f3951D579DEd61cD27272B);
@@ -50,6 +50,6 @@ library AddrYTPendle {
     IPendleYTToken constant wstUSR_25_09_25 = IPendleYTToken(0x1E24B022329f3CA0083b12FAF75d19639FAebF6f);
     IPendleYTToken constant USR_04_09_25 = IPendleYTToken(0x9ebd88a0368D53fdCAd9c72C47280fECBcCDCAA9);
     IPendleYTToken constant sUSDe_27_11_25 = IPendleYTToken(0x28E626b560F1FaaC01544770425e2De8FD179c79);
-
     IPendleYTToken constant USDe_27_11_25 = IPendleYTToken(0x99C92D4Da7a81c7698EF33a39D7538d0f92623f7);
+    IPendleYTToken constant wstUSR_29_01_26 = IPendleYTToken(0x112B56037552d9A5142493F44480BA98C2586805);
 }

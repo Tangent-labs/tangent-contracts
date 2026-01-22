@@ -1,11 +1,14 @@
-import {liquidationAssets, CurveRouteGeneration, RouteParams, RouteResult, SwapParamsAndDisplay} from "./CurveRouteGeneration";
+import { CurveRouteService, RouteParams, RouteResult, SwapParamsAndDisplay } from "./CurveRouteService";
 import liquidationAddresses from "../../../../../addresses.json";
-import {ZeroAddress} from "ethers";
+import { ZeroAddress } from "ethers";
+import { LIQUIDATION_ASSETS } from "./config";
+const svc = new CurveRouteService();
+svc.loadDynamicAssets(liquidationAddresses);
 
 main();
 
 async function main() {
-    const svc = new CurveRouteGeneration();
+    const svc = new CurveRouteService();
     await svc.loadDynamicAssets(liquidationAddresses);
     const finalRoutes = svc.loadFile<{
         success: RouteResult;
@@ -39,18 +42,18 @@ async function main() {
             for (let index = 0; index < singleSwaps.length; ++index) {
                 const singleSwap = singleSwaps[index];
                 if (index === 0) {
-                    routeAddresses.push(liquidationAssets[singleSwap.in]);
+                    routeAddresses.push(LIQUIDATION_ASSETS[singleSwap.in]);
                 }
-                routeAddresses.push(liquidationAssets[singleSwap.pool]);
-                routeAddresses.push(liquidationAssets[singleSwap.out]);
+                routeAddresses.push(LIQUIDATION_ASSETS[singleSwap.pool]);
+                routeAddresses.push(LIQUIDATION_ASSETS[singleSwap.out]);
             }
 
             while (routeAddresses.length < 11) {
                 routeAddresses.push(ZeroAddress);
             }
 
-            const tokenInAddress = liquidationAssets[rawRoute.in].toLocaleLowerCase();
-            const tokenOutAddress = liquidationAssets[rawRoute.out].toLocaleLowerCase();
+            const tokenInAddress = LIQUIDATION_ASSETS[rawRoute.in].toLocaleLowerCase();
+            const tokenOutAddress = LIQUIDATION_ASSETS[rawRoute.out].toLocaleLowerCase();
 
             const paramsAndDisplay = {
                 params: {
@@ -67,7 +70,7 @@ async function main() {
                     refreshedRoutes[tokenInAddress][tokenOutAddress] = [paramsAndDisplay];
                 }
             } else {
-                refreshedRoutes[tokenInAddress] = {[tokenOutAddress]: [paramsAndDisplay]};
+                refreshedRoutes[tokenInAddress] = { [tokenOutAddress]: [paramsAndDisplay] };
             }
         }
     });

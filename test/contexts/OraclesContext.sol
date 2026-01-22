@@ -403,6 +403,10 @@ contract OraclesContext is USGDeployContext {
         // Oracle PT sUSDe_27_11_25
         oracles[AddrPTPendle.sUSDe_27_11_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_27_11_25, oracles[AddrERC4626.sUSDe], 900, 18, "PT sUSDe 27/11/25 Linear");
         vm.label(address(oracles[AddrPTPendle.sUSDe_27_11_25]), "Oracle PT sUSDe_27_11_25");
+
+        // Oracle PT wstUSR_25_09_25
+        oracles[AddrPTPendle.wstUSR_29_01_26] = new OraclePendlePT(AddrMarketPendle.wstUSR_29_01_26, oracles[AddrERC4626.wstUSR], 900, 18, "PT sUSDe 25/09/25 Linear / USD");
+        vm.label(address(oracles[AddrPTPendle.wstUSR_29_01_26]), "Oracle PT wstUSR_25_09_25");
     }
 
     // function setupPendleLPTokens() internal {

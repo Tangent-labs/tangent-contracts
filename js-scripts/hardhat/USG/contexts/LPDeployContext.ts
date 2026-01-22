@@ -194,7 +194,7 @@ export class LpDeployContext {
     async _usersApproveLp(baseContext: BaseContext, coins: IERC20Metadata[], lp: AddressLike) {
         const users = baseContext.users;
 
-        for (let i = 0; i < users.length; i++) {
+        for (let i = 0; i < users.length - 2; i++) {
             const user = users[i];
             await coins[0].connect(user).approve(lp, MaxUint256);
             await coins[1].connect(user).approve(lp, MaxUint256);

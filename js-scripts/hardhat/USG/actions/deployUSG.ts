@@ -6,8 +6,7 @@ import { LpDeployContext } from "../contexts/LPDeployContext";
 import { WStablesContext } from "../contexts/WStableContext";
 import { executeBoostContext } from "../contexts/OnchainBoostContext";
 
-export async function deployUSG(userCount: number = 5, baseLpDeposit?: number) {
-    console.log("Deploy USG with", userCount, "users");
+export async function deployUSG(userCount: number = 6) {
     const baseContext = new BaseContext(userCount);
     const oracleContext = new OracleContext();
     const marketContext = new MarketContext();
@@ -112,5 +111,5 @@ export async function deployUSG(userCount: number = 5, baseLpDeposit?: number) {
     await baseContext.approveCurveLP(curveLp.CRV_LP_pxETH_WETH);
     await baseContext.approveCurveLP(curveLp.CRV_DUO_ETH_CVX);
 
-    return {baseContext, oracleContext, marketContext, lpDeployContext, wStableContext};
+    return { baseContext, oracleContext, marketContext, lpDeployContext, wStableContext };
 }

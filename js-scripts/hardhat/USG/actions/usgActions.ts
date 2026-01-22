@@ -1,6 +1,6 @@
-import {ethers} from "hardhat";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {MaxUint256, parseEther} from "ethers";
+import { ethers } from "hardhat";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { MaxUint256, parseEther } from "ethers";
 import * as usgAddresses from "../../../../addresses.json";
 
 async function getMarketByKey(marketKey: string) {
@@ -26,12 +26,12 @@ export const repayUSG = async (marketKey: string, user: HardhatEthersSigner, to:
 
 export const repayUSGAndWithdraw = async (marketKey: string, user: HardhatEthersSigner, withdrawAmount: number, repayAmount: number) => {
     const market = await getMarketByKey(marketKey);
-    await market.connect(user).repayAndWithdraw(parseEther(withdrawAmount.toString()), parseEther(repayAmount.toString()));
+    await market.connect(user).repayAndWithdraw(parseEther(withdrawAmount.toString()), parseEther(repayAmount.toString()), false);
 };
 
 export const depositAndBorrowUSG = async (marketKey: string, user: HardhatEthersSigner, depositAmount: number, borrowAmount: number) => {
     const market = await getMarketByKey(marketKey);
     const collatContract = await ethers.getContractAt("IERC20", await market.collatToken());
     await collatContract.connect(user).approve(market, MaxUint256);
-    await market.connect(user).depositAndBorrow(parseEther(depositAmount.toString()), parseEther(borrowAmount.toString()));
+    await market.connect(user).depositAndBorrow(parseEther(depositAmount.toString()), parseEther(borrowAmount.toString()), false);
 };

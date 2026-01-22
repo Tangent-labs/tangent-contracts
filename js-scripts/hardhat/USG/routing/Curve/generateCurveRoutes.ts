@@ -1,15 +1,13 @@
-import fs from "fs";
-import {CurveRouteGeneration, SingleSwap} from "./CurveRouteGeneration";
-import path from "path";
+import { CurveRouteService } from "./CurveRouteService";
 import liquidationAddresses from "../../../../../addresses.json";
-const svc = new CurveRouteGeneration();
+const svc = new CurveRouteService();
 svc.loadDynamicAssets(liquidationAddresses);
 
 main();
 
 async function main() {
     // Step 1: Validate CSV
-    const {csv, valid, missing} = await svc.validateCsv();
+    const { csv, valid, missing } = await svc.validateCsv();
 
     if (!valid) {
         console.error("-------------------------");
@@ -31,7 +29,7 @@ async function main() {
     svc.saveFile("singleSwaps", singleSwaps);
 
     console.log("✅ " + "Single swaps deduced and tested from the complete routes : Check in ./js-scripts/USG/routing/Curve/data/singleSwaps.json");
-    console.table([{["✅"]: singleSwaps.success.length, ["❌"]: singleSwaps.errors.length}]);
+    console.table([{ ["✅"]: singleSwaps.success.length, ["❌"]: singleSwaps.errors.length }]);
 
     // Step 4 : Hydrate routes with addresses
     const finalHydratedRoutes = svc.hydrateRawRoutes(rawRoutes, singleSwaps.success);
@@ -39,5 +37,5 @@ async function main() {
 
     console.log("-------------------------");
     console.log("✅ Final routes written : Check in ./js-scripts/USG/data/finalRoutes.json");
-    console.table([{["✅"]: finalHydratedRoutes.success.length, ["❌"]: finalHydratedRoutes.errors.length}]);
+    console.table([{ ["✅"]: finalHydratedRoutes.success.length, ["❌"]: finalHydratedRoutes.errors.length }]);
 }
