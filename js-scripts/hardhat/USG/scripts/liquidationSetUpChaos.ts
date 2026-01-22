@@ -11,7 +11,8 @@ export const CHAOS_CONFIG: LiquidationConfig = {
     ORACLE_PRICE_DROP_PERCENT: 66n,
     DEBT_SAFETY_MARGIN_PERCENT: 5n,
     SKIP_USER_PROBABILITY: 0.2,
-    EXCLUDED_MARKETS: ["frxUSD_USDe", "pxETH_WETH", "pxETH_stETH", "frxETH_WETH", "USDe 27/11/25", "sUSDe 27/11/25"],
+    EXCLUDED_MARKETS: [],
+    INCLUDED_MARKETS: [],
     POSITION_SIZE: {
         SMALL: {value: 5_000n, probability: 0.8},
         MEDIUM: {min: 5_000n, max: 10_000n, probability: 0.1},
@@ -19,8 +20,8 @@ export const CHAOS_CONFIG: LiquidationConfig = {
     },
     POSITION_TYPES: {
         SAFE: {ltvRange: [0.3, 0.4], probability: 0.1},
-        LIQUIDATABLE: {ltvRange: [0.62, 0.65], probability: 0.8},
-        SEIZABLE: {ltvRange: [0.75, 0.85], probability: 0.1},
+        LIQUIDATABLE: {ltvRange: [0.62, 0.65], probability: 0.9},
+        SEIZABLE: {ltvRange: [0.75, 0.85], probability: 0},
     },
     MODE: "chaos",
 } as const;

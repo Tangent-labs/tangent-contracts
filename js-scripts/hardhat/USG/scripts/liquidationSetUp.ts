@@ -9,6 +9,7 @@ export const SIMPLE_CONFIG: LiquidationConfig = {
     ORACLE_PRICE_DROP_PERCENT: 66n,
     BASE_DEPOSIT: 2000,
     USERS_TO_USE: 2,
+    INCLUDED_MARKETS: ["sUSDe 05/02/26",'wstUSR 29/01/26'],
     MODE: "simple",
 } as const;
 

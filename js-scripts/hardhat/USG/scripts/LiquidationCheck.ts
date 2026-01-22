@@ -19,7 +19,6 @@ type LiquidationUserFullInfo = {
 };
 
 async function main() {
-    console.log("🔍 Checking liquidation status (CHAOS MODE - 300 users)...");
 
     // Load existing addresses if available
     let addresses;
@@ -43,7 +42,6 @@ async function main() {
     const users = allSigners.slice(0, CHAOS_CONFIG.USER_COUNT); // Use all users from config
 
     const userAddresses = await Promise.all(users.map((user: any) => user.getAddress()));
-    console.log(`📊 Checking ${userAddresses.length} users across ${marketAddresses.length} markets`);
 
     if (marketAddresses.length === 0 || userAddresses.length === 0) {
         console.log("❌ No markets or users found in addresses.json");
