@@ -8,7 +8,7 @@ svc.loadDynamicAssets(liquidationAddresses);
 main();
 
 async function main() {
-    const svc = new CurveRouteGeneration();
+    const svc = new CurveRouteService();
     await svc.loadDynamicAssets(liquidationAddresses);
     const finalRoutes = svc.loadFile<{
         success: RouteResult;
