@@ -10,7 +10,6 @@
   },
   "scripts": {
     "hh-node": "npx hardhat node --hostname 0.0.0.0",
-    "hh-node-300": "npx hardhat node --hostname 0.0.0.0 --network localhost300",
     "deploy:usg-local": "npx hardhat run js-scripts/hardhat/USG/scripts/deployUSG.ts --network localhost",
     "deploy:usg-staging": "npx hardhat run js-scripts/hardhat/USG/scripts/deployUSG.ts --network staging",
     "full-USG": "npm run deploy-USG &  npm run distribute-rewards-USG & npm run deposit-markets-USG  & npm run borrow-markets-USG",

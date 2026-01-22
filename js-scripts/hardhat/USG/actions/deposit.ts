@@ -8,7 +8,7 @@ import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: Record<string, Record<string, string>>) {
     try {
         const addresses = loadAddresses();
-        const marketViewer = await ethers.getContractAt("MarketViewer", addresses.utilities.marketViewer as string);
+
 
         const collatTokenCache: Record<string, any> = {};
         const errorMarkets = new Map<string, number>();
