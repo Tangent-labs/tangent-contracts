@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {IMarketExternalActions, IERC20} from "../../../interfaces/internals/USG/IMarketExternalActions.sol";
+import {TokenAmount} from "../../../interfaces/internals/ICommonStruct.sol";
+import {IMarketExternalActions, IERC20, IERC20Metadata} from "../../../interfaces/internals/USG/IMarketExternalActions.sol";
 import {ICollateral, IPriceOracle} from "../../../interfaces/internals/USG/ICollateral.sol";
 import {IConvexCrvLPMarket, ICvxRewardToken} from "../../../interfaces/internals/USG/IConvexCrvLPMarket.sol";
 import {IConvexFxnLPMarket, IStakingProxyERC20} from "../../../interfaces/internals/USG/IConvexFxnLPMarket.sol";
 import {IWStable} from "../../../interfaces/internals/USG/IWStable.sol";
+
+import {ICurveStableSwapNG} from "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 
 import {IVirtualBalanceRewardPool} from "../../../interfaces/externals/Convex/IVirtualBalanceRewardPool.sol";
 import {ISharedLiquidityGauge} from "../../../interfaces/externals/FXN/ISharedLiquidityGauge.sol";
@@ -69,6 +72,9 @@ struct KeeperData {
     address keeper;
     address lp;
     uint256 lpBalance;
+    uint256 virtualPrice;
+    address coin0;
+    address coin1;
 }
 
 struct WStableData {
@@ -76,34 +82,50 @@ struct WStableData {
     address stable;
     uint256 totalSupply;
 }
-
+struct KeeperIn {
+    address keeper;
+    address lp;
+}
 interface IDistributedToken {
     function rate() external view returns (uint256);
 }
+
+import "hardhat/console.sol";
 
 contract USGIndexingGlobalData is UsgInfo {
     uint256 constant ONE_YEAR = 365 days;
     error MarketCurrentAPRError(USGIndexingGlobalDataOut);
 
-    constructor(MarketAPRInput[] memory markets, USGContractsIn memory contracts, address[] memory pegKeepers, address[] memory wStables) {
+    constructor(MarketAPRInput[] memory markets, USGContractsIn memory contracts, KeeperIn[] memory keepersIn, address[] memory wStables) {
+        address[] memory keepers = new address[](keepersIn.length);
+        for (uint256 i; i < keepersIn.length; i++) {
+            keepers[i] = keepersIn[i].keeper;
+        }
         revert MarketCurrentAPRError(
             USGIndexingGlobalDataOut({
                 timestamp: block.timestamp,
                 marketData: getMarketsData(markets, contracts.rewardAccumulator, contracts.irCalculator, contracts._marketViewer),
-                usgInfo: getUSGInfo(contracts.usg, contracts.sUSG, pegKeepers, contracts.usgOracle),
-                keepersData: getPegKeepersData(pegKeepers),
+                usgInfo: getUSGInfo(contracts.usg, contracts.sUSG, keepers, contracts.usgOracle),
+                keepersData: getPegKeepersData(keepersIn),
                 wStablesData: getWrappedStablesData(wStables)
             })
         );
     }
 
-    function getPegKeepersData(address[] memory pegKeepers) internal view returns (KeeperData[] memory) {
-        uint256 keepersLen = pegKeepers.length;
+    function getPegKeepersData(KeeperIn[] memory keepersIn) internal view returns (KeeperData[] memory) {
+        uint256 keepersLen = keepersIn.length;
         KeeperData[] memory keepersData = new KeeperData[](keepersLen);
         for (uint256 i; i < keepersLen; i++) {
-            IPegKeeperV2 pegKeeper = IPegKeeperV2(pegKeepers[i]);
-            IERC20 lp = IERC20(pegKeeper.pool());
-            keepersData[i] = KeeperData({keeper: address(pegKeeper), lp: address(lp), lpBalance: lp.balanceOf(address(pegKeeper))});
+            address pegKeeper = keepersIn[i].keeper;
+            ICurveStableSwapNG lp = ICurveStableSwapNG(keepersIn[i].lp);
+            keepersData[i] = KeeperData({
+                keeper: pegKeeper,
+                lp: address(lp),
+                lpBalance: lp.balanceOf(pegKeeper),
+                virtualPrice: lp.get_virtual_price(),
+                coin0: lp.coins(0),
+                coin1: lp.coins(1)
+            });
         }
         return keepersData;
     }
