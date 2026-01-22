@@ -8,6 +8,8 @@ svc.loadDynamicAssets(liquidationAddresses);
 main();
 
 async function main() {
+    const svc = new CurveRouteGeneration();
+    await svc.loadDynamicAssets(liquidationAddresses);
     const finalRoutes = svc.loadFile<{
         success: RouteResult;
         errors: string[];
@@ -32,7 +34,7 @@ async function main() {
             });
         });
 
-        // If we find a match, we can use the params from finalRoute to replace addresses
+        // If we find a match , we can use the params from finalRoute to replace addresses
         if (swapParams) {
             const routeAddresses = [];
             const singleSwaps = rawRoute.singleSwaps;

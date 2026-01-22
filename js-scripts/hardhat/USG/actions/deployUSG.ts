@@ -32,7 +32,7 @@ export async function deployUSG(userCount: number = 6) {
 
     console.log("Deploy LPs");
     // Create USG LP
-    await lpDeployContext.deployAllTangentLps(baseContext, wStableContext);
+    await lpDeployContext.deployAllTangentLps(baseContext, wStableContext, baseLpDeposit);
 
     console.log("Deploy and setup Oracles");
     // Setup and create all oracles
@@ -84,7 +84,6 @@ export async function deployUSG(userCount: number = 6) {
         // "Pendle PT - wstETH 25_06_26"
     ];
 
-
     // Deploy Convex CRV markets
     console.log("Deploy convex CRV markets");
     await marketContext.deployConvexCrvMarkets(convexCrvMarkets, baseContext, oracleContext);
@@ -104,7 +103,6 @@ export async function deployUSG(userCount: number = 6) {
     // Deploy Pendle PT markets
     console.log("Deploy Pendle PT markets");
     await marketContext.deployBasicERC20Markets(pendlePTMarkets, baseContext, oracleContext);
-
 
     // Approve LPs with test users
     await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-USDC"].getAddress());

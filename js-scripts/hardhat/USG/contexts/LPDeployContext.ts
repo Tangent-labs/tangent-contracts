@@ -1,9 +1,9 @@
-import { ethers } from "hardhat";
-import { IERC20Metadata, ICurveStableSwapNG, ICurveCryptoSwap } from "../../../../typechain-types";
-import { BaseContext } from "./BaseContext";
-import { AddressLike, BigNumberish, MaxUint256, parseUnits, ZeroAddress } from "ethers";
-import { WStablesContext } from "./WStableContext";
-import { commonERC20 } from "@tangent/defi-resources";
+import {ethers} from "hardhat";
+import {IERC20Metadata, ICurveStableSwapNG, ICurveCryptoSwap} from "../../../../typechain-types";
+import {BaseContext} from "./BaseContext";
+import {AddressLike, BigNumberish, formatUnits, MaxUint256, parseUnits, ZeroAddress} from "ethers";
+import {WStablesContext} from "./WStableContext";
+import {commonERC20} from "@tangent/defi-resources";
 
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;
@@ -13,8 +13,8 @@ export class LpDeployContext {
     stableLp: StableLP = {};
     tanLP?: ICurveCryptoSwap;
 
-    async deployAllTangentLps(baseContext: BaseContext, wStableContext: WStablesContext) {
-        const amount = 500_000;
+    async deployAllTangentLps(baseContext: BaseContext, wStableContext: WStablesContext, baseDeposit?: number) {
+        const amount = baseDeposit || 500_000;
         const USG_USDC = "USG-USDC";
         const USGC = "USGC";
 
@@ -134,10 +134,22 @@ export class LpDeployContext {
 
         await coins[0].connect(deployer).approve(lp, MaxUint256);
         await coins[1].connect(deployer).approve(lp, MaxUint256);
+        const deployerAddress = await deployer.getAddress();
+        const coin0Name = await coins[0].name();
+        const coin0Decimals = await coins[0].decimals();
+        const balance0 = await coins[0].balanceOf(deployerAddress);
+        const coin1Name = await coins[1].name();
+        const coin1Decimals = await coins[1].decimals();
+        const balance1 = await coins[1].balanceOf(deployerAddress);
+        const balance0Parsed = formatUnits(balance0.toString(), coin0Decimals);
+        const balance1Parsed = formatUnits(balance1.toString(), coin1Decimals);
+
+        console.log(`${coin0Name} balance of deployer:`, balance0Parsed);
+        console.log(`${coin1Name} balance of deployer:`, balance1Parsed);
 
         await lp
             .connect(deployer)
-        ["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
+            ["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
 
         await this._usersApproveLp(baseContext, coins, lp);
 

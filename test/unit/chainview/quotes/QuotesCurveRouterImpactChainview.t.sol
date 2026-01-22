@@ -14,7 +14,7 @@ contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
             address(AddrCurveStableLP.USDC_fxUSD),
             address(AddrCurveStableLP.USDC_fxUSD),
             address(AddrClassicERC20.USDC),
-            address(lpDeploymentContext.USGLPs("usg-USDC")),
+            address(lpDeploymentContext.USGLPs("USG-USDC")),
             address(usg),
             address(0),
             address(0),
@@ -32,7 +32,7 @@ contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
         ];
         address[5] memory pools = [address(0), address(0), address(0), address(0), address(0)];
 
-        CurveQuote memory curveQuote = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
+        CurveQuote memory curveQuote = CurveQuote({_route: route, _swap_params: swapParams, _amount: 800_000 ether, _pools: pools});
         quoteIn[0] = curveQuote;
 
         try new QuotesCurveRouterImpact(quoteIn) {} catch (bytes memory reason) {
@@ -42,6 +42,9 @@ contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
 
     // QUOTE crvUSD-USDC => USDC => usg-USDC => usg
     function test_quote_curve_router_impact_chainview_without_wStable() public {
+
+        
+
         CurveQuote[] memory curveQuotes = new CurveQuote[](2);
         address[11] memory route = [
             address(AddrCurveStableLP.USDC_crvUSD),
@@ -65,8 +68,8 @@ contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
         ];
         address[5] memory pools = [address(0), address(0), address(0), address(0), address(0)];
 
-        curveQuotes[0] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
-        curveQuotes[1] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
+        curveQuotes[0] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 500_000 ether, _pools: pools});
+        curveQuotes[1] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 500_000 ether, _pools: pools});
         try new QuotesCurveRouterImpact(curveQuotes) {} catch (bytes memory reason) {
             // parse revert reason
             (uint256[] memory results, uint256[] memory priceImpacts) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));

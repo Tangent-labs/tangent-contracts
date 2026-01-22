@@ -1,9 +1,9 @@
 import {chainView} from "../../../chainView";
 import chainViewMarketAccountArtifact from "../../../../artifacts/src/chainview/USG/bot/MarketAccountLiquidationBotInfo.cv.sol/MarketAccountLiquidationBotInfo.json";
-import {LiquidationUserInInfo, LiquidationMarketAccountInfo} from "../contexts/LiquidationContext";
-import {formatEther} from "ethers";
+import {LiquidationUserInInfo, LiquidationMarketAccountInfo, LiquidationContext} from "../contexts/LiquidationContext";
 import * as fs from "fs";
 import {ethers} from "hardhat";
+import {CHAOS_CONFIG} from "./liquidationSetUpChaos";
 
 // DENOMINATOR from Collateral.sol (100_000 = 100%)
 const DENOMINATOR = 100_000n;
@@ -19,7 +19,6 @@ type LiquidationUserFullInfo = {
 };
 
 async function main() {
-    console.log("🔍 Checking liquidation status...");
 
     // Load existing addresses if available
     let addresses;
@@ -29,7 +28,7 @@ async function main() {
         addresses = JSON.parse(addressesData);
         console.log("✅ Loaded existing addresses from addresses.json");
     } catch (error) {
-        console.log("❌ No addresses.json found. Please run liquidation-context first.");
+        console.log("❌ No addresses.json found. Please run liquidation-context-chaos first.");
         return;
     }
 
@@ -38,10 +37,11 @@ async function main() {
 
     // Get market addresses from the loaded data
     const marketAddresses = addresses.markets?.map((market: any) => market.marketAddress) || [];
-    const users = (await ethers.getSigners())?.slice(0, 5);
+    // Use all users for chaos mode
+    const allSigners = await ethers.getSigners();
+    const users = allSigners.slice(0, CHAOS_CONFIG.USER_COUNT); // Use all users from config
 
-    const userAddresses = (await Promise.all(users.map((user: any) => user.getAddress()))) || [];
-    console.log(userAddresses);
+    const userAddresses = await Promise.all(users.map((user: any) => user.getAddress()));
 
     if (marketAddresses.length === 0 || userAddresses.length === 0) {
         console.log("❌ No markets or users found in addresses.json");
@@ -50,50 +50,63 @@ async function main() {
 
     console.log(`📈 Found ${marketAddresses.length} markets and ${userAddresses.length} users`);
 
-    // Create parameters for chain view
-    const params = marketAddresses
-        .map((marketAddress: string) =>
-            userAddresses.map((userAddress: string) => {
-                return {
-                    account: userAddress,
-                    market: marketAddress,
-                };
-            })
-        )
-        .flat();
-
-    //console.log(params);
+    // Get marketViewer address
+    const marketViewerAddress = addresses.utilities?.marketViewer;
+    if (!marketViewerAddress) {
+        console.log("❌ MarketViewer address not found in addresses.json");
+        return;
+    }
 
     try {
-        // Execute chain view to get liquidation data
-        const userAccountsData = await chainView<[string[], LiquidationUserInInfo[]], [LiquidationMarketAccountInfo]>(
-            chainViewMarketAccountArtifact.abi,
-            chainViewMarketAccountArtifact.bytecode,
-            [marketAddresses, params]
-        );
+        console.log(`\n📦 Processing all ${userAddresses.length} users...`);
 
-        if (!userAccountsData || !userAccountsData[0]) {
+        // Create parameters for all users
+        const allParams: LiquidationUserInInfo[] = marketAddresses
+            .map((marketAddress: string) =>
+                userAddresses.map((userAddress: string) => {
+                    return {
+                        account: userAddress,
+                        market: marketAddress,
+                    };
+                })
+            )
+            .flat();
+
+        // Execute chain view for all users
+        const data = await chainView<[LiquidationMarketAccountInfo]>(chainViewMarketAccountArtifact.abi, chainViewMarketAccountArtifact.bytecode, [
+            marketAddresses,
+            allParams,
+            marketViewerAddress,
+        ]);
+
+        if (!data || !data[0]) {
             console.log("❌ No liquidation data returned from chain view");
             return;
         }
 
-        //console.log(userAccountsData);
+        const aggregatedMarkets = data[0].markets?.map((m) => m.toObject()) || [];
+        const aggregatedAccounts = data[0]?.accounts?.map((a) => a.toObject()) || [];
 
+        if (aggregatedAccounts.length === 0) {
+            console.log("❌ No liquidation data returned from chain view");
+            return;
+        }
+
+        console.log(`\n✅ Processing completed. Total accounts: ${aggregatedAccounts.length}`);
         console.log("\n📋 LIQUIDATION STATUS REPORT");
         console.log("=".repeat(50));
 
-        const markets = userAccountsData[0].markets?.map((m) => m.toObject());
-
-        // Process each market's data
-        const debtAccounts = userAccountsData[0]?.accounts?.map((a) => a.toObject());
+        const markets = aggregatedMarkets;
+        const debtAccounts = aggregatedAccounts;
 
         const seizingList: LiquidationUserFullInfo[] = [];
         const liquidationList: LiquidationUserFullInfo[] = [];
+        const safeList: LiquidationUserFullInfo[] = [];
 
         let paramIndex = 0;
         for (const debtAccountIndex in debtAccounts) {
             const debtAccount = debtAccounts[debtAccountIndex];
-            const param = params[paramIndex];
+            const param = allParams[paramIndex];
             if (!param) {
                 console.error("No params founded ");
                 continue;
@@ -127,31 +140,15 @@ async function main() {
             };
 
             // Categorize account based on liquidation/seizing logic
+            // Use healthRatio (as the contract does) instead of LTV for more accurate categorization
+            // healthRatio < 1e18 means liquidatable (as per MarketExternalActions.sol line 217)
             if (account.userDebt >= account.positionValue) {
                 seizingList.push(account);
-            } else if (account.ltv > account.liquidationThreshold) {
+            } else if (account.healthRatio < 10n ** 18n) {
+                // healthRatio < 1 means liquidatable (same logic as contract)
                 liquidationList.push(account);
-            }
-
-            const marketInfo = addresses.markets?.find((m: any) => m.marketAddress === param.market);
-            const healthRatioPercent = Number(formatEther(healthRatio)) * 100;
-            const ltvPercent = Number(ltv) / 1000;
-            if (userDebt > 0n) {
-                console.log(`👤 User: ${userAddress.slice(0, 8)}...${userAddress.slice(-6)} / Market : ${marketInfo.collatName} `);
-                console.log(`   Max LTV: ${Number(marketData.maxLTV) / 1000}%`);
-                console.log(`   Liquidation Threshold: ${Number(marketData.liquidationThreshold) / 1000}%`);
-                console.log(`   LTV: ${ltvPercent.toFixed(2)}%`);
-                console.log(`   Health Ratio: ${healthRatioPercent.toFixed(2)}%`);
-                console.log(`   Debt: ${formatEther(userDebt)} USG`);
-                console.log(`   Position Value: $${formatEther(positionValue)}`);
-                if (seizingList.some((a) => a.account === userAddress && a.market === param.market)) {
-                    console.log(`   Status: 🔴 SEIZABLE`);
-                } else if (liquidationList.some((a) => a.account === userAddress && a.market === param.market)) {
-                    console.log(`   Status: 🔴 LIQUIDATABLE`);
-                } else {
-                    console.log(`   Status: 🟢 Safe`);
-                }
-                console.log("");
+            } else {
+                safeList.push(account);
             }
 
             paramIndex++;
@@ -160,12 +157,14 @@ async function main() {
         // Display summary
         console.log("\n📊 LIQUIDATION SUMMARY");
         console.log("=".repeat(50));
-        console.log(`🔴 Seizable accounts: ${new Set(seizingList.map((a) => a.market)).size}`);
-        console.log(`🔴 Liquidatable accounts: ${new Set(liquidationList.map((a) => a.market)).size}`);
+        console.log(`🟢 Safe accounts: ${safeList.length}`);
+        console.log(`🔴 Liquidatable accounts: ${liquidationList.length}`);
+        console.log(`🔴 Seizable accounts: ${seizingList.length}`);
+        console.log(`📊 Total accounts with debt: ${safeList.length + liquidationList.length + seizingList.length}`);
 
-        // list of markets by collatName with the numnber of Safe / LIQUIDATABLE / SEIZABLE
+        // list of markets by collatName with the number of Safe / LIQUIDATABLE / SEIZABLE
         const marketSummary = markets?.map((m) => {
-            const safe = seizingList.filter((a) => a.market === m.market).length || 0;
+            const safe = safeList.filter((a) => a.market === m.market).length || 0;
             const liquidatable = liquidationList.filter((a) => a.market === m.market).length || 0;
             const seizing = seizingList.filter((a) => a.market === m.market).length || 0;
             return {
@@ -177,7 +176,7 @@ async function main() {
         });
         console.table(marketSummary, ["collatName", "safe", "Liquidatable", "Seizable"]);
 
-        // ist of the liquiditable market  by distinct name
+        // list of the liquiditable market by distinct name
         const liquiditableMarkets = [...new Set(liquidationList.map((a) => addresses.markets?.find((m: any) => m.marketAddress === a.market)?.collatName))];
         console.log(`🔴 Liquiditable markets: ${liquiditableMarkets.join(", ")}`);
 
@@ -185,31 +184,15 @@ async function main() {
         const seizingMarkets = [...new Set(seizingList.map((a) => addresses.markets?.find((m: any) => m.marketAddress === a.market)?.collatName))];
         console.log(`🔴 Seizing markets: ${seizingMarkets.join(", ")}`);
 
-        // if (seizingList.length > 0) {
-        //     console.log("\n🔴 SEIZABLE ACCOUNTS:");
-        //     seizingList.forEach((account) => {
-        //         const marketInfo = addresses.markets?.find((m: any) => m.marketAddress === account.market);
-        //         console.log(`   - ${account.account.slice(0, 8)}...${account.account.slice(-6)} / ${marketInfo?.collatName || account.market}`);
-        //         console.log(`     Debt: ${formatEther(account.userDebt)} USG >= Position: $${formatEther(account.positionValue)}`);
-        //     });
-        // }
-
-        // if (liquidationList.length > 0) {
-        //     console.log("\n🔴 LIQUIDATABLE ACCOUNTS:");
-        //     liquidationList.forEach((account) => {
-        //         const marketInfo = addresses.markets?.find((m: any) => m.marketAddress === account.market);
-        //         const ltvPercent = Number(account.ltv) / 1000;
-        //         const thresholdPercent = Number(account.liquidationThreshold) / 1000;
-        //         console.log(`   - ${account.account.slice(0, 8)}...${account.account.slice(-6)} / ${marketInfo?.collatName || account.market}`);
-        //         console.log(`     LTV: ${ltvPercent.toFixed(2)}% > Threshold: ${thresholdPercent.toFixed(2)}%`);
-        //     });
-        // }
+        // Force exit to close all connections
+        process.exit(0);
     } catch (error) {
         console.error("❌ Error checking liquidation status:", error);
+        process.exit(1);
     }
 }
 
-console.log("Checking liquidation status...");
+console.log("Checking liquidation status (CHAOS MODE)...");
 main().catch((error) => {
     console.error("❌ Script failed:", error);
     process.exit(1);

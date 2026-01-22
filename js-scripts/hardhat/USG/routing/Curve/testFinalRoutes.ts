@@ -27,7 +27,7 @@ async function main() {
 
     for (let index = 0; index < finalRoutes.success.length; index++) {
         const finalRoute = finalRoutes.success[index];
-        const thiefData = ThiefConfig.find((a) => a.address.toLowerCase() === finalRoute.in.toLowerCase());
+        const thiefData = ThiefConfig.find((a) =>  finalRoute.in && a.address.toLowerCase() === finalRoute.in.toLowerCase());
 
         const amountIn = ethers.parseUnits(amount, thiefData?.decimals || 18);
         await svc.prepareUserForExchange(finalRoute.in, finalRoute.display, usr, amount, thiefData);

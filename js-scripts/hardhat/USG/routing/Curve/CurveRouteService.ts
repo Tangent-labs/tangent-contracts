@@ -78,6 +78,7 @@ export class CurveRouteService {
         if (!response.ok) {
             throw new Error(`Erreur HTTP: ${response.status}`);
         }
+        console.log("Response:", await response.headers);
         return await response.text();
     }
 
@@ -449,7 +450,6 @@ export class CurveRouteService {
         return { success: finalHydratedRoutes, errors };
     };
 }
-
 
 
 export type LiquidationAsset = keyof typeof LIQUIDATION_ASSETS;
