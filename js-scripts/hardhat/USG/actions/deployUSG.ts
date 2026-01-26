@@ -1,4 +1,4 @@
-import { curveLp } from "@tangent/defi-resources";
+import { CURVE_LPS } from "@tangent/defi-resources";
 import { BaseContext } from "../contexts/BaseContext";
 import { MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys, BasicERC20MarketKeys, StakeDaoVaultV2MarketsKeys, CurveGaugeMarketsKeys } from "../contexts/MarketContext";
 import { OracleContext } from "../contexts/OracleContext";
@@ -106,10 +106,9 @@ export async function deployUSG(userCount: number = 6, baseLpDeposit?: number) {
 
     // Approve LPs with test users
     await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-USDC"].getAddress());
-    await baseContext.approveCurveLP(curveLp.crvUSD_USDC);
-    await baseContext.approveCurveLP(curveLp.CRV_LP_USDC_fxUSD);
-    await baseContext.approveCurveLP(curveLp.CRV_LP_pxETH_WETH);
-    await baseContext.approveCurveLP(curveLp.CRV_DUO_ETH_CVX);
+    await baseContext.approveCurveLP(CURVE_LPS.crvUSD_USDC);
+    await baseContext.approveCurveLP(CURVE_LPS.LP_USDC_fxUSD);
+    await baseContext.approveCurveLP(CURVE_LPS.LP_pxETH_WETH);
 
     return { baseContext, oracleContext, marketContext, lpDeployContext, wStableContext };
 }

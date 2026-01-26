@@ -1,14 +1,14 @@
-import {ethers} from "hardhat";
-import {pendleWithdrawYT, pendleWithdrawPT, pendleDepositPTAndYT, pendleDepositLP, pendleWithdrawLP, PendleKeys} from "../actions/pendleActions";
+import { ethers } from "hardhat";
+import { pendleWithdrawYT, pendleWithdrawPT, pendleDepositPTAndYT, pendleDepositLP, pendleWithdrawLP, PendleKeys } from "../actions/pendleActions";
 
-import {formatEther, parseEther, Signer} from "ethers";
-import {giveTokenToAddresss} from "../../thief/thief";
-import {THIEF_TOKEN_CONFIG} from "@tangent/defi-resources/build/ressources/erc20/thiefConfig";
-import {PendlePools} from "@tangent/defi-resources";
+import { formatEther, parseEther, Signer } from "ethers";
+import { giveTokenToAddresss } from "../../thief/thief";
+import { THIEF_TOKEN_CONFIG } from "@tangent/defi-resources/build/ressources/erc20/thiefConfig";
+import { PENDLE_POOLS } from "@tangent/defi-resources";
 
 const testAll = async (key: PendleKeys) => {
     const user = (await ethers.getSigners())[0] as unknown as Signer;
-    const syToken = await ethers.getContractAt("IPendleSYToken", PendlePools[key].SY);
+    const syToken = await ethers.getContractAt("IPendleSYToken", PENDLE_POOLS[key].SY);
 
     const tokensIn = await syToken.getTokensIn();
 
@@ -31,7 +31,7 @@ const testAll = async (key: PendleKeys) => {
 };
 
 const test_LP = async (key: PendleKeys, amount: number, user: Signer) => {
-    const market = await ethers.getContractAt("IPendleMarketV3", PendlePools[key].MARKET);
+    const market = await ethers.getContractAt("IPendleMarketV3", PENDLE_POOLS[key].MARKET);
     try {
         const lpBalanceBefore = await market.balanceOf(user);
 
@@ -63,7 +63,7 @@ const test_LP = async (key: PendleKeys, amount: number, user: Signer) => {
 };
 
 const test_YT = async (key: PendleKeys, amount: number, user: Signer) => {
-    const yt = await ethers.getContractAt("IPendleYTToken", PendlePools[key].YT);
+    const yt = await ethers.getContractAt("IPendleYTToken", PENDLE_POOLS[key].YT);
 
     try {
         // deposit some LP
@@ -104,7 +104,7 @@ const test_YT = async (key: PendleKeys, amount: number, user: Signer) => {
 };
 
 const test_PT = async (key: PendleKeys, amount: number, user: Signer) => {
-    const pt = await ethers.getContractAt("IERC20Metadata", PendlePools[key].PT);
+    const pt = await ethers.getContractAt("IERC20Metadata", PENDLE_POOLS[key].PT);
 
     try {
         const ptBalanceBefore = await pt.balanceOf(user);

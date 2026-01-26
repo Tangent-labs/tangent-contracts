@@ -1,9 +1,9 @@
-import {ethers} from "hardhat";
-import {IERC20Metadata, ICurveStableSwapNG, ICurveCryptoSwap} from "../../../../typechain-types";
-import {BaseContext} from "./BaseContext";
-import {AddressLike, BigNumberish, formatUnits, MaxUint256, parseUnits, ZeroAddress} from "ethers";
-import {WStablesContext} from "./WStableContext";
-import {commonERC20} from "@tangent/defi-resources";
+import { ethers } from "hardhat";
+import { IERC20Metadata, ICurveStableSwapNG, ICurveCryptoSwap } from "../../../../typechain-types";
+import { BaseContext } from "./BaseContext";
+import { AddressLike, BigNumberish, formatUnits, MaxUint256, parseUnits, ZeroAddress } from "ethers";
+import { WStablesContext } from "./WStableContext";
+import { COMMON_ERC20S } from "@tangent/defi-resources";
 
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;
@@ -149,7 +149,7 @@ export class LpDeployContext {
 
         await lp
             .connect(deployer)
-            ["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
+        ["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
 
         await this._usersApproveLp(baseContext, coins, lp);
 
@@ -166,7 +166,7 @@ export class LpDeployContext {
             .deploy_pool(
                 "TAN",
                 "TAN",
-                [commonERC20.WETH, baseContext.TAN],
+                [COMMON_ERC20S.WETH, baseContext.TAN],
                 0,
                 400000,
                 145000000000000,
@@ -181,7 +181,7 @@ export class LpDeployContext {
         await lpCreationTx.wait();
 
         const lp = await ethers.getContractAt("ICurveCryptoSwap", await curveStableSwapFactory.pool_list(poolCount));
-        const coin0 = await ethers.getContractAt("ERC20", commonERC20.WETH);
+        const coin0 = await ethers.getContractAt("ERC20", COMMON_ERC20S.WETH);
         const coin1 = await ethers.getContractAt("ERC20", baseContext.TAN);
         await coin0.connect(deployer).approve(lp, MaxUint256);
         await coin1.connect(deployer).approve(lp, MaxUint256);

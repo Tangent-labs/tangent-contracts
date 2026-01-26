@@ -1,4 +1,4 @@
-import {PENDLE_POOLS, thiefConfig, curveLp} from "@tangent/defi-resources";
+import { PENDLE_POOLS, thiefConfig, CURVE_LPS } from "@tangent/defi-resources";
 
 export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;
@@ -187,7 +187,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             slotBalance: 0,
             decimals: 18,
             isVyper: false,
-            address: curveLp.CRV_DUO_PYUSD_USDC,
+            address: CURVE_LPS.DUO_PYUSD_USDC,
             amount: mintedAmount,
             name: "PYUSD_USDC",
         },
@@ -195,7 +195,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             slotBalance: 0,
             decimals: 18,
             isVyper: false,
-            address: curveLp.CRV_DUO_RLUSD_USDC,
+            address: CURVE_LPS.DUO_RLUSD_USDC,
             amount: mintedAmount,
             name: "RLUSD_USDC",
         },
@@ -203,7 +203,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             slotBalance: 0,
             decimals: 18,
             isVyper: false,
-            address: curveLp.CRV_DUO_stUSDS_USDS,
+            address: CURVE_LPS.DUO_stUSDS_USDS,
             amount: mintedAmount,
             name: "stUSDS_USDS",
         },
@@ -213,7 +213,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             slotBalance: 0,
             decimals: 18,
             isVyper: false,
-            address: curveLp.CRV_DUO_frxUSD_msUSD,
+            address: CURVE_LPS.DUO_frxUSD_msUSD,
             amount: mintedAmount,
             name: "frxUSD_msUSD",
         },
@@ -221,7 +221,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             slotBalance: 0,
             decimals: 18,
             isVyper: false,
-            address: curveLp.CRV_DUO_ETHplus_WETH,
+            address: CURVE_LPS.DUO_ETHplus_WETH,
             amount: mintedAmount,
             name: "ETH+_WETH",
         },
@@ -229,7 +229,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             slotBalance: 0,
             decimals: 18,
             isVyper: false,
-            address: curveLp.CRV_DUO_tBTC_cbBTC,
+            address: CURVE_LPS.DUO_tBTC_cbBTC,
             amount: mintedAmount,
             name: "tBTC_cbBTC",
         },
@@ -237,7 +237,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             slotBalance: 0,
             decimals: 18,
             isVyper: false,
-            address: curveLp.CRV_DUO_msETH_OETH,
+            address: CURVE_LPS.DUO_msETH_OETH,
             amount: mintedAmount,
             name: "msETH_OETH",
         },

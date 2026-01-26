@@ -1,14 +1,14 @@
-import {ethers} from "hardhat";
-import {CHAINLINK_PRICE_FEEDS, PENDLE_POOLS, commonERC20, COMMON_ERC20S, CURVE_LPS} from "@tangent/defi-resources";
-import {IAggregatorStablePriceV3, IPriceOracle} from "../../../../typechain-types";
-import {BaseContext} from "./BaseContext";
-import {LpDeployContext} from "./LPDeployContext";
-import {chainlinkOracleParams, oracleCoinFromCurveLPParams, oracleCryptoSwapParams, oracleDuoPoolStableParams, oracleERC4626Params, oraclePendlePTParams} from "./oracleParams";
-import {ZeroAddress} from "ethers";
+import { ethers } from "hardhat";
+import { CHAINLINK_PRICE_FEEDS, PENDLE_POOLS, COMMON_ERC20S, CURVE_LPS } from "@tangent/defi-resources";
+import { IAggregatorStablePriceV3, IPriceOracle } from "../../../../typechain-types";
+import { BaseContext } from "./BaseContext";
+import { LpDeployContext } from "./LPDeployContext";
+import { chainlinkOracleParams, oracleCoinFromCurveLPParams, oracleCryptoSwapParams, oracleDuoPoolStableParams, oracleERC4626Params, oraclePendlePTParams } from "./oracleParams";
+import { ZeroAddress } from "ethers";
 
 export class OracleContext {
     USGOracle!: IAggregatorStablePriceV3;
-    oracles: {[key: string]: IPriceOracle} = {};
+    oracles: { [key: string]: IPriceOracle } = {};
 
     async deployAndSetupOracles(baseContext: BaseContext, lpDeployContext: LpDeployContext) {
         await this.deployChainlinkWrappers();
@@ -52,7 +52,7 @@ export class OracleContext {
             const coin0Oracle = this.oracles[item.coin0Oracle];
 
             if (!curveLP) {
-                throw Error(`ERC4626 ${item.lp} not configured in defi-resources in curveLp for ${item.oracleName}`);
+                throw Error(`ERC4626 ${item.lp} not configured in defi-resources in CURVE_LPS for ${item.oracleName}`);
             }
 
             if (!coin0Oracle) {
@@ -71,7 +71,7 @@ export class OracleContext {
             const underlyingOracle = this.oracles[item.underlyingOracle];
 
             if (!erc4626Address) {
-                throw Error(`ERC4626 ${item.erc4626} not configured in defi-resources in commonERC20.ts for  ${item.oracleName}`);
+                throw Error(`ERC4626 ${item.erc4626} not configured in defi-resources in COMMON_ERC20S.ts for  ${item.oracleName}`);
             }
             if (!underlyingOracle) {
                 throw Error(`${item.underlyingOracle} not deployed for ${item.oracleName}`);
@@ -90,7 +90,7 @@ export class OracleContext {
             const oracle1 = this.oracles[item.coin1Oracle];
 
             if (!lpAddress) {
-                throw Error(`LP ${item.lp} not configured in defi-resources in curveLp.ts for  ${item.oracleName}`);
+                throw Error(`LP ${item.lp} not configured in defi-resources in CURVE_LPS for  ${item.oracleName}`);
             }
             if (!oracle0) {
                 throw Error(`${item.coin0Oracle} (Oracle 0) not configured for ${item.oracleName}`);

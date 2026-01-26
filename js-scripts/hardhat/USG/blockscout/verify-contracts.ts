@@ -1,10 +1,10 @@
-import {Client} from "pg";
+import { Client } from "pg";
 import * as addresses from "../../../../addresses.json";
 import * as curveStableSwapNG from "../../../../artifacts/src/interfaces/externals/Curve/ICurveStableSwapNG.sol/ICurveStableSwapNG.json";
 
-import {commonERC20, curveLp, routers} from "@tangent/defi-resources";
-import {forceAbi, nameAddress} from "./insertContractInDb";
-import {artifacts, ethers} from "hardhat";
+import { COMMON_ERC20S, CURVE_LPS, routers } from "@tangent/defi-resources";
+import { forceAbi, nameAddress } from "./insertContractInDb";
+import { artifacts, ethers } from "hardhat";
 
 export async function verifyContracts() {
     const client = new Client({
@@ -29,18 +29,18 @@ export async function verifyContracts() {
     // Curve LP StableSwap NG
     const stableSwapNGAbi = (await artifacts.readArtifact("ICurveStableSwapNG")).abi;
 
-    await forceAbi(client, curveLp.crvUSD_USDC, "crvUSD/USDC", true, stableSwapNGAbi);
-    await forceAbi(client, curveLp.crvUSD_USDT, "crvUSD/USDT", true, stableSwapNGAbi);
-    await forceAbi(client, curveLp.CRV_LP_USDC_fxUSD, "USDC/fxUSD", true, stableSwapNGAbi);
-    await forceAbi(client, curveLp.CRV_DUO_frxETH_ETH, "frxETH/ETH", true, stableSwapNGAbi);
-    await forceAbi(client, curveLp.CRV_LP_pxETH_WETH, "pxETH/ETH", true, stableSwapNGAbi);
+    await forceAbi(client, CURVE_LPS.crvUSD_USDC, "crvUSD/USDC", true, stableSwapNGAbi);
+    await forceAbi(client, CURVE_LPS.crvUSD_USDT, "crvUSD/USDT", true, stableSwapNGAbi);
+    await forceAbi(client, CURVE_LPS.LP_USDC_fxUSD, "USDC/fxUSD", true, stableSwapNGAbi);
+    await forceAbi(client, CURVE_LPS.DUO_frxETH_ETH, "frxETH/ETH", true, stableSwapNGAbi);
+    await forceAbi(client, CURVE_LPS.LP_pxETH_WETH, "pxETH/ETH", true, stableSwapNGAbi);
 
     // CryptoSwap
 
-    await forceAbi(client, curveLp.CRV_DUO_ETH_CVX_TOKEN, "CVX/ETH Token", true, abiERC20);
+    await forceAbi(client, CURVE_LPS.DUO_ETH_CVX_TOKEN, "CVX/ETH Token", true, abiERC20);
 
     const cryptoSwapAbi = (await artifacts.readArtifact("ICurveCryptoSwap")).abi;
-    await forceAbi(client, curveLp.CRV_DUO_ETH_CVX, "CVX/ETH LP", true, cryptoSwapAbi);
+    await forceAbi(client, CURVE_LPS.DUO_ETH_CVX, "CVX/ETH LP", true, cryptoSwapAbi);
 
     // Utilities
     const controlTower = "ControlTower";
@@ -107,15 +107,15 @@ export async function verifyContracts() {
     const abi4626 = (await artifacts.readArtifact("IERC4626")).abi;
 
     const abi_sDOLA = (await artifacts.readArtifact("IsDOLA")).abi;
-    await forceAbi(client, commonERC20.sDOLA, "sDOLA", false, abi_sDOLA);
+    await forceAbi(client, COMMON_ERC20S.sDOLA, "sDOLA", false, abi_sDOLA);
 
     const abi_sUSDe = (await artifacts.readArtifact("IsUSDe")).abi;
-    await forceAbi(client, commonERC20.sUSDe, "sUSDe", false, abi_sUSDe);
+    await forceAbi(client, COMMON_ERC20S.sUSDe, "sUSDe", false, abi_sUSDe);
 
     const erc4626Params = [
-        {address: commonERC20.wstUSR, name: "wstUSR"},
-        {address: commonERC20.sUSDS, name: "sUSDS"},
-        // {address: commonERC20.sfrxUSD, name: "sfrxUSD"},
+        { address: COMMON_ERC20S.wstUSR, name: "wstUSR" },
+        { address: COMMON_ERC20S.sUSDS, name: "sUSDS" },
+        // {address: COMMON_ERC20S.sfrxUSD, name: "sfrxUSD"},
     ];
     for (let i = 0; i < erc4626Params.length; i++) {
         const param = erc4626Params[i];
@@ -125,12 +125,12 @@ export async function verifyContracts() {
     // Verify ERC20
 
     const erc20Params = [
-        {address: commonERC20.USR, name: "USR"},
-        {address: commonERC20.USDe, name: "USDE"},
-        {address: commonERC20.DOLA, name: "DOLA"},
-        {address: commonERC20.USDS, name: "USDS"},
-        {address: commonERC20.crvUSD, name: "crvUSD"},
-        // {address: commonERC20.sfrxUSD, name: "sfrxUSD"},
+        { address: COMMON_ERC20S.USR, name: "USR" },
+        { address: COMMON_ERC20S.USDe, name: "USDE" },
+        { address: COMMON_ERC20S.DOLA, name: "DOLA" },
+        { address: COMMON_ERC20S.USDS, name: "USDS" },
+        { address: COMMON_ERC20S.crvUSD, name: "crvUSD" },
+        // {address: COMMON_ERC20S.sfrxUSD, name: "sfrxUSD"},
     ];
     for (let i = 0; i < erc20Params.length; i++) {
         const param = erc20Params[i];
@@ -138,7 +138,7 @@ export async function verifyContracts() {
     }
 
     const yearnVaultAbi = (await artifacts.readArtifact("IYearnV3Vault")).abi;
-    await forceAbi(client, commonERC20.scrvUSD, "scrvUSD", true, yearnVaultAbi);
+    await forceAbi(client, COMMON_ERC20S.scrvUSD, "scrvUSD", true, yearnVaultAbi);
 
     // Verify CVX Booster
     const cvxCurveBoosterAddress = "0xF403C135812408BFbE8713b5A23a04b3D48AAE31";

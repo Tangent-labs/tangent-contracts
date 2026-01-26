@@ -1,4 +1,4 @@
-import { commonERC20 } from "@tangent/defi-resources";
+import { COMMON_ERC20S } from "@tangent/defi-resources";
 
 export const PROD_ADDRESSES = {
     // TODO 
@@ -8,7 +8,7 @@ export const PROD_ADDRESSES = {
     FEE_TRESO: "0xD2be17Cf9eE45CaC70264316614180ec608CD856",
     PAUSER: "0x0af815364BD9e9E60f3d2D3bAc1320B77d3E35F7",
     CONTROL_TOWER: "0x52E8a6De3d24A0D57BEBAbbecB54151a232C9e41",
-    USG: commonERC20.crvUSD,
+    USG: COMMON_ERC20S.crvUSD,
     USG_ORACLE: "0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E",
     USG_USDC: "0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E",
     USG_frxUSD: "0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E",
