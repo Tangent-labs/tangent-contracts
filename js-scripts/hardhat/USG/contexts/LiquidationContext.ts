@@ -413,14 +413,12 @@ export class LiquidationContext {
             // Use MarketViewer.totalDebt() instead of market.totalDebt()
             const initialTotalDebt = await marketViewer.totalDebt(market);
 
-            const safetyMargin = this.config.DEBT_SAFETY_MARGIN_PERCENT ? (info.maxMarketDebt * this.config.DEBT_SAFETY_MARGIN_PERCENT) / 100n : 0n;
-            const effectiveMaxDebt = info.maxMarketDebt - safetyMargin;
 
             limits[marketAddress] = {
                 maxMarketDebt: info.maxMarketDebt,
                 minimumLoan: info.minimumLoan,
                 initialTotalDebt,
-                effectiveMaxDebt,
+                effectiveMaxDebt:info.maxMarketDebt,
             };
 
             console.log(
@@ -477,40 +475,45 @@ export class LiquidationContext {
         let positionCount = 0;
         const maxPositionCount = this.config.MAX_POSITION_COUNT || Infinity;
 
+        // Track current total debt per market
+        const marketCurrentDebt: Record<string, bigint> = {};
         for (const marketAddress of filteredMarketAddresses) {
-            if (positionCount >= maxPositionCount) break;
-
             const limits = marketLimits[marketAddress];
-            if (!limits) continue;
-
-            const availableDebt = limits.effectiveMaxDebt - limits.initialTotalDebt;
-            if (availableDebt < limits.minimumLoan) {
-                const info = await this.getMarketInfo(marketAddress);
-                console.log(`⚠️  ${info.collatName}: insufficient capacity (${ethers.formatEther(availableDebt)} available)`);
-                continue;
+            if (limits) {
+                marketCurrentDebt[marketAddress] = limits.initialTotalDebt;
             }
+        }
 
-            let currentTotalDebt = limits.initialTotalDebt;
-            const marketDeposits: Record<string, string> = {};
-            const marketBorrows: Record<string, string> = {};
+        for (const userAddress of this.userAddresses) {
+            if (positionCount >= maxPositionCount) break;
+          
 
-            for (const userAddress of this.userAddresses) {
+            for (const marketAddress of filteredMarketAddresses) {
                 if (positionCount >= maxPositionCount) break;
+
                 if (this.config.SKIP_USER_PROBABILITY && Math.random() < this.config.SKIP_USER_PROBABILITY) continue;
 
-                const position = await this.generateUserPosition(marketAddress, currentTotalDebt, limits);
+                const limits = marketLimits[marketAddress];
+                if (!limits) continue;
+
+                const availableDebt = limits.effectiveMaxDebt - marketCurrentDebt[marketAddress];
+                if (availableDebt < limits.minimumLoan) {
+                    continue;
+                }
+
+                const position = await this.generateUserPosition(marketAddress, marketCurrentDebt[marketAddress], limits);
                 if (!position) continue;
 
-                marketDeposits[userAddress] = position.deposit;
-                marketBorrows[userAddress] = position.borrow;
-                currentTotalDebt = position.newTotalDebt;
+                if (!depositParams[marketAddress]) {
+                    depositParams[marketAddress] = {};
+                    borrowParams[marketAddress] = {};
+                }
+
+                depositParams[marketAddress][userAddress] = position.deposit;
+                borrowParams[marketAddress][userAddress] = position.borrow;
+                marketCurrentDebt[marketAddress] = position.newTotalDebt;
                 intentCount[position.intent]++;
                 positionCount++;
-            }
-
-            if (Object.keys(marketDeposits).length > 0) {
-                depositParams[marketAddress] = marketDeposits;
-                borrowParams[marketAddress] = marketBorrows;
             }
         }
 
