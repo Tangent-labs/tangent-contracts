@@ -6,7 +6,7 @@ import { LpDeployContext } from "../contexts/LPDeployContext";
 import { WStablesContext } from "../contexts/WStableContext";
 import { executeBoostContext } from "../contexts/OnchainBoostContext";
 
-export async function deployUSG(userCount: number = 6, baseLpDeposit?: number) {
+export async function deployUSG(userCount: number = 10, baseLpDeposit?: number) {
     const baseContext = new BaseContext(userCount);
     const oracleContext = new OracleContext();
     const marketContext = new MarketContext();
