@@ -1,4 +1,4 @@
-import { commonERC20, veTokens } from "@tangent/defi-resources";
+import { COMMON_ERC20S, veTokens } from "@tangent/defi-resources";
 import { ONE_WEEK_IN_SECONDS, ONE_YEAR_IN_SECONDS } from "@tangent/defi-resources/build/utils/durations";
 import { AddressLike, Contract, MaxUint256, parseEther, Signer } from "ethers";
 import { ethers } from "hardhat";
@@ -86,7 +86,7 @@ export async function approveMax(signer: Signer, tokenAddress: string, allow: Ad
 }
 
 export async function lockYFI(amount: bigint, signer: Signer, now: number) {
-    await approveMax(signer, commonERC20.YFI, veTokens.veYFI)
+    await approveMax(signer, COMMON_ERC20S.YFI, veTokens.veYFI)
 
     const veYFI = new Contract(veTokens.veYFI, abiVeYFI)
     await veYFI.connect(signer).modify_lock(amount, now + 365 * 24 * 3600)
@@ -94,14 +94,14 @@ export async function lockYFI(amount: bigint, signer: Signer, now: number) {
 
 
 export async function lockCVX(amount: bigint, signer: Signer) {
-    await approveMax(signer, commonERC20.CVX, veTokens.vlCVX)
+    await approveMax(signer, COMMON_ERC20S.CVX, veTokens.vlCVX)
 
     const vlCVX = await ethers.getContractAt("IVlCVX", veTokens.vlCVX)
     await vlCVX.connect(signer).lock(await signer.getAddress(), amount, 0)
 }
 
 export async function lockPENDLE(amount: bigint, signer: Signer, now: number) {
-    await approveMax(signer, commonERC20.PENDLE, veTokens.vePENDLE)
+    await approveMax(signer, COMMON_ERC20S.PENDLE, veTokens.vePENDLE)
 
     const vePENDLE = await ethers.getContractAt("IVePENDLE", veTokens.vePENDLE)
     await vePENDLE.connect(signer).increaseLockPosition(amount, Math.trunc(now / ONE_WEEK_IN_SECONDS) * ONE_WEEK_IN_SECONDS + ONE_WEEK_IN_SECONDS * 100)
@@ -111,13 +111,13 @@ export async function lockClassicVe(veToken: "veCRV" | "veSDT" | "veFXN", amount
     let tokenAddress = ""
     let veTokenAddress = ""
     if (veToken === "veCRV") {
-        tokenAddress = commonERC20.CRV
+        tokenAddress = COMMON_ERC20S.CRV
         veTokenAddress = veTokens.veCRV
     } else if (veToken == "veFXN") {
-        tokenAddress = commonERC20.FXN
+        tokenAddress = COMMON_ERC20S.FXN
         veTokenAddress = veTokens.veFXN
     } else if (veToken == "veSDT") {
-        tokenAddress = commonERC20.SDT
+        tokenAddress = COMMON_ERC20S.SDT
         veTokenAddress = veTokens.veSDT
     }
 

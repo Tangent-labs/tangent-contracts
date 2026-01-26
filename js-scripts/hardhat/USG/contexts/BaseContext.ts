@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 
-import { commonERC20, curveLp } from "@tangent/defi-resources";
+import { COMMON_ERC20S, CURVE_LPS } from "@tangent/defi-resources";
 
 import { MainSetup } from "../../Main.setup";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
@@ -70,7 +70,7 @@ export class BaseContext extends MainSetup {
         this.pauser = this.users[1];
         this.feeTreso = this.users[4];
 
-   
+
         this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
         await this.controlTower.waitForDeployment();
 
@@ -198,28 +198,28 @@ export class BaseContext extends MainSetup {
     }
 
     async setUpERC20() {
-        this.coins["USDC"] = await ethers.getContractAt("IERC20Metadata", commonERC20.USDC);
+        this.coins["USDC"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.USDC);
 
-        this.coins["frxUSD"] = await ethers.getContractAt("IERC20Metadata", commonERC20.frxUSD);
-        this.coins["sfrxUSD"] = await ethers.getContractAt("IERC20Metadata", commonERC20.sfrxUSD);
+        this.coins["frxUSD"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.frxUSD);
+        this.coins["sfrxUSD"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.sfrxUSD);
 
-        this.coins["crvUSD"] = await ethers.getContractAt("IERC20Metadata", commonERC20.crvUSD);
-        this.coins["scrvUSD"] = await ethers.getContractAt("IERC20Metadata", commonERC20.scrvUSD);
+        this.coins["crvUSD"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.crvUSD);
+        this.coins["scrvUSD"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.scrvUSD);
 
-        this.coins["USDe"] = await ethers.getContractAt("IERC20Metadata", commonERC20.USDe);
-        this.coins["sUSDe"] = await ethers.getContractAt("IERC20Metadata", commonERC20.sUSDe);
+        this.coins["USDe"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.USDe);
+        this.coins["sUSDe"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.sUSDe);
 
-        this.coins["DOLA"] = await ethers.getContractAt("IERC20Metadata", commonERC20.DOLA);
-        this.coins["sDOLA"] = await ethers.getContractAt("IERC20Metadata", commonERC20.sDOLA);
+        this.coins["DOLA"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.DOLA);
+        this.coins["sDOLA"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.sDOLA);
 
-        this.coins["USR"] = await ethers.getContractAt("IERC20Metadata", commonERC20.USR);
-        this.coins["wstUSR"] = await ethers.getContractAt("IERC20Metadata", commonERC20.wstUSR);
+        this.coins["USR"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.USR);
+        this.coins["wstUSR"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.wstUSR);
 
-        this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20Metadata", curveLp.crvUSD_USDC);
+        this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20Metadata", CURVE_LPS.crvUSD_USDC);
 
         const USGToGivePerUser = 3_000_000;
 
-        await this.giveTokens(this.users, [{ address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser, name: "usg" }]);
+        await this.giveTokens(this.users, [{ address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser }]);
         await setStorageAt(await this.USG.getAddress(), 2, parseEther((USGToGivePerUser * this.users.length).toString()));
 
     }

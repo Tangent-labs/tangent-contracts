@@ -1,13 +1,13 @@
-import {ethers} from "hardhat";
+import { ethers } from "hardhat";
 
-import {commonERC20, stakeDaoERC20, thiefConfig} from "@tangent/defi-resources";
+import { COMMON_ERC20S, stakeDaoERC20, thiefConfig } from "@tangent/defi-resources";
 
-import {IERC20, IGauge, ISdtStaking, ISdtUtilities} from "../../../typechain-types";
-import {MainSetup} from "../Main.setup";
-import {IStakingPositionService, ICycleProcessor, ISdtBuffer} from "../../../typechain-types";
-import {parseEther} from "ethers";
+import { IERC20, IGauge, ISdtStaking, ISdtUtilities } from "../../../typechain-types";
+import { MainSetup } from "../Main.setup";
+import { IStakingPositionService, ICycleProcessor, ISdtBuffer } from "../../../typechain-types";
+import { parseEther } from "ethers";
 
-import {giveTokensToAddresses, giveTokenToAddresss} from "../thief/thief";
+import { giveTokensToAddresses, giveTokenToAddresss } from "../thief/thief";
 
 export class BoosterSetup extends MainSetup {
     private sdtUtilities!: ISdtUtilities;
@@ -69,35 +69,35 @@ export class BoosterSetup extends MainSetup {
             [user8],
             [
                 {
-                    address: commonERC20.SDT,
+                    address: COMMON_ERC20S.SDT,
                     amount: 1000000000,
                     slotBalance: 0,
                     decimals: 18,
                     isVyper: false,
                 },
                 {
-                    address: commonERC20.CRV,
+                    address: COMMON_ERC20S.CRV,
                     amount: 1000000000,
                     slotBalance: 0,
                     decimals: 18,
                     isVyper: false,
                 },
                 {
-                    address: commonERC20.PENDLE,
+                    address: COMMON_ERC20S.PENDLE,
                     amount: 1000000000,
                     slotBalance: 0,
                     decimals: 18,
                     isVyper: false,
                 },
                 {
-                    address: commonERC20.FXN,
+                    address: COMMON_ERC20S.FXN,
                     amount: 1000000000,
                     slotBalance: 0,
                     decimals: 18,
                     isVyper: false,
                 },
                 {
-                    address: commonERC20.BAL,
+                    address: COMMON_ERC20S.BAL,
                     amount: 1000000000,
                     slotBalance: 0,
                     decimals: 18,
@@ -109,19 +109,19 @@ export class BoosterSetup extends MainSetup {
 
     async setupContracts() {
         this.sdtUtilities = await ethers.getContractAt("ISdtUtilities", "0xD861Ff854206d0Db64f1C0f3108f59576A5CCc04");
-        //this.CRV = await ethers.getContractAt("IERC20Metadata", commonERC20.CRV);
+        //this.CRV = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.CRV);
         this.sdCRV = await ethers.getContractAt("IERC20Metadata", stakeDaoERC20.sdCRV);
         this.sdCRVGauge = await ethers.getContractAt("IGauge", stakeDaoERC20.sdCRV_GAUGE);
         this.SD_CRV_STAKING = await ethers.getContractAt("ISdtStaking", "0x2FF160bcADb485b5F048b9880e6f471Af632060c");
         this.sdCrvBuffer = await ethers.getContractAt("ISdtBuffer", await this.SD_CRV_STAKING.buffer());
 
-        //this.PENDLE = await ethers.getContractAt("IERC20Metadata", commonERC20.PENDLE);
+        //this.PENDLE = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.PENDLE);
         this.sdPENDLE = await ethers.getContractAt("IERC20Metadata", stakeDaoERC20.sdPENDLE);
         this.sdPENDLEGauge = await ethers.getContractAt("IGauge", stakeDaoERC20.sdPENDLE_GAUGE);
         this.SD_PENDLE_STAKING = await ethers.getContractAt("ISdtStaking", "0x508f0E1b565b40AeB94671BeD228083203330882");
         this.sdPendleBuffer = await ethers.getContractAt("ISdtBuffer", await this.SD_PENDLE_STAKING.buffer());
 
-        // this.FXN = await ethers.getContractAt("IERC20Metadata", commonERC20.FXN);
+        // this.FXN = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.FXN);
         this.sdFXN = await ethers.getContractAt("IERC20Metadata", stakeDaoERC20.sdFXN);
         this.sdFXNGauge = await ethers.getContractAt("IGauge", stakeDaoERC20.sdFXN_GAUGE);
         this.SD_FXN_STAKING = await ethers.getContractAt("ISdtStaking", "0x35e30Bc815935Bb5EC1743f772331864D780cc26");
@@ -133,7 +133,7 @@ export class BoosterSetup extends MainSetup {
         this.SD_BAL_STAKING = await ethers.getContractAt("ISdtStaking", "0xAf5b3f4A0b4dc334dB7137E5584E0e971E5e4962");
         this.sdBalBuffer = await ethers.getContractAt("ISdtBuffer", await this.SD_BAL_STAKING.buffer());
 
-        this.cvgSDT = await ethers.getContractAt("IERC20Metadata", commonERC20.cvgSDT);
+        this.cvgSDT = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.cvgSDT);
         this.CVG_SDT_STAKING = await ethers.getContractAt("ISdtStaking", "0xF941BC649Ef0B20ABd7f6dC78CA8f8E225337933");
         this.cvgSDTBuffer = await ethers.getContractAt("ISdtBuffer", await this.CVG_SDT_STAKING.buffer());
 

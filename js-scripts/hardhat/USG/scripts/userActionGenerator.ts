@@ -111,8 +111,8 @@ ${actions.map((action) => this.generateActionCode(action)).join("\n\n")}
             }
 
             const scriptContent = this.generateScriptContent(actions);
-            writeFileSync("js-scripts/hardhat/USG/scripts/campaignActions.ts", scriptContent);
-            console.log("Script generated successfully: js-scripts/hardhat/USG/scripts/campaignActions.ts");
+            writeFileSync("js-scripts/hardhat/USG/scripts/generated-actions.ts", scriptContent);
+            console.log("Script generated successfully: js-scripts/hardhat/USG/scripts/generated-actions.ts");
         } catch (error) {
             console.error("Error generating script:", error);
             throw error;

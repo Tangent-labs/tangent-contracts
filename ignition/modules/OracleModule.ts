@@ -1,14 +1,14 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
 import { chainlinkOracleParams, oracleCoinFromCurveLPParams, oracleDuoPoolStableParams, oracleERC4626Params, oraclePendlePTParams, redstonOracles } from "../../js-scripts/hardhat/USG/contexts/oracleParams";
-import { commonERC20, curveLp, PENDLE_POOLS, CHAINLINK_PRICE_FEEDS, REDSTONE_PRICE_FEEDS } from "@tangent/defi-resources";
+import { COMMON_ERC20S, CURVE_LPS, PENDLE_POOLS, CHAINLINK_PRICE_FEEDS, REDSTONE_PRICE_FEEDS } from "@tangent/defi-resources";
 import { ZeroAddress } from "ethers";
 
 type StringRecord = Record<string, string>;
 
 export default buildModule("OracleModule", (m) => {
-    const erc20s = (commonERC20 as StringRecord)
-    const crvLp = (curveLp as StringRecord)
+    const erc20s = (COMMON_ERC20S as StringRecord)
+    const crvLp = (CURVE_LPS as StringRecord)
 
     const oracles: { [name: string]: any } = {}
 

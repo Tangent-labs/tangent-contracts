@@ -4,7 +4,7 @@ import { ethers } from "hardhat"
 import { onchainBoostUserConfig } from "../config/onchainBoost"
 import { abiStRSUP, approveMax, lockClassicVe, lockCVX, lockPENDLE, lockYFI } from "../actions/lock-ve-tokens";
 import { giveTokenToAddress } from "../../thief/thief";
-import { commonERC20 } from "@tangent/defi-resources";
+import { COMMON_ERC20S } from "@tangent/defi-resources";
 
 export async function executeBoostContext() {
 
@@ -67,7 +67,7 @@ export async function mintLlamaNFT(user: Signer, nftAmount: number) {
 
 export async function stakeRSUP(signer: Signer, amount: bigint) {
     const stRSUP = new Contract("0x22222222E9fE38F6f1FC8C61b25228adB4D8B953", abiStRSUP)
-    await approveMax(signer, commonERC20.RSUP, stRSUP)
+    await approveMax(signer, COMMON_ERC20S.RSUP, stRSUP)
     await stRSUP.connect(signer).stake(amount)
 
 }

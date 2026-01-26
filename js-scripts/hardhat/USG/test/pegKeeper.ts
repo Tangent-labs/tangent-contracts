@@ -12,7 +12,7 @@ async function keeperTest() {
     await usg.mintPegKeeper(addresses.pegKeepers["USG-wcrvUSD"], ethers.parseEther("1000000"))
 
     await swap(user, addresses.lps["USG-USDC"], 0, 1, "200000")
-    await swap(user, addresses.lps["USG-wcrvUSD"], 0, 1, "200000")
+    await swap(user, addresses.lps["USG-frxUSD"], 0, 1, "200000")
 
     await timeTravel(1)
 };

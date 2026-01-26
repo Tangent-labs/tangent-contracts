@@ -1,11 +1,11 @@
-import {ethers} from "hardhat";
+import { ethers } from "hardhat";
 
-import {commonERC20, convexContracts, convexERC20, stakeDaoERC20} from "@tangent/defi-resources";
+import { COMMON_ERC20S, convexContracts, convexERC20, stakeDaoERC20 } from "@tangent/defi-resources";
 
-import {ICvgCVX, ICvgSDT, ICVX1, ICvxStaking, IERC20, IGauge, ISdtStaking, ISdtUtilities} from "../../typechain-types";
-import {MainSetup} from "../Main.setup";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {parseEther, ZeroAddress} from "ethers";
+import { ICvgCVX, ICvgSDT, ICVX1, ICvxStaking, IERC20, IGauge, ISdtStaking, ISdtUtilities } from "../../typechain-types";
+import { MainSetup } from "../Main.setup";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { parseEther, ZeroAddress } from "ethers";
 
 export class LockerSetup extends MainSetup {
     private sdtUtilities!: ISdtUtilities;
@@ -22,11 +22,11 @@ export class LockerSetup extends MainSetup {
     async setupContracts() {
         this.sdtUtilities = await ethers.getContractAt("ISdtUtilities", "0xD861Ff854206d0Db64f1C0f3108f59576A5CCc04");
 
-        this.sdt = await ethers.getContractAt("IERC20", commonERC20.SDT);
-        this.cvgSDT = await ethers.getContractAt("ICvgSDT", commonERC20.cvgSDT);
+        this.sdt = await ethers.getContractAt("IERC20", COMMON_ERC20S.SDT);
+        this.cvgSDT = await ethers.getContractAt("ICvgSDT", COMMON_ERC20S.cvgSDT);
         this.cvgSDTStaking = await ethers.getContractAt("ISdtStaking", "0xf941bc649ef0b20abd7f6dc78ca8f8e225337933");
 
-        this.cvx = await ethers.getContractAt("IERC20", commonERC20.CVX);
+        this.cvx = await ethers.getContractAt("IERC20", COMMON_ERC20S.CVX);
         this.cvgCVX = await ethers.getContractAt("ICvgCVX", convexERC20.cvgCVX);
         this.CVX1 = await ethers.getContractAt("ICVX1", convexERC20.CVX1);
         this.cvgCVXStaking = await ethers.getContractAt("ICvxStaking", "0x2c1d293c50c6d1a4370ebb442a02c5956bbab119");
