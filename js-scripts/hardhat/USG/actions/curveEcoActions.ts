@@ -50,6 +50,44 @@ export const depositCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSigne
     return lp;
 };
 
+/**
+ * Deposit Curve LP tokens using a numerical amount.
+ * @param lpKey The Curve LP key
+ * @param user The signer/user
+ * @param amount The amount to deposit, as a number (will be converted to bigint)
+ */
+export const depositCurveLPOneSide = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
+    const context = CURVE_CONTEXT[lpKey];
+    const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
+
+    const coin0Address = await lp.coins(0);
+    const coin1Address = await lp.coins(1);
+
+    const coin0 = await ethers.getContractAt("ERC20", coin0Address);
+    const coin1 = await ethers.getContractAt("ERC20", coin1Address);
+
+    const [decimals0, decimals1] = await Promise.all([coin0.decimals(), coin1.decimals()]);
+
+    const amountDiv = (Number(amount)).toString();
+
+    const amount0 = parseUnits(amountDiv, decimals0);
+
+    await safeApprove(coin0, user, context.curveLp, MaxUint256);
+
+    try {
+        await lp.connect(user)["add_liquidity(uint256[],uint256)"]([amount0, 0], 0n);
+    } catch (err) {
+        console.warn("First add_liquidity signature failed, trying second...");
+        try {
+            await lp.connect(user)["add_liquidity(uint256[2],uint256)"]([amount0, 0], 0n);
+        } catch (signatureError) {
+            throw new Error(`Failed to add liquidity with both signatures: ${signatureError}`);
+        }
+    }
+
+    return lp;
+};
+
 export const withdrawCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
     const context = CURVE_CONTEXT[lpKey];
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
@@ -84,6 +122,7 @@ export const depositCurveGauge = async (lpKey: CurveLpKey, user: HardhatEthersSi
     const bal = await lp.balanceOf(user);
     const amBigInt = parseEther(amount.toString());
 
+    console.log(bal, amBigInt)
     if (bal >= amBigInt) {
         await lp.connect(user).approve(gauge, MaxUint256);
         await gauge.connect(user)["deposit(uint256)"](parseEther(amount.toString()));

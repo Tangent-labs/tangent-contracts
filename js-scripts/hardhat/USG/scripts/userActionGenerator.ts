@@ -34,7 +34,7 @@ class BlockchainScriptGenerator {
         const headers = rows[0];
 
         const expectedHeaders = ["Action Type", "Contract Address", "User", "Amount", "Additional Params"];
-        if (!headers.every((h, i) => h.trim() === expectedHeaders[i])) {
+        if (!headers.every((h, i) => h.trim().replace("\r", "") === expectedHeaders[i])) {
             throw new Error("Invalid CSV headers");
         }
 

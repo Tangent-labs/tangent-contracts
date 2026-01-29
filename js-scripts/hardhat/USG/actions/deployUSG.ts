@@ -6,7 +6,7 @@ import { LpDeployContext } from "../contexts/LPDeployContext";
 import { WStablesContext } from "../contexts/WStableContext";
 import { executeBoostContext } from "../contexts/OnchainBoostContext";
 
-export async function deployUSG(userCount: number = 10, baseLpDeposit?: number) {
+export async function deployUSG(userCount: number = 5, baseLpDeposit?: number) {
     const baseContext = new BaseContext(userCount);
     const oracleContext = new OracleContext();
     const marketContext = new MarketContext();
@@ -18,7 +18,7 @@ export async function deployUSG(userCount: number = 10, baseLpDeposit?: number) 
 
     console.log("Deploy first part of contracts");
     // Deploy all base contracts
-    await baseContext.deployContracts1();
+    await baseContext.deployContracts1(0, 1, 4);
 
     console.log("Give ERC20 to users");
     // Give ERC20 to users
@@ -107,8 +107,6 @@ export async function deployUSG(userCount: number = 10, baseLpDeposit?: number) 
     // Approve LPs with test users
     await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-USDC"].getAddress());
     await baseContext.approveCurveLP(CURVE_LPS.crvUSD_USDC);
-    await baseContext.approveCurveLP(CURVE_LPS.LP_USDC_fxUSD);
-    await baseContext.approveCurveLP(CURVE_LPS.LP_pxETH_WETH);
 
     return { baseContext, oracleContext, marketContext, lpDeployContext, wStableContext };
 }
