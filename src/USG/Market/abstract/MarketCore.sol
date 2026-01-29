@@ -127,6 +127,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @param amountDeposited Amount of collateral deposited.
      */
     function _deposit(address _for, uint256 amountDeposited, IERC20 _collatToken) internal {
+        require(_for != address(0));
         // Cannot deposit on a market with paused deposits
         _verifyIsDepositNotPaused();
         // Cannot deposit 0

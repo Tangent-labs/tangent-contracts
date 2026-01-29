@@ -9,8 +9,8 @@
 
 ### Low
 
-- L-01 - Deposits for address(0) create phantom collateral that permanently dilutes and blackholes market rewards
-- L-03 - RewardAccumulator fee withdrawal can erase accounting if ERC20 transfer returns false
+- [x] - L-01 - Deposits for address(0) create phantom collateral that permanently dilutes and blackholes market rewards
+- [x] - L-03 - RewardAccumulator fee withdrawal can erase accounting if ERC20 transfer returns false
 - L-06 - USG price oracle revert can freeze markets via mandatory IR checkpointing
 
 ### Info
