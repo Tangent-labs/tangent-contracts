@@ -330,6 +330,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             _verifyMinimumDebt(newUserDebt);
         }
 
+        require(sharesToRemove != 0, ZeroDebtAmount());
+
         _burnUSG(msg.sender, USGToRepay);
 
         return (USGToRepay, newUserDebtShares, totalDebtShares - sharesToRemove, newUserDebt);
