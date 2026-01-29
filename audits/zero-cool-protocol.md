@@ -11,11 +11,11 @@
 
 - [x] - L-01 - Deposits for address(0) create phantom collateral that permanently dilutes and blackholes market rewards
 - [x] - L-03 - RewardAccumulator fee withdrawal can erase accounting if ERC20 transfer returns false
-- L-06 - USG price oracle revert can freeze markets via mandatory IR checkpointing
+- [x] - L-06 - USG price oracle revert can freeze markets via mandatory IR checkpointing
 
 ### Info
 
-- I01 - Reentrancy can corrupt transient token-index map and revert multi-claim/multi-process reward flows
+- [x] - I01 - Reentrancy can corrupt transient token-index map and revert multi-claim/multi-process reward flows
 
 ## Need to think about it
 

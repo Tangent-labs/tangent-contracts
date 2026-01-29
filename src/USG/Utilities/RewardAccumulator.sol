@@ -3,6 +3,8 @@ pragma solidity ^0.8.22;
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+import {LightReentrancyGuardTransient} from "../Utilities/abstract/LightReentrancyGuardTransient.sol";
+
 import {LightOwnable} from "../Utilities/abstract/LightOwnable.sol";
 import {ICollateral} from "../../interfaces/internals/USG/ICollateral.sol";
 import {IRewardAccumulator, RCParams, Reward, TokenAmount} from "../../interfaces/internals/USG/IRewardAccumulator.sol";
@@ -14,7 +16,7 @@ import {IControlTower} from "../../interfaces/internals/USG/IControlTower.sol";
 /// @title RewardAccumulator
 /// @author Tangent Finance
 /// @notice Manages processing, streaming and claiming of the rewards.
-contract RewardAccumulator is IRewardAccumulator, LightOwnable {
+contract RewardAccumulator is IRewardAccumulator, LightOwnable, LightReentrancyGuardTransient {
     using SafeERC20 for IERC20;
 
     uint256 public constant DENOMINATOR = 100_000;
@@ -186,7 +188,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      *  @notice Claim rewards on one staking contract only
      *  @param market The erc20 to claim the rewards on
      */
-    function claimSimple(address market) external {
+    function claimSimple(address market) external nonReentrant {
         require(isMarket[market], NotAMarketRewards());
 
         TokenAmount[] memory tokenAmounts = _claimRewards(market, msg.sender);
@@ -207,7 +209,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      *  @param rewardLength Amount of different tokens to claim as a reward. Will fail if not setup properly.
      *                      Ex : Market A has CRV and CVX and Market B has FXN, hence the rewardLength is 3.
      */
-    function claimMultiple(address[] calldata markets, uint256 rewardLength) external {
+    function claimMultiple(address[] calldata markets, uint256 rewardLength) external nonReentrant {
         // We save this length on his own variable, to not miss with the assembly manipulations
         uint256 marketsLen = markets.length;
         // Initialize the final merged array containing the totals of rewards
@@ -342,7 +344,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      * @notice Increment dao fees that will be transferred in this contract during a process rewards.
      * @param tokens array of token to claim
      */
-    function claimCutFees(IERC20[] memory tokens) external {
+    function claimCutFees(IERC20[] memory tokens) external nonReentrant {
         address _feeTreasury = controlTower.feeTreasury();
         for (uint256 erc20Id; erc20Id < tokens.length; ) {
             IERC20 token = tokens[erc20Id];
@@ -453,7 +455,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      * @param market             Market to process the rewards for
      * @param harvestFeeReceiver Receiver of the harvester fee
      */
-    function processRewards(address market, address harvestFeeReceiver) public {
+    function processRewards(address market, address harvestFeeReceiver) public nonReentrant {
         require(isMarket[market], NotAMarketRewards());
         // Checkpoint the rewards
         _updateReward(market, address(0), 0, ICollateral(market).totalCollateral());
@@ -516,7 +518,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
      * @param rewardLength       Amount of different tokens that will be processed. Will fail if not setup properly.
      *                           Ex : Market A has CRV and CVX and Market B has FXN, hence the rewardLength is 3.
      */
-    function processMultiRewards(address[] calldata markets, address harvestFeeReceiver, uint256 rewardLength) external {
+    function processMultiRewards(address[] calldata markets, address harvestFeeReceiver, uint256 rewardLength) external nonReentrant {
         // Retrive only once the usg price
         uint256 USGPrice = USGOracle.price_w();
 
