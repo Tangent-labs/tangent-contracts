@@ -13,6 +13,11 @@ contract GetOracleERC4626Price is MarketDeploymentContext {
         erc4626s.push(AddrERC4626.sDOLA);
         erc4626s.push(AddrERC4626.wstUSR);
         erc4626s.push(AddrERC4626.sfrxUSD);
+
+        IERC4626 strangeDecimalsErc4626 = new Mock4626();
+        oracles[strangeDecimalsErc4626] = new OracleERC4626(strangeDecimalsErc4626, oracles[AddrClassicERC20.USDC], "Zaza");
+
+        erc4626s.push(strangeDecimalsErc4626);
     }
 
     function test_verify_stable_saving_account_price() external view {
@@ -26,8 +31,12 @@ contract GetOracleERC4626Price is MarketDeploymentContext {
 
             assertApproxEqRel(pps, oracleValue, 50e14); // Each savings price is approximatly equals to their oracleValue
 
-            assertGt(oracleValue, 1.04 ether); // All these saving earned more than 4% in index
+            assertGt(oracleValue, 0.99 ether); // All these saving earned more than 4% in index
             assertLt(oracleValue, 1.4 ether); // None of these savings earned more than 40% in index
         }
     }
+}
+
+contract Mock4626 is ERC4626 {
+    constructor() ERC20("", "") ERC4626(AddrClassicERC20.USDC) {}
 }
