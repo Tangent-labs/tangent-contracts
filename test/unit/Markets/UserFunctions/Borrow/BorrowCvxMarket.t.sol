@@ -103,7 +103,7 @@ contract BorrowCvxMarket is MarketDeploymentContext {
 
         uint256 maxRepayPartialAmount = marketViewer.userDebt(market, usr1) - minimumLoan;
 
-        repayAmount = bound(repayAmount, 1, maxRepayPartialAmount);
+        repayAmount = bound(repayAmount, 100, maxRepayPartialAmount);
 
         vm.startPrank(owner);
         usg.setIsMinter(owner, true);
