@@ -1,8 +1,8 @@
-import { setStorageAt } from "@nomicfoundation/hardhat-network-helpers";
-import { GlobalHelper } from "../GlobalHelper";
+import {setStorageAt} from "@nomicfoundation/hardhat-network-helpers";
+import {GlobalHelper} from "../GlobalHelper";
 
-import { parseUnits, Signer } from "ethers";
-import { THIEF_TOKEN_CONFIG } from "@tangent/defi-resources/build/ressources/erc20/thiefConfig";
+import {parseUnits, Signer} from "ethers";
+import {THIEF_TOKEN_CONFIG} from "@tangent/defi-resources/build/ressources/erc20/thiefConfig";
 
 export interface TokenAmounts {
     slotBalance: number;
@@ -12,7 +12,6 @@ export interface TokenAmounts {
     amount: number;
 }
 const UpgradeableAddresses = ["0x15700b564ca08d9439c58ca5053166e8317aa138", "0x66a1e37c9b0eaddca17d3662d6c05f4decf3e110", "0xfe4bce4b3949c35fb17691d8b03c3cadbe2e5e23"];
-
 
 // tokens used must be in the TOKEN config to be able to retrieve the slot of the balanceMapping
 export async function giveTokensToAddresses(users: Signer[], tokensAmounts: TokenAmounts[]) {
@@ -31,7 +30,7 @@ export async function giveTokensToAddresses(users: Signer[], tokensAmounts: Toke
                 }
                 await setStorageAt(tokenAmount.address, storageSlot, parseUnits(tokenAmount.amount.toString(), tokenAmount.decimals));
             } catch (e) {
-                console.error(`error token : ${tokenAmount.address} , ${tokenAmount.amount} , ${tokenAmount.slotBalance || "--"} `);
+                console.error(`error token : ${tokenAmount.address} , ${tokenAmount.amount} , ${tokenAmount.slotBalance || "--"} `, tokenAmount);
             }
         }
     }

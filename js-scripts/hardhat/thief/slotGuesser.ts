@@ -1,7 +1,7 @@
-import { AddressLike } from "ethers";
-import { ethers } from "hardhat";
-import { setStorageAt } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { GlobalHelper } from "../GlobalHelper";
+import {AddressLike} from "ethers";
+import {ethers} from "hardhat";
+import {setStorageAt} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import {GlobalHelper} from "../GlobalHelper";
 
 interface Tokens {
     address: string;
@@ -11,10 +11,12 @@ interface Tokens {
 interface BalanceOfSlot {
     token: AddressLike;
     slot: number;
+    name: string;
 }
 
-const RANDOM_ADDRESS = "0x47b4Dd903bC719D689a3a9391186c5deAaC5D8Ff";
 export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
+    const RANDOM_ADDRESS = ethers.Wallet.createRandom().address;
+
     const amount = ethers.parseEther((1 + Math.random()).toString()).toString();
     const result: BalanceOfSlot[] = [];
     for (let i = 0; i < tokens.length; i++) {
@@ -33,7 +35,8 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
 
             if ((await erc20.balanceOf(RANDOM_ADDRESS)) === ethers.parseEther(amount)) {
                 result.push({
-                    token: await erc20.name(),
+                    token: token.address,
+                    name: await erc20.name(),
                     slot: k,
                 });
                 break;
@@ -44,9 +47,7 @@ export async function getSlot(tokens: Tokens[]): Promise<BalanceOfSlot[]> {
     return result;
 }
 
-getSlot([
-    { address: "0xfe4bce4b3949c35fb17691d8b03c3cadbe2e5e23", isVyper: false }
-]).catch((error) => {
+getSlot([{address: "0xfe4bce4b3949c35fb17691d8b03c3cadbe2e5e23", isVyper: false}]).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

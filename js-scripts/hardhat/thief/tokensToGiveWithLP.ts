@@ -21,7 +21,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             name: "frxUSD_USDe",
         },
         {
-            ...obj.frxETH_WETH,
+            ...obj.frxETH_ETH,
             amount: mintedAmount,
             name: "frxETH_WETH",
         },
@@ -192,7 +192,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             name: "PYUSD_USDC",
         },
         {
-            slotBalance: 0,
+            slotBalance: 38,
             decimals: 18,
             isVyper: false,
             address: CURVE_LPS.DUO_RLUSD_USDC,

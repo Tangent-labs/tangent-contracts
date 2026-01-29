@@ -1,9 +1,9 @@
-import { ethers } from "hardhat";
-import { MainSetup } from "../../Main.setup";
-import { Market } from "../contexts/BaseContext";
-import { prepareUserAmountByMarket, loadAddresses } from "./common";
-import { parseEther } from "ethers";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import {ethers} from "hardhat";
+import {MainSetup} from "../../Main.setup";
+import {Market} from "../contexts/BaseContext";
+import {prepareUserAmountByMarket, loadAddresses} from "./common";
+import {parseEther} from "ethers";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 
 export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: Record<string, Record<string, string>>) {
     try {
@@ -52,7 +52,8 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
                         const current = errorMarkets.get(marketAddress) || 0;
                         errorMarkets.set(marketAddress, current + 1);
                         errorMessages.add(`${(e as Error).message}`);
-                        console.log("borrowed error", e.message || "-", i, parsedAmount);
+                        const marketName = addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === marketAddress.toLowerCase())?.collatName;
+                        console.log(`borrowed error for ${marketName}`, e.message || "-", i, parsedAmount);
                         //console.error(`error for deposit market : ${marketAddress} & user : ${user.address}`);
                         // throw e;
                     }
@@ -74,7 +75,6 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
         console.error(`general error for market borrow  `, (e as Error).message);
     }
 }
-
 
 export async function borrowAll(allMarkets: Market[]) {
     const mainSetup = new MainSetup(5);

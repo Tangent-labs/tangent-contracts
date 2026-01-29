@@ -1,0 +1,119 @@
+{
+  "positions": [
+    {
+      "id": 1,
+      "market": "crvUSD_USDC",
+      "lpDeposited": "10000",
+      "debt": "9000"
+    },
+    {
+      "id": 2,
+      "market": "crvUSD_USDC",
+      "lpDeposited": "150000",
+      "debt": "125000"
+    },
+    {
+      "id": 3,
+      "market": "crvUSD_USDC",
+      "lpDeposited": "200000",
+      "debt": "180000"
+    },
+    {
+      "id": 4,
+      "market": "crvUSD_USDC",
+      "lpDeposited": "500000",
+      "debt": "440000"
+    },
+    {
+      "id": 5,
+      "market": "RLUSD_USDC",
+      "lpDeposited": "500000",
+      "debt": "40000"
+    },
+    {
+      "id": 6,
+      "market": "RLUSD_USDC",
+      "lpDeposited": "150000",
+      "debt": "135000"
+    },
+    {
+      "id": 7,
+      "market": "RLUSD_USDC",
+      "lpDeposited": "250000",
+      "debt": "210000"
+    },
+    {
+      "id": 8,
+      "market": "RLUSD_USDC",
+      "lpDeposited": "900000",
+      "debt": "400000"
+    },
+    {
+      "id": 9,
+      "market": "RLUSD_USDC",
+      "lpDeposited": "200000",
+      "debt": "175000"
+    },
+    {
+      "id": 10,
+      "market": "frxETH_WETH",
+      "lpDeposited": "10",
+      "debt": "20000"
+    },
+    {
+      "id": 11,
+      "market": "frxETH_WETH",
+      "lpDeposited": "20",
+      "debt": "48000"
+    },
+    {
+      "id": 12,
+      "market": "frxETH_WETH",
+      "lpDeposited": "200",
+      "debt": "470000"
+    },
+    {
+      "id": 13,
+      "market": "sUSDe 05/02/26",
+      "lpDeposited": "50000",
+      "debt": "44500"
+    },
+    {
+      "id": 14,
+      "market": "sUSDe 05/02/26",
+      "lpDeposited": "150000",
+      "debt": "130000"
+    },
+    {
+      "id": 15,
+      "market": "sUSDe 05/02/26",
+      "lpDeposited": "300000",
+      "debt": "265000"
+    }
+  ],
+  "prices": {
+    "state_0": {
+      "crvUSD_USDC": "1.0000",
+      "PYUSD_USDC": "1.0000",
+      "RLUSD_USDC": "1.0000",
+      "frxETH_WETH": "3000.0000",
+      "sUSDe 05/02/26": "0.99"
+    },
+    "state_1": {
+      "crvUSD_USDC": "0.9800",
+      "RLUSD_USDC": "0.9700",
+      "frxETH_WETH": "2850.0000",
+      "sUSDe 05/02/26": "0.9700"
+    },
+    "state_2": {
+      "crvUSD_USDC": "0.9100",
+      "RLUSD_USDC": "0.9000",
+      "frxETH_WETH": "2600",
+      "sUSDe 05/02/26": "0.94"
+    },
+    "state_3": {
+      "PYUSD_USDC": "0.85",
+      "frxETH_WETH": "2300"
+    }
+  }
+}
