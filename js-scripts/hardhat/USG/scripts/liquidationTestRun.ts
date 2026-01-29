@@ -47,6 +47,7 @@ async function main() {
     console.info("\x1b[32m%s\x1b[0m", "Contracts deployed and setup !");
 
     await context.init({baseContext});
+<<<<<<< HEAD
     await network.provider.send("evm_mine", []);
     // ask the user if they want to run the test
     await confirmRun("press enter to run DUMP 1 ? (y/n)", async () => await context.runState_1());
@@ -55,6 +56,13 @@ async function main() {
     await network.provider.send("evm_mine", []);
     await confirmRun("press enter to run DUMP 3 ? (y/n)", async () => await context.runState_3());
     await network.provider.send("evm_mine", []);
+=======
+
+    // ask the user if they want to run the test
+    await confirmRun("press enter to run DUMP 1 ? (y/n)", async () => await context.runState_1());
+    await confirmRun("press enter to run DUMP 2 ? (y/n)", async () => await context.runState_2());
+    await confirmRun("press enter to run DUMP 3 ? (y/n)", async () => await context.runState_3());
+>>>>>>> eb73a52 (feat: liquidation test execution)
 }
 
 main()

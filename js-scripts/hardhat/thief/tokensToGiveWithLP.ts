@@ -195,7 +195,11 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             slotBalance: 38,
             decimals: 18,
             isVyper: true,
+<<<<<<< HEAD
             address: CURVE_LPS.DUO_RLUSD_USDC,
+=======
+            address: curveLp.CRV_DUO_RLUSD_USDC,
+>>>>>>> eb73a52 (feat: liquidation test execution)
             amount: mintedAmount,
             name: "RLUSD_USDC",
         },
