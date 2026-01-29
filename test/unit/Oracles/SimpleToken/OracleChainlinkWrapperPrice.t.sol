@@ -137,4 +137,22 @@ contract OracleChainlinkWrapperPrice is MarketDeploymentContext {
         vm.expectRevert(abi.encodeWithSelector(OracleRedstoneWrapperFallback.InvalidAggregatorValue.selector));
         OracleChainlinkWrapper ETHOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.ETH, 12 hours, address(ETHFallback), "ETH / USD Oracle");
     }
+
+    function test_chainlink_oracle_with_curve_lp_as_fallback() external {
+        OracleCoinFromCurveLP oraclePYUSDCurve = new OracleCoinFromCurveLP(address(AddrCurveStableLP.PYUSD_USDC), oracles[AddrClassicERC20.USDC], 0, "PYUSD");
+
+        OracleChainlinkWrapper usdcOracle = new OracleChainlinkWrapper(AddrChainlinkOracle.PYUSD, 24 hours, address(oraclePYUSDCurve), "PYUSD / USD Oracle");
+
+        // Chainlink price is correct
+        uint256 oraclePrice = usdcOracle.latestAnswerUpdate(false);
+
+        assertEq(oraclePrice, AddrChainlinkOracle.PYUSD.latestAnswer() * 10 ** (18 - AddrChainlinkOracle.PYUSD.decimals()), "Price of Chainlink is returned");
+        uint256 priceChainlink = oraclePrice;
+        // Chainlink price becomes incorrect but not the Redstone one
+        skip(1 days);
+
+        // Should return something even if the fallback is stale because isNoFailMode = true
+        uint256 priceOracle = usdcOracle.latestAnswerUpdate(true);
+        assertEq(priceOracle, oraclePYUSDCurve.latestAnswer(true), "Price of Curve LP is returned by the Oracle");
+    }
 }
