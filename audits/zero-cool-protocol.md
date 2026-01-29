@@ -4,8 +4,8 @@
 
 ### Medium
 
-- M-01 - OracleERC4626 mispricing of non-18 decimal ERC4626 shares enables over-borrow
-- M-04 - VsTAN exits can be blocked by a non-transferable reward token
+- [x] - M-01 - OracleERC4626 mispricing of non-18 decimal ERC4626 shares enables over-borrow
+- [x] - M-04 - VsTAN exits can be blocked by a non-transferable reward token
 
 ### Low
 

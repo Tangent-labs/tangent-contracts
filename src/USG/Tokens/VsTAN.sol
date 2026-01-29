@@ -121,6 +121,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     event KickPosition(uint256 id, uint256 kickIncentivization);
     event SplitPosition(uint256 fromId, uint256 toID, uint256 fromAmount, uint256 toAmount);
     event MergePositions(uint256 tokenIdA, uint256 tokenIdB, uint256 newAmount);
+    event RemoveReward(address reward);
 
     /**
      * @dev   Constructor of the contract
@@ -558,6 +559,25 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         rewardData[_newRewardToken].periodFinish = uint128(block.timestamp);
 
         emit AddNewReward(_newRewardToken);
+    }
+
+    /**
+     * @notice Remove a reward associated
+     * @dev    This should be called ONLY if a reward token is not transferable anymore, blocking actions on VsTAN.
+     * @param tokenToRemove   Address of the reward token to remove
+     */
+    function removeReward(address tokenToRemove) external onlyOwner {
+        IERC20[] storage tokens = rewardTokens;
+        uint256 length = tokens.length;
+
+        for (uint256 i; i < length; i++) {
+            if (address(tokens[i]) == tokenToRemove) {
+                tokens[i] = tokens[length - 1];
+                tokens.pop();
+                emit RemoveReward(tokenToRemove);
+                break;
+            }
+        }
     }
 
     function setKick(KickParams calldata _newKickParams) external onlyOwner {
