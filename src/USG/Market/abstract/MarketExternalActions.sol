@@ -81,7 +81,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
 
         _transferCollateralDeposit(depositedAmount, isReceiptIn);
 
-        _deposit(_for, depositedAmount, _collatToken, isReceiptIn);
+        _deposit(_for, depositedAmount, _collatToken);
 
         emit Deposit(_for, depositedAmount);
     }
@@ -96,7 +96,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         IERC20 _collatToken = collatToken;
         uint256 collatReceived = _zapDeposit(zapCall, _collatToken, address(this));
 
-        _deposit(_for, collatReceived, _collatToken, false);
+        _deposit(_for, collatReceived, _collatToken);
 
         emit ZapDeposit(_for, collatReceived, zapCall.tokenIn, zapCall.amountIn);
     }
@@ -112,7 +112,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         IERC20 _collatToken = collatToken;
         _transferCollateralDeposit(depositedAmount, isReceiptIn);
 
-        uint256 debtShares = _depositAndBorrow(depositedAmount, debtBorrow, _collatToken, false, isReceiptIn);
+        uint256 debtShares = _depositAndBorrow(depositedAmount, debtBorrow, _collatToken, false);
 
         emit DepositAndBorrow(msg.sender, depositedAmount, debtBorrow, debtShares);
     }
@@ -127,7 +127,7 @@ abstract contract MarketExternalActions is MarketCore, IMarketExternalActions {
         IERC20 _collatToken = collatToken;
         uint256 collatReceived = _zapDeposit(zapCall, _collatToken, address(this));
 
-        uint256 debtShares = _depositAndBorrow(collatReceived, debtBorrow, _collatToken, false, false);
+        uint256 debtShares = _depositAndBorrow(collatReceived, debtBorrow, _collatToken, false);
 
         emit ZapDepositAndBorrow(msg.sender, collatReceived, debtBorrow, debtShares, zapCall.tokenIn, zapCall.amountIn);
     }
