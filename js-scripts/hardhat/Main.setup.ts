@@ -19,9 +19,7 @@ export class MainSetup {
 
     async setupTestUsers() {
         this.users = (await ethers.getSigners()).slice(0, this.userCount);
-        console.log("users count", this.users.length);
         if (this.users.length > 20) {
-            console.log("setting balance for users", this.users.length - 20);
             for (let i = 19; i < this.users.length; i++) {
                 const user = this.users[i];
                 const userAddress = await user.getAddress();
@@ -40,7 +38,7 @@ export class MainSetup {
             amount: number;
         }[]
     ) {
-        await giveTokensToAddresses(users, TOKENS_TO_GIVE_WITH_LP(this.erc20Minted).concat(extraTokens));
+        await giveTokensToAddresses(users, TOKENS_TO_GIVE_WITHOUT_LP(this.erc20Minted).concat(extraTokens));
         const erc4626 = [
             // {saving: COMMON_ERC20S.sfrxUSD, stable: COMMON_ERC20S.frxUSD},
             // {saving: COMMON_ERC20S.wstUSR, stable: "0x6c8984bc7DBBeDAf4F6b2FD766f16eBB7d10AAb4"},

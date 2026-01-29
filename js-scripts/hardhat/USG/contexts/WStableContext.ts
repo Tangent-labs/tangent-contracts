@@ -1,10 +1,10 @@
-import {ethers} from "hardhat";
-import {WStable} from "../../../../typechain-types";
-import {BaseContext} from "./BaseContext";
-import {MaxUint256} from "ethers";
+import { ethers } from "hardhat";
+import { WStable } from "../../../../typechain-types";
+import { BaseContext } from "./BaseContext";
+import { MaxUint256 } from "ethers";
 
 export class WStablesContext {
-    wStable: {[key: string]: WStable} = {};
+    wStable: { [key: string]: WStable } = {};
 
     async deployWStables(baseContext: BaseContext) {
         const wStableFactory = await ethers.getContractFactory("WStable");
@@ -45,7 +45,7 @@ export class WStablesContext {
             const stable = await ethers.getContractAt("ERC20", await wStable.stable());
             const saving = await ethers.getContractAt("ERC20", await wStable.savingAccount());
 
-            for (let i = 0; i < baseContext.users.length; i++) {
+            for (let i = 0; i < 4; i++) {
                 const user = baseContext.users[i];
                 await stable.connect(user).approve(wStable, MaxUint256);
                 await saving.connect(user).approve(wStable, MaxUint256);

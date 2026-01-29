@@ -65,10 +65,10 @@ export class BaseContext extends MainSetup {
 
     coins: { [name: string]: IERC20Metadata } = {};
 
-    async deployContracts1() {
-        this.owner = this.users[0];
-        this.pauser = this.users[1];
-        this.feeTreso = this.users[4];
+    async deployContracts1(ownerIndex: number, pauserIndex: number, feeTresoIndex: number) {
+        this.owner = this.users[ownerIndex];
+        this.pauser = this.users[pauserIndex];
+        this.feeTreso = this.users[feeTresoIndex];
 
 
         this.controlTower = await (await ethers.getContractFactory("ControlTower")).deploy(this.owner, this.feeTreso);
@@ -85,7 +85,6 @@ export class BaseContext extends MainSetup {
         this.zappingProxy = await (await ethers.getContractFactory("ZappingProxy")).deploy(this.controlTower);
         await this.zappingProxy.waitForDeployment();
         await this.deploy_sUSG();
-
 
         this.TAN = await (await ethers.getContractFactory("TAN")).deploy(this.owner);
         await this.TAN.waitForDeployment();
@@ -217,7 +216,7 @@ export class BaseContext extends MainSetup {
 
         this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20Metadata", CURVE_LPS.crvUSD_USDC);
 
-        const USGToGivePerUser = 3_000_000;
+        const USGToGivePerUser = 6_000_000;
 
         await this.giveTokens(this.users, [{ address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser }]);
         await setStorageAt(await this.USG.getAddress(), 2, parseEther((USGToGivePerUser * this.users.length).toString()));
@@ -229,10 +228,12 @@ export class BaseContext extends MainSetup {
         const coin0 = await ethers.getContractAt("IERC20", await curveLP.coins(0));
         const coin1 = await ethers.getContractAt("IERC20", await curveLP.coins(1));
 
-        for (let i = 0; i < this.users.length; i++) {
+        for (let i = 0; i < 4; i++) {
             const user = this.users[i];
-            await coin0.connect(user).approve(lp, MaxUint256);
-            await coin1.connect(user).approve(lp, MaxUint256);
+            if (user) {
+                await coin0.connect(user).approve(lp, MaxUint256);
+                await coin1.connect(user).approve(lp, MaxUint256);
+            }
         }
     }
 }

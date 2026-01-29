@@ -128,7 +128,7 @@ export class MarketContext {
             const market = this.curveGaugeMarkets[key]
             const gauge = await ethers.getContractAt("IGauge", await market.receiptToken())
             const collat = await ethers.getContractAt("IERC20", staticConfig.collatToken)
-            for (let index = 0; index < users.length; index++) {
+            for (let index = 0; index < 4; index++) {
                 const user = users[index];
                 await collat.connect(user).approve(gauge, MaxUint256);
                 await gauge.connect(user)["deposit(uint256)"](await collat.balanceOf(user) / 2n)
@@ -166,7 +166,7 @@ export class MarketContext {
             const market = this.stakeDaoVaultMarkets[key]
             const vault = await ethers.getContractAt("IStakeDaoVaultV2", await market.receiptToken())
             const collat = await ethers.getContractAt("IERC20", staticConfig.collatToken)
-            for (let index = 0; index < users.length; index++) {
+            for (let index = 0; index < 3; index++) {
                 const user = users[index];
                 await collat.connect(user).approve(vault, MaxUint256);
                 await vault.connect(user)["deposit(uint256,address)"](await collat.balanceOf(user) / 2n, user)

@@ -121,36 +121,18 @@ export class LpDeployContext {
         _ma_exp_time: BigNumberish,
         implemId: BigNumberish
     ) {
-        const deployer = baseContext.owner;
         const curveStableSwapFactory = await ethers.getContractAt("ICurveStableSwapFactoryNG", "0x6A8cbed756804B16E05E741eDaBd5cB544AE21bf");
 
         const poolCount = await curveStableSwapFactory.pool_count();
         const lpCreationTx = await curveStableSwapFactory
-            .connect(deployer)
             .deploy_plain_pool(name, symbol, coins, A, fee, _offpeg_fee_multiplier, _ma_exp_time, implemId, [0, 0], ["0x00000000", "0x00000000"], [ZeroAddress, ZeroAddress]);
         await lpCreationTx.wait();
 
         const lp = await ethers.getContractAt("ICurveStableSwapNG", await curveStableSwapFactory.pool_list(poolCount));
 
-        await coins[0].connect(deployer).approve(lp, MaxUint256);
-        await coins[1].connect(deployer).approve(lp, MaxUint256);
-        const deployerAddress = await deployer.getAddress();
-        const coin0Name = await coins[0].name();
-        const coin0Decimals = await coins[0].decimals();
-        const balance0 = await coins[0].balanceOf(deployerAddress);
-        const coin1Name = await coins[1].name();
-        const coin1Decimals = await coins[1].decimals();
-        const balance1 = await coins[1].balanceOf(deployerAddress);
-        const balance0Parsed = formatUnits(balance0.toString(), coin0Decimals);
-        const balance1Parsed = formatUnits(balance1.toString(), coin1Decimals);
-
-        console.log(`${coin0Name} balance of deployer:`, balance0Parsed);
-        console.log(`${coin1Name} balance of deployer:`, balance1Parsed);
-
-        await lp
-            .connect(deployer)
-        ["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
-
+        await coins[0].approve(lp, MaxUint256);
+        await coins[1].approve(lp, MaxUint256);
+        await lp["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
         await this._usersApproveLp(baseContext, coins, lp);
 
         return lp;
@@ -183,10 +165,10 @@ export class LpDeployContext {
         const lp = await ethers.getContractAt("ICurveCryptoSwap", await curveStableSwapFactory.pool_list(poolCount));
         const coin0 = await ethers.getContractAt("ERC20", COMMON_ERC20S.WETH);
         const coin1 = await ethers.getContractAt("ERC20", baseContext.TAN);
-        await coin0.connect(deployer).approve(lp, MaxUint256);
-        await coin1.connect(deployer).approve(lp, MaxUint256);
+        await coin0.approve(lp, MaxUint256);
+        await coin1.approve(lp, MaxUint256);
 
-        await lp.connect(deployer)["add_liquidity(uint256[2],uint256)"]([parseUnits("200", await coin0.decimals()), parseUnits("3330000", await coin1.decimals())], 0);
+        await lp["add_liquidity(uint256[2],uint256)"]([parseUnits("200", await coin0.decimals()), parseUnits("3330000", await coin1.decimals())], 0);
 
         return lp;
     }

@@ -19,29 +19,29 @@ export const onchainBoostUserConfig: OnchainBoostContextConfig[] = [
         veCRV: 25_000,
         veFXN: 25,
     },
-    // User 1
-    {
-        veCRV: 25_000,
-        veFXN: 25,
-    },
-    // User 2
-    {
-        veCRV: 25_000,
-        veFXN: 25,
-    },
-    // User3 
-    {
-        veCRV: 25_000,
-        veFXN: 25,
-    },
-    // User 4 
-    {
-        veCRV: 25_000,
-        veFXN: 25,
-    },
-    // User 5
-    {
-        veCRV: 25_000,
-        veFXN: 25,
-    },
+    // // User 1
+    // {
+    //     veCRV: 25_000,
+    //     veFXN: 25,
+    // },
+    // // User 2
+    // {
+    //     veCRV: 25_000,
+    //     veFXN: 25,
+    // },
+    // // User3 
+    // {
+    //     veCRV: 25_000,
+    //     veFXN: 25,
+    // },
+    // // User 4 
+    // {
+    //     veCRV: 25_000,
+    //     veFXN: 25,
+    // },
+    // // User 5
+    // {
+    //     veCRV: 25_000,
+    //     veFXN: 25,
+    // },
 ]
