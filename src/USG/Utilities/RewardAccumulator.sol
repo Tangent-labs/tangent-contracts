@@ -346,7 +346,7 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable {
         address _feeTreasury = controlTower.feeTreasury();
         for (uint256 erc20Id; erc20Id < tokens.length; ) {
             IERC20 token = tokens[erc20Id];
-            token.transfer(_feeTreasury, cutFeeForToken[token]);
+            token.safeTransfer(_feeTreasury, cutFeeForToken[token]);
 
             delete cutFeeForToken[token];
             unchecked {
