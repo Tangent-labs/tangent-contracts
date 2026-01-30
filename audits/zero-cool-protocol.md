@@ -5,7 +5,6 @@
 ### Medium
 
 - [x] - M-01 - OracleERC4626 mispricing of non-18 decimal ERC4626 shares enables over-borrow
-- [x] - M-04 - VsTAN exits can be blocked by a non-transferable reward token
 
 ### Low
 
@@ -28,6 +27,8 @@
 
   - 2x10^50 is an index very very high and will happen only if the IR is very high for a very long time.
     As we are limiting the IR in our formula, it will never happen
+
+- M-04 - VsTAN exits can be blocked by a non-transferable reward token
 
 ## No Fix
 
