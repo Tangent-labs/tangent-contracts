@@ -55,7 +55,7 @@ export class BaseContext extends MainSetup {
 
     pegKeeperRegulator!: IPegKeeperRegulator;
     pegKeeperUSG_USDC!: IPegKeeperV2;
-    pegKeeperUSG_wfrxUSD!: IPegKeeperV2;
+    pegKeeperUSG_frxUSD!: IPegKeeperV2;
 
     marketCvxCrvImplem!: ConvexCrvLPMarket;
     marketCvxFxnImplem!: ConvexFxnLPMarket;
@@ -181,17 +181,20 @@ export class BaseContext extends MainSetup {
         ).deploy(lpDeployContext.stableLp["USG-USDC"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
         await this.pegKeeperUSG_USDC.waitForDeployment();
 
-        this.pegKeeperUSG_wfrxUSD = (await (
+        this.pegKeeperUSG_frxUSD = (await (
             await ethers.getContractFactory("PegKeeperV2")
         ).deploy(lpDeployContext.stableLp["USG-frxUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
-        await this.pegKeeperUSG_wfrxUSD.waitForDeployment();
+        await this.pegKeeperUSG_frxUSD.waitForDeployment();
 
-        await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperUSG_USDC, this.pegKeeperUSG_wfrxUSD]);
+        await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperUSG_USDC, this.pegKeeperUSG_frxUSD]);
 
         await this.USG.connect(this.owner).setIsPegKeeper(this.pegKeeperUSG_USDC, true);
-        await this.USG.connect(this.owner).setIsPegKeeper(this.pegKeeperUSG_wfrxUSD, true);
+        await this.USG.connect(this.owner).setIsPegKeeper(this.pegKeeperUSG_frxUSD, true);
 
         await this.controlTower.connect(this.owner).setIsMarketCreator(this.marketCreator, true);
+
+        await this.USG.mintPegKeeper(this.pegKeeperUSG_USDC, ethers.parseEther("10000000"))
+        await this.USG.mintPegKeeper(this.pegKeeperUSG_frxUSD, ethers.parseEther("1000000"))
 
         this.pendlePTRouter = await (await ethers.getContractFactory("PendlePTRouter")).deploy();
     }
@@ -356,7 +359,7 @@ export async function createJSONAddress(
         wStables,
         pegKeepers: {
             "USG-USDC": await baseContext.pegKeeperUSG_USDC.getAddress(),
-            "USG-wcrvUSD": await baseContext.pegKeeperUSG_wfrxUSD.getAddress(),
+            "USG-frxUSD": await baseContext.pegKeeperUSG_frxUSD.getAddress(),
         },
     };
 }

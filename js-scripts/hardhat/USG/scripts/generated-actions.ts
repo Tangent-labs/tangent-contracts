@@ -15,7 +15,9 @@ export async function main() {
     try {
         const [user0, user1, user2, user3, user4, user5, user6, user7, user8, user9] = await ethers.getSigners();
 
-        await depositCurveLPOneSide("USDC_crvUSD", user8, 500000);
+        await depositCurveLPOneSide("USG-USDC", user2, 50000);
+        await depositCurveLPOneSide("USG-frxUSD", user2, 50000);
+
 
         // await withdrawCurveLP("USDC_crvUSD", user8, 219058);
     } catch (error) {
