@@ -29,6 +29,7 @@
     As we are limiting the IR in our formula, it will never happen
 
 - M-04 - VsTAN exits can be blocked by a non-transferable reward token
+  - Fixed it but contract was too big, we'll just pay attention to have only always transferable token as rewards
 
 ## No Fix
 
