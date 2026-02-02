@@ -1,4 +1,4 @@
-import { PENDLE_POOLS, thiefConfig, CURVE_LPS } from "@tangent/defi-resources";
+import {PENDLE_POOLS, thiefConfig, CURVE_LPS} from "@tangent/defi-resources";
 
 export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;
@@ -194,7 +194,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
         {
             slotBalance: 38,
             decimals: 18,
-            isVyper: false,
+            isVyper: true,
             address: CURVE_LPS.DUO_RLUSD_USDC,
             amount: mintedAmount,
             name: "RLUSD_USDC",
