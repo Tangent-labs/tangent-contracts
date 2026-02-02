@@ -24,9 +24,9 @@ export class LpDeployContext {
             USGC,
             [baseContext.coins.USDC, baseContext.USG],
             [amount, amount],
-            "500",
+            "450",
             "1000000",
-            "50000000000",
+            "100000000000",
             "866",
             "0"
         );
@@ -39,9 +39,9 @@ export class LpDeployContext {
             frxUSD,
             [baseContext.coins.frxUSD, baseContext.USG],
             [amount, amount],
-            "500",
+            "450",
             "1000000",
-            "50000000000",
+            "100000000000",
             "866",
             "0"
         );
