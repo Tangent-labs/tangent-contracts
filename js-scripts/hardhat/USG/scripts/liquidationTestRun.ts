@@ -1,4 +1,4 @@
-import {network} from "hardhat";
+import {network, ethers} from "hardhat";
 import {LiquidationTestContext} from "../contexts";
 import type {LiquidationTestData} from "../contexts";
 import liquidationTestDataRaw from "./data/liquidation_test_data.json";
@@ -16,8 +16,13 @@ async function confirmRun(message: string, func: () => Promise<void>): Promise<b
         rl.question(message, (answer: string) => {
             rl.close();
             if (answer.trim().toLowerCase() === "y") {
-                resolve(true);
-                func();
+                // Execute the async function and wait for it to complete before resolving
+                func()
+                    .then(() => resolve(true))
+                    .catch((err) => {
+                        console.error("Error while running action:", err);
+                        resolve(false);
+                    });
             } else {
                 resolve(false);
             }
@@ -41,20 +46,28 @@ async function main() {
 
     // Create context
     const context = new LiquidationTestContext(liquidationTestData);
-    const {baseContext, marketContext, oracleContext, lpDeployContext, wStableContext} = await deployUSG(context.maxUser);
+    const {baseContext, marketContext, oracleContext, lpDeployContext, wStableContext} = await deployUSG(context.maxUser,2_200_000);
 
     fs.writeFileSync("./addresses.json", JSON.stringify(await createJSONAddress(baseContext, marketContext, oracleContext, lpDeployContext, wStableContext)));
     console.info("\x1b[32m%s\x1b[0m", "Contracts deployed and setup !");
 
+
+
+
+
     await context.init({baseContext});
 <<<<<<< HEAD
     await network.provider.send("evm_mine", []);
+    await network.provider.send("evm_mine", []);
     // ask the user if they want to run the test
-    await confirmRun("press enter to run DUMP 1 ? (y/n)", async () => await context.runState_1());
+    await confirmRun("press enter to run DUMP 1 ? (y/n)", async () => await context.runState_1())
     await network.provider.send("evm_mine", []);
-    await confirmRun("press enter to run DUMP 2 ? (y/n)", async () => await context.runState_2());
     await network.provider.send("evm_mine", []);
-    await confirmRun("press enter to run DUMP 3 ? (y/n)", async () => await context.runState_3());
+    await confirmRun("press enter to run DUMP 2 ? (y/n)", async () => await context.runState_2()) 
+    await network.provider.send("evm_mine", []);
+    await network.provider.send("evm_mine", []);
+    await confirmRun("press enter to run DUMP 3 ? (y/n)", async () => await context.runState_3())
+    await network.provider.send("evm_mine", []);
     await network.provider.send("evm_mine", []);
 =======
 

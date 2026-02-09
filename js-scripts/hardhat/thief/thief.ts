@@ -30,7 +30,7 @@ export async function giveTokensToAddresses(users: Signer[], tokensAmounts: Toke
                 }
                 await setStorageAt(tokenAmount.address, storageSlot, parseUnits(tokenAmount.amount.toString(), tokenAmount.decimals));
             } catch (e) {
-                console.error(`error token : ${tokenAmount.address} , ${tokenAmount.amount} , ${tokenAmount.slotBalance || "--"} `, tokenAmount);
+                console.error(`error token : ${tokenAmount.address} , ${tokenAmount.amount} , ${tokenAmount.slotBalance || "--"} `);
             }
         }
     }

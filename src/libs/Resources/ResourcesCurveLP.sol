@@ -45,6 +45,7 @@ library AddrCurveStableLP {
 
     ICurveStable constant ETH_stETH_POOL = ICurveStable(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
     IERC20Metadata constant ETH_stETH_LP = IERC20Metadata(0x06325440D014e39736583c165C2963BA99fAf14E);
+    IERC20Metadata constant scrvUSD_sUSDe = IERC20Metadata(0xd29f8980852c2c76fC3f6E96a7Aa06E0BedCC1B1);
 }
 
 library AddrCurveGauge {

@@ -368,6 +368,11 @@ contract OraclesContext is USGDeployContext {
     }
 
     function setupPendlePTTokens() internal {
+
+        // Oracle PT sUSDe_25_02_26
+        oracles[AddrPTPendle.sUSDe_05_02_26] = new OraclePendlePT(AddrMarketPendle.sUSDe_05_02_26, oracles[AddrERC4626.sUSDe], 900, 18, "sUSDe_05_02_26 Linear / USD");
+        vm.label(address(oracles[AddrPTPendle.sUSDe_05_02_26]), "Oracle PT sUSDe_05_02_26");
+
         // Oracle PT sUSDE 31_07_25
         oracles[AddrPTPendle.sUSDe_31_07_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], 900, 18, "PT sUSDe 31/07/25 Linear / USD");
         vm.label(address(oracles[AddrPTPendle.sUSDe_31_07_25]), "Oracle PT sUSDe 31_07_25");

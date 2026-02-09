@@ -184,9 +184,9 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
 
         // Curve Gauge LP tokens
         {
-            slotBalance: 0,
+            slotBalance: 38,
             decimals: 18,
-            isVyper: false,
+            isVyper: true,
             address: CURVE_LPS.DUO_PYUSD_USDC,
             amount: mintedAmount,
             name: "PYUSD_USDC",

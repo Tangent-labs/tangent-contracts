@@ -2,7 +2,7 @@ import {ethers} from "hardhat";
 import {MainSetup} from "../../Main.setup";
 import {Market} from "../contexts/BaseContext";
 import {prepareUserAmountByMarket, loadAddresses} from "./common";
-import {parseEther} from "ethers";
+import {parseEther, formatEther} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 
 export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: Record<string, Record<string, string>>) {
@@ -13,6 +13,7 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
         const errorMessages = new Set<string>();
         const collatTokenCache: Record<string, any> = {};
         const errorMarkets = new Map<string, number>();
+        const okBorrow = new Map<string, number>();
         for (const marketAddress of Object.keys(userAmountByMarket || {})) {
             const market = await ethers.getContractAt("MarketExternalActions", marketAddress);
             const collatName = addresses?.markets?.find((m: any) => m.marketAddress.toLowerCase() === marketAddress.toLowerCase())?.collatName;
@@ -34,20 +35,26 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
                         }
 
                         // Check maxBorrowable limit
-                        // const marketAsCollateral = await ethers.getContractAt("ICollateral", marketAddress);
-
                         const maxBorrowableAmount = await marketViewer.maxBorrowable(market, user.address);
                         const positionValue = await marketViewer.positionValue(market, user.address);
 
                         // Skip if maxBorrowable is 0
                         if (maxBorrowableAmount === 0n) {
-                            console.log(`Skipping borrow for user  ${i} ${collatName || "-"}  ${positionValue}- maxBorrowable is 0`);
+                            console.log(`Skipping borrow for user ${i} ${collatName || "-"}  ${positionValue} - maxBorrowable is 0`);
 
                             continue;
                         }
 
+                        // If requested borrow amount exceeds maxBorrowable, cap it to the maxBorrowable
+                        if (parsedAmount > maxBorrowableAmount) {
+                            console.log(`Requested borrow ${amount} exceeds maxBorrowable ${formatEther(maxBorrowableAmount)} for user ${i} ${collatName || "-"}, capping to maxBorrowable`);
+                            parsedAmount = maxBorrowableAmount;
+                        }
+
                         await market.connect(user).borrow(user.address, parsedAmount);
-                        //    console.log("borrowed", collatName || "-", i, parsedAmount);
+
+                        const current = okBorrow.get(marketAddress) || 0;
+                        okBorrow.set(marketAddress, current + 1);
                     } catch (e) {
                         const current = errorMarkets.get(marketAddress) || 0;
                         errorMarkets.set(marketAddress, current + 1);
@@ -70,6 +77,17 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
                 console.log(addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === address.toLowerCase())?.collatName, count);
             }
         }
+
+        if (okBorrow.size) {
+            console.log("List of OK markets borrow  : ");
+            const addresses = loadAddresses();
+            for (const [address, count] of okBorrow) {
+                console.log(addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === address.toLowerCase())?.collatName, count);
+            }
+        } else {
+            console.log("No OK markets borrow  : ");
+        }
+
         console.info("\x1b[32m%s\x1b[0m", "All borrow actions completed across specified markets!");
     } catch (e) {
         console.error(`general error for market borrow  `, (e as Error).message);

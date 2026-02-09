@@ -27,7 +27,7 @@
     {
       "id": 5,
       "market": "RLUSD_USDC",
-      "lpDeposited": "500000",
+      "lpDeposited": "50000",
       "debt": "40000"
     },
     {
@@ -45,8 +45,8 @@
     {
       "id": 8,
       "market": "RLUSD_USDC",
-      "lpDeposited": "900000",
-      "debt": "400000"
+      "lpDeposited": "400000",
+      "debt": "358000"
     },
     {
       "id": 9,
@@ -112,7 +112,7 @@
       "sUSDe 05/02/26": "0.94"
     },
     "state_3": {
-      "PYUSD_USDC": "0.85",
+      "RLUSD_USDC": "0.85",
       "frxETH_WETH": "2300"
     }
   }

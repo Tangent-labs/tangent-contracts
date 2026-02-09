@@ -10,7 +10,6 @@
   },
   "scripts": {
     "hh-node": "npx hardhat node --hostname 0.0.0.0",
-    "hh-node-300": "npx hardhat node --hostname 0.0.0.0 --network localhost300",
     "anvil-node": "anvil --fork-url https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q --chain-id 31337",
     "deploy:usg-local": "npx hardhat run js-scripts/hardhat/USG/scripts/deployUSG.ts --network localhost",
     "deploy:usg-staging": "npx hardhat run js-scripts/hardhat/USG/scripts/deployUSG.ts --network staging",
@@ -30,6 +29,7 @@
     "action:deposit-markets-USG": "npx hardhat run js-scripts/hardhat/USG/scripts/deposit.ts --network localhost",
     "action:borrow-markets-USG": "npx hardhat run js-scripts/hardhat/USG/scripts/borrow.ts --network localhost",
     "action:time-travel": "npx hardhat run js-scripts/hardhat/USG/actions/time-travel.ts --network localhost",
+    "action:distribute-usg": "npx hardhat run js-scripts/hardhat/USG/scripts/distributeUSG.ts --network localhost",
     "liquidboost:dapp-setup": "npx hardhat run js-scripts/hardhat/dappSetup/run-setup-booster.ts --network localhost",
     "points:generate-context": "npx hardhat run js-scripts/hardhat/USG/scripts/userActionGenerator.ts",
     "points:run-context-local": "npx hardhat run js-scripts/hardhat/USG/scripts/generated-actions.ts --network localhost",

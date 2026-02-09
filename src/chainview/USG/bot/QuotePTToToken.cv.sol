@@ -11,11 +11,11 @@ import {IPendlePYLpOracle} from "../../../interfaces/externals/Pendle/IPendlePYL
 
 import {ICurveStableSwapNG} from "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 
-import {CurveRouteParamsOny} from "../../../interfaces/internals/USG/ICurveLPLiquidator.sol";
+import {CurveRouteParamsOnly} from "../../../interfaces/internals/USG/ICurveLPLiquidator.sol";
 
 struct QuotePTToTokenParams {
     PendlePTToSYQuote ptToSYData;
-    CurveRouteParamsOny curveRouterData;
+    CurveRouteParamsOnly curveRouterData;
 }
 
 struct PendlePTToSYQuote {
@@ -53,7 +53,7 @@ contract QuotePTToToken {
 
     function _getQuotePTIn(QuotePTToTokenParams memory param) internal view returns (QuotePtToTokenOut memory out) {
         PendlePTToSYQuote memory ptToSY = param.ptToSYData;
-        CurveRouteParamsOny memory paramCurve = param.curveRouterData;
+        CurveRouteParamsOnly memory paramCurve = param.curveRouterData;
         uint256 ptDecimals = ptToSY.pt.decimals();
 
         // Find the swap rate of PT to SY
