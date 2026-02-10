@@ -9,6 +9,11 @@ import { ZeroAddress } from "ethers";
 export class OracleContext {
     USGOracle!: IAggregatorStablePriceV3;
     oracles: { [key: string]: IPriceOracle } = {};
+    oraclesChainlink: { [key: string]: IPriceOracle } = {};
+    oraclesCoinFromCurveLP: { [key: string]: IPriceOracle } = {};
+    oracles4626: { [key: string]: IPriceOracle } = {};
+    oraclesDuoPoolStable: { [key: string]: IPriceOracle } = {};
+    oraclesPendlePT: { [key: string]: IPriceOracle } = {};
 
     async deployAndSetupOracles(baseContext: BaseContext, lpDeployContext: LpDeployContext) {
         await this.deployChainlinkWrappers();
@@ -34,12 +39,14 @@ export class OracleContext {
 
         for (let index = 0; index < chainlinkOracleParams.length; index++) {
             const item = chainlinkOracleParams[index];
-            this.oracles[item.key] = await ChainlinkWrapperFactory.deploy(
+            const oracle = await ChainlinkWrapperFactory.deploy(
                 await ethers.getContractAt("IPriceOracle", CHAINLINK_PRICE_FEEDS[item.oracleName]),
                 10000000000,
                 ZeroAddress,
                 item.oracleName
             );
+            this.oracles[item.key] = oracle
+            this.oraclesChainlink[item.key] = oracle
         }
     }
 
@@ -58,7 +65,11 @@ export class OracleContext {
             if (!coin0Oracle) {
                 throw Error(`Oracle0 ${item.coin0Oracle} not deployed for ${item.oracleName}`);
             }
-            this.oracles[item.key] = (await OracleCoinFromCurveLPFactory.deploy(curveLP, coin0Oracle, item.isReversed, item.key)) as unknown as IPriceOracle;
+
+            const oracle = (await OracleCoinFromCurveLPFactory.deploy(curveLP, coin0Oracle, item.isReversed, item.key)) as unknown as IPriceOracle;
+            this.oracles[item.key] = oracle
+            this.oraclesCoinFromCurveLP[item.key] = oracle
+
         }
     }
 
@@ -76,7 +87,9 @@ export class OracleContext {
             if (!underlyingOracle) {
                 throw Error(`${item.underlyingOracle} not deployed for ${item.oracleName}`);
             }
-            this.oracles[item.erc4626] = (await OracleERC4626Factory.deploy(erc4626Address, underlyingOracle, item.oracleName)) as unknown as IPriceOracle;
+            const oracle = (await OracleERC4626Factory.deploy(erc4626Address, underlyingOracle, item.oracleName)) as unknown as IPriceOracle;
+            this.oracles[item.erc4626] = oracle
+            this.oracles4626[item.erc4626] = oracle
         }
     }
 
@@ -98,7 +111,11 @@ export class OracleContext {
             if (!oracle1) {
                 throw Error(`${item.coin1Oracle} (Oracle 1) not configured for ${item.oracleName}`);
             }
-            this.oracles[item.key] = (await OracleDuoPoolStableFactory.deploy(lpAddress, oracle0, oracle1, item.oracleName)) as unknown as IPriceOracle;
+            const oracle = (await OracleDuoPoolStableFactory.deploy(lpAddress, oracle0, oracle1, item.oracleName)) as unknown as IPriceOracle;
+
+            this.oracles[item.key] = oracle
+            this.oraclesDuoPoolStable[item.key] = oracle
+
         }
     }
 
@@ -123,7 +140,10 @@ export class OracleContext {
             if (!underlyingOracle) {
                 throw Error(`Underlying oracle ${item.underlyingOracle} can't be find for ${item.oracleName}`);
             }
-            this.oracles[item.key] = (await OraclePendlePTFactory.deploy(marketAddress, underlyingOracle, 900, item.decimalsDelta, item.oracleName)) as unknown as IPriceOracle;
+            const oracle = (await OraclePendlePTFactory.deploy(marketAddress, underlyingOracle, 900, item.decimalsDelta, item.oracleName)) as unknown as IPriceOracle;
+            this.oracles[item.key] = oracle
+            this.oraclesPendlePT[item.key] = oracle
+
         }
     }
 }

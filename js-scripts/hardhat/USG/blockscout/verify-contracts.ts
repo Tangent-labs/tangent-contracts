@@ -9,7 +9,7 @@ import { artifacts, ethers } from "hardhat";
 export async function verifyContracts() {
     const client = new Client({
         user: "blockscout",
-        host: process.env.BLOCKSCOUT_HOST,
+        host: "localhost",
         database: "blockscout",
         password: process.env.BLOCKSCOUT_DB_PASSWORD,
         port: 7432,
@@ -67,39 +67,28 @@ export async function verifyContracts() {
     // Lock
     const vsTan = "VsTAN";
     await forceAbi(client, addresses.tokens.vsTAN, vsTan, false, (await artifacts.readArtifact(vsTan)).abi);
+
+
     // Oracles
-    await forceAbi(client, addresses.oracles.USDC, "Oracle USDC", false, (await artifacts.readArtifact("IAggregatorV3")).abi);
+    for (const [key, value] of Object.entries(addresses.oracles.chainlink)) {
+        await forceAbi(client, value, `Oracle ${key} / USD`, false, (await artifacts.readArtifact("OracleChainlinkWrapper")).abi);
+    }
 
-    await forceAbi(client, addresses.oracles.USDT, "Oracle USDT", false, (await artifacts.readArtifact("IAggregatorV3")).abi);
+    for (const [key, value] of Object.entries(addresses.oracles.erc4626s)) {
+        await forceAbi(client, value, `Oracle ${key} / USD`, false, (await artifacts.readArtifact("OracleERC4626")).abi);
+    }
 
-    const abiOracleCoinFromCurveLP = (await artifacts.readArtifact("OracleCoinFromCurveLP")).abi;
-    await forceAbi(client, addresses.oracles.fxUSD, "Oracle fxUSD", false, abiOracleCoinFromCurveLP);
-    await forceAbi(client, addresses.oracles.frxUSD, "Oracle frxUSD", false, abiOracleCoinFromCurveLP);
-    await forceAbi(client, addresses.oracles.frxETH, "Oracle frxETH", false, abiOracleCoinFromCurveLP);
-    await forceAbi(client, addresses.oracles.pxETH, "Oracle pxETH", false, abiOracleCoinFromCurveLP);
+    for (const [key, value] of Object.entries(addresses.oracles.coinFromCurveLp)) {
+        await forceAbi(client, value, `Oracle ${key} / USD`, false, (await artifacts.readArtifact("OracleCoinFromCurveLP")).abi);
+    }
 
-    const abiOracleDuoPoolStable = (await artifacts.readArtifact("OracleDuoPoolStable")).abi;
-    await forceAbi(client, addresses.oracles["crvUSD-USDC"], "Oracle crvUSD/USDC", false, abiOracleDuoPoolStable);
-    await forceAbi(client, addresses.oracles["crvUSD-USDT"], "Oracle crvUSD/USDT", false, abiOracleDuoPoolStable);
-    await forceAbi(client, addresses.oracles["USDC-fxUSD"], "Oracle USDC/fxUSD", false, abiOracleDuoPoolStable);
-    await forceAbi(client, addresses.oracles["USDC-USDT"], "Oracle USDC/USDT", false, abiOracleDuoPoolStable);
-    await forceAbi(client, addresses.oracles["frxUSD-USDe"], "Oracle frxUSD/USDe", false, abiOracleDuoPoolStable);
-    await forceAbi(client, addresses.oracles["pxETH-WETH"], "Oracle pxETH/WETH", false, abiOracleDuoPoolStable);
-    await forceAbi(client, addresses.oracles["pxETH-stETH"], "Oracle pxETH/stETH", false, abiOracleDuoPoolStable);
-    await forceAbi(client, addresses.oracles["frxETH-WETH"], "Oracle frxETH/WETH", false, abiOracleDuoPoolStable);
-    await forceAbi(client, addresses.oracles["cbBTC-WBTC"], "Oracle cbBTC/WBTC", false, abiOracleDuoPoolStable);
+    for (const [key, value] of Object.entries(addresses.oracles.duoPoolStable)) {
+        await forceAbi(client, value, `Oracle ${key} / USD`, false, (await artifacts.readArtifact("OracleDuoPoolStable")).abi);
+    }
 
-    const abiOracleCryptoSwap = (await artifacts.readArtifact("OracleCryptoSwap")).abi;
-    await forceAbi(client, addresses.oracles["USDT-WBTC-WETH"], "Oracle USDC/WBTC/WETH", false, abiOracleCryptoSwap);
-    await forceAbi(client, addresses.oracles["USDC-WBTC-WETH"], "Oracle USDC/WBTC/WETH", false, abiOracleCryptoSwap);
-    await forceAbi(client, addresses.oracles["crvUSD-ETH-CRV"], "Oracle crvUSD/ETH/CRV", false, abiOracleCryptoSwap);
-    await forceAbi(client, addresses.oracles["GHO-cbBTC-WETH"], "Oracle GHO/cbBTC/WETH", false, abiOracleCryptoSwap);
-    await forceAbi(client, addresses.oracles["CVX-ETH"], "Oracle CVX/ETH", false, abiOracleCryptoSwap);
-    await forceAbi(client, addresses.oracles["USR-RLP"], "Oracle USR/RLP", false, abiOracleCryptoSwap);
-
-    const abiOraclePendlePT = (await artifacts.readArtifact("OraclePendlePT")).abi;
-    await forceAbi(client, addresses.oracles["sUSDe 07/31/25"], "Oracle sUSDe 07/31/25", false, abiOraclePendlePT);
-    await forceAbi(client, addresses.oracles["wstUSR 07/25/25"], "Oracle wstUSR 07/25/25", false, abiOraclePendlePT);
+    for (const [key, value] of Object.entries(addresses.oracles.pendlePT)) {
+        await forceAbi(client, value, `Oracle ${key} / USD`, false, (await artifacts.readArtifact("OraclePendlePT")).abi);
+    }
 
     await forceAbi(client, addresses.oracles.USG, "Oracle USG", true, (await artifacts.readArtifact("AggregatorStablePriceV3")).abi);
 
@@ -149,7 +138,6 @@ export async function verifyContracts() {
     // Markets Convex CRV
     const abiMarketConvexCrv = (await artifacts.readArtifact("ConvexCrvLPMarket")).abi;
     const abiCvxRewardToken = (await artifacts.readArtifact("ICvxRewardToken")).abi;
-
     for (const marketObject of Object.values(addresses.markets)) {
         if (marketObject.marketType === "Convex_CRV") {
             const marketAddress = marketObject.marketAddress;
@@ -192,10 +180,6 @@ export async function verifyContracts() {
             // FXN Gauge verification
             await forceAbi(client, await stakingProxy.gaugeAddress(), "FxnGauge " + marketObject.collatName, false, abiERC20);
 
-            // const infos = await booster.poolInfo(pid);
-
-            // Gauge Curve
-            // await forceAbi(client, infos.gauge, "CurveGauge " + marketObject.collatName, false, abiERC20);
         }
     }
 
