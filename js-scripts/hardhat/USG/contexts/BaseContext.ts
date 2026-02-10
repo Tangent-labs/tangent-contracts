@@ -55,7 +55,7 @@ export class BaseContext extends MainSetup {
 
     pegKeeperRegulator!: IPegKeeperRegulator;
     pegKeeperUSG_USDC!: IPegKeeperV2;
-    pegKeeperUSG_wfrxUSD!: IPegKeeperV2;
+    pegKeeperUSG_frxUSD!: IPegKeeperV2;
 
     marketCvxCrvImplem!: ConvexCrvLPMarket;
     marketCvxFxnImplem!: ConvexFxnLPMarket;
@@ -181,15 +181,15 @@ export class BaseContext extends MainSetup {
         ).deploy(lpDeployContext.stableLp["USG-USDC"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
         await this.pegKeeperUSG_USDC.waitForDeployment();
 
-        this.pegKeeperUSG_wfrxUSD = (await (
+        this.pegKeeperUSG_frxUSD = (await (
             await ethers.getContractFactory("PegKeeperV2")
         ).deploy(lpDeployContext.stableLp["USG-frxUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
-        await this.pegKeeperUSG_wfrxUSD.waitForDeployment();
+        await this.pegKeeperUSG_frxUSD.waitForDeployment();
 
-        await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperUSG_USDC, this.pegKeeperUSG_wfrxUSD]);
+        await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperUSG_USDC, this.pegKeeperUSG_frxUSD]);
 
         await this.USG.connect(this.owner).setIsPegKeeper(this.pegKeeperUSG_USDC, true);
-        await this.USG.connect(this.owner).setIsPegKeeper(this.pegKeeperUSG_wfrxUSD, true);
+        await this.USG.connect(this.owner).setIsPegKeeper(this.pegKeeperUSG_frxUSD, true);
 
         await this.controlTower.connect(this.owner).setIsMarketCreator(this.marketCreator, true);
 
@@ -306,11 +306,44 @@ export async function createJSONAddress(
         });
     }
 
-    let oracles: { [key: string]: string } = {};
-    for (const prop in oracleContext.oracles) {
-        const oracle = await oracleContext.oracles[prop].getAddress();
-        oracles[prop] = oracle;
+    let oracles: { [oracleType: string]: { [key: string]: string } } = {};
+
+    const chainlink: { [key: string]: string } = {};
+    for (const prop in oracleContext.oraclesChainlink) {
+        const oracle = await oracleContext.oraclesChainlink[prop].getAddress();
+        chainlink[prop] = oracle;
     }
+    oracles.chainlink = chainlink
+
+    const erc4626s: { [key: string]: string } = {};
+    for (const prop in oracleContext.oracles4626) {
+        const oracle = await oracleContext.oracles4626[prop].getAddress();
+        erc4626s[prop] = oracle;
+    }
+    oracles.erc4626s = erc4626s
+
+    const coinFromCurveLp: { [key: string]: string } = {};
+    for (const prop in oracleContext.oraclesCoinFromCurveLP) {
+        const oracle = await oracleContext.oraclesCoinFromCurveLP[prop].getAddress();
+        coinFromCurveLp[prop] = oracle;
+    }
+    oracles.coinFromCurveLp = coinFromCurveLp
+
+    const duoPoolStable: { [key: string]: string } = {};
+    for (const prop in oracleContext.oraclesDuoPoolStable) {
+        const oracle = await oracleContext.oraclesDuoPoolStable[prop].getAddress();
+        duoPoolStable[prop] = oracle;
+    }
+    oracles.duoPoolStable = duoPoolStable
+
+
+    const pendlePT: { [key: string]: string } = {};
+    for (const prop in oracleContext.oraclesPendlePT) {
+        const oracle = await oracleContext.oraclesPendlePT[prop].getAddress();
+        pendlePT[prop] = oracle;
+    }
+    oracles.pendlePT = pendlePT
+
 
     const lps: { [key: string]: string } = {};
     for (const prop in lpDeployContext.stableLp) {
@@ -356,7 +389,7 @@ export async function createJSONAddress(
         wStables,
         pegKeepers: {
             "USG-USDC": await baseContext.pegKeeperUSG_USDC.getAddress(),
-            "USG-wcrvUSD": await baseContext.pegKeeperUSG_wfrxUSD.getAddress(),
+            "USG-frxUSD": await baseContext.pegKeeperUSG_frxUSD.getAddress(),
         },
     };
 }

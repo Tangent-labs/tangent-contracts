@@ -32,7 +32,7 @@ struct CurveQuote {
     address[5] _pools;
 }
 
-struct CurveRouteParamsOny {
+struct CurveRouteParamsOnly {
     address[11] _route;
     uint256[5][5] _swap_params;
     address[5] _pools;
