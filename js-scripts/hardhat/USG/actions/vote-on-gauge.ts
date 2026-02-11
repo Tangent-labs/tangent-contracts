@@ -15,6 +15,8 @@ export const CONTROLLER_MAPPING: {
         gauges: {
             USDC_crvUSD: "0x95f00391cB5EebCd190EB58728B4CE23DbFa6ac1",
             USDT_crvUSD: "0x4e6bB6B7447B7B2Aa268C16AB87F4Bb48BF57939",
+            frxUSD_crvUSD: "0x22804b0f6be741a9fa1bbaecdd6c8d4116e96944".toLowerCase()
+
         },
     },
     FXN: {

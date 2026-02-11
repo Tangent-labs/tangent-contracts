@@ -12,7 +12,6 @@ import {IPendlePYLpOracle} from "../../../interfaces/externals/Pendle/IPendlePYL
 import {ICurveStableSwapNG} from "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 
 import {CurveRouteParamsOnly} from "../../../interfaces/internals/USG/ICurveLPLiquidator.sol";
-
 struct QuotePTToTokenParams {
     PendlePTToSYQuote ptToSYData;
     CurveRouteParamsOnly curveRouterData;

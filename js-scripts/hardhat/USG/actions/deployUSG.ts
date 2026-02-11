@@ -48,12 +48,12 @@ export async function deployUSG(userCount: number = 5, baseLpDeposit?: number) {
         "crvUSD_USDC",
         "crvUSD_USDT",
         "USDC_USDT",
-        "frxUSD_USDe",
+        // "frxUSD_USDe",
 
         // Stable ETH
         "frxETH_WETH",
-        "pxETH_WETH",
-        "pxETH_stETH",
+        // "pxETH_WETH",
+        // "pxETH_stETH",
 
         // Stable BTC
         // "cbBTC_WBTC
@@ -67,7 +67,7 @@ export async function deployUSG(userCount: number = 5, baseLpDeposit?: number) {
         "frxUSD_msUSD",
         "msETH_OETH",
         "ETHPlus_WETH",
-        "tBTC_cbBTC"
+        "tBTC_cbBTC",
     ];
 
     const curveGaugeMarkets: CurveGaugeMarketsKeys[] = [
@@ -75,13 +75,15 @@ export async function deployUSG(userCount: number = 5, baseLpDeposit?: number) {
         "RLUSD_USDC",
         "stUSDS_USDS"
     ];
-    const convexFxnMarkets: ConvexFxnMarketKeys[] = ["USDC_fxUSD", "fxUSD_reUSD", "GHO_fxUSD", "msUSD_fxUSD"];
+    const convexFxnMarkets: ConvexFxnMarketKeys[] = [
+        "USDC_fxUSD",
+        "fxUSD_reUSD",
+        "GHO_fxUSD",
+        "msUSD_fxUSD",
+    ];
 
     const pendlePTMarkets: BasicERC20MarketKeys[] = [
-        "Pendle PT - reUSD 25/06/26",
-        "Pendle PT - wstUSR 29/01/26",
         "Pendle PT - sUSDe 05/02/26",
-        // "Pendle PT - wstETH 25_06_26"
     ];
 
     // Deploy Convex CRV markets
