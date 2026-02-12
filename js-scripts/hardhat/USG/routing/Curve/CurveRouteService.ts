@@ -202,7 +202,7 @@ export class CurveRouteService {
                 infos.push({ info: `${route.display} no route => USDe not unwrapable directely`, route });
             }
             else {
-                const thiefData = ThiefConfig.find((token) => token.address.toLowerCase() === route.in.toLowerCase());
+                const thiefData = ThiefConfig.find((token) => token.address && route?.in &&  token.address.toLowerCase() === route.in.toLowerCase());
                 try {
                     coins = ["noONe"];
                     // No more RPC call; we use tokenIn & tokenOut from JSON

@@ -1,4 +1,4 @@
-import { PENDLE_POOLS, thiefConfig, CURVE_LPS } from "@tangent/defi-resources";
+import {PENDLE_POOLS, thiefConfig, CURVE_LPS} from "@tangent/defi-resources";
 
 export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;
@@ -21,7 +21,7 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             name: "frxUSD_USDe",
         },
         {
-            ...obj.frxETH_WETH,
+            ...obj.frxETH_ETH,
             amount: mintedAmount,
             name: "frxETH_WETH",
         },
@@ -184,17 +184,17 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
 
         // Curve Gauge LP tokens
         {
-            slotBalance: 0,
+            slotBalance: 38,
             decimals: 18,
-            isVyper: false,
+            isVyper: true,
             address: CURVE_LPS.DUO_PYUSD_USDC,
             amount: mintedAmount,
             name: "PYUSD_USDC",
         },
         {
-            slotBalance: 0,
+            slotBalance: 38,
             decimals: 18,
-            isVyper: false,
+            isVyper: true,
             address: CURVE_LPS.DUO_RLUSD_USDC,
             amount: mintedAmount,
             name: "RLUSD_USDC",
