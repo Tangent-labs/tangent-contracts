@@ -1,14 +1,13 @@
-import { ethers } from "hardhat";
-import { MainSetup } from "../../Main.setup";
-import { prepareUserAmountByMarket, loadAddresses } from "./common";
-import { Market } from "../contexts/BaseContext";
-import { parseEther } from "ethers";
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import {ethers} from "hardhat";
+import {MainSetup} from "../../Main.setup";
+import {prepareUserAmountByMarket, loadAddresses} from "./common";
+import {Market} from "../contexts/BaseContext";
+import {parseEther, formatEther} from "ethers";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 
 export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: Record<string, Record<string, string>>) {
     try {
         const addresses = loadAddresses();
-
 
         const collatTokenCache: Record<string, any> = {};
         const errorMarkets = new Map<string, number>();
@@ -37,7 +36,13 @@ export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: 
 
                         const balance = await collatToken.balanceOf(user.address);
                         if (balance < parsedAmount) {
-                            errorMessages.add(`${collatName} not   enough asset to deposit`);
+                            const errorMsg = `Not enough asset to deposit`;
+                            errorMessages.add(errorMsg);
+
+                            const collatAdress = await collatToken.getAddress();
+                            // Log error in red with amount
+                            console.error(`\x1b[31m❌ Deposit error for user ${i} (${collatName || "-"} ${collatAdress}): ${errorMsg}\x1b[0m`);
+                            console.error(`\x1b[31m   Required: ${amount}, Balance: ${formatEther(balance)}\x1b[0m`);
 
                             continue;
                         }
@@ -51,24 +56,31 @@ export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: 
                     } catch (e) {
                         const current = errorMarkets.get(marketAddress) || 0;
                         errorMarkets.set(marketAddress, current + 1);
-                        console.log("deposited error", collatName || "-", i, parsedAmount);
-                        errorMessages.add(`${collatName} ${e as Error}.message}`);
+                        const errorMsg = (e as Error).message || String(e);
+
+                        // Log error in red with amount
+                        console.error(`\x1b[31m❌ Deposit error for user ${i} (${collatName || "-"}): ${errorMsg}\x1b[0m`);
+                        console.error(`\x1b[31m   Deposit amount: ${amount}\x1b[0m`);
+
+                        errorMessages.add(`${collatName} ${errorMsg}`);
                         continue;
                     }
                 }
             }
         }
         if (errorMessages.size) {
+            console.error("\x1b[31m%s\x1b[0m", "\n❌ Error messages:");
             for (const message of errorMessages) {
-                console.log(message);
+                console.error(`\x1b[31m   ${message}\x1b[0m`);
             }
         }
 
         if (errorMarkets.size) {
-            console.log("List of failed markets deposit  : ");
+            console.error("\x1b[31m%s\x1b[0m", "\n❌ List of failed markets deposit:");
 
             for (const [address, count] of errorMarkets) {
-                console.log(addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === address.toLowerCase())?.collatName, count);
+                const collatName = addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === address.toLowerCase())?.collatName || address;
+                console.error(`\x1b[31m   ${collatName}: ${count} failure(s)\x1b[0m`);
             }
         }
         if (okDeposit.size) {

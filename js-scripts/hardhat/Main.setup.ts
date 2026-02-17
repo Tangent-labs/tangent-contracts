@@ -1,12 +1,12 @@
-import { giveTokensToAddresses } from "./thief/thief";
-import { ethers } from "hardhat";
+import {giveTokensToAddresses} from "./thief/thief";
+import {ethers} from "hardhat";
 
-import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { COMMON_ERC20S } from "@tangent/defi-resources";
-import { MaxUint256, parseEther } from "ethers";
-import { TOKENS_TO_GIVE_WITH_LP } from "./thief/tokensToGiveWithLP";
-import { TOKENS_TO_GIVE_WITHOUT_LP } from "./thief/tokensToGiveWithoutLP";
-import { setBalance } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import {COMMON_ERC20S} from "@tangent/defi-resources";
+import {MaxUint256, parseEther} from "ethers";
+import {TOKENS_TO_GIVE_WITH_LP} from "./thief/tokensToGiveWithLP";
+import {TOKENS_TO_GIVE_WITHOUT_LP} from "./thief/tokensToGiveWithoutLP";
+import {setBalance} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 export class MainSetup {
     users: HardhatEthersSigner[] = [];
@@ -38,13 +38,13 @@ export class MainSetup {
             amount: number;
         }[]
     ) {
-        await giveTokensToAddresses(users, TOKENS_TO_GIVE_WITHOUT_LP(this.erc20Minted).concat(extraTokens));
+        await giveTokensToAddresses(users, TOKENS_TO_GIVE_WITH_LP(this.erc20Minted).concat(extraTokens));
         const erc4626 = [
             // {saving: COMMON_ERC20S.sfrxUSD, stable: COMMON_ERC20S.frxUSD},
             // {saving: COMMON_ERC20S.wstUSR, stable: "0x6c8984bc7DBBeDAf4F6b2FD766f16eBB7d10AAb4"},
-            { saving: COMMON_ERC20S.sDOLA, stable: COMMON_ERC20S.DOLA },
-            { saving: COMMON_ERC20S.sUSDe, stable: COMMON_ERC20S.USDe },
-            { saving: COMMON_ERC20S.scrvUSD, stable: COMMON_ERC20S.crvUSD },
+            {saving: COMMON_ERC20S.sDOLA, stable: COMMON_ERC20S.DOLA},
+            {saving: COMMON_ERC20S.sUSDe, stable: COMMON_ERC20S.USDe},
+            {saving: COMMON_ERC20S.scrvUSD, stable: COMMON_ERC20S.crvUSD},
         ];
         await this.stakeInERC2646(erc4626, users);
     }

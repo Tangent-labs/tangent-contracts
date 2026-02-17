@@ -309,11 +309,44 @@ export async function createJSONAddress(
         });
     }
 
-    let oracles: { [key: string]: string } = {};
-    for (const prop in oracleContext.oracles) {
-        const oracle = await oracleContext.oracles[prop].getAddress();
-        oracles[prop] = oracle;
+    let oracles: { [oracleType: string]: { [key: string]: string } } = {};
+
+    const chainlink: { [key: string]: string } = {};
+    for (const prop in oracleContext.oraclesChainlink) {
+        const oracle = await oracleContext.oraclesChainlink[prop].getAddress();
+        chainlink[prop] = oracle;
     }
+    oracles.chainlink = chainlink
+
+    const erc4626s: { [key: string]: string } = {};
+    for (const prop in oracleContext.oracles4626) {
+        const oracle = await oracleContext.oracles4626[prop].getAddress();
+        erc4626s[prop] = oracle;
+    }
+    oracles.erc4626s = erc4626s
+
+    const coinFromCurveLp: { [key: string]: string } = {};
+    for (const prop in oracleContext.oraclesCoinFromCurveLP) {
+        const oracle = await oracleContext.oraclesCoinFromCurveLP[prop].getAddress();
+        coinFromCurveLp[prop] = oracle;
+    }
+    oracles.coinFromCurveLp = coinFromCurveLp
+
+    const duoPoolStable: { [key: string]: string } = {};
+    for (const prop in oracleContext.oraclesDuoPoolStable) {
+        const oracle = await oracleContext.oraclesDuoPoolStable[prop].getAddress();
+        duoPoolStable[prop] = oracle;
+    }
+    oracles.duoPoolStable = duoPoolStable
+
+
+    const pendlePT: { [key: string]: string } = {};
+    for (const prop in oracleContext.oraclesPendlePT) {
+        const oracle = await oracleContext.oraclesPendlePT[prop].getAddress();
+        pendlePT[prop] = oracle;
+    }
+    oracles.pendlePT = pendlePT
+
 
     const lps: { [key: string]: string } = {};
     for (const prop in lpDeployContext.stableLp) {
