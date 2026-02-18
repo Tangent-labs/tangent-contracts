@@ -16,7 +16,7 @@ export async function main() {
     for (let i = 0; i < SIMU_TAN_LPS_CONFIG.length; i++) {
         const config = SIMU_TAN_LPS_CONFIG[i];
         const csv = (await simu(config)).map(row => row.join(",")).join("\r\n")
-        const fileName = `initAmount0_${formatEther(config.intialAmounts[0])}_initAmount1_${config.intialAmounts[1]}_dumpTimes_${config.dump.times}_dumpAmount_${config.dump.amount}.csv`
+        const fileName = `initAmount0_${formatEther(config.intialAmounts[0])}_initAmount1_${formatEther(config.intialAmounts[1])}_dumpTimes_${config.dump.times}_dumpAmount_${formatEther(config.dump.amount)}.csv`
         fs.writeFileSync(fileName, csv);
         console.log(`${fileName} created at the root `)
     }
@@ -47,7 +47,6 @@ async function simu(
     const tan = await tanFactory.deploy(baseContext.users[0])
 
     const initialPrice = param.intialAmounts[0] * (10n * 10n ** 18n) / param.intialAmounts[1]
-    console.log(param.intialAmounts[0], param.intialAmounts[1])
     // Create USG LP
     const tanETHLp = await lpDeployContext.deploy_TAN_ETH_LPP(
         tan,
@@ -71,8 +70,8 @@ async function simu(
         "0",
         Number(formatEther(await tanETHLp.balances(0))).toFixed(2),// ETH
         Number(formatEther(await tanETHLp.balances(1))).toFixed(2), // TAN
-        (Number(formatEther(await tanETHLp.last_prices())) * 2000).toString(),
-        (Number(formatEther(await tanETHLp.price_oracle())) * 2000).toString()
+        (Number(formatEther(await tanETHLp.last_prices()))).toString(),
+        (Number(formatEther(await tanETHLp.price_oracle()))).toString()
     ])
     let dumpAcc = 0n
     for (let i = 0; i < param.dump.times; i++) {
@@ -83,8 +82,8 @@ async function simu(
             Number(formatEther(dumpAcc.toString())).toFixed(),
             Number(formatEther(await tanETHLp.balances(0))).toFixed(2),// ETH
             Number(formatEther(await tanETHLp.balances(1))).toFixed(2), // TAN
-            (Number(formatEther(await tanETHLp.last_prices())) * 2000).toString(),
-            (Number(formatEther(await tanETHLp.price_oracle())) * 2000).toString()
+            (Number(formatEther(await tanETHLp.last_prices()))).toString(),
+            (Number(formatEther(await tanETHLp.price_oracle()))).toString()
         ])
 
     }
