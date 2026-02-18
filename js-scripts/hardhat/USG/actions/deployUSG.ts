@@ -83,7 +83,9 @@ export async function deployUSG(userCount: number = 5, baseLpDeposit?: number) {
     ];
 
     const pendlePTMarkets: BasicERC20MarketKeys[] = [
-        "Pendle PT - sUSDe 05/02/26",
+        "Pendle PT - wstUSR 25/06/26",
+        "Pendle PT - sUSDe 07/05/26",
+        "Pendle PT - USDe 07/05/26"
     ];
 
     // Deploy Convex CRV markets

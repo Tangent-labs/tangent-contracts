@@ -1,4 +1,4 @@
-import {HardhatUserConfig} from "hardhat/config";
+import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import "@nomicfoundation/hardhat-toolbox";
 import "@nomicfoundation/hardhat-foundry";
@@ -15,32 +15,10 @@ const config: HardhatUserConfig = {
     },
 
     etherscan: {
-        apiKey: {
-            // Is not required by blockscout. Can be any non-empty string
-            localhost: "abc",
-        },
-        customChains: [
-            {
-                network: "localhost",
-                chainId: 31337,
-                urls: {
-                    apiURL: process.env.BLOCKSCOUT_HOST_HTTP + ":80/api",
-                    browserURL: process.env.BLOCKSCOUT_HOST_HTTP + ":80",
-                },
-            },
-        ],
+        apiKey: process.env.ETHERSCAN_API_KEY
     },
     solidity: {
         compilers: [
-            {
-                version: "0.8.17",
-                settings: {
-                    optimizer: {
-                        enabled: true,
-                        runs: 1_000_000,
-                    },
-                },
-            },
             {
                 version: "0.8.28",
                 settings: {
@@ -82,6 +60,11 @@ const config: HardhatUserConfig = {
                 url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
                 blockNumber: Number(process.env.STARTING_BLOCK!),
             },
+        },
+
+        mainnet: {
+            url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
+            accounts: [process.env.PRIVATE_KEY!]
         },
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
