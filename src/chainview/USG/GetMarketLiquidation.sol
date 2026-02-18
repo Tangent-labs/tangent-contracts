@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {ICollateral} from "../../interfaces/internals/USG/ICollateral.sol";
+import {IDebtIR} from "../../interfaces/internals/USG/IDebtIR.sol";
 import {IPriceOracle} from "../../interfaces/internals/USG/IPriceOracle.sol";
 
 contract GetMarketLiquidation {
@@ -12,6 +13,7 @@ contract GetMarketLiquidation {
         uint256 liquidationThreshold;
         uint256 collateralUSDPrice;
         uint256 oracleDecimals;
+        uint256 maxMarketDebt;
     }
 
     function getMarketsLiquidationInfo(address[] memory markets) public view returns (MarketLiquidationInfo[] memory) {
@@ -24,6 +26,7 @@ contract GetMarketLiquidation {
 
     function getMarketDetails(address market) private view returns (MarketLiquidationInfo memory) {
         ICollateral marketCollateral = ICollateral(market);
+         IDebtIR marketDebt = IDebtIR(market);
         IPriceOracle priceOracle = marketCollateral.collatOracle();
         return
             MarketLiquidationInfo({
@@ -32,7 +35,8 @@ contract GetMarketLiquidation {
                 maxLTV: marketCollateral.maxLTV(),
                 liquidationThreshold: marketCollateral.liquidationThreshold(),
                 collateralUSDPrice: priceOracle.latestAnswer(true),
-                oracleDecimals: priceOracle.decimals()
+                oracleDecimals: priceOracle.decimals(),
+                maxMarketDebt: marketDebt.maxMarketDebt()
             });
     }
 }
