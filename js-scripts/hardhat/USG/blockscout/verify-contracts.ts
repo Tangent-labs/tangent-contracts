@@ -183,12 +183,28 @@ export async function verifyContracts() {
         }
     }
 
-    const abiBasicMarketERC20 = (await artifacts.readArtifact("BasicERC20Market")).abi;
 
-    // Markets Pendle PT
+    // Markets Pendle PT / Classic ERC20
+    const abiBasicMarketERC20 = (await artifacts.readArtifact("BasicERC20Market")).abi;
     for (const marketObject of Object.values(addresses.markets)) {
         if (marketObject.marketType === "Pendle_PT") {
             await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " Pendle_PT", false, abiBasicMarketERC20);
+        }
+    }
+
+    // Markets Curve Gauge
+    const abiCurveGaugeMarket = (await artifacts.readArtifact("CurveGaugeMarket")).abi;
+    for (const marketObject of Object.values(addresses.markets)) {
+        if (marketObject.marketType === "CRV_Gauge") {
+            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " CRV_Gauge", false, abiCurveGaugeMarket);
+        }
+    }
+
+    // Markets StakeDAO
+    const abiStakeDaoVaultMarket = (await artifacts.readArtifact("StakeDaoVaultV2Market")).abi;
+    for (const marketObject of Object.values(addresses.markets)) {
+        if (marketObject.marketType === "STAKEDAO_CRV_Vault") {
+            await forceAbi(client, marketObject.marketAddress, "Market " + marketObject.collatName + " STAKEDAO_CRV_Vault", false, abiStakeDaoVaultMarket);
         }
     }
 

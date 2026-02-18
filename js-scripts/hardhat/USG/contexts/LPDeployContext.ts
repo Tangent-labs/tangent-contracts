@@ -1,13 +1,25 @@
 import { ethers } from "hardhat";
 import { IERC20Metadata, ICurveStableSwapNG, ICurveCryptoSwap } from "../../../../typechain-types";
 import { BaseContext } from "./BaseContext";
-import { AddressLike, BigNumberish, formatUnits, MaxUint256, parseUnits, ZeroAddress } from "ethers";
+import { Addressable, AddressLike, BigNumberish, formatUnits, MaxUint256, parseUnits, ZeroAddress } from "ethers";
 import { WStablesContext } from "./WStableContext";
 import { COMMON_ERC20S } from "@tangent/defi-resources";
 
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;
 };
+
+export type CryptoSwapDeployParams = {
+    A: BigNumberish;
+    gamma: BigNumberish;
+    mid_fee: BigNumberish;
+    out_fee: BigNumberish;
+    fee_gamma: BigNumberish;
+    allowed_extra_profit: BigNumberish;
+    adjustment_step: BigNumberish;
+    ma_exp_time: BigNumberish;
+    initial_price: BigNumberish;
+}
 
 export class LpDeployContext {
     stableLp: StableLP = {};
@@ -169,6 +181,42 @@ export class LpDeployContext {
         await coin1.approve(lp, MaxUint256);
 
         await lp["add_liquidity(uint256[2],uint256)"]([parseUnits("200", await coin0.decimals()), parseUnits("3330000", await coin1.decimals())], 0);
+
+        return lp;
+    }
+
+    async deploy_TAN_ETH_LPP(
+        tan: Addressable,
+        poolParams: CryptoSwapDeployParams,
+        initialAmounts: [BigNumberish, BigNumberish]
+    ) {
+        const curveStableSwapFactory = await ethers.getContractAt("ICurveCryptoSwapFactoryNG", "0x98EE851a00abeE0d95D08cF4CA2BdCE32aeaAF7F");
+        const poolCount = await curveStableSwapFactory.pool_count();
+        const lpCreationTx = await curveStableSwapFactory
+            .deploy_pool(
+                "TAN",
+                "TAN",
+                [COMMON_ERC20S.WETH, tan],
+                0,
+                poolParams.A,
+                poolParams.gamma,
+                poolParams.mid_fee,
+                poolParams.out_fee,
+                poolParams.fee_gamma,
+                poolParams.allowed_extra_profit,
+                poolParams.adjustment_step,
+                poolParams.ma_exp_time,
+                poolParams.initial_price
+            );
+        await lpCreationTx.wait();
+
+        const lp = await ethers.getContractAt("ICurveCryptoSwap", await curveStableSwapFactory.pool_list(poolCount));
+        const coin0 = await ethers.getContractAt("ERC20", COMMON_ERC20S.WETH);
+        const coin1 = await ethers.getContractAt("ERC20", tan);
+        await coin0.approve(lp, MaxUint256);
+        await coin1.approve(lp, MaxUint256);
+
+        await lp["add_liquidity(uint256[2],uint256)"](initialAmounts, 0);
 
         return lp;
     }

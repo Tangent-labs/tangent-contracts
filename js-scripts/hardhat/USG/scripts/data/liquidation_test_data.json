@@ -74,19 +74,19 @@
     },
     {
       "id": 13,
-      "market": "sUSDe 05/02/26",
+      "market": "sUSDe 07/05/26",
       "lpDeposited": "50000",
       "debt": "44500"
     },
     {
       "id": 14,
-      "market": "sUSDe 05/02/26",
+      "market": "sUSDe 07/05/26",
       "lpDeposited": "150000",
       "debt": "130000"
     },
     {
       "id": 15,
-      "market": "sUSDe 05/02/26",
+      "market": "sUSDe 07/05/26",
       "lpDeposited": "300000",
       "debt": "265000"
     }
@@ -97,23 +97,26 @@
       "PYUSD_USDC": "1.0000",
       "RLUSD_USDC": "1.0000",
       "frxETH_WETH": "3000.0000",
-      "sUSDe 05/02/26": "0.99"
+      "sUSDe 07/05/26": "0.99"
     },
     "state_1": {
       "crvUSD_USDC": "0.9800",
       "RLUSD_USDC": "0.9700",
       "frxETH_WETH": "2850.0000",
-      "sUSDe 05/02/26": "0.9700"
+      "sUSDe 07/05/26": "0.9700"
     },
     "state_2": {
       "crvUSD_USDC": "0.9100",
       "RLUSD_USDC": "0.9000",
       "frxETH_WETH": "2600",
-      "sUSDe 05/02/26": "0.94"
+      "sUSDe 07/05/26": "0.94"
     },
     "state_3": {
       "RLUSD_USDC": "0.85",
       "frxETH_WETH": "2300"
+    },
+    "state_4": {
+      "sUSDe 07/05/26": "0.9200"
     }
   }
 }
