@@ -1,4 +1,4 @@
-import {PENDLE_POOLS, thiefConfig, CURVE_LPS} from "@tangent/defi-resources";
+import { PENDLE_POOLS, thiefConfig, CURVE_LPS } from "@tangent/defi-resources";
 
 export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
     const obj = thiefConfig.THIEF_TOKEN_CONFIG;
@@ -62,33 +62,21 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
         },
         {
             ...pendlePTconfig,
-            address: PENDLE_POOLS["USDe 27/11/25"].PT,
+            address: PENDLE_POOLS["sUSDe 07/05/26"].PT,
             amount: mintedAmount,
-            name: "USDe_27_11_25",
+            name: "sUSDe 07/05/26",
         },
         {
             ...pendlePTconfig,
-            address: PENDLE_POOLS["sUSDe 27/11/25"].PT,
+            address: PENDLE_POOLS["USDe 07/05/26"].PT,
             amount: mintedAmount,
-            name: "sUSDe_27_11_25",
+            name: "USDe 07/05/26",
         },
         {
             ...pendlePTconfig,
-            address: PENDLE_POOLS["reUSD 25/06/26"]?.PT,
+            address: PENDLE_POOLS["wstUSR 25/06/26"]?.PT,
             amount: mintedAmount,
-            name: "reUSD_25_06_26",
-        },
-        {
-            ...pendlePTconfig,
-            address: PENDLE_POOLS["wstUSR 29/01/26"]?.PT,
-            amount: mintedAmount,
-            name: "wstUSR_29_01_26",
-        },
-        {
-            ...pendlePTconfig,
-            address: PENDLE_POOLS["sUSDe 05/02/26"]?.PT,
-            amount: mintedAmount,
-            name: "sUSDe_05_02_26",
+            name: "wstUSR 25/06/26",
         },
 
         {
