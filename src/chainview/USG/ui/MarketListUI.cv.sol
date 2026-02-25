@@ -35,7 +35,7 @@ contract MarketListUI is GetMarketDetails {
     ) {
         MarketRow[] memory rows = new MarketRow[](markets.length);
         for (uint256 i; i < markets.length; i++) {
-            rows[i] = getMarketDetails(account, markets[i], marketViewer);
+            rows[i] = getMarketDetails(account, markets[i], marketViewer, USG);
         }
         uint256 USGOnPegKeeper;
 

@@ -21,7 +21,7 @@ contract BadDebtLiquidation is MarketDeploymentContext {
     ERC20BalanceChanges public balanceChanges;
 
     uint256 collatDeposited = 6 ether;
-    uint256 USGBorrowed = 13_000 ether;
+    uint256 USGBorrowed = 10_000 ether;
     uint256 badDebtToRepay = 7_000 ether;
 
     function setUp() public {

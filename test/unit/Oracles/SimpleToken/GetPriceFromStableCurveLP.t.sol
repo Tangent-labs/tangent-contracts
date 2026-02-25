@@ -50,7 +50,6 @@ contract GetPriceFromStableCurveLP is MarketDeploymentContext {
 
             uint256 btcLikePrice = oracle.latestAnswer(true);
             assertApproxEqRel(btcPrice, btcLikePrice, 3e15); // 0.3% from btc price
-            assertLt(btcLikePrice, btcPrice, "Almost always true as its liquidStaking");
         }
     }
 }

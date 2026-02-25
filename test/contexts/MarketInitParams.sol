@@ -237,10 +237,20 @@ contract MarketInitParams is WStableContext {
     }
 
     function initStakeDaoVaultV2Params() public {
-        // Pendle - sUSDe_27_11_25
-        basicERC20Maps[address(AddrPTPendle.sUSDe_27_11_25)] = MarketInitSimplified({
-            name: "Pendle - sUSDe 11/27/25",
-            collat: AddrPTPendle.sUSDe_27_11_25,
+        // Pendle - sUSDe_07_05_26
+        basicERC20Maps[address(AddrPTPendle.sUSDe_07_05_26)] = MarketInitSimplified({
+            name: "Pendle - sUSDe_07_05_26",
+            collat: AddrPTPendle.sUSDe_07_05_26,
+            maxLTV: 85_000,
+            liquidationThreshold: 93_000,
+            liquidationFee: 2_000,
+            minimumLoan: 3_000 ether,
+            maxMarketDebt: 1_000_000 ether
+        });
+        // Pendle - USDe_07_05_26
+        basicERC20Maps[address(AddrPTPendle.USDe_07_05_26)] = MarketInitSimplified({
+            name: "Pendle - USDe_07_05_26",
+            collat: AddrPTPendle.USDe_07_05_26,
             maxLTV: 85_000,
             liquidationThreshold: 93_000,
             liquidationFee: 2_000,

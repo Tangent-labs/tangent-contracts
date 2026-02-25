@@ -3,8 +3,8 @@ pragma solidity ^0.8.24;
 import "../../contexts/MarketDeploymentContext.sol";
 
 contract MigratePendlePTToPT is MarketDeploymentContext {
-    IERC20Metadata public collatTokenFrom = AddrPTPendle.USDe_27_11_25;
-    IERC20Metadata public collatTokenTo = AddrPTPendle.sUSDe_27_11_25;
+    IERC20Metadata public collatTokenFrom = AddrPTPendle.USDe_07_05_26;
+    IERC20Metadata public collatTokenTo = AddrPTPendle.sUSDe_07_05_26;
     MarketExternalActions public marketFrom;
     MarketExternalActions public marketTo;
 
@@ -39,10 +39,10 @@ contract MigratePendlePTToPT is MarketDeploymentContext {
         });
 
         PendlePTToSY memory pendlePTToSY = PendlePTToSY({
-            market: AddrMarketPendle.USDe_27_11_25,
-            pt: AddrPTPendle.USDe_27_11_25,
-            sy: AddrSYPendle.USDe_27_11_25,
-            yt: AddrYTPendle.USDe_27_11_25,
+            market: AddrMarketPendle.USDe_07_05_26,
+            pt: AddrPTPendle.USDe_07_05_26,
+            sy: AddrSYPendle.USDe_07_05_26,
+            yt: AddrYTPendle.USDe_07_05_26,
             underlyingOut: address(AddrClassicERC20.USDe),
             ptAmount: collatToWithdraw
         });
@@ -53,9 +53,9 @@ contract MigratePendlePTToPT is MarketDeploymentContext {
             address(pendlePTRouter)
         );
         PendleSYToPT memory pendleSYToPT = PendleSYToPT({
-            market: AddrMarketPendle.sUSDe_27_11_25,
-            pt: AddrPTPendle.sUSDe_27_11_25,
-            sy: AddrSYPendle.sUSDe_27_11_25,
+            market: AddrMarketPendle.sUSDe_07_05_26,
+            pt: AddrPTPendle.sUSDe_07_05_26,
+            sy: AddrSYPendle.sUSDe_07_05_26,
             underlyingIn: address(AddrERC4626.sUSDe),
             minPTOut: 1,
             receiver: address(marketTo)
@@ -81,18 +81,18 @@ contract MigratePendlePTToPT is MarketDeploymentContext {
         });
 
         PendlePTToSY memory pendlePTToSY = PendlePTToSY({
-            market: AddrMarketPendle.USDe_27_11_25,
-            pt: AddrPTPendle.USDe_27_11_25,
-            sy: AddrSYPendle.USDe_27_11_25,
-            yt: AddrYTPendle.USDe_27_11_25,
+            market: AddrMarketPendle.USDe_07_05_26,
+            pt: AddrPTPendle.USDe_07_05_26,
+            sy: AddrSYPendle.USDe_07_05_26,
+            yt: AddrYTPendle.USDe_07_05_26,
             underlyingOut: address(AddrClassicERC20.USDe),
             ptAmount: collatToWithdraw
         });
         CurveRouterSwapNoAmount memory curveSwapParams = encoder.createCurveRouterNoAmountStruct(Array.memoryAddress([address(0)]), swapParams, 0, address(pendlePTRouter));
         PendleSYToPT memory pendleSYToPT = PendleSYToPT({
-            market: AddrMarketPendle.sUSDe_27_11_25,
-            pt: AddrPTPendle.sUSDe_27_11_25,
-            sy: AddrSYPendle.sUSDe_27_11_25,
+            market: AddrMarketPendle.sUSDe_07_05_26,
+            pt: AddrPTPendle.sUSDe_07_05_26,
+            sy: AddrSYPendle.sUSDe_07_05_26,
             underlyingIn: address(AddrClassicERC20.USDe),
             minPTOut: 1,
             receiver: address(marketTo)

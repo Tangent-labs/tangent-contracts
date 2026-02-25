@@ -26,6 +26,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         uint256 totalDebt;
         uint256 userDebt;
         uint256 healthRatio;
+        uint256 usgBalance;
         uint256 currentBorrowRate;
         uint256 futureBorrowRate;
         uint256 currentRewardCut;
@@ -61,12 +62,12 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
         MarketRewards[] rewardData;
     }
 
-    function getMarketDetails(address account, address market, IMarketViewer marketViewer) public returns (MarketRow memory) {
+    function getMarketDetails(address account, address market, IMarketViewer marketViewer, IERC20 usg) public returns (MarketRow memory) {
         return
             MarketRow({
                 marketAddress: market,
                 collateralInfos: _getCollateralInfos(account, market, marketViewer),
-                debtInfos: _getDebtInfos(account, market, marketViewer),
+                debtInfos: _getDebtInfos(account, market, marketViewer, usg),
                 constants: _getMarketConstants(market),
                 obas: _getBalancesAllowances(account, market),
                 rewardData: _getRewardData(market)
@@ -92,7 +93,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
             });
     }
 
-    function _getDebtInfos(address account, address market, IMarketViewer marketViewer) internal returns (DebtInfos memory) {
+    function _getDebtInfos(address account, address market, IMarketViewer marketViewer, IERC20 usg) internal returns (DebtInfos memory) {
         ICollateral marketCollateral = ICollateral(market);
         IDebtIR marketDebt = IDebtIR(market);
         IIRCalculator irCalculator = IIRCalculator(marketDebt.irCalculator());
@@ -103,6 +104,7 @@ contract GetMarketDetails is BalancesAllowances, ERC20Infos {
                 totalDebt: marketViewer.totalDebt(marketDebt),
                 userDebt: marketViewer.userDebt(marketDebt, account),
                 healthRatio: marketViewer.healthRatio(market, account),
+                usgBalance: usg.balanceOf(account),
                 currentBorrowRate: irCalculator.getIRCheckpoint(market).ir,
                 futureBorrowRate: irCalculator.computeIRForMarket(market),
                 currentRewardCut: _rewardAccumulator.lastRewardCuts(market),
