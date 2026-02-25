@@ -3,12 +3,27 @@ import { MaxUint256, parseEther, parseUnits } from "ethers";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { CURVE_CONTEXT } from "@tangent/defi-resources/build/ressources/mappings/curveContext";
 import { safeApprove, transfer } from "./safeApprove";
+import * as addresses from "../../../../addresses.json";
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     CURVE LP 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-export type CurveLpKey = keyof typeof CURVE_CONTEXT;
+export type CurveLpKey = keyof typeof CURVE_CONTEXT | ('USG-USDC' | 'USG-frxUSD');
+
+function getLpContext(lpKey: CurveLpKey) {
+    if (lpKey === 'USG-USDC' || lpKey === "USG-frxUSD") {
+        return {
+            curveLp: addresses.lps[lpKey],
+            curveGauge: "",
+            stakeDaoVault: "",
+            convexRewardToken: "sting",
+            convexPID: 0
+        }
+    }
+    return CURVE_CONTEXT[lpKey];
+
+}
 
 /**
  * Deposit Curve LP tokens using a numerical amount.
@@ -17,7 +32,8 @@ export type CurveLpKey = keyof typeof CURVE_CONTEXT;
  * @param amount The amount to deposit, as a number (will be converted to bigint)
  */
 export const depositCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
+
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
 
     const coin0Address = await lp.coins(0);
@@ -57,7 +73,8 @@ export const depositCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSigne
  * @param amount The amount to deposit, as a number (will be converted to bigint)
  */
 export const depositCurveLPOneSide = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
+    console.log(context)
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
 
     const coin0Address = await lp.coins(0);
@@ -89,7 +106,7 @@ export const depositCurveLPOneSide = async (lpKey: CurveLpKey, user: HardhatEthe
 };
 
 export const withdrawCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
 
     try {
@@ -106,7 +123,7 @@ export const withdrawCurveLP = async (lpKey: CurveLpKey, user: HardhatEthersSign
 };
 
 export async function transferCurveLP(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
     await transfer(context.curveLp, from, to, amount);
 }
 
@@ -114,7 +131,7 @@ export async function transferCurveLP(lpKey: CurveLpKey, from: HardhatEthersSign
                     CURVE GAUGE 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 export const depositCurveGauge = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
 
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
     const gauge = await ethers.getContractAt("ISharedLiquidityGauge", context.curveGauge);
@@ -131,7 +148,7 @@ export const depositCurveGauge = async (lpKey: CurveLpKey, user: HardhatEthersSi
     }
 };
 export const withdrawCurveGauge = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
 
     const gauge = await ethers.getContractAt("ISharedLiquidityGauge", context.curveGauge);
 
@@ -146,7 +163,7 @@ export const withdrawCurveGauge = async (lpKey: CurveLpKey, user: HardhatEthersS
 };
 
 export async function transferCurveGauge(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
     await transfer(context.curveGauge, from, to, amount);
 }
 
@@ -155,7 +172,7 @@ export async function transferCurveGauge(lpKey: CurveLpKey, from: HardhatEthersS
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
 export const depositConvex = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
 
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
     const booster = await ethers.getContractAt("ICvxBooster", "0xF403C135812408BFbE8713b5A23a04b3D48AAE31");
@@ -164,7 +181,7 @@ export const depositConvex = async (lpKey: CurveLpKey, user: HardhatEthersSigner
     await booster.connect(user).deposit(context.convexPID, parseEther(amount.toString()), true);
 };
 export const withdrawConvex = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
     const rewardsContract = await ethers.getContractAt("ICvxRewardToken", context.convexRewardToken);
     await rewardsContract.connect(user).withdrawAndUnwrap(parseEther(amount.toString()), true);
 };
@@ -174,28 +191,28 @@ export const withdrawConvex = async (lpKey: CurveLpKey, user: HardhatEthersSigne
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
 export const depositStakeDao = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
     const lp = await ethers.getContractAt("ICurveStableSwapNG", context.curveLp);
     const stakeVault = await ethers.getContractAt("IStakeDaoVault", context.stakeDaoVault);
     await lp.connect(user).approve(stakeVault, MaxUint256);
     await stakeVault.connect(user)["deposit(uint256,address)"](parseEther(amount.toString()), user);
 };
 export const withdrawStakeDao = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
     const stakeVault = await ethers.getContractAt("IStakeDaoVault", context.stakeDaoVault);
     await stakeVault.connect(user).withdraw(parseEther(amount.toString()), user, user);
 };
 
 export async function transferStakeDaoGauge(lpKey: CurveLpKey, from: HardhatEthersSigner, to: HardhatEthersSigner, amount: number) {
-    const context = CURVE_CONTEXT[lpKey];
+    const context = getLpContext(lpKey)
     await transfer(context.stakeDaoVault, from, to, amount);
 }
 
 /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                     LLAMALEND  
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
-export const depositLlamaLend = async (key: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[key];
+export const depositLlamaLend = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
+    const context = getLpContext(lpKey)
 
     const vault = await ethers.getContractAt("ILlamaVault", context.curveLp);
     const tokenAddress = await vault.asset();
@@ -204,8 +221,8 @@ export const depositLlamaLend = async (key: CurveLpKey, user: HardhatEthersSigne
     await erc20.connect(user).approve(vault, MaxUint256);
     await vault.connect(user)["deposit(uint256)"](parseEther(amount.toString()));
 };
-export const withdrawLlamaLend = async (key: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
-    const context = CURVE_CONTEXT[key];
+export const withdrawLlamaLend = async (lpKey: CurveLpKey, user: HardhatEthersSigner, amount: number) => {
+    const context = getLpContext(lpKey)
     const vault = await ethers.getContractAt("ILlamaVault", context.curveLp);
     await vault.connect(user)["withdraw(uint256)"](parseEther(amount.toString()));
 };

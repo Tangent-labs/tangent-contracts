@@ -133,8 +133,15 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
         require(oldIndex != 0, NotAMarket());
 
         IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
-
-        irCheckpoints[market] = IRCheckpoint({ir: _computeIR(USGOracle.price_w(), irParams[market]), timestamp: uint40(block.timestamp)});
+        uint216 newIR;
+        // In case price_w fails
+        try USGOracle.price_w() returns (uint256 usgPrice) {
+            newIR = _computeIR(usgPrice, irParams[market]);
+        } catch {
+            // Fall back to prior IR if oracle reverts
+            newIR = _irCheckpoint.ir;
+        }
+        irCheckpoints[market] = IRCheckpoint({ir: newIR, timestamp: uint40(block.timestamp)});
 
         uint256 newIndex = _computeNewDebtIndex(oldIndex, _irCheckpoint);
 
@@ -155,7 +162,13 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
      *  @param markets Markets to checkpoint the indexes for
      */
     function checkpointIRMulti(address[] calldata markets) external nonReentrant {
-        uint256 newUSGPrice = USGOracle.price_w();
+        uint256 newUSGPrice;
+        bool isSuccess;
+        try USGOracle.price_w() returns (uint256 usgPrice) {
+            newUSGPrice = usgPrice;
+            isSuccess = true;
+        } catch {}
+
         uint40 ts = uint40(block.timestamp);
 
         uint256 _mintableInterests;
@@ -163,7 +176,14 @@ contract IRCalculator is IIRCalculator, LightOwnable, LightReentrancyGuardTransi
             address market = markets[i];
             IRCheckpoint memory _irCheckpoint = irCheckpoints[market];
 
-            irCheckpoints[market] = IRCheckpoint({ir: _computeIR(newUSGPrice, irParams[market]), timestamp: ts});
+            // Nominal case, when price_w is not failing
+            if (isSuccess) {
+                irCheckpoints[market] = IRCheckpoint({ir: _computeIR(newUSGPrice, irParams[market]), timestamp: ts});
+            }
+            // Else, newUSGPrice failed so we take the previous IR
+            else {
+                irCheckpoints[market] = IRCheckpoint({ir: _irCheckpoint.ir, timestamp: ts});
+            }
 
             uint256 oldIndex = debtIndexes[market];
             // If the old index is 0, for `market`, it means it has never been initialized

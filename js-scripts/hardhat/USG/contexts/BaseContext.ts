@@ -193,6 +193,9 @@ export class BaseContext extends MainSetup {
 
         await this.controlTower.connect(this.owner).setIsMarketCreator(this.marketCreator, true);
 
+        await this.USG.mintPegKeeper(this.pegKeeperUSG_USDC, ethers.parseEther("10000000"))
+        await this.USG.mintPegKeeper(this.pegKeeperUSG_frxUSD, ethers.parseEther("1000000"))
+
         this.pendlePTRouter = await (await ethers.getContractFactory("PendlePTRouter")).deploy();
     }
 

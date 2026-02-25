@@ -98,7 +98,7 @@ async function simu(
     const consecutiveDumps = 50
     let dump = 0
     const amountDump = 20_000
-    const csv = [["A", "OffPeg"], [lpConfig.a, lpConfig.offPegFeeMulti], ["Dump Amount", "LP", "Contrepartie bal", "USG bal", "Price Oracle"]]
+    const csv = [["A", "OffPeg"], [lpConfig.a, lpConfig.offPegFeeMulti], ["Dump Amount", "Contrepartie bal", "USG bal", "Price Oracle"]]
 
     for (let i = 0; i < consecutiveDumps; i++) {
 
@@ -113,8 +113,7 @@ async function simu(
         await time.increase(20 * 60)
         await USGOracle.price_w()
         const priceOracle = await USGOracle.price()
-        csv.push([dump.toString(), "USG-USDC", formatUnits(lpBalances[0][0], 6).toString(), formatEther(lpBalances[0][1]).toString(), formatEther(priceOracle)])
-        csv.push(["-", "USG-frxUSD", formatEther(lpBalances[1][0]).toString(), formatEther(lpBalances[1][1]).toString(), "-"])
+        csv.push([dump.toString(), (Number(formatUnits(lpBalances[0][0], 6).toString()) + Number(formatUnits(lpBalances[1][0], 18).toString())).toString(), (Number(formatEther(lpBalances[0][1]).toString()) + Number(formatEther(lpBalances[1][1]).toString())).toString(), formatEther(priceOracle)])
 
     }
 

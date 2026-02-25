@@ -125,9 +125,9 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @dev Internal function called during 'deposit' external function.
      * @param _for            Address of the user/position receiving collateral.
      * @param amountDeposited Amount of collateral deposited.
-     * @param isReceiptIn     Choose to deposit with the receipt token or the LP.
      */
-    function _deposit(address _for, uint256 amountDeposited, IERC20 _collatToken, bool isReceiptIn) internal {
+    function _deposit(address _for, uint256 amountDeposited, IERC20 _collatToken) internal {
+        require(_for != address(0));
         // Cannot deposit on a market with paused deposits
         _verifyIsDepositNotPaused();
         // Cannot deposit 0
@@ -258,7 +258,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
      * @param usgToBorrow   Amount of USG to borrow.
      * @param isLeverage      Whether this borrow is part of a leverage transaction.
      */
-    function _depositAndBorrow(uint256 amountDeposited, uint256 usgToBorrow, IERC20 _collatToken, bool isLeverage, bool isReceiptIn) internal returns (uint256) {
+    function _depositAndBorrow(uint256 amountDeposited, uint256 usgToBorrow, IERC20 _collatToken, bool isLeverage) internal returns (uint256) {
         _verifyIsDepositNotPaused();
         // Cannot deposit 0
         _verifyCollatInputNotZero(amountDeposited);
@@ -329,6 +329,8 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
             // We need to verify that the partial repay is not decreasing the debt lower than the minimum loan.
             _verifyMinimumDebt(newUserDebt);
         }
+
+        require(sharesToRemove != 0, ZeroDebtAmount());
 
         _burnUSG(msg.sender, USGToRepay);
 
@@ -609,7 +611,7 @@ abstract contract MarketCore is PauseSettings, Collateral, ZappingUtil {
         uint256 stakedAmount = leverageIn.collatToDeposit + collatBought;
 
         // Performs same modification as in depositAndBorrow
-        uint256 newUserDebtShares = _depositAndBorrow(stakedAmount, leverageIn.usgToFlashMint, _collatToken, true, leverageIn.isReceiptIn);
+        uint256 newUserDebtShares = _depositAndBorrow(stakedAmount, leverageIn.usgToFlashMint, _collatToken, true);
 
         return (collatBought, stakedAmount, newUserDebtShares);
     }
