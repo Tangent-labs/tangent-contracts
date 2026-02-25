@@ -10,6 +10,8 @@ contract MarketAccountLiquidationBotInfo is GetMarketLiquidation, GetAccountLiqu
     struct MarketAccountLiquidationBotInfoOut {
         MarketLiquidationInfo[] markets;
         AccountLiquidationInfo[] accounts;
+        uint256 blockNumber;
+        uint256 blockTimestamp;
     }
 
     error MarketLiquidationBotInfoError(MarketAccountLiquidationBotInfoOut output);
@@ -17,7 +19,9 @@ contract MarketAccountLiquidationBotInfo is GetMarketLiquidation, GetAccountLiqu
     constructor(address[] memory markets, LendingPositionsIn[] memory usersMarkets, IMarketViewer _marketViewer) {
         MarketAccountLiquidationBotInfoOut memory out = MarketAccountLiquidationBotInfoOut({
             markets: getMarketsLiquidationInfo(markets),
-            accounts: getAccountLiquidationInfo(usersMarkets, _marketViewer)
+            accounts: getAccountLiquidationInfo(usersMarkets, _marketViewer),
+            blockNumber: block.number,
+            blockTimestamp: block.timestamp
         });
 
         revert MarketLiquidationBotInfoError(out);
