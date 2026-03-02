@@ -19,6 +19,7 @@ library AddrMarketPendle {
     IPendleMarketV3 constant sUSDe_27_11_25 = IPendleMarketV3(0xb6aC3d5da138918aC4E84441e924a20daA60dBdd);
     IPendleMarketV3 constant wstUSR_29_01_26 = IPendleMarketV3(0x39C3F8e0E7C6F44Dc8F0397FEb124517ba82e26E);
     IPendleMarketV3 constant sUSDe_05_02_26 = IPendleMarketV3(0xed81f8bA2941C3979de2265C295748a6b6956567);
+    IPendleMarketV3 constant mHyperBTC_30_04_26 = IPendleMarketV3(0xC60b85ceF3Ccfa46d9EAD992c6F2C3bA319f71Ed);
 }
 
 library AddrPTPendle {
@@ -33,6 +34,7 @@ library AddrPTPendle {
     IPendlePTToken constant USDe_27_11_25 = IPendlePTToken(0x62C6E813b9589C3631Ba0Cdb013acdB8544038B7);
     IPendlePTToken constant wstUSR_29_01_26 = IPendlePTToken(0xfCeEB7586bab730fA400A5BF3FcF298d0DB4c7e7);
     IPendlePTToken constant sUSDe_05_02_26 = IPendlePTToken(0xE8483517077afa11A9B07f849cee2552f040d7b2);
+    IPendlePTToken constant mHyperBTC_30_04_26 = IPendlePTToken(0x450e39fE80936C502c7C0D9D032C46c9A8b040b3);
 }
 
 library AddrSYPendle {
@@ -45,6 +47,7 @@ library AddrSYPendle {
     IPendleSYToken constant USDe_27_11_25 = IPendleSYToken(0x925a15bD6A1582fa7c0EbbFc3Dbd29c34f58340e);
     IPendleSYToken constant wstUSR_29_01_26 = IPendleSYToken(0x6c78661c00D797C9c7fCBE4BCacbD9612A61C07f);
     IPendleSYToken constant sUSDe_05_02_26 = IPendleSYToken(0x50CBf8837791aB3D8dcfB3cE3d1B0d128e1105d4);
+    IPendleSYToken constant mHyperBTC_30_04_26 = IPendleSYToken(0x95FC228A926828B4d95f52C1d52b345E743153f0);
 }
 library AddrYTPendle {
     IPendleYTToken constant sUSDe_31_07_25 = IPendleYTToken(0xb7E51D15161C49C823f3951D579DEd61cD27272B);
@@ -56,4 +59,5 @@ library AddrYTPendle {
     IPendleYTToken constant USDe_27_11_25 = IPendleYTToken(0x99C92D4Da7a81c7698EF33a39D7538d0f92623f7);
     IPendleYTToken constant wstUSR_29_01_26 = IPendleYTToken(0x112B56037552d9A5142493F44480BA98C2586805);
     IPendleYTToken constant sUSDe_05_02_26 = IPendleYTToken(0xe36c6c271779C080Ba2e68E1E68410291a1b3F7A);
+    IPendleSYToken constant mHyperBTC_30_04_26 = IPendleSYToken(0x716F2d368e8a90f708c2c52D4fa0b081E0a451a1);
 }
