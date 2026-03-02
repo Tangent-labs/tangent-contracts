@@ -4,6 +4,8 @@ import { BaseContext } from "./BaseContext";
 import { Addressable, AddressLike, BigNumberish, formatUnits, MaxUint256, parseUnits, ZeroAddress } from "ethers";
 import { WStablesContext } from "./WStableContext";
 import { COMMON_ERC20S } from "@tangent/defi-resources";
+import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
+import { impersonateAccount, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;
@@ -20,14 +22,30 @@ export type CryptoSwapDeployParams = {
     ma_exp_time: BigNumberish;
     initial_price: BigNumberish;
 }
+const USG_USDC = "USG-USDC";
+const USG_frxUSD = "USG-frxUSD";
+
 
 export class LpDeployContext {
     stableLp: StableLP = {};
     tanLP?: ICurveCryptoSwap;
 
+
+    async fetchLPsAndSeedLps(baseContext: BaseContext, baseDeposit?: number) {
+        const amount = baseDeposit || 500_000;
+
+
+        this.stableLp[USG_USDC] = await ethers.getContractAt("ICurveStableSwapNG", PROD_ADDRESSES.USG_USDC)
+        this.stableLp[USG_frxUSD] = await ethers.getContractAt("ICurveStableSwapNG", PROD_ADDRESSES.USG_frxUSD)
+
+
+        await this.seedLP(baseContext, [baseContext.coins["USDC"], baseContext.coins["USG"]], this.stableLp[USG_USDC], [amount, amount])
+        await this.seedLP(baseContext, [baseContext.coins["frxUSD"], baseContext.coins["USG"]], this.stableLp[USG_frxUSD], [amount, amount])
+
+    }
+
     async deployAllTangentLps(baseContext: BaseContext, wStableContext: WStablesContext, baseDeposit?: number) {
         const amount = baseDeposit || 500_000;
-        const USG_USDC = "USG-USDC";
         const USGC = "USGC";
 
         this.stableLp[USG_USDC] = await this.deployStableLP(
@@ -43,7 +61,6 @@ export class LpDeployContext {
             "0"
         );
 
-        const USG_frxUSD = "USG-frxUSD";
         const frxUSD = "USGfrxUSD";
         this.stableLp[USG_frxUSD] = await this.deployStableLP(
             baseContext,
@@ -142,12 +159,24 @@ export class LpDeployContext {
 
         const lp = await ethers.getContractAt("ICurveStableSwapNG", await curveStableSwapFactory.pool_list(poolCount));
 
-        await coins[0].approve(lp, MaxUint256);
-        await coins[1].approve(lp, MaxUint256);
-        await lp["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
-        await this._usersApproveLp(baseContext, coins, lp);
+        await this.seedLP(baseContext, coins, lp, amounts)
 
         return lp;
+    }
+
+    async seedLP(baseContext: BaseContext, coins: IERC20Metadata[], lp: ICurveStableSwapNG, amounts: BigNumberish[],
+    ) {
+        await impersonateAccount(await baseContext.owner.getAddress())
+
+        await coins[0].connect(baseContext.owner).approve(lp, MaxUint256);
+        await coins[1].connect(baseContext.owner).approve(lp, MaxUint256);
+
+        await lp.connect(baseContext.owner)["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
+
+        await this._usersApproveLp(baseContext, coins, lp);
+
+        await stopImpersonatingAccount(await baseContext.owner.getAddress())
+
     }
 
     async deploy_TAN_ETH_LP(baseContext: BaseContext) {

@@ -17,6 +17,7 @@ import {
 
 import * as MarketCreator from "../../../../artifacts/src/USG/Utilities/MarketCreator.sol/MarketCreator.json";
 import { MarketInitStruct } from "../../../../typechain-types/src/USG/Market/BasicERC20Market";
+import { impersonateAccount, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;
@@ -57,6 +58,7 @@ export class MarketContext {
             if (!oracle) {
                 throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
             }
+            await impersonateAccount(await baseContext.owner.getAddress())
             const receipt = await (
                 await baseContext.marketCreator
                     .connect(baseContext.owner)
@@ -68,6 +70,7 @@ export class MarketContext {
                     )
             ).wait();
 
+            await stopImpersonatingAccount(await baseContext.owner.getAddress())
             await this.parseCreateMarketLogs(key, receipt!);
 
         }
@@ -84,6 +87,7 @@ export class MarketContext {
             if (!oracle) {
                 throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
             }
+            await impersonateAccount(await baseContext.owner.getAddress())
 
             const receipt = await (
                 await baseContext.marketCreator
@@ -95,6 +99,8 @@ export class MarketContext {
                         LEC_CONFIG_RC_PARAMS
                     )
             ).wait();
+            await stopImpersonatingAccount(await baseContext.owner.getAddress())
+
             await this.parseCreateMarketLogs(key, receipt!);
         }
     }
@@ -111,6 +117,7 @@ export class MarketContext {
                 throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
             }
 
+            await impersonateAccount(await baseContext.owner.getAddress())
 
             const receipt = await (
                 await baseContext.marketCreator
@@ -122,6 +129,7 @@ export class MarketContext {
                         LEC_CONFIG_RC_PARAMS,
                     )
             ).wait();
+            await stopImpersonatingAccount(await baseContext.owner.getAddress())
 
             await this.parseCreateMarketLogs(key, receipt!);
 
@@ -130,8 +138,12 @@ export class MarketContext {
             const collat = await ethers.getContractAt("IERC20", staticConfig.collatToken)
             for (let index = 0; index < 4; index++) {
                 const user = users[index];
+                await impersonateAccount(await user.getAddress())
+
                 await collat.connect(user).approve(gauge, MaxUint256);
                 await gauge.connect(user)["deposit(uint256)"](await collat.balanceOf(user) / 2n)
+                await stopImpersonatingAccount(await user.getAddress())
+
             }
         }
     }
@@ -147,6 +159,7 @@ export class MarketContext {
             if (!oracle) {
                 throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
             }
+            await impersonateAccount(await baseContext.owner.getAddress())
 
             const receipt = await (
                 await baseContext.marketCreator
@@ -158,6 +171,7 @@ export class MarketContext {
                         LEC_CONFIG_RC_PARAMS,
                     )
             ).wait();
+            await stopImpersonatingAccount(await baseContext.owner.getAddress())
 
 
             await this.parseCreateMarketLogs(key, receipt!);
@@ -168,8 +182,14 @@ export class MarketContext {
             const collat = await ethers.getContractAt("IERC20", staticConfig.collatToken)
             for (let index = 0; index < 3; index++) {
                 const user = users[index];
+
+                await impersonateAccount(await user.getAddress())
+
                 await collat.connect(user).approve(vault, MaxUint256);
                 await vault.connect(user)["deposit(uint256,address)"](await collat.balanceOf(user) / 2n, user)
+
+                await stopImpersonatingAccount(await user.getAddress())
+
             }
         }
     }
@@ -185,6 +205,7 @@ export class MarketContext {
             if (!oracle) {
                 throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
             }
+            await impersonateAccount(await baseContext.owner.getAddress())
 
             const receipt = await (
                 await baseContext.marketCreator
@@ -195,6 +216,8 @@ export class MarketContext {
                         LEC_CONFIG_RC_PARAMS
                     )
             ).wait();
+            await stopImpersonatingAccount(await baseContext.owner.getAddress())
+
 
             await this.parseCreateMarketLogs(key, receipt!);
         }

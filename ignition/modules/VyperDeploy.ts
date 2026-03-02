@@ -13,24 +13,21 @@ export async function main() {
     const USGOracle = (await usgOracleFactory.deploy(
         PROD_ADDRESSES.USG,
         "1000000000000000",
-        PROD_ADDRESSES.OWNER
+        PROD_ADDRESSES.DAO
     )) as unknown as IAggregatorStablePriceV3;
     await USGOracle.waitForDeployment();
 
-    const pegKeeperRegulator = await pegKeeperRegulatorFactory.deploy(PROD_ADDRESSES.USG, USGOracle, PROD_ADDRESSES.FEE_TRESO, PROD_ADDRESSES.OWNER, PROD_ADDRESSES.OWNER) as unknown as IPegKeeperRegulator;
+    const pegKeeperRegulator = await pegKeeperRegulatorFactory.deploy(PROD_ADDRESSES.USG, USGOracle, PROD_ADDRESSES.FEE_TRESO, PROD_ADDRESSES.DAO, PROD_ADDRESSES.DAO) as unknown as IPegKeeperRegulator;
     await pegKeeperRegulator.waitForDeployment();
 
-    const pegKeeperUSG_USDC = await pegKeeperFactory.deploy(PROD_ADDRESSES.USG_USDC, "20000", pegKeeperRegulator, PROD_ADDRESSES.OWNER) as unknown as IPegKeeperRegulator;
+    const pegKeeperUSG_USDC = await pegKeeperFactory.deploy(PROD_ADDRESSES.USG_USDC, "20000", pegKeeperRegulator, PROD_ADDRESSES.DAO) as unknown as IPegKeeperRegulator;
     await pegKeeperUSG_USDC.waitForDeployment();
 
-    const receipt = (await (await yearnVaultCreator.deploy_new_vault(PROD_ADDRESSES.USG, "Staked USG", "sUSG", PROD_ADDRESSES.OWNER, 7 * 86400)).wait())!
+    const receipt = (await (await yearnVaultCreator.deploy_new_vault(PROD_ADDRESSES.USG, "Staked USG", "sUSG", PROD_ADDRESSES.DAO, 7 * 86400)).wait())!
 
     const sUSG = ethers.getAddress(ethers.dataSlice(receipt.logs[0].topics[1], 12));
 
-    console.log("usgOracle", await USGOracle.getAddress())
-    console.log("pegKeeperRegulator", await pegKeeperRegulator.getAddress())
-    console.log("pegKeeperUSG_USDC", await pegKeeperUSG_USDC.getAddress())
-    console.log("sUSG", sUSG)
+
 
 }
 main()

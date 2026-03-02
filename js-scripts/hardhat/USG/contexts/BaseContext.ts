@@ -27,11 +27,12 @@ import {
     StakeDaoVaultV2Market
 } from "../../../../typechain-types";
 import { LpDeployContext } from "./LPDeployContext";
-import { setStorageAt } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { impersonateAccount, setStorageAt, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, BasicERC20MarketKeys, StakeDaoVaultV2MarketsKeys } from "./MarketContext";
 import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CURVE_GAUGE, STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/market";
 import { OracleContext } from "./OracleContext";
 import { WStablesContext } from "./WStableContext";
+import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
 
 export class BaseContext extends MainSetup {
     owner!: HardhatEthersSigner;
@@ -65,6 +66,43 @@ export class BaseContext extends MainSetup {
 
     coins: { [name: string]: IERC20Metadata } = {};
 
+    async fetchMainnetContracts() {
+
+        this.owner = await ethers.getSigner(PROD_ADDRESSES.DAO)
+        this.feeTreso = await ethers.getSigner(PROD_ADDRESSES.FEE_TRESO)
+
+        // MAIN
+        this.controlTower = await ethers.getContractAt("ControlTower", PROD_ADDRESSES.CONTROL_TOWER)
+        this.USG = await ethers.getContractAt("USG", PROD_ADDRESSES.USG)
+        this.sUSG = await ethers.getContractAt("IYearnV3Vault", PROD_ADDRESSES.sUSG)
+
+
+        // Market implementations
+        this.marketCvxCrvImplem = await ethers.getContractAt("ConvexCrvLPMarket", PROD_ADDRESSES.CONVEX_CRV_LP_MARKET)
+        this.marketCvxFxnImplem = await ethers.getContractAt("ConvexFxnLPMarket", PROD_ADDRESSES.CONVEX_FXN_LP_MARKET)
+        this.marketCurveGaugeImplem = await ethers.getContractAt("CurveGaugeMarket", PROD_ADDRESSES.CURVE_GAUGE_MARKET)
+        this.marketStakeDaoVaultV2Implem = await ethers.getContractAt("StakeDaoVaultV2Market", PROD_ADDRESSES.STAKEDAO_VAULT_MARKET)
+        this.marketBasicER20Implem = await ethers.getContractAt("BasicERC20Market", PROD_ADDRESSES.BASIC_ERC20_MARKET)
+
+        // Markets utils
+        this.irCalculator = await ethers.getContractAt("IRCalculator", PROD_ADDRESSES.IR_CALCULATOR)
+        this.rewardAccumulator = await ethers.getContractAt("RewardAccumulator", PROD_ADDRESSES.REWARDS_ACCUMULATOR)
+        this.marketCreator = await ethers.getContractAt("MarketCreator", PROD_ADDRESSES.MARKET_CREATOR)
+        this.marketViewer = await ethers.getContractAt("MarketViewer", PROD_ADDRESSES.MARKET_VIEWER)
+
+        // Keepers
+        this.pegKeeperRegulator = await ethers.getContractAt("PegKeeperRegulator", PROD_ADDRESSES.PEG_KEEPER_REGULATOR)
+        this.pegKeeperUSG_USDC = await ethers.getContractAt("PegKeeperV2", PROD_ADDRESSES.KEEPER_USDC)
+        this.pegKeeperUSG_frxUSD = await ethers.getContractAt("PegKeeperV2", PROD_ADDRESSES.KEEPER_frxUSD)
+
+        // Routing
+        this.pendlePTRouter = await ethers.getContractAt("PendlePTRouter", PROD_ADDRESSES.PENDLE_PT_ROUTER)
+        this.zappingProxy = await ethers.getContractAt("ZappingProxy", PROD_ADDRESSES.ZAPPING_PROXY)
+
+
+
+    }
+
     async deployContracts1(ownerIndex: number, pauserIndex: number, feeTresoIndex: number) {
         this.owner = this.users[ownerIndex];
         this.pauser = this.users[pauserIndex];
@@ -76,7 +114,6 @@ export class BaseContext extends MainSetup {
 
         this.marketViewer = await (await ethers.getContractFactory("MarketViewer")).deploy();
         await this.marketViewer.waitForDeployment();
-
 
         this.USG = await (await ethers.getContractFactory("USG")).deploy(this.owner, this.controlTower);
         await this.USG.waitForDeployment();
@@ -117,11 +154,11 @@ export class BaseContext extends MainSetup {
         const tx = await yearnVaultFactory.deploy_new_vault(this.USG, "Staked USG", "sUSG", this.owner, 7 * 86400);
         await tx.wait();
         const actualBlock = (await ethers.provider.getBlock("latest"))!.number;
-        const createEvents = await yearnVaultFactory.queryFilter(yearnVaultFactory.filters.NewVault(), actualBlock - 1, actualBlock);
+        const createEvents = await yearnVaultFactory.queryFilter(yearnVaultFactory.filters.NewVault(), actualBlock - 2, actualBlock);
 
         this.sUSG = await ethers.getContractAt("IYearnV3Vault", "0x" + createEvents[0].topics[1].slice(26));
 
-        // Set deposit limit
+        // Set deposit limit manager
         await this.sUSG.add_role(this.owner, 256);
         // Set reward processor
         await this.sUSG.add_role(this.owner, 32);
@@ -200,6 +237,8 @@ export class BaseContext extends MainSetup {
     }
 
     async setUpERC20() {
+        this.coins["USG"] = await ethers.getContractAt("IERC20Metadata", PROD_ADDRESSES.USG);
+
         this.coins["USDC"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.USDC);
 
         this.coins["frxUSD"] = await ethers.getContractAt("IERC20Metadata", COMMON_ERC20S.frxUSD);
@@ -219,7 +258,7 @@ export class BaseContext extends MainSetup {
 
         this.coins["crvUSD_USDC"] = await ethers.getContractAt("IERC20Metadata", CURVE_LPS.crvUSD_USDC);
 
-        const USGToGivePerUser = 6_000_000;
+        const USGToGivePerUser = 1_000_000;
 
         await this.giveTokens(this.users, [{ address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser }]);
         await setStorageAt(await this.USG.getAddress(), 2, parseEther((USGToGivePerUser * this.users.length).toString()));
@@ -234,8 +273,11 @@ export class BaseContext extends MainSetup {
         for (let i = 0; i < 4; i++) {
             const user = this.users[i];
             if (user) {
+                await impersonateAccount(await user.getAddress())
                 await coin0.connect(user).approve(lp, MaxUint256);
                 await coin1.connect(user).approve(lp, MaxUint256);
+                await stopImpersonatingAccount(await user.getAddress())
+
             }
         }
     }
@@ -377,9 +419,9 @@ export async function createJSONAddress(
         tokens: {
             USG: await baseContext.USG.getAddress(),
             sUSG: await baseContext.sUSG.getAddress(),
-            TAN: await baseContext.TAN.getAddress(),
-            sTAN: await baseContext.sTAN.getAddress(),
-            vsTAN: await baseContext.vsTAN.getAddress(),
+            TAN: await baseContext?.TAN?.getAddress(),
+            sTAN: await baseContext?.sTAN?.getAddress(),
+            vsTAN: await baseContext?.vsTAN?.getAddress(),
         },
         implementations: {
             convexCrvMarket: await baseContext.marketCvxCrvImplem.getAddress(),

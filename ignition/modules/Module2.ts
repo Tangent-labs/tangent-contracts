@@ -4,19 +4,23 @@ import { CHAINLINK_PRICE_FEEDS, REDSTONE_PRICE_FEEDS } from "@tangent/defi-resou
 import { STATIC_CONFIG_CONVEX_CURVE } from "../../js-scripts/hardhat/USG/config/market";
 
 export default buildModule("Module2", (m) => {
-    const irCalculator = m.contract("IRCalculator", [PROD_ADDRESSES.OWNER, PROD_ADDRESSES.CONTROL_TOWER, PROD_ADDRESSES.USG_ORACLE, PROD_ADDRESSES.USG]);
-    const rewardAccumulator = m.contract("RewardAccumulator", [PROD_ADDRESSES.OWNER, PROD_ADDRESSES.CONTROL_TOWER, PROD_ADDRESSES.USG_ORACLE]);
+    const irCalculator = m.contract("IRCalculator", [PROD_ADDRESSES.DAO, PROD_ADDRESSES.CONTROL_TOWER, PROD_ADDRESSES.USG_ORACLE, PROD_ADDRESSES.USG]);
+    const rewardAccumulator = m.contract("RewardAccumulator", [PROD_ADDRESSES.DAO, PROD_ADDRESSES.CONTROL_TOWER, PROD_ADDRESSES.USG_ORACLE]);
     const marketCreator = m.contract("MarketCreator", [
-        PROD_ADDRESSES.OWNER,
+        PROD_ADDRESSES.DAO,
         PROD_ADDRESSES.CONTROL_TOWER,
         PROD_ADDRESSES.USG,
-        irCalculator,
-        rewardAccumulator,
+        PROD_ADDRESSES.IR_CALCULATOR,
+        PROD_ADDRESSES.REWARDS_ACCUMULATOR,
         PROD_ADDRESSES.ZAPPING_PROXY,
         PROD_ADDRESSES.CONVEX_CRV_LP_MARKET,
         PROD_ADDRESSES.CONVEX_FXN_LP_MARKET,
+        PROD_ADDRESSES.CURVE_GAUGE_MARKET,
+        PROD_ADDRESSES.STAKEDAO_VAULT_MARKET,
         PROD_ADDRESSES.BASIC_ERC20_MARKET,
     ]);
+
+    const marketViewer = m.contract("MarketViewer", []);
 
     const usdcRedstoneFallback = m.contract("OracleRedstoneWrapperFallback", [REDSTONE_PRICE_FEEDS.USDC_USD], { id: "USDC_REDSTONE" });
     const usdtRedstoneFallback = m.contract("OracleRedstoneWrapperFallback", [REDSTONE_PRICE_FEEDS.USDT_USD], { id: "USDT_REDSTONE" });
@@ -28,5 +32,12 @@ export default buildModule("Module2", (m) => {
     const usdcUsdtLpOracle = m.contract("OracleDuoPoolStable", [param.collatToken, usdcOracle, usdtOracle], { id: "USDC_USDT_ORACLE" });
 
     const pendlePTRouter = m.contract("PendlePTRouter", []);
-    return { irCalculator, rewardAccumulator, marketCreator, pendlePTRouter, usdcUsdtLpOracle };
+    return {
+        irCalculator,
+        rewardAccumulator,
+        marketCreator,
+        pendlePTRouter,
+        usdcUsdtLpOracle,
+        marketViewer
+    };
 });

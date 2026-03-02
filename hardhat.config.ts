@@ -46,20 +46,19 @@ const config: HardhatUserConfig = {
             // },
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
-                blockNumber: Number(process.env.STARTING_BLOCK!),
+                blockNumber: 24570704,
             },
             timeout: 100_000_000,
         },
 
         hardhat: {
-            allowUnlimitedContractSize: true,
             mining: {
                 auto: true,
                 interval: 12_000,
             },
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
-                blockNumber: Number(process.env.STARTING_BLOCK!),
+                blockNumber: 24570704,
             },
         },
 
@@ -69,12 +68,12 @@ const config: HardhatUserConfig = {
         },
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
-            url: "http://176.143.254.58:8545",
+            url: "https://rpc.tangent.finance",
             timeout: 100_000_000,
         },
         staging: {
             chainId: 31337,
-            url: "https://io.convergence-finance.network:8545",
+            url: "https://rpc.tangent.finance",
             timeout: 100_000_000,
         },
     },
