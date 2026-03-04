@@ -5,6 +5,7 @@ import { BaseContext } from "./BaseContext";
 import { LpDeployContext } from "./LPDeployContext";
 import { chainlinkOracleParams, oracleCoinFromCurveLPParams, oracleCryptoSwapParams, oracleDuoPoolStableParams, oracleERC4626Params, oraclePendlePTParams } from "./oracleParams";
 import { ZeroAddress } from "ethers";
+import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
 
 export class OracleContext {
     USGOracle!: IAggregatorStablePriceV3;
@@ -14,6 +15,19 @@ export class OracleContext {
     oracles4626: { [key: string]: IPriceOracle } = {};
     oraclesDuoPoolStable: { [key: string]: IPriceOracle } = {};
     oraclesPendlePT: { [key: string]: IPriceOracle } = {};
+
+    async fetchUSGOracleAndDeployMarketOracles() {
+        this.USGOracle = await ethers.getContractAt("AggregatorStablePriceV3", PROD_ADDRESSES.USG_ORACLE)
+
+        await this.deployChainlinkWrappers();
+        await this.deployOracleCoinFromCurveLP();
+        await this.deployOracleDuoPoolStable();
+
+        // await this.deployOracleCryptoSwap();
+        await this.deployOracleCoinERC4626();
+
+        await this.deployOraclePendlePT();
+    }
 
     async deployAndSetupOracles(baseContext: BaseContext, lpDeployContext: LpDeployContext) {
         await this.deployChainlinkWrappers();

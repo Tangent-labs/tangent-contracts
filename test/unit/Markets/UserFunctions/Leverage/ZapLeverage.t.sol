@@ -39,7 +39,7 @@ contract ZapLeverage is MarketDeploymentContext {
         hLpManipulator.dumpCrvPool(lpDeploymentContext.USGLPs("USG-USDC"), 1, 0, 400_000 ether);
         skip(30 minutes);
         irCalculator.checkpointIR(address(market));
-        skip(500 days);
+        skip(300 days);
     }
 
     function test_zapLeverage_with_eth() external {

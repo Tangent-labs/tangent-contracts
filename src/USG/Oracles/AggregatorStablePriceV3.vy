@@ -1,6 +1,6 @@
 # @version 0.3.10
 """
-@title AggregatorStablePriceV3 - aggregator of stablecoin prices for crvUSD
+@title AggregatorStablePriceV3 - aggregator of stablecoin prices for USG
 @author Curve.Fi
 @license Copyright (c) Curve.Fi, 2020-2023 - all rights reserved
 """
@@ -38,7 +38,7 @@ event SetAdmin:
 
 
 MAX_PAIRS: constant(uint256) = 20
-MIN_LIQUIDITY: constant(uint256) = 100_000 * 10**18  # Only take into account pools with enough liquidity
+MIN_LIQUIDITY: constant(uint256) = 20_000 * 10**18  # Only take into account pools with enough liquidity
 
 STABLECOIN: immutable(address)
 SIGMA: immutable(uint256)
