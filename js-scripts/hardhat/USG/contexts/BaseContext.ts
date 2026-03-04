@@ -260,8 +260,10 @@ export class BaseContext extends MainSetup {
 
         const USGToGivePerUser = 1_000_000;
 
+        const usgTotalSupply = await this.coins["USG"].totalSupply()
+
         await this.giveTokens(this.users, [{ address: await this.USG.getAddress(), decimals: 18, isVyper: false, slotBalance: 0, amount: USGToGivePerUser }]);
-        await setStorageAt(await this.USG.getAddress(), 2, parseEther((USGToGivePerUser * this.users.length).toString()));
+        await setStorageAt(await this.USG.getAddress(), 2, usgTotalSupply + parseEther((USGToGivePerUser * this.users.length).toString()));
 
     }
 
