@@ -9,7 +9,17 @@ export const SIMPLE_CONFIG: LiquidationConfig = {
     ORACLE_PRICE_DROP_PERCENT: 66n,
     BASE_DEPOSIT: 2000,
     USERS_TO_USE: 2,
-    INCLUDED_MARKETS: ["sUSDe 05/02/26",'wstUSR 29/01/26'],
+    // Only include markets whose Curve LP pools contain USDC directly
+    // or have a coin in KNOWN_USDC_ROUTES (crvUSD, USDT).
+    // This guarantees the liquidation example scripts (A, B) can route
+    // collateral LP → USDC via Curve without multi-hop.
+    INCLUDED_MARKETS: [
+        "crvUSD_USDC",
+        "USDC_USDT",
+        "USDC_fxUSD",
+        "PYUSD_USDC",
+        "RLUSD_USDC",
+    ],
     MODE: "simple",
 } as const;
 

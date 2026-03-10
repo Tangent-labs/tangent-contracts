@@ -19,8 +19,17 @@ export class MainSetup {
     }
 
     async setupTestUsers() {
-        this.users = (await ethers.getSigners()).slice(0, this.userCount);
-        this.users[0] = await ethers.getSigner(PROD_ADDRESSES.DAO)
+        const allSigners = await ethers.getSigners();
+        this.users = allSigners.slice(0, this.userCount);
+        
+        // Try to get the external DAO signer, fall back to a test signer if not available (local network)
+        try {
+            this.users[0] = await ethers.getSigner(PROD_ADDRESSES.DAO);
+        } catch {
+            // In local hardhat network, use the first hardhat signer instead
+            this.users[0] = allSigners[0];
+        }
+        
         if (this.users.length > 20) {
             for (let i = 19; i < this.users.length; i++) {
                 const user = this.users[i];

@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "hh-node": "npx hardhat node --hostname 0.0.0.0",
+    "hh-node": "npx hardhat node --hostname 127.0.0.1",
     "anvil-node": "anvil --fork-url https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q --chain-id 31337",
     "deploy:usg-local": "npx hardhat run js-scripts/hardhat/USG/scripts/deployMainnetAddresses.ts --network localhost",
     "deploy:usg-staging": "npx hardhat run js-scripts/hardhat/USG/scripts/deployMainnetAddresses.ts --network staging",
@@ -20,7 +20,7 @@
     "liquidation-context-chaos": "npx hardhat run js-scripts/hardhat/USG/scripts/liquidationSetUpChaos.ts --network localhost",
     "liquidation-context-test": "npx hardhat run js-scripts/hardhat/USG/scripts/liquidationTestRun.ts --network localhost",
     "liquidation-check": "npx hardhat run js-scripts/hardhat/USG/scripts/LiquidationCheck.ts --network localhost",
-    "saving-account-context": "npx hardhat run js-scripts/hardhat/USG/scripts/savingaccountSetUp.ts --network localhost",
+"saving-account-context": "npx hardhat run js-scripts/hardhat/USG/scripts/savingaccountSetUp.ts --network localhost",
     "routing:generate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/generateCurveRoutes.ts --network localhost",
     "routing:hydrate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/hydrateFinalRoutes.ts --network localhost",
     "routing:test-curve-routes": "npx hardhat run js-scripts/hardhat/USG/routing/Curve/testFinalRoutes.ts --network localhost",

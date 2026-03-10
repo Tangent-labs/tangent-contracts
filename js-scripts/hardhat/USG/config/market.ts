@@ -357,33 +357,17 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
 };
 
 export const STATIC_CONFIG_BASIC_ERC20s = {
-    "Pendle PT - USDe 07/05/26": {
-        collatName: "USDe 07/05/26",
-        collatToken: PENDLE_POOLS["USDe 07/05/26"].PT,
+    
+    "Pendle PT - sUSDe 05/02/26": {
+        collatName: "sUSDe 05/02/26",
+        collatToken: PENDLE_POOLS["sUSDe 05/02/26"].PT,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("2000000"),
         minimumLoan: parseEther("3000"),
         rewardTokens: [],
     },
-    "Pendle PT - sUSDe 07/05/26": {
-        collatName: "sUSDe 07/05/26",
-        collatToken: PENDLE_POOLS["sUSDe 07/05/26"].PT,
-        liquidationThreshold: 94_000,
-        maxLTV: 90_000,
-        maxMarketDebt: parseEther("2000000"),
-        minimumLoan: parseEther("3000"),
-        rewardTokens: [],
-    },
-    "Pendle PT - wstUSR 25/06/26": {
-        collatName: "wstUSR 25/06/26",
-        collatToken: PENDLE_POOLS["wstUSR 25/06/26"].PT,
-        liquidationThreshold: 94_000,
-        maxLTV: 90_000,
-        maxMarketDebt: parseEther("2000000"),
-        minimumLoan: parseEther("3000"),
-        rewardTokens: [],
-    },
+    
 
 
 };

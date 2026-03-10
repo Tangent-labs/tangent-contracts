@@ -60,12 +60,12 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             amount: mintedAmount,
             name: "USR_RLP",
         },
-        {
-            ...pendlePTconfig,
-            address: PENDLE_POOLS["sUSDe 07/05/26"].PT,
-            amount: mintedAmount,
-            name: "sUSDe 07/05/26",
-        },
+        // {
+        //     ...pendlePTconfig,
+        //     address: PENDLE_POOLS["sUSDe /05/26"].PT,
+        //     amount: mintedAmount,
+        //     name: "sUSDe 07/05/26",
+        // },
         {
             ...pendlePTconfig,
             address: PENDLE_POOLS["USDe 07/05/26"].PT,
