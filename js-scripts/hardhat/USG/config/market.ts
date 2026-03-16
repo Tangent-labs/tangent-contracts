@@ -2,6 +2,19 @@ import { COMMON_ERC20S, ConvexCrvPools, ConvexFxnPools, CURVE_LPS, PENDLE_POOLS,
 import { parseEther } from "ethers";
 import { IRParamsStruct, RCParamsStruct } from "../../../../typechain-types/src/chainview/USG/GetMarketDetails.sol/GetMarketDetails";
 
+
+export type MarketConfig = {
+    collatName: string;
+    collatToken: string;
+    liquidationThreshold: number;
+    maxLTV: number;
+    maxMarketDebt: bigint;
+    minimumLoan: bigint
+    rewardTokens: string[],
+    collatDecimals?: number
+    logo?: string
+}
+
 // HEC
 export const HEC_CONFIG_IR_PARAMS: IRParamsStruct = {
     isHEC: true,
@@ -46,10 +59,13 @@ export const LEC_CONFIG_RC_PARAMS: RCParamsStruct = {
     endCutPrice: 0,
 };
 
+export type USGMarketType = "Convex_CRV" | "Convex_FXN" | "Pendle_PT" | "STAKEDAO_CRV_Vault" | "CRV_Gauge"
+
+
 export const STATIC_CONFIG_CONVEX_CURVE = {
     // STABLES
     crvUSD_USDC: {
-        collatName: "crvUSD_USDC",
+        collatName: "crvUSD/USDC",
         collatToken: ConvexCrvPools.USDC_crvUSD.lpToken,
         liquidationThreshold: 91_500,
         maxLTV: 91_400,
@@ -59,7 +75,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         pid: ConvexCrvPools.USDC_crvUSD.pid,
     },
     crvUSD_USDT: {
-        collatName: "crvUSD_USDT",
+        collatName: "crvUSD/USDT",
         collatToken: ConvexCrvPools.USDT_crvUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 93_000,
@@ -69,7 +85,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         pid: ConvexCrvPools.USDT_crvUSD.pid,
     },
     USDC_USDT: {
-        collatName: "USDC_USDT",
+        collatName: "USDC/USDT",
         collatToken: ConvexCrvPools.USDC_USDT_STRATEGICR.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 92_500,
@@ -79,7 +95,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         pid: ConvexCrvPools.USDC_USDT_STRATEGICR.pid,
     },
     frxUSD_USDe: {
-        collatName: "frxUSD_USDe",
+        collatName: "frxUSD/USDe",
         collatToken: ConvexCrvPools.frxUSD_USDe.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 92_500,
@@ -90,7 +106,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
     },
     // ETH STABLE
     frxETH_WETH: {
-        collatName: "frxETH_WETH",
+        collatName: "frxETH/WETH",
         collatToken: ConvexCrvPools.WETH_frxETH.lpToken,
         liquidationThreshold: 85_000,
         maxLTV: 84_900,
@@ -100,7 +116,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         pid: ConvexCrvPools.WETH_frxETH.pid,
     },
     pxETH_WETH: {
-        collatName: "pxETH_WETH",
+        collatName: "pxETH/WETH",
         collatToken: ConvexCrvPools.WETH_pxETH.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 92_500,
@@ -111,7 +127,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
     },
 
     pxETH_stETH: {
-        collatName: "pxETH_stETH",
+        collatName: "pxETH/stETH",
         collatToken: ConvexCrvPools.pxETH_stETH.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 85_000,
@@ -122,7 +138,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
     },
 
     cbBTC_WBTC: {
-        collatName: "cbBTC_WBTC",
+        collatName: "cbBTC/WBTC",
         collatToken: ConvexCrvPools.cbBTC_WBTC.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 85_000,
@@ -133,7 +149,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
     },
     // TRI CRYPTO
     USDT_WBTC_WETH: {
-        collatName: "USDT_WBTC_WETH",
+        collatName: "USDT/WBTC/WETH",
         collatToken: ConvexCrvPools.USDT_WBTC_WETH.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 85_000,
@@ -143,7 +159,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         pid: ConvexCrvPools.USDT_WBTC_WETH.pid,
     },
     USDC_WBTC_WETH: {
-        collatName: "USDC_WBTC_WETH",
+        collatName: "USDC/WBTC/WETH",
         collatToken: ConvexCrvPools.USDC_WBTC_WETH.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 85_000,
@@ -153,7 +169,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         pid: ConvexCrvPools.USDC_WBTC_WETH.pid,
     },
     crvUSD_ETH_CRV: {
-        collatName: "crvUSD_ETH_CRV",
+        collatName: "crvUSD/ETH/CRV",
         collatToken: ConvexCrvPools.crvUSD_ETH_CRV.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 85_000,
@@ -163,7 +179,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
         pid: ConvexCrvPools.crvUSD_ETH_CRV.pid,
     },
     GHO_cbBTC_WETH: {
-        collatName: "GHO_cbBTC_WETH",
+        collatName: "GHO/cbBTC/WETH",
         collatToken: ConvexCrvPools.GHO_cbBTC_WETH.lpToken,
         liquidationThreshold: 93_000,
         maxLTV: 85_000,
@@ -198,7 +214,7 @@ export const STATIC_CONFIG_CONVEX_CURVE = {
 };
 export const STATIC_CONFIG_CONVEX_FXN = {
     USDC_fxUSD: {
-        collatName: "USDC_fxUSD",
+        collatName: "USDC/fxUSD",
         collatToken: ConvexFxnPools.USDC_fxUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -208,7 +224,7 @@ export const STATIC_CONFIG_CONVEX_FXN = {
         pid: ConvexFxnPools.USDC_fxUSD.pid,
     },
     GHO_fxUSD: {
-        collatName: "GHO_fxUSD",
+        collatName: "GHO/fxUSD",
         collatToken: ConvexFxnPools.GHO_fxUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -218,7 +234,7 @@ export const STATIC_CONFIG_CONVEX_FXN = {
         pid: ConvexFxnPools.GHO_fxUSD.pid,
     },
     fxUSD_reUSD: {
-        collatName: "fxUSD_reUSD",
+        collatName: "fxUSD/reUSD",
         collatToken: ConvexFxnPools.fxUSD_reUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -228,7 +244,7 @@ export const STATIC_CONFIG_CONVEX_FXN = {
         pid: ConvexFxnPools.fxUSD_reUSD.pid,
     },
     msUSD_fxUSD: {
-        collatName: "msUSD_fxUSD",
+        collatName: "msUSD/fxUSD",
         collatToken: ConvexFxnPools.msUSD_fxUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -241,7 +257,7 @@ export const STATIC_CONFIG_CONVEX_FXN = {
 
 export const STATIC_CONFIG_CURVE_GAUGE = {
     PYUSD_USDC: {
-        collatName: "PYUSD_USDC",
+        collatName: "PYUSD/USDC",
         collatToken: CURVE_LPS.DUO_PYUSD_USDC,
         liquidationThreshold: 91_500,
         maxLTV: 90_000,
@@ -251,7 +267,7 @@ export const STATIC_CONFIG_CURVE_GAUGE = {
         gaugeToken: CURVE_GAUGES.PYUSD_USDC,
     },
     RLUSD_USDC: {
-        collatName: "RLUSD_USDC",
+        collatName: "RLUSD/USDC",
         collatToken: CURVE_LPS.DUO_RLUSD_USDC,
         liquidationThreshold: 91_500,
         maxLTV: 90_000,
@@ -262,7 +278,7 @@ export const STATIC_CONFIG_CURVE_GAUGE = {
     },
 
     stUSDS_USDS: {
-        collatName: "stUSDS_USDS",
+        collatName: "stUSDS/USDS",
         collatToken: CURVE_LPS.DUO_stUSDS_USDS,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -275,7 +291,7 @@ export const STATIC_CONFIG_CURVE_GAUGE = {
 
 export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
     crvUSD_USDC: {
-        collatName: "crvUSD_USDC",
+        collatName: "crvUSD/USDC",
         collatToken: ConvexCrvPools.USDC_crvUSD.lpToken,
         liquidationThreshold: 91_500,
         maxLTV: 91_400,
@@ -285,7 +301,7 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.USDC_crvUSD.stakeDaoVault,
     },
     crvUSD_USDT: {
-        collatName: "crvUSD_USDT",
+        collatName: "crvUSD/USDT",
         collatToken: ConvexCrvPools.USDT_crvUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -295,7 +311,7 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.USDT_crvUSD.stakeDaoVault,
     },
     GHO_crvUSD: {
-        collatName: "GHO_crvUSD",
+        collatName: "GHO/crvUSD",
         collatToken: ConvexCrvPools.USDT_crvUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -305,7 +321,7 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.USDT_crvUSD.stakeDaoVault,
     },
     reUSD_sfrxUSD: {
-        collatName: "reUSD_sfrxUSD",
+        collatName: "reUSD/sfrxUSD",
         collatToken: ConvexCrvPools.reUSD_sfrxUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -315,7 +331,7 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.reUSD_sfrxUSD.stakeDaoVault,
     },
     frxUSD_msUSD: {
-        collatName: "frxUSD_msUSD",
+        collatName: "frxUSD/msUSD",
         collatToken: ConvexCrvPools.frxUSD_msUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -325,7 +341,7 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.frxUSD_msUSD.stakeDaoVault,
     },
     ETHPlus_WETH: {
-        collatName: "ETH+_WETH",
+        collatName: "ETH+/WETH",
         collatToken: ConvexCrvPools.ETHPlus_WETH.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -335,7 +351,7 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.ETHPlus_WETH.stakeDaoVault,
     },
     tBTC_cbBTC: {
-        collatName: "tBTC_cbBTC",
+        collatName: "tBTC/cbBTC",
         collatToken: ConvexCrvPools.tBTC_cbBTC.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -345,7 +361,7 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.tBTC_cbBTC.stakeDaoVault,
     },
     msETH_OETH: {
-        collatName: "msETH_OETH",
+        collatName: "msETH/OETH",
         collatToken: ConvexCrvPools.msETH_OETH.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
@@ -356,7 +372,8 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
     },
 };
 
-export const STATIC_CONFIG_BASIC_ERC20s = {
+
+export const STATIC_CONFIG_BASIC_ERC20s: { [marketKey: string]: MarketConfig } = {
     "Pendle PT - USDe 07/05/26": {
         collatName: "USDe 07/05/26",
         collatToken: PENDLE_POOLS["USDe 07/05/26"].PT,
@@ -365,6 +382,7 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         maxMarketDebt: parseEther("2000000"),
         minimumLoan: parseEther("3000"),
         rewardTokens: [],
+        logo: "PT_USDe"
     },
     "Pendle PT - sUSDe 07/05/26": {
         collatName: "sUSDe 07/05/26",
@@ -374,6 +392,7 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         maxMarketDebt: parseEther("2000000"),
         minimumLoan: parseEther("3000"),
         rewardTokens: [],
+        logo: "PT_sUSDe"
     },
     "Pendle PT - wstUSR 25/06/26": {
         collatName: "wstUSR 25/06/26",
@@ -383,6 +402,9 @@ export const STATIC_CONFIG_BASIC_ERC20s = {
         maxMarketDebt: parseEther("2000000"),
         minimumLoan: parseEther("3000"),
         rewardTokens: [],
+        collatDecimals: 18,
+        logo: "PT_wstUSR"
+
     },
 
 
