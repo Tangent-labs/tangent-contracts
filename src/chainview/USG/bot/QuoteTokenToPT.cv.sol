@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
+
 import {ICurveRouter} from "../../../interfaces/externals/Curve/ICurveRouter.sol";
 import {IPendleMarketV3} from "../../../interfaces/externals/Pendle/IPendleMarketV3.sol";
 import {IPendlePTToken} from "../../../interfaces/externals/Pendle/IPendlePTToken.sol";
@@ -31,6 +33,7 @@ struct QuoteTokenToPTOut {
 contract QuoteTokenToPT {
     ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
     IPendlePYLpOracle public constant oracle = IPendlePYLpOracle(0x9a9Fa8338dd5E5B2188006f1Cd2Ef26d921650C2);
+    uint256 private constant NOMINAL_DIVISOR = 1000;
 
     error QuoteTokenToPTError(QuoteTokenToPTOut[] quotes);
 
@@ -52,11 +55,17 @@ contract QuoteTokenToPT {
         PendleSYToPTQuote memory pendle = param.syToPTData;
         CurveQuote memory curve = param.curveRouterData;
 
-        uint256 ptDecimals = pendle.pt.decimals();
+        uint256 ptDecimals;
+        try pendle.pt.decimals() returns (uint8 d) {
+            ptDecimals = d;
+        } catch {
+            return out;
+        }
 
         // 1. Get PT → SY rate from Pendle oracle
         uint256 ptToSYRate;
         try oracle.getPtToSyRate(address(pendle.market), 100) returns (uint256 rate) {
+            if (rate == 0) return out;
             ptToSYRate = rate;
         } catch {
             return out;
@@ -77,29 +86,27 @@ contract QuoteTokenToPT {
             return out;
         }
 
-        // 4. Calculate price impact using a small nominal trade
-        uint256 nominalAmount = pendle.tokenInAmount >= 1000 ? pendle.tokenInAmount / 1000 : 1;
-
-        // Get nominal underlying out on Curve
-        uint256 nominalUnderlyingOut;
-        try CURVE_ROUTER.get_dy(curve._route, curve._swap_params, nominalAmount, curve._pools) returns (uint256 under) {
-            nominalUnderlyingOut = under;
+        // 4. Calculate Curve-only price impact (consistent with QuotePTToToken).
+        uint256 tokenUnit;
+        try IERC20Metadata(curve._route[0]).decimals() returns (uint8 d) {
+            tokenUnit = 10 ** d;
         } catch {
             return out;
         }
+        uint256 scaledAmount = pendle.tokenInAmount / NOMINAL_DIVISOR;
+        uint256 nominalAmount = scaledAmount < tokenUnit ? tokenUnit : scaledAmount;
+        if (nominalAmount > pendle.tokenInAmount) nominalAmount = pendle.tokenInAmount;
+        if (nominalAmount == 0) nominalAmount = 1;
 
-        // Get nominal SY → PT out
-        try pendle.sy.previewDeposit(pendle.underlyingIn, nominalUnderlyingOut) returns (uint256 nominalSYAmount) {
-            uint256 nominalPTOut = (nominalSYAmount * 10 ** ptDecimals) / ptToSYRate;
-            if (nominalPTOut == 0) return out;
+        // Get nominal underlying out on Curve only
+        try CURVE_ROUTER.get_dy(curve._route, curve._swap_params, nominalAmount, curve._pools) returns (uint256 nominalUnderlyingOut) {
+            if (nominalUnderlyingOut == 0) return out;
 
-            // Scale nominal output to full size → "expected" output with zero slippage
-            uint256 expectedOutput = (nominalPTOut * pendle.tokenInAmount) / nominalAmount;
+            // Scale nominal Curve output to full size → "expected" underlying with zero slippage
+            uint256 expectedUnderlying = (nominalUnderlyingOut * pendle.tokenInAmount) / nominalAmount;
 
-            // Price impact = (expected - actual) / expected * 1e18
-            // Positive = you lose to slippage, Negative = you gain (rare)
-            if (expectedOutput > 0) {
-                out.priceImpact = ((int256(expectedOutput) - int256(out.quote)) * int256(1e18)) / int256(expectedOutput);
+            if (expectedUnderlying > underlyingOut) {
+                out.priceImpact = int256(((expectedUnderlying - underlyingOut) * 1e18) / expectedUnderlying);
             }
         } catch {
             // priceImpact remains 0 if nominal quote fails
