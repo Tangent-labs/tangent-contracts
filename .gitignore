@@ -2,6 +2,7 @@
 cache/
 out/
 /lib
+.claude
 
 
 # coverage 

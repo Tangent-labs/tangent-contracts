@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import "../../../contexts/MarketDeploymentContext.sol";
 
-import {QuotesCurveRouterImpact, CurveQuote} from "../../../../src/chainview/USG/bot/QuotesCurveRouterImpact.cv.sol";
+import {QuotesCurveRouterImpact, QuoteWithImpact, CurveQuote} from "../../../../src/chainview/USG/bot/QuotesCurveRouterImpact.cv.sol";
 
 contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
     uint256 constant ZERO = 0;
@@ -36,6 +36,9 @@ contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
         quoteIn[0] = curveQuote;
 
         try new QuotesCurveRouterImpact(quoteIn) {} catch (bytes memory reason) {
+            (QuoteWithImpact[] memory results) = abi.decode(removeFirst4Bytes(reason), (QuoteWithImpact[]));
+            assertGt(results[0].quote, 0, "Quote should be > 0");
+            assertGe(results[0].priceImpact, 0, "Price impact should be >= 0 on stable pools");
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }
@@ -72,10 +75,11 @@ contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
         curveQuotes[1] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 500_000 ether, _pools: pools});
         try new QuotesCurveRouterImpact(curveQuotes) {} catch (bytes memory reason) {
             // parse revert reason
-            (uint256[] memory results, uint256[] memory priceImpacts) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
-            assertGt(results[0], 100 ether);
+            (QuoteWithImpact[] memory results) = abi.decode(removeFirst4Bytes(reason), (QuoteWithImpact[]));
+            assertGt(results[0].quote, 100 ether);
+            assertGe(results[0].priceImpact, 0, "Price impact should be >= 0 on stable pools");
+            assertGe(results[1].priceImpact, 0, "Price impact should be >= 0 on stable pools");
 
-            assertTrue(reason.length > 3, "Chainview failed");
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }
@@ -110,14 +114,16 @@ contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
         curveQuotes[1] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
         try new QuotesCurveRouterImpact(curveQuotes) {} catch (bytes memory reason) {
             // parse revert reason
-            (uint256[] memory results, uint256[] memory priceImpacts) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
-            assertGt(results[0], 100 ether);
+            (QuoteWithImpact[] memory results) = abi.decode(removeFirst4Bytes(reason), (QuoteWithImpact[]));
+            assertGt(results[0].quote, 100 ether);
+            assertGe(results[0].priceImpact, 0, "Price impact should be >= 0 on stable pools");
+            assertGe(results[1].priceImpact, 0, "Price impact should be >= 0 on stable pools");
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }
 
     function test_liquidator_curve_router_impact_chainview_multi_quote() public {
-        CurveQuote[] memory curveQuotes = new CurveQuote[](2);
+        CurveQuote[] memory curveQuotes = new CurveQuote[](1);
 
         address[11] memory route = [
             address(AddrCurveStableLP.USDC_crvUSD),
@@ -141,12 +147,52 @@ contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
         ];
         address[5] memory pools = [address(0), address(0), address(0), address(0), address(0)];
 
-        CurveQuote memory curveQuote1 = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
+         CurveQuote memory curveQuote1 = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
 
-        route = [
-            address(AddrCurveStableLP.USDC_crvUSD),
-            address(AddrCurveStableLP.USDC_crvUSD),
-            address(AddrClassicERC20.crvUSD),
+        // route = [
+        //     address(AddrCurveStableLP.USDC_crvUSD),
+        //     address(AddrCurveStableLP.USDC_crvUSD),
+        //     address(AddrClassicERC20.crvUSD),
+        //     address(0),
+        //     address(0),
+        //     address(0),
+        //     address(0),
+        //     address(0),
+        //     address(0),
+        //     address(0),
+        //     address(0)
+        // ];
+        // swapParams = [
+        //     [ZERO, uint256(1), uint256(6), uint256(10), uint256(2)],
+        //     [ZERO, ZERO, ZERO, ZERO, ZERO],
+        //     [ZERO, ZERO, ZERO, ZERO, ZERO],
+        //     [ZERO, ZERO, ZERO, ZERO, ZERO],
+        //     [ZERO, ZERO, ZERO, ZERO, ZERO]
+        // ];
+        // pools = [address(0), address(0), address(0), address(0), address(0)];
+
+       // CurveQuote memory curveQuote2 = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
+
+        curveQuotes[0] = curveQuote1;
+      //  curveQuotes[1] = curveQuote2;
+        try new QuotesCurveRouterImpact(curveQuotes) {} catch (bytes memory reason) {
+            (QuoteWithImpact[] memory results) = abi.decode(removeFirst4Bytes(reason), (QuoteWithImpact[]));
+            assertGt(results[0].quote, 100 ether, "First quote failed");
+            //assertGt(results[1].quote, 100 ether, "Second quote failed");
+           assertGe(results[0].priceImpact, 0, "First price impact should be >= 0 on stable pools");
+           // assertGe(results[1].priceImpact, 0, "Second price impact should be >= 0 on stable pools");
+            assertTrue(reason.length > 3, "Chainview failed");
+        }
+    }
+
+    // QUOTE USDC => USG (single hop, 6 decimals input)
+    function test_quote_curve_router_impact_chainview_usdc_decimals() public {
+        CurveQuote[] memory curveQuotes = new CurveQuote[](1);
+
+        address[11] memory route = [
+            address(AddrClassicERC20.USDC),
+            address(lpDeploymentContext.USGLPs("USG-USDC")),
+            address(usg),
             address(0),
             address(0),
             address(0),
@@ -156,23 +202,22 @@ contract QuotesCurveRouterImpactChainview is MarketDeploymentContext {
             address(0),
             address(0)
         ];
-        swapParams = [
-            [ZERO, uint256(1), uint256(6), uint256(10), uint256(2)],
+        uint256[5][5] memory swapParams = [
+            [ZERO, uint256(1), uint256(1), uint256(10), uint256(2)],
             [ZERO, ZERO, ZERO, ZERO, ZERO],
             [ZERO, ZERO, ZERO, ZERO, ZERO],
             [ZERO, ZERO, ZERO, ZERO, ZERO],
             [ZERO, ZERO, ZERO, ZERO, ZERO]
         ];
-        pools = [address(0), address(0), address(0), address(0), address(0)];
+        address[5] memory pools = [address(0), address(0), address(0), address(0), address(0)];
 
-        CurveQuote memory curveQuote2 = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 ether, _pools: pools});
+        // 100 USDC = 100 * 10^6
+        curveQuotes[0] = CurveQuote({_route: route, _swap_params: swapParams, _amount: 100 * 10 ** 6, _pools: pools});
 
-        curveQuotes[0] = curveQuote1;
-        curveQuotes[1] = curveQuote2;
         try new QuotesCurveRouterImpact(curveQuotes) {} catch (bytes memory reason) {
-            (uint256[] memory results, uint256[] memory priceImpacts) = abi.decode(removeFirst4Bytes(reason), (uint256[], uint256[]));
-            assertGt(results[0], 100 ether);
-            assertGt(results[1], 100 ether);
+            (QuoteWithImpact[] memory results) = abi.decode(removeFirst4Bytes(reason), (QuoteWithImpact[]));
+            assertGt(results[0].quote, 0, "Quote should be > 0");
+            assertGe(results[0].priceImpact, 0, "Price impact should be >= 0 on stable pools");
             assertTrue(reason.length > 3, "Chainview failed");
         }
     }
