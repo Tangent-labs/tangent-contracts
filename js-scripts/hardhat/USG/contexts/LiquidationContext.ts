@@ -1,6 +1,7 @@
 import {ethers} from "hardhat";
 import {formatEther} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import {impersonateAccount, stopImpersonatingAccount} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -10,7 +11,7 @@ import {OracleContext} from "./OracleContext";
 import {LpDeployContext} from "./LPDeployContext";
 import {WStablesContext} from "./WStableContext";
 
-import {deployUSG} from "../actions/deployUSG";
+import {deployMainnetAddresses} from "../actions/deployMainnetAddresses";
 import {loadAddresses, UserMarketParams} from "../actions/common";
 import {deposit} from "../actions/deposit";
 import {borrow} from "../actions/borrow";
@@ -202,7 +203,7 @@ export class LiquidationContext {
     // -------------------------------------------------------------------------
 
     async doDeploy(): Promise<void> {
-        const deployed = await deployUSG(this.config.USER_COUNT, this.config.INITIAL_USG_SUPPLY);
+        const deployed = await deployMainnetAddresses(this.config.USER_COUNT, this.config.INITIAL_USG_SUPPLY);
 
         this.baseContext = deployed.baseContext;
         this.marketContext = deployed.marketContext;
@@ -289,7 +290,15 @@ export class LiquidationContext {
         // At 66% price with 62-65% LTV: health ratio ~0.94-0.99 < 1
         const targetPrice = (lastPrice * this.config.ORACLE_PRICE_DROP_PERCENT) / 100n;
         await mockOracle.setLastAnswer(targetPrice);
-        await market.setCollatOracle(await mockOracle.getAddress());
+        
+        // Use the owner signer since markets are owned by baseContext.owner
+        if (!this.baseContext) {
+            throw new Error("baseContext not initialized. Call doDeploy() first.");
+        }
+        const ownerAddress = await this.baseContext.owner.getAddress();
+        await impersonateAccount(ownerAddress);
+        await market.connect(this.baseContext.owner).setCollatOracle(await mockOracle.getAddress());
+        await stopImpersonatingAccount(ownerAddress);
 
         console.log(`setOracleToMock: ${marketAddress} → ${ethers.formatEther(targetPrice)} (${this.config.ORACLE_PRICE_DROP_PERCENT}% of ${ethers.formatEther(lastPrice)})`);
 
@@ -550,6 +559,8 @@ export class LiquidationContext {
             fs.writeFileSync(outputPath, JSON.stringify(borrowParams, null, 2));
         }
 
+        console.log("Deposit Params:", this.baseContext.users.length, Object.keys(depositParams).length);
+       // console.log("Borrow Params:", borrowParams);
         await deposit(this.baseContext.users as HardhatEthersSigner[], depositParams);
         await borrow(this.baseContext.users as HardhatEthersSigner[], borrowParams);
     }

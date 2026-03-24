@@ -199,7 +199,8 @@ export class MarketContext {
             const key = keys[index];
             const staticConfig = STATIC_CONFIG_BASIC_ERC20s[key];
             if (!staticConfig) {
-                throw Error(`No static config for ${key} market`)
+               continue;
+                // throw Error(`No static config for ${key} market`)
             }
             const oracle = oracleContext.oracles[staticConfig.collatName]
             if (!oracle) {

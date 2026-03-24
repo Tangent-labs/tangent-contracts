@@ -406,6 +406,7 @@ export const STATIC_CONFIG_BASIC_ERC20s: { [marketKey: string]: MarketConfig } =
         logo: "PT_wstUSR"
 
     },
+    
 
 
 };
