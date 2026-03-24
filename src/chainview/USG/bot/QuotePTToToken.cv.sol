@@ -1,17 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
+
 import {IERC20, IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 import {ICurveRouter} from "../../../interfaces/externals/Curve/ICurveRouter.sol";
 import {IPendleMarketV3} from "../../../interfaces/externals/Pendle/IPendleMarketV3.sol";
 import {IPendlePTToken} from "../../../interfaces/externals/Pendle/IPendlePTToken.sol";
 import {IPendleSYToken} from "../../../interfaces/externals/Pendle/IPendleSYToken.sol";
-
 import {IPendlePYLpOracle} from "../../../interfaces/externals/Pendle/IPendlePYLpOracle.sol";
 
-import {ICurveStableSwapNG} from "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
-
 import {CurveRouteParamsOnly} from "../../../interfaces/internals/USG/ICurveLPLiquidator.sol";
+
 struct QuotePTToTokenParams {
     PendlePTToSYQuote ptToSYData;
     CurveRouteParamsOnly curveRouterData;
@@ -52,40 +51,76 @@ contract QuotePTToToken {
 
     function _getQuotePTIn(QuotePTToTokenParams memory param) internal view returns (QuotePtToTokenOut memory out) {
         PendlePTToSYQuote memory ptToSY = param.ptToSYData;
-        CurveRouteParamsOnly memory paramCurve = param.curveRouterData;
+        CurveRouteParamsOnly memory curve = param.curveRouterData;
+
         uint256 ptDecimals = ptToSY.pt.decimals();
 
-        // Find the swap rate of PT to SY
+        // 1. Get PT → SY rate from Pendle oracle
         uint256 ptToSYRate;
         try oracle.getPtToSyRate(address(ptToSY.market), 100) returns (uint256 rate) {
             ptToSYRate = rate;
         } catch {
             return out;
         }
-        // Find the swap rate of SY to underlying for the full amount
+
+        // 2. Calculate full underlying amount out from PT (via SY previewRedeem)
         uint256 underlyingQuoteOut;
-        try ptToSY.sy.previewRedeem(ptToSY.underlyingOut, (ptToSYRate * ptToSY.ptAmount) / 10 ** ptDecimals) returns (uint256 underOut) {
+        try ptToSY.sy.previewRedeem(
+            ptToSY.underlyingOut,
+            (ptToSYRate * ptToSY.ptAmount) / 10 ** ptDecimals
+        ) returns (uint256 underOut) {
             underlyingQuoteOut = underOut;
         } catch {
             return out;
         }
-        // Find the swap rate of SY to underlying for the full amount
-        uint256 nominalAmount = 10 ** (ptDecimals - 3);
-        uint256 nominalUnderlyingQuoteOut;
-        try ptToSY.sy.previewRedeem(ptToSY.underlyingOut, (ptToSYRate * nominalAmount) / 10 ** ptDecimals) returns (uint256 underOut) {
-            nominalUnderlyingQuoteOut = underOut;
-        } catch {}
-        // Quote the swap of underlying to Token
-        try CURVE_ROUTER.get_dy(paramCurve._route, paramCurve._swap_params, underlyingQuoteOut, paramCurve._pools) returns (uint256 q) {
-            out.quote = q;
+
+        // 3. Quote the full underlying → final token swap on Curve
+        try CURVE_ROUTER.get_dy(
+            curve._route,
+            curve._swap_params,
+            underlyingQuoteOut,
+            curve._pools
+        ) returns (uint256 fullOutput) {
+            out.quote = fullOutput;
         } catch {
             return out;
         }
-        try CURVE_ROUTER.get_dy(paramCurve._route, paramCurve._swap_params, nominalUnderlyingQuoteOut, paramCurve._pools) returns (uint256 q) {
-            uint256 expectedOutput = (out.quote * q) / nominalAmount;
-            out.priceImpact = ((int256(expectedOutput) - int256(underlyingQuoteOut)) * int256(1e18)) / int256(expectedOutput);
+
+        // 4. Calculate price impact using a small nominal trade on Curve
+        uint256 nominalAmount = ptDecimals >= 3 ? 10 ** (ptDecimals - 3) : 1; // 0.001 PT, guarded against underflow
+
+        // Get nominal underlying amount
+        uint256 nominalUnderlyingOut = 0;
+        try ptToSY.sy.previewRedeem(
+            ptToSY.underlyingOut,
+            (ptToSYRate * nominalAmount) / 10 ** ptDecimals
+        ) returns (uint256 underOut) {
+            nominalUnderlyingOut = underOut;
         } catch {
             return out;
         }
+
+        // Get nominal output on Curve (tiny trade = close to marginal price)
+        try CURVE_ROUTER.get_dy(
+            curve._route,
+            curve._swap_params,
+            nominalUnderlyingOut,
+            curve._pools
+        ) returns (uint256 nominalOutput) {
+            if (nominalOutput == 0) return out;
+
+            // Scale nominal output to full size → this is the "expected" output with zero slippage
+            uint256 expectedOutput = (nominalOutput * ptToSY.ptAmount) / nominalAmount;
+
+            // Price impact = (expected - actual) / expected * 1e18
+            // Positive = you lose to slippage, Negative = you gain (rare)
+            if (expectedOutput > 0) {
+                out.priceImpact = ((int256(expectedOutput) - int256(out.quote)) * int256(1e18)) / int256(expectedOutput);
+            }
+        } catch {
+            // priceImpact remains 0 if nominal quote fails
+        }
+
+        return out;
     }
 }

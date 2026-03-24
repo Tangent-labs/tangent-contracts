@@ -5,7 +5,6 @@ import {ICurveRouter} from "../../../interfaces/externals/Curve/ICurveRouter.sol
 import {CurveQuote} from "../../../interfaces/internals/USG/ICurveLPLiquidator.sol";
 import {ICurveStableSwapNG} from "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
 
-
 struct QuoteWithImpact {
     uint256 quote;
     int256 priceImpact;
@@ -13,7 +12,6 @@ struct QuoteWithImpact {
 
 contract QuotesCurveRouterImpact {
     ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
-    uint256 private constant MARGINAL_AMOUNT = 1 ether;
 
     error QuotesCurveRouterImpactError(QuoteWithImpact[] outputs);
 
@@ -23,42 +21,37 @@ contract QuotesCurveRouterImpact {
 
         for (uint256 i; i < routesLen; ) {
             CurveQuote memory curveQuote = routes[i];
-            uint256 quote = 0;
-            int256 priceImpact = 0;
+            uint256 quote;
+            int256 priceImpact;
 
-            try CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, curveQuote._amount, curveQuote._pools) returns (uint256 quoteResult) {
-                quote = quoteResult;
-                
-                // Calculate price impact by comparing with marginal price
-                try CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, MARGINAL_AMOUNT, curveQuote._pools) returns (uint256 marginalQuote) {
+            try CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, curveQuote._amount, curveQuote._pools) returns (uint256 fullOutput) {
+                quote = fullOutput;
 
-                  
-                      //  console.logInt(  priceImpact);
-                    if (marginalQuote > 0 && curveQuote._amount > 0) {
-                        // Expected output at marginal price (no slippage)
-                        uint256 expectedOutput = (curveQuote._amount * marginalQuote) / MARGINAL_AMOUNT;
+                // Use a small nominal amount (0.1% of input) to approximate marginal price
+                uint256 nominalAmount = curveQuote._amount >= 1000 ? curveQuote._amount / 1000 : 1;
+
+                try CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, nominalAmount, curveQuote._pools) returns (uint256 nominalOutput) {
+                    if (nominalOutput > 0) {
+                        // Scale nominal output to full size → expected output with zero slippage
+                        uint256 expectedOutput = (nominalOutput * curveQuote._amount) / nominalAmount;
+
+                        // Price impact = (expected - actual) / expected * 1e18
                         if (expectedOutput > 0) {
-                            // Price impact as percentage: (expected - actual) / expected * 1e18
                             priceImpact = (int256(expectedOutput) - int256(quote)) * 1e18 / int256(expectedOutput);
                         }
-                     
-                    } 
+                    }
                 } catch {
-                   // no price impact
+                    // priceImpact remains 0
                 }
             } catch {
-              // no quote
+                // quote and priceImpact remain 0
             }
 
-            outputs[i] = QuoteWithImpact({
-                quote: quote,
-                priceImpact: priceImpact
-            });
+            outputs[i] = QuoteWithImpact({quote: quote, priceImpact: priceImpact});
 
-            unchecked {
-                ++i;
-            }
+            unchecked { ++i; }
         }
+
         revert QuotesCurveRouterImpactError(outputs);
     }
 }
