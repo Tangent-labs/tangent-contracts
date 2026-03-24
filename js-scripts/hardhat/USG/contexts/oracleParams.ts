@@ -85,31 +85,31 @@ export const oracleDuoPoolStableParams: {
     coin1Oracle: keyof typeof COMMON_ERC20S;
 }[] = [
         // USD
-        { key: "crvUSD_USDC", oracleName: "crvUSD_USDC / USD", lp: "crvUSD_USDC", coin0Oracle: "USDC", coin1Oracle: "crvUSD" },
-        { key: "crvUSD_USDT", oracleName: "crvUSD_USDT / USD", lp: "crvUSD_USDT", coin0Oracle: "USDT", coin1Oracle: "crvUSD" },
-        { key: "USDC_fxUSD", oracleName: "USDC_fxUSD / USD", lp: "LP_USDC_fxUSD", coin0Oracle: "USDC", coin1Oracle: "fxUSD" },
-        { key: "USDC_USDT", oracleName: "USDC_USDT / USD", lp: "DUO_USDC_USDT", coin0Oracle: "USDC", coin1Oracle: "USDT" },
-        { key: "frxUSD_USDe", oracleName: "frxUSD_USDe / USD", lp: "DUO_frxUSD_USDe", coin0Oracle: "frxUSD", coin1Oracle: "USDe" },
-        { key: "RLUSD_USDC", oracleName: "RLUSD_USDC / USD", lp: "DUO_RLUSD_USDC", coin0Oracle: "PYUSD", coin1Oracle: "USDC" },
-        { key: "PYUSD_USDC", oracleName: "PYUSD_USDC / USD", lp: "DUO_PYUSD_USDC", coin0Oracle: "RLUSD", coin1Oracle: "USDC" },
+        { key: "crvUSD/USDC", oracleName: "crvUSD_USDC / USD", lp: "crvUSD_USDC", coin0Oracle: "USDC", coin1Oracle: "crvUSD" },
+        { key: "crvUSD/USDT", oracleName: "crvUSD_USDT / USD", lp: "crvUSD_USDT", coin0Oracle: "USDT", coin1Oracle: "crvUSD" },
+        { key: "USDC/fxUSD", oracleName: "USDC_fxUSD / USD", lp: "LP_USDC_fxUSD", coin0Oracle: "USDC", coin1Oracle: "fxUSD" },
+        { key: "USDC/USDT", oracleName: "USDC_USDT / USD", lp: "DUO_USDC_USDT", coin0Oracle: "USDC", coin1Oracle: "USDT" },
+        { key: "frxUSD/USDe", oracleName: "frxUSD_USDe / USD", lp: "DUO_frxUSD_USDe", coin0Oracle: "frxUSD", coin1Oracle: "USDe" },
+        { key: "RLUSD/USDC", oracleName: "RLUSD_USDC / USD", lp: "DUO_RLUSD_USDC", coin0Oracle: "PYUSD", coin1Oracle: "USDC" },
+        { key: "PYUSD/USDC", oracleName: "PYUSD_USDC / USD", lp: "DUO_PYUSD_USDC", coin0Oracle: "RLUSD", coin1Oracle: "USDC" },
         // { key: "reUSD_sfrxUSD", oracleName: "reUSD_sfrxUSD / USD", lp: "DUO_reUSD_sfrxUSD", coin0Oracle: "reUSD", coin1Oracle: "sfrxUSD" }, //Verify coin order
-        { key: "GHO_crvUSD", oracleName: "GHO_crvUSD / USD", lp: "DUO_GHO_crvUSD", coin0Oracle: "GHO", coin1Oracle: "crvUSD" }, //Verify coin order
-        { key: "frxUSD_msUSD", oracleName: "frxUSD_msUSD / USD", lp: "DUO_frxUSD_msUSD", coin0Oracle: "frxUSD", coin1Oracle: "msUSD" }, //Verify coin order
+        { key: "GHO/crvUSD", oracleName: "GHO_crvUSD / USD", lp: "DUO_GHO_crvUSD", coin0Oracle: "GHO", coin1Oracle: "crvUSD" }, //Verify coin order
+        { key: "frxUSD/msUSD", oracleName: "frxUSD_msUSD / USD", lp: "DUO_frxUSD_msUSD", coin0Oracle: "frxUSD", coin1Oracle: "msUSD" }, //Verify coin order
 
-        { key: "GHO_fxUSD", oracleName: "GHO_fxUSD / USD", lp: "DUO_GHO_fxUSD", coin0Oracle: "GHO", coin1Oracle: "fxUSD" }, //Verify coin order
-        { key: "fxUSD_reUSD", oracleName: "fxUSD_reUSD / USD", lp: "DUO_fxUSD_reUSD", coin0Oracle: "fxUSD", coin1Oracle: "reUSD" }, //Verify coin order
-        { key: "msUSD_fxUSD", oracleName: "msUSD_fxUSD / USD", lp: "DUO_msUSD_fxUSD", coin0Oracle: "msUSD", coin1Oracle: "fxUSD" }, //Verify coin order
-        { key: "stUSDS_USDS", oracleName: "stUSDS_USDS / USD", lp: "DUO_stUSDS_USDS", coin0Oracle: "stUSDS", coin1Oracle: "USDS" }, //Verify coin order
+        { key: "GHO/fxUSD", oracleName: "GHO_fxUSD / USD", lp: "DUO_GHO_fxUSD", coin0Oracle: "GHO", coin1Oracle: "fxUSD" }, //Verify coin order
+        { key: "fxUSD/reUSD", oracleName: "fxUSD_reUSD / USD", lp: "DUO_fxUSD_reUSD", coin0Oracle: "fxUSD", coin1Oracle: "reUSD" }, //Verify coin order
+        { key: "msUSD/fxUSD", oracleName: "msUSD_fxUSD / USD", lp: "DUO_msUSD_fxUSD", coin0Oracle: "msUSD", coin1Oracle: "fxUSD" }, //Verify coin order
+        { key: "stUSDS/USDS", oracleName: "stUSDS_USDS / USD", lp: "DUO_stUSDS_USDS", coin0Oracle: "stUSDS", coin1Oracle: "USDS" }, //Verify coin order
 
         // ETH
-        { key: "frxETH_WETH", oracleName: "frxETH_WETH / USD", lp: "LP_WETH_frxETH", coin0Oracle: "WETH", coin1Oracle: "frxETH" },
-        { key: "pxETH_WETH", oracleName: "pxETH_WETH / USD", lp: "LP_pxETH_WETH", coin0Oracle: "WETH", coin1Oracle: "WETH" },
-        { key: "pxETH_stETH", oracleName: "pxETH_stETH / USD", lp: "LP_pxETH_stETH", coin0Oracle: "pxETH", coin1Oracle: "stETH" },
-        { key: "ETH+_WETH", oracleName: "ETH+_WETH / USD", lp: "DUO_ETHplus_WETH", coin0Oracle: "ETH+", coin1Oracle: "WETH" }, //Verify coin order
-        { key: "msETH_OETH", oracleName: "msETH_OETH / USD", lp: "DUO_msETH_OETH", coin0Oracle: "msETH", coin1Oracle: "OETH" }, // Verify coin order
+        { key: "frxETH/WETH", oracleName: "frxETH_WETH / USD", lp: "LP_WETH_frxETH", coin0Oracle: "WETH", coin1Oracle: "frxETH" },
+        { key: "pxETH/WETH", oracleName: "pxETH_WETH / USD", lp: "LP_pxETH_WETH", coin0Oracle: "WETH", coin1Oracle: "WETH" },
+        { key: "pxETH/stETH", oracleName: "pxETH_stETH / USD", lp: "LP_pxETH_stETH", coin0Oracle: "pxETH", coin1Oracle: "stETH" },
+        { key: "ETH+/WETH", oracleName: "ETH+_WETH / USD", lp: "DUO_ETHplus_WETH", coin0Oracle: "ETH+", coin1Oracle: "WETH" }, //Verify coin order
+        { key: "msETH/OETH", oracleName: "msETH_OETH / USD", lp: "DUO_msETH_OETH", coin0Oracle: "msETH", coin1Oracle: "OETH" }, // Verify coin order
 
         // BTC
-        { key: "tBTC_cbBTC", oracleName: "tBTC_cbBTC / USD", lp: "DUO_tBTC_cbBTC", coin0Oracle: "tBTC", coin1Oracle: "cbBTC" },
+        { key: "tBTC/cbBTC", oracleName: "tBTC_cbBTC / USD", lp: "DUO_tBTC_cbBTC", coin0Oracle: "tBTC", coin1Oracle: "cbBTC" },
     ];
 
 export const oracleCryptoSwapParams = [

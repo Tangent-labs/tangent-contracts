@@ -29,7 +29,7 @@ import {
 import { LpDeployContext } from "./LPDeployContext";
 import { impersonateAccount, setStorageAt, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, BasicERC20MarketKeys, StakeDaoVaultV2MarketsKeys } from "./MarketContext";
-import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CURVE_GAUGE, STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/market";
+import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CURVE_GAUGE, STATIC_CONFIG_STAKEDAO_VAULT_V2, USGMarketType } from "../config/market";
 import { OracleContext } from "./OracleContext";
 import { WStablesContext } from "./WStableContext";
 import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
@@ -98,8 +98,6 @@ export class BaseContext extends MainSetup {
         // Routing
         this.pendlePTRouter = await ethers.getContractAt("PendlePTRouter", PROD_ADDRESSES.PENDLE_PT_ROUTER)
         this.zappingProxy = await ethers.getContractAt("ZappingProxy", PROD_ADDRESSES.ZAPPING_PROXY)
-
-
 
     }
 
@@ -284,7 +282,14 @@ export class BaseContext extends MainSetup {
         }
     }
 }
-
+type MarketResult = {
+    marketAddress: string
+    marketName: string
+    collatAddress: string
+    marketType: USGMarketType
+    collatDecimals?: number,
+    logoURI?: string
+}
 export async function createJSONAddress(
     baseContext: BaseContext,
     marketContext: MarketContext,
@@ -292,16 +297,16 @@ export async function createJSONAddress(
     lpDeployContext: LpDeployContext,
     wStableContext: WStablesContext
 ) {
-    const markets: Market[] = [];
+    const markets: MarketResult[] = [];
     for (const key in marketContext.convexCrvMarkets) {
         const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key as ConvexCrvMarketKeys];
         const market = await marketContext.convexCrvMarkets[key].getAddress();
 
         markets.push({
             marketAddress: market,
-            collatName: staticConfig.collatName,
+            marketName: staticConfig.collatName,
             collatAddress: staticConfig.collatToken,
-            marketType: "Convex_CRV",
+            marketType: "Convex_CRV"
         });
     }
 
@@ -311,7 +316,7 @@ export async function createJSONAddress(
 
         markets.push({
             marketAddress: market,
-            collatName: staticConfig.collatName,
+            marketName: staticConfig.collatName,
             collatAddress: staticConfig.collatToken,
             marketType: "Convex_FXN",
         });
@@ -323,9 +328,9 @@ export async function createJSONAddress(
 
         markets.push({
             marketAddress: market,
-            collatName: staticConfig.collatName,
+            marketName: staticConfig.collatName,
             collatAddress: staticConfig.collatToken,
-            marketType: "CRV_Gauge",
+            marketType: "CRV_Gauge"
         });
     }
 
@@ -335,7 +340,7 @@ export async function createJSONAddress(
 
         markets.push({
             marketAddress: market,
-            collatName: staticConfig.collatName,
+            marketName: staticConfig.collatName,
             collatAddress: staticConfig.collatToken,
             marketType: "STAKEDAO_CRV_Vault",
         });
@@ -347,9 +352,11 @@ export async function createJSONAddress(
 
         markets.push({
             marketAddress: market,
-            collatName: staticConfig.collatName,
+            marketName: staticConfig.collatName,
             collatAddress: staticConfig.collatToken,
             marketType: "Pendle_PT",
+            collatDecimals: staticConfig.collatDecimals ?? 18,
+            logoURI: staticConfig.logo
         });
     }
 
@@ -440,10 +447,3 @@ export async function createJSONAddress(
         },
     };
 }
-
-export type Market = {
-    marketAddress: string;
-    collatName: string;
-    collatAddress: string;
-    marketType: string;
-};
