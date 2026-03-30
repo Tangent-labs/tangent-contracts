@@ -1,7 +1,7 @@
 import { ethers } from "hardhat";
 import { IERC20Metadata, ICurveStableSwapNG, ICurveCryptoSwap } from "../../../../typechain-types";
 import { BaseContext } from "./BaseContext";
-import { Addressable, AddressLike, BigNumberish, formatUnits, MaxUint256, parseUnits, ZeroAddress } from "ethers";
+import { Addressable, AddressLike, BigNumberish, MaxUint256, parseUnits, ZeroAddress } from "ethers";
 import { WStablesContext } from "./WStableContext";
 import { COMMON_ERC20S } from "@tangent/defi-resources";
 import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
@@ -219,9 +219,13 @@ export class LpDeployContext {
         poolParams: CryptoSwapDeployParams,
         initialAmounts: [BigNumberish, BigNumberish]
     ) {
+        const dao = await ethers.getSigner(PROD_ADDRESSES.DAO)
         const curveStableSwapFactory = await ethers.getContractAt("ICurveCryptoSwapFactoryNG", "0x98EE851a00abeE0d95D08cF4CA2BdCE32aeaAF7F");
         const poolCount = await curveStableSwapFactory.pool_count();
+
+        await impersonateAccount(PROD_ADDRESSES.DAO)
         const lpCreationTx = await curveStableSwapFactory
+            .connect(dao)
             .deploy_pool(
                 "TAN",
                 "TAN",
@@ -242,11 +246,13 @@ export class LpDeployContext {
         const lp = await ethers.getContractAt("ICurveCryptoSwap", await curveStableSwapFactory.pool_list(poolCount));
         const coin0 = await ethers.getContractAt("ERC20", COMMON_ERC20S.WETH);
         const coin1 = await ethers.getContractAt("ERC20", tan);
-        await coin0.approve(lp, MaxUint256);
-        await coin1.approve(lp, MaxUint256);
 
-        await lp["add_liquidity(uint256[2],uint256)"](initialAmounts, 0);
 
+        await coin0.connect(dao).approve(lp, MaxUint256);
+        await coin1.connect(dao).approve(lp, MaxUint256);
+
+        await lp.connect(dao)["add_liquidity(uint256[2],uint256)"](initialAmounts, 0);
+        await stopImpersonatingAccount(PROD_ADDRESSES.DAO)
         return lp;
     }
 

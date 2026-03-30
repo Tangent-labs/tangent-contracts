@@ -17,6 +17,8 @@ export const separatedCurvePoolToken: { [lpToken: string]: string } = {
 };
 
 export const LIQUIDATION_ASSETS: Record<string, string> = {
+    USG: COMMON_ERC20S.USG,
+    sUSG: COMMON_ERC20S.sUSG,
     DAI: COMMON_ERC20S.DAI,
     sDAI: COMMON_ERC20S.sDAI,
     USDT: COMMON_ERC20S.USDT,
@@ -50,7 +52,7 @@ export const LIQUIDATION_ASSETS: Record<string, string> = {
     sfrxUSD: COMMON_ERC20S.sfrxUSD,
     stUSDS: COMMON_ERC20S.stUSDS,
     FRAXBP: CURVE_LPS.FRAX_USDC_LP,
-     frxETH:COMMON_ERC20S.frxETH,
+    frxETH: COMMON_ERC20S.frxETH,
     /* Pools */
     "FRAX/USDe": CURVE_LPS.LP_FRAX_USDe,
     fraxusdc: CURVE_LPS.DUO_FRAXBP_POOL,
@@ -125,6 +127,6 @@ export const LIQUIDATION_ASSETS: Record<string, string> = {
     "PYUSD/crvUSD": CURVE_LPS.DUO_PYUSD_crvUSD,
     "GHO/cbBTC/ETH": CURVE_LPS.TRI_GHO_cbBTC_ETH,
     "WBTC/ETH/USDT": CURVE_LPS.TRI_POOL_CRYPTO_USDT2,
-    "frxETH/ETH":CURVE_LPS.FRXETH_ETH_LP
-   
+    "frxETH/ETH": CURVE_LPS.FRXETH_ETH_LP,
+
 };

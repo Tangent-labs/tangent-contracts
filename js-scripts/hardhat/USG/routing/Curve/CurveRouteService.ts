@@ -44,7 +44,7 @@ export class CurveRouteService {
         fs.writeFileSync(this.PATHS[type], JSON.stringify(data));
     }
 
-    async loadDynamicAssets(addressesData: { lps: Record<string, string>; wStables: Record<string, string>; tokens: { USG: string; TAN: string } }) {
+    async loadDynamicAssets(addressesData: { lps: Record<string, string>; wStables: Record<string, string>; tokens: { USG: string; } }) {
         try {
             // Add LP tokens
             if (addressesData.lps) {
@@ -60,7 +60,7 @@ export class CurveRouteService {
                 });
             }
             LIQUIDATION_ASSETS["USG*"] = addressesData.tokens.USG;
-            LIQUIDATION_ASSETS["TAN*"] = addressesData.tokens.TAN;
+            // LIQUIDATION_ASSETS["TAN*"] = addressesData.tokens.TAN;
 
             console.log("Dynamic assets loaded successfully");
         } catch (error) {
@@ -202,7 +202,7 @@ export class CurveRouteService {
                 infos.push({ info: `${route.display} no route => USDe not unwrapable directely`, route });
             }
             else {
-                const thiefData = ThiefConfig.find((token) => token.address && route?.in &&  token.address.toLowerCase() === route.in.toLowerCase());
+                const thiefData = ThiefConfig.find((token) => token.address && route?.in && token.address.toLowerCase() === route.in.toLowerCase());
                 try {
                     coins = ["noONe"];
                     // No more RPC call; we use tokenIn & tokenOut from JSON

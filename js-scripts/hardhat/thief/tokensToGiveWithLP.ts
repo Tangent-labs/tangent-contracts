@@ -35,31 +35,31 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             amount: mintedAmount,
             name: "cbBTC_WBTC",
         },
-        {
-            ...obj.TRICRYPTO_USDC,
-            amount: mintedAmount,
-            name: "USDC-WBTC-WETH",
-        },
-        {
-            ...obj.TRICRV,
-            amount: mintedAmount,
-            name: "crvUSD_ETH_CRV",
-        },
-        {
-            ...obj.GHO_CBBTC_ETH,
-            amount: mintedAmount,
-            name: "GHO_cbBTC_WETH",
-        },
-        {
-            ...obj.TRICRYPTO_USDT,
-            amount: mintedAmount,
-            name: "USDT_WBTC_WETH",
-        },
-        {
-            ...obj.CRV_USR_RLP,
-            amount: mintedAmount,
-            name: "USR_RLP",
-        },
+        // {
+        //     ...obj.TRICRYPTO_USDC,
+        //     amount: mintedAmount,
+        //     name: "USDC-WBTC-WETH",
+        // },
+        // {
+        //     ...obj.TRICRV,
+        //     amount: mintedAmount,
+        //     name: "crvUSD_ETH_CRV",
+        // },
+        // {
+        //     ...obj.GHO_CBBTC_ETH,
+        //     amount: mintedAmount,
+        //     name: "GHO_cbBTC_WETH",
+        // },
+        // {
+        //     ...obj.TRICRYPTO_USDT,
+        //     amount: mintedAmount,
+        //     name: "USDT_WBTC_WETH",
+        // },
+        // {
+        //     ...obj.CRV_USR_RLP,
+        //     amount: mintedAmount,
+        //     name: "USR_RLP",
+        // },
         {
             ...pendlePTconfig,
             address: PENDLE_POOLS["sUSDe 07/05/26"].PT,
@@ -135,6 +135,17 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             name: "GHO",
         },
         {
+            ...obj.PYUSD,
+            amount: mintedAmount,
+            name: "PYUSD",
+        },
+
+        {
+            ...obj.RLUSD,
+            amount: mintedAmount,
+            name: "RLUSD",
+        },
+        {
             ...obj.frxETH,
             amount: mintedAmount,
             name: "frxETH",
@@ -164,11 +175,11 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             amount: mintedAmount,
             name: "USDC_fxUSD",
         },
-        {
-            ...obj.CVX_ETH,
-            amount: mintedAmount,
-            name: "CVX_ETH",
-        },
+        // {
+        //     ...obj.CVX_ETH,
+        //     amount: mintedAmount,
+        //     name: "CVX_ETH",
+        // },
 
         // Curve Gauge LP tokens
         {
