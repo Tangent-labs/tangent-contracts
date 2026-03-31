@@ -16,6 +16,12 @@ struct HarvestUIIn {
     uint256 marketType;
 }
 
+interface ICVX is IERC20 {
+    function totalCliffs() external view returns (uint256);
+    function reductionPerCliff() external view returns (uint256);
+    function maxSupply() external view returns (uint256);
+}
+
 struct HarvestUIOut {
     address marketAddress;
     string collateralName;
@@ -84,15 +90,34 @@ contract HarvestUI is ERC20Infos {
         revert HarvestUIOutError(output);
     }
 
+    function _getCvxAmountMinted(uint256 crvAmount) internal view returns (uint256) {
+        uint256 cvxToMint;
+        uint256 cliff = CVX.totalSupply() / CVX.reductionPerCliff();
+        uint256 totalCliffs = CVX.totalCliffs();
+        if (cliff < totalCliffs) {
+            //for reduction% take inverse of current cliff
+            uint256 reduction = totalCliffs - cliff;
+            //reduce
+            cvxToMint = (crvAmount * reduction) / totalCliffs;
+
+            //supply cap check
+            uint256 amtTillMax = CVX.maxSupply() - CVX.totalSupply();
+            if (cvxToMint > amtTillMax) {
+                cvxToMint = amtTillMax;
+            }
+        }
+
+        return cvxToMint;
+    }
+
     address constant CRV = 0xD533a949740bb3306d119CC777fa900bA034cd52;
-    address constant CVX = 0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B;
+    ICVX constant CVX = ICVX(0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B);
     function _getClaimableConvexCrv(address account, ICvxRewardToken cvxRewardToken) internal view returns (TokenAmount[] memory) {
         // Retrieve CRV amount claimable
         uint256 crvAmount = cvxRewardToken.earned(account);
 
         // Deduce cvxAmount bcs it's proportionnal
-        //TODO Find the real factor
-        uint256 cvxAmount = (crvAmount * 1212122222222) / 10 ** 18;
+        uint256 cvxAmount = _getCvxAmountMinted(crvAmount);
 
         // Retrieve extra rewards claimable, first part
         uint256 extraRewardsAmount = cvxRewardToken.extraRewardsLength();
@@ -105,7 +130,7 @@ contract HarvestUI is ERC20Infos {
             ICvxRewardToken xtraRewardToken = ICvxRewardToken(cvxRewardToken.extraRewards(i));
             IStashTokenWrapper wrapper = IStashTokenWrapper(xtraRewardToken.rewardToken());
             IERC20Metadata realRewardToken = wrapper.token();
-            // It's CVX
+            // The first extra reward is always CVX
             if (i == 0) {
                 claimable[1].amount += xtraRewardToken.earned(account);
             } else {
