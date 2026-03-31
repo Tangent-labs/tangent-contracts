@@ -7,4 +7,6 @@ interface IConvexCrvLPMarket {
     function initialize(GlobalMarketInitParams memory _marketConstants, MarketInit memory _marketInit, uint256 _pid) external;
 
     function cvxRewardToken() external view returns (ICvxRewardToken);
+
+    function pid() external view returns (uint256);
 }

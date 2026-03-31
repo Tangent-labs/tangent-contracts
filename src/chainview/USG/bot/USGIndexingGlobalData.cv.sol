@@ -44,7 +44,7 @@ struct USGIndexingGlobalDataOut {
 }
 struct TVLAprs {
     GlobalData globalData;
-    StreamingData[] currentAPR;
+    TokenAmount[] currentAPR;
     TVLStreamingData projectedAPR;
 }
 
@@ -59,13 +59,10 @@ struct GlobalData {
     uint256 rewardCut;
     IERC20[] rewardTokens;
 }
-struct StreamingData {
-    IERC20 token;
-    uint256 amountPerYear;
-}
+
 struct TVLStreamingData {
     uint256 totalSupplyUnderlying;
-    StreamingData[] streamingData;
+    TokenAmount[] streamingData;
 }
 
 struct KeeperData {
@@ -88,6 +85,10 @@ struct KeeperIn {
 }
 interface IDistributedToken {
     function rate() external view returns (uint256);
+}
+
+interface IPoolUtilities {
+    function rewardRates(uint256 _pid) external view returns (address[] memory tokens, uint256[] memory rates);
 }
 
 contract USGIndexingGlobalData is UsgInfo {
@@ -182,11 +183,11 @@ contract USGIndexingGlobalData is UsgInfo {
             });
     }
 
-    function _getCurrentAPR(address market, IERC20[] memory rewardTokens, IRewardAccumulator rewardAccumulator) internal view returns (StreamingData[] memory) {
-        StreamingData[] memory aprs = new StreamingData[](rewardTokens.length);
+    function _getCurrentAPR(address market, IERC20[] memory rewardTokens, IRewardAccumulator rewardAccumulator) internal view returns (TokenAmount[] memory) {
+        TokenAmount[] memory aprs = new TokenAmount[](rewardTokens.length);
         for (uint256 j; j < rewardTokens.length; j++) {
             IERC20 rewardToken = rewardTokens[j];
-            aprs[j] = StreamingData({token: rewardToken, amountPerYear: rewardAccumulator.getRewardData(market, rewardToken).rewardRate * 365 days});
+            aprs[j] = TokenAmount({token: rewardToken, amount: rewardAccumulator.getRewardData(market, rewardToken).rewardRate * ONE_YEAR});
         }
         return aprs;
     }
@@ -207,26 +208,55 @@ contract USGIndexingGlobalData is UsgInfo {
     }
 
     IERC20 constant CRV = IERC20(0xD533a949740bb3306d119CC777fa900bA034cd52);
-
+    IPoolUtilities constant convexCrvPoolUtilities = IPoolUtilities(0x5Fba69a794F395184b5760DAf1134028608e5Cd1);
     function _getProjectedAPRConvexCRV(address market) internal view returns (TVLStreamingData memory) {
         IConvexCrvLPMarket cvxCrvMarket = IConvexCrvLPMarket(market);
-        ICvxRewardToken cvxRewardToken = cvxCrvMarket.cvxRewardToken();
-        uint256 extraRewardLen = cvxCrvMarket.cvxRewardToken().extraRewardsLength();
-        StreamingData[] memory streamData = new StreamingData[](extraRewardLen + 1);
+        // Fetch rates from Convex utilities
+        (address[] memory tokens, uint256[] memory rates) = convexCrvPoolUtilities.rewardRates(cvxCrvMarket.pid());
+        uint256 len = tokens.length;
+        TokenAmount[] memory temp = new TokenAmount[](len);
+        uint256 count;
+        // Iterates over all tokens and rate returned by Convex
+        for (uint256 i; i < len; ) {
+            bool found = false;
 
-        streamData[0] = StreamingData({token: CRV, amountPerYear: cvxRewardToken.periodFinish() < block.timestamp ? 0 : cvxRewardToken.rewardRate() * ONE_YEAR});
-        for (uint256 i; i < extraRewardLen; i++) {
-            IVirtualBalanceRewardPool extraReward = IVirtualBalanceRewardPool(cvxRewardToken.extraRewards(i));
-            IStashTokenWrapper stashWrapperToken = IStashTokenWrapper(address(extraReward.rewardToken()));
-            IERC20 realRewardToken = IERC20(address(stashWrapperToken));
+            // Check for duplicates
+            for (uint256 j; j < count; ) {
+                // Duplicate found
+                if (address(temp[j].token) == tokens[i]) {
+                    // Merge the rates
+                    temp[j].amount += (rates[i] * ONE_YEAR);
+                    found = true;
+                    break;
+                }
+                unchecked {
+                    ++j;
+                }
+            }
 
-            try stashWrapperToken.token() {
-                realRewardToken = stashWrapperToken.token();
-            } catch {}
-            streamData[i + 1] = StreamingData({token: realRewardToken, amountPerYear: extraReward.rewardRate() * ONE_YEAR});
+            // No duplicates, we create a new entry
+            if (!found) {
+                temp[count] = TokenAmount({token: IERC20(tokens[i]), amount: rates[i] * ONE_YEAR});
+                unchecked {
+                    ++count;
+                }
+            }
+
+            unchecked {
+                ++i;
+            }
         }
 
-        return TVLStreamingData({totalSupplyUnderlying: cvxRewardToken.totalSupply(), streamingData: streamData});
+        // Resize
+        TokenAmount[] memory streamingData = new TokenAmount[](count);
+        for (uint256 i; i < count; ) {
+            streamingData[i] = temp[i];
+            unchecked {
+                ++i;
+            }
+        }
+
+        return TVLStreamingData({totalSupplyUnderlying: cvxCrvMarket.cvxRewardToken().totalSupply(), streamingData: streamingData});
     }
 
     function _getProjectedAPRBlank() internal pure returns (TVLStreamingData memory) {}

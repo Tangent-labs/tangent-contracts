@@ -46,7 +46,7 @@ const config: HardhatUserConfig = {
             // },
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
-                blockNumber: 24570704,
+                blockNumber: 24770812,
             },
             timeout: 100_000_000,
         },
@@ -58,7 +58,7 @@ const config: HardhatUserConfig = {
             },
             forking: {
                 url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
-                blockNumber: 24570704,
+                blockNumber: 24770812,
             },
         },
 
