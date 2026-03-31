@@ -5,10 +5,11 @@ import { SIMU_TAN_LPS_CONFIG } from "./config";
 import { formatEther } from "ethers";
 import { ethers } from "hardhat";
 import * as fs from "fs";
-import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { impersonateAccount, stopImpersonatingAccount, time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { giveTokensToAddresses } from "../../../thief/thief";
 import { COMMON_ERC20S } from "@tangent/defi-resources";
 import { THIEF_TOKEN_CONFIG } from "@tangent/defi-resources/build/ressources/erc20/thiefConfig";
+import { PROD_ADDRESSES } from "../../../../../ignition/prod_addresses";
 
 
 export async function main() {
@@ -33,10 +34,14 @@ async function simu(
         }
     }
 ) {
+
+    const dao = await ethers.getSigner(PROD_ADDRESSES.DAO)
+
     const baseContext = new BaseContext(1);
     const lpDeployContext = new LpDeployContext();
 
     await baseContext.setupTestUsers();
+
 
     await giveTokensToAddresses(baseContext.users, [
         { ...THIEF_TOKEN_CONFIG.WETH, amount: 10_000_000 },
@@ -76,7 +81,10 @@ async function simu(
     let dumpAcc = 0n
     for (let i = 0; i < param.dump.times; i++) {
         dumpAcc += param.dump.amount
-        await tanETHLp["exchange(uint256,uint256,uint256,uint256)"](1, 0, param.dump.amount, 0)
+        await impersonateAccount(PROD_ADDRESSES.DAO)
+        await tanETHLp.connect(dao)["exchange(uint256,uint256,uint256,uint256)"](1, 0, param.dump.amount, 0)
+        await stopImpersonatingAccount(PROD_ADDRESSES.DAO)
+
         await time.increase(20 * 60)
         csv.push([
             Number(formatEther(dumpAcc.toString())).toFixed(),

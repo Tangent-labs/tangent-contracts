@@ -16,16 +16,18 @@ contract GetBalancesWithVsTan {
         for (uint256 i = 0; i < out.length - 1; i++) {
             out[i] = TokenBalance({token: address(tokens[i]), balance: tokens[i].balanceOf(user)});
         }
+        if (address(vsTan) != address(0)) {
+            uint256 vsTanPositionOwned = vsTan.balanceOf(user);
+            uint256 totalVsTan;
+            for (uint256 i = 0; i < vsTanPositionOwned; i++) {
+                uint256 tokenId = vsTan.tokenOfOwnerByIndex(user, i);
+                (, uint208 vsTanAmount) = vsTan.locks(tokenId);
+                totalVsTan += vsTanAmount;
+            }
 
-        uint256 vsTanPositionOwned = vsTan.balanceOf(user);
-        uint256 totalVsTan;
-        for (uint256 i = 0; i < vsTanPositionOwned; i++) {
-            uint256 tokenId = vsTan.tokenOfOwnerByIndex(user, i);
-            (, uint208 vsTanAmount) = vsTan.locks(tokenId);
-            totalVsTan += vsTanAmount;
+            out[totalLen - 1] = TokenBalance({token: address(vsTan), balance: totalVsTan});
         }
 
-        out[totalLen - 1] = TokenBalance({token: address(vsTan), balance: totalVsTan});
         revert GetBalancesWithVsTanError(out);
     }
 }

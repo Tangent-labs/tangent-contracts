@@ -4,7 +4,7 @@ pragma solidity ^0.8.27;
 import {ICurveRouter} from "../../../interfaces/externals/Curve/ICurveRouter.sol";
 import {CurveQuote} from "../../../interfaces/internals/USG/ICurveLPLiquidator.sol";
 import {ICurveStableSwapNG} from "../../../interfaces/externals/Curve/ICurveStableSwapNG.sol";
-
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 struct QuoteWithImpact {
     uint256 quote;
@@ -13,7 +13,7 @@ struct QuoteWithImpact {
 
 contract QuotesCurveRouterImpact {
     ICurveRouter public constant CURVE_ROUTER = ICurveRouter(0x45312ea0eFf7E09C83CBE249fa1d7598c4C8cd4e);
-    uint256 private constant MARGINAL_AMOUNT = 1 ether;
+    uint256 private constant NOMINAL_DIVISOR = 1000;
 
     error QuotesCurveRouterImpactError(QuoteWithImpact[] outputs);
 
@@ -23,42 +23,45 @@ contract QuotesCurveRouterImpact {
 
         for (uint256 i; i < routesLen; ) {
             CurveQuote memory curveQuote = routes[i];
-            uint256 quote = 0;
-            int256 priceImpact = 0;
+            uint256 quote;
+            int256 priceImpact;
 
             try CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, curveQuote._amount, curveQuote._pools) returns (uint256 quoteResult) {
                 quote = quoteResult;
-                
-                // Calculate price impact by comparing with marginal price
-                try CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, MARGINAL_AMOUNT, curveQuote._pools) returns (uint256 marginalQuote) {
 
-                  
-                      //  console.logInt(  priceImpact);
+                // Use a small reference trade, but avoid sub-token amounts that are too noisy on LP routes.
+                uint256 tokenUnit;
+                try IERC20Metadata(curveQuote._route[0]).decimals() returns (uint8 d) {
+                    tokenUnit = 10 ** d;
+                } catch {
+                    tokenUnit = 1;
+                }
+                uint256 scaledAmount = curveQuote._amount / NOMINAL_DIVISOR;
+                uint256 marginalAmount = scaledAmount < tokenUnit ? tokenUnit : scaledAmount;
+                if (marginalAmount > curveQuote._amount) marginalAmount = curveQuote._amount;
+                if (marginalAmount == 0) marginalAmount = 1;
+
+                // Calculate price impact by comparing with marginal price
+                try CURVE_ROUTER.get_dy(curveQuote._route, curveQuote._swap_params, marginalAmount, curveQuote._pools) returns (uint256 marginalQuote) {
                     if (marginalQuote > 0 && curveQuote._amount > 0) {
                         // Expected output at marginal price (no slippage)
-                        uint256 expectedOutput = (curveQuote._amount * marginalQuote) / MARGINAL_AMOUNT;
-                        if (expectedOutput > 0) {
-                            // Price impact as percentage: (expected - actual) / expected * 1e18
-                            priceImpact = (int256(expectedOutput) - int256(quote)) * 1e18 / int256(expectedOutput);
+                        uint256 expectedOutput = (curveQuote._amount * marginalQuote) / marginalAmount;
+                        if (expectedOutput > quote) {
+                            priceImpact = int256(((expectedOutput - quote) * 1e18) / expectedOutput);
                         }
-                     
-                    } 
+                    }
                 } catch {
-                   // no price impact
+                    // priceImpact remains 0
                 }
             } catch {
-              // no quote
+                // quote and priceImpact remain 0
             }
 
-            outputs[i] = QuoteWithImpact({
-                quote: quote,
-                priceImpact: priceImpact
-            });
+            outputs[i] = QuoteWithImpact({quote: quote, priceImpact: priceImpact});
 
-            unchecked {
-                ++i;
-            }
+            unchecked { ++i; }
         }
+
         revert QuotesCurveRouterImpactError(outputs);
     }
 }
