@@ -312,13 +312,13 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
     },
     GHO_crvUSD: {
         collatName: "GHO/crvUSD",
-        collatToken: ConvexCrvPools.USDT_crvUSD.lpToken,
+        collatToken: ConvexCrvPools.GHO_crvUSD.lpToken,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("2000000"),
         minimumLoan: parseEther("3000"),
         rewardTokens: [COMMON_ERC20S.CRV],
-        vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.USDT_crvUSD.stakeDaoVault,
+        vaultToken: CURVE_CONTEXT.CURVE_CONTEXT.GHO_crvUSD.stakeDaoVault,
     },
     reUSD_sfrxUSD: {
         collatName: "reUSD/sfrxUSD",

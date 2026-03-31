@@ -30,7 +30,7 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
     // await executeBoostContext()
 
     console.log("Seed USG LPs");
-    await lpDeployContext.fetchLPsAndSeedLps(baseContext, baseLpDeposit);
+    await lpDeployContext.fetchLPsAndSeedLps(baseContext, 10_000);
 
     console.log("Deploy and setup Oracles");
     // Setup and create all oracles
@@ -77,10 +77,19 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
     ];
 
     const pendlePTMarkets: BasicERC20MarketKeys[] = [
-        "Pendle PT - wstUSR 25/06/26",
+        // "Pendle PT - wstUSR 25/06/26",
         "Pendle PT - sUSDe 07/05/26",
         "Pendle PT - USDe 07/05/26"
     ];
+
+
+    // Deploy StakeDAO Vault markets
+    console.log("Deploy StakeDao VaultV2 markets");
+    await marketContext.deployStakeDaoVaultV2Markets(stakeDaoVaultMarkets, baseContext, oracleContext, baseContext.users);
+
+    // Deploy Curve Gauge markets
+    console.log("Deploy Curve Gauge markets");
+    await marketContext.deployCurveGaugeMarkets(curveGaugeMarkets, baseContext, oracleContext, baseContext.users);
 
     // Deploy Convex CRV markets
     console.log("Deploy convex CRV markets");
@@ -89,14 +98,6 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
     // Deploy Convex FXN markets
     console.log("Deploy convex FXN markets");
     await marketContext.deployConvexFxnMarkets(convexFxnMarkets, baseContext, oracleContext);
-
-    // Deploy Curve Gauge markets
-    console.log("Deploy Curve Gauge markets");
-    await marketContext.deployCurveGaugeMarkets(curveGaugeMarkets, baseContext, oracleContext, baseContext.users);
-
-    // Deploy StakeDAO Vault markets
-    console.log("Deploy StakeDao VaultV2 markets");
-    await marketContext.deployStakeDaoVaultV2Markets(stakeDaoVaultMarkets, baseContext, oracleContext, baseContext.users);
 
     // Deploy Pendle PT markets
     console.log("Deploy Pendle PT markets");
