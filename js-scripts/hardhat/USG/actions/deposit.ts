@@ -1,9 +1,10 @@
 import {ethers} from "hardhat";
 import {MainSetup} from "../../Main.setup";
-import {prepareUserAmountByMarket, loadAddresses} from "./common";
+import {prepareUserAmountByMarket, loadAddresses, getMarketLabel} from "./common";
 import {Market} from "../contexts/BaseContext";
 import {parseEther, formatEther} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import {impersonateAccount, stopImpersonatingAccount} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: Record<string, Record<string, string>>) {
     try {
@@ -22,7 +23,7 @@ export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: 
                 const amount = userAmountByMarket?.[marketAddress]?.[user.address] || "0";
 
                 const parsedAmount = parseEther(amount);
-                const collatName = addresses?.markets?.find((m: any) => m.marketAddress.toLowerCase() === marketAddress.toLowerCase())?.collatName;
+                const collatName = getMarketLabel(addresses, marketAddress);
 
                 if (parsedAmount > 0n) {
                     try {
@@ -46,10 +47,14 @@ export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: 
 
                             continue;
                         }
-                        await collatToken.connect(user).approve(market, 0n);
-                        await collatToken.connect(user).approve(market, ethers.MaxUint256);
-
-                        await market.connect(user).deposit(user.address, parsedAmount, false);
+                        await impersonateAccount(user.address);
+                        try {
+                            await collatToken.connect(user).approve(market, 0n);
+                            await collatToken.connect(user).approve(market, ethers.MaxUint256);
+                            await market.connect(user).deposit(user.address, parsedAmount, false);
+                        } finally {
+                            await stopImpersonatingAccount(user.address);
+                        }
 
                         const current = okDeposit.get(marketAddress) || 0;
                         okDeposit.set(marketAddress, current + 1);
@@ -79,7 +84,7 @@ export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: 
             console.error("\x1b[31m%s\x1b[0m", "\n❌ List of failed markets deposit:");
 
             for (const [address, count] of errorMarkets) {
-                const collatName = addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === address.toLowerCase())?.collatName || address;
+                const collatName = getMarketLabel(addresses, address);
                 console.error(`\x1b[31m   ${collatName}: ${count} failure(s)\x1b[0m`);
             }
         }
@@ -87,7 +92,7 @@ export async function deposit(users: HardhatEthersSigner[], userAmountByMarket: 
             console.log("List of OK markets deposit  : ");
 
             for (const [address, count] of okDeposit) {
-                console.log(addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === address.toLowerCase())?.collatName, count);
+                console.log(getMarketLabel(addresses, address), count);
             }
         } else {
             console.log("No  OK markets deposit  : ");
@@ -144,7 +149,7 @@ export async function depositAndBorrow(mainSetup: MainSetup, userAmountByMarket:
             console.log("List of failed markets deposit & borrow : ");
             const addresses = loadAddresses();
             for (const [address, count] of errorMarkets) {
-                console.log(addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === address.toLowerCase())?.collatName, count);
+                console.log(getMarketLabel(addresses, address), count);
             }
         }
         console.info("\x1b[32m%s\x1b[0m", "All deposit actions completed across specified markets!");

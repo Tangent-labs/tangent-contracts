@@ -11,11 +11,13 @@ import {LpDeployContext} from "./LPDeployContext";
 import {WStablesContext} from "./WStableContext";
 
 import {deployUSG} from "../actions/deployUSG";
-import {loadAddresses, UserMarketParams} from "../actions/common";
+import {loadAddresses, UserMarketParams, AddressMarketEntry} from "../actions/common";
 import {deposit} from "../actions/deposit";
 import {borrow} from "../actions/borrow";
 
 import {MockOracle} from "../../../../typechain-types";
+import { deployMainnetAddresses } from "../actions/deployMainnetAddresses";
+import { impersonateAccount, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 // ============================================================================
 // CONFIGURATION TYPES
@@ -23,7 +25,6 @@ import {MockOracle} from "../../../../typechain-types";
 
 export type LiquidationConfig = {
     USER_COUNT: number;
-    INITIAL_USG_SUPPLY: number;
     MAX_POSITION_COUNT?: number;
     MIN_BORROW_USG?: bigint;
     ORACLE_PRICE_DROP_PERCENT: bigint;
@@ -32,7 +33,7 @@ export type LiquidationConfig = {
     EXCLUDED_MARKETS?: readonly string[];
     INCLUDED_MARKETS?: readonly string[];
     // Simple mode specific
-    BASE_DEPOSIT?: number;
+    SEED_USG_LP_AMOUNT?: number;
     USERS_TO_USE?: number; // Number of users to actually use (for simple mode)
     // Position size distribution (for chaos mode)
     POSITION_SIZE?: {
@@ -156,19 +157,22 @@ function getRandomPositionType(config: LiquidationConfig): {intent: PositionInte
 
 async function getFilteredMarkets(config: LiquidationConfig): Promise<string[]> {
     const addresses = await loadAddresses();
+    const markets = (addresses.markets || []) as AddressMarketEntry[];
+    const resolveMarketAddress = (name: string): string | undefined =>
+        markets.find((m) => m.collatName === name || m.marketName === name)?.marketAddress;
 
     // If INCLUDED_MARKETS is specified, only include those markets
     if (config.INCLUDED_MARKETS && config.INCLUDED_MARKETS.length > 0) {
-        return config.INCLUDED_MARKETS.map((name) => addresses.markets.find((m: {collatName: string}) => m.collatName === name)?.marketAddress).filter(Boolean);
+        return config.INCLUDED_MARKETS.map((name) => resolveMarketAddress(name)).filter(Boolean) as string[];
     }
 
     // Otherwise, exclude markets from EXCLUDED_MARKETS
     if (!config.EXCLUDED_MARKETS || config.EXCLUDED_MARKETS.length === 0) {
-        return addresses.markets.map((m: {marketAddress: string}) => m.marketAddress);
+        return markets.map((m) => m.marketAddress);
     }
 
-    const excludedAddresses = config.EXCLUDED_MARKETS.map((name) => addresses.markets.find((m: {collatName: string}) => m.collatName === name)?.marketAddress).filter(Boolean);
-    return addresses.markets.map((m: {marketAddress: string}) => m.marketAddress).filter((addr: string)  => !excludedAddresses.includes(addr));
+    const excludedAddresses = config.EXCLUDED_MARKETS.map((name) => resolveMarketAddress(name)).filter(Boolean);
+    return markets.map((m) => m.marketAddress).filter((addr: string)  => !excludedAddresses.includes(addr));
 }
 
 // ============================================================================
@@ -202,7 +206,7 @@ export class LiquidationContext {
     // -------------------------------------------------------------------------
 
     async doDeploy(): Promise<void> {
-        const deployed = await deployUSG(this.config.USER_COUNT, this.config.INITIAL_USG_SUPPLY);
+        const deployed = await deployMainnetAddresses(this.config.USER_COUNT, this.config.SEED_USG_LP_AMOUNT);
 
         this.baseContext = deployed.baseContext;
         this.marketContext = deployed.marketContext;
@@ -257,7 +261,8 @@ export class LiquidationContext {
             [maxMarketDebt, minimumLoan] = await Promise.all([market.maxMarketDebt(), market.minimumLoan()]);
         }
 
-        const collatName = addresses?.markets?.find((m: {marketAddress: string}) => m.marketAddress.toLowerCase() === marketAddress.toLowerCase())?.collatName;
+        const matchingMarket = addresses?.markets?.find((m: AddressMarketEntry) => m.marketAddress.toLowerCase() === marketAddress.toLowerCase());
+        const collatName = matchingMarket?.collatName || matchingMarket?.marketName;
 
         const data: MarketInfo = {
             collatName,
@@ -279,6 +284,10 @@ export class LiquidationContext {
     // -------------------------------------------------------------------------
 
     async setOracleToMock(marketAddress: string): Promise<void> {
+        if (!this.baseContext) {
+            throw new Error("BaseContext not initialized");
+        }
+
         const market = await ethers.getContractAt("MarketExternalActions", marketAddress);
         const oracle = await ethers.getContractAt("IPriceOracle", await market.collatOracle());
         const lastPrice = await oracle.latestAnswer(true);
@@ -289,7 +298,13 @@ export class LiquidationContext {
         // At 66% price with 62-65% LTV: health ratio ~0.94-0.99 < 1
         const targetPrice = (lastPrice * this.config.ORACLE_PRICE_DROP_PERCENT) / 100n;
         await mockOracle.setLastAnswer(targetPrice);
-        await market.setCollatOracle(await mockOracle.getAddress());
+        const ownerAddress = await this.baseContext.owner.getAddress();
+        await impersonateAccount(ownerAddress);
+        try {
+            await market.connect(this.baseContext.owner).setCollatOracle(await mockOracle.getAddress());
+        } finally {
+            await stopImpersonatingAccount(ownerAddress);
+        }
 
         console.log(`setOracleToMock: ${marketAddress} → ${ethers.formatEther(targetPrice)} (${this.config.ORACLE_PRICE_DROP_PERCENT}% of ${ethers.formatEther(lastPrice)})`);
 

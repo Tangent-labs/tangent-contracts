@@ -1,9 +1,10 @@
 import {ethers} from "hardhat";
 import {MainSetup} from "../../Main.setup";
 import {Market} from "../contexts/BaseContext";
-import {prepareUserAmountByMarket, loadAddresses} from "./common";
+import {prepareUserAmountByMarket, loadAddresses, getMarketLabel} from "./common";
 import {parseEther, formatEther} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import {impersonateAccount, stopImpersonatingAccount} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: Record<string, Record<string, string>>) {
     try {
@@ -16,7 +17,7 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
         const okBorrow = new Map<string, number>();
         for (const marketAddress of Object.keys(userAmountByMarket || {})) {
             const market = await ethers.getContractAt("MarketExternalActions", marketAddress);
-            const collatName = addresses?.markets?.find((m: any) => m.marketAddress.toLowerCase() === marketAddress.toLowerCase())?.collatName;
+            const collatName = getMarketLabel(addresses, marketAddress);
 
             let i = -1;
             for (const user of users) {
@@ -51,7 +52,12 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
                             parsedAmount = maxBorrowableAmount;
                         }
 
-                        await market.connect(user).borrow(user.address, parsedAmount);
+                        await impersonateAccount(user.address);
+                        try {
+                            await market.connect(user).borrow(user.address, parsedAmount);
+                        } finally {
+                            await stopImpersonatingAccount(user.address);
+                        }
 
                         const current = okBorrow.get(marketAddress) || 0;
                         okBorrow.set(marketAddress, current + 1);
@@ -59,7 +65,7 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
                         const current = errorMarkets.get(marketAddress) || 0;
                         errorMarkets.set(marketAddress, current + 1);
                         errorMessages.add(`${(e as Error).message}`);
-                        const marketName = addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === marketAddress.toLowerCase())?.collatName;
+                        const marketName = getMarketLabel(addresses, marketAddress);
                         console.log(`borrowed error for ${marketName}`, e.message || "-", i, parsedAmount);
                         //console.error(`error for deposit market : ${marketAddress} & user : ${user.address}`);
                         // throw e;
@@ -74,7 +80,7 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
             console.log("List of failed market borrow  : ");
             const addresses = loadAddresses();
             for (const [address, count] of errorMarkets) {
-                console.log(addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === address.toLowerCase())?.collatName, count);
+                console.log(getMarketLabel(addresses, address), count);
             }
         }
 
@@ -82,7 +88,7 @@ export async function borrow(users: HardhatEthersSigner[], userAmountByMarket: R
             console.log("List of OK markets borrow  : ");
             const addresses = loadAddresses();
             for (const [address, count] of okBorrow) {
-                console.log(addresses.markets.find((m: any) => m.marketAddress.toLowerCase() === address.toLowerCase())?.collatName, count);
+                console.log(getMarketLabel(addresses, address), count);
             }
         } else {
             console.log("No OK markets borrow  : ");
