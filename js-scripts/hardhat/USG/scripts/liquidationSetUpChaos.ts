@@ -6,7 +6,7 @@ import * as path from "path";
 export const CHAOS_CONFIG: LiquidationConfig = {
     USER_COUNT: 80,
     MAX_POSITION_COUNT: 300,
-    INITIAL_USG_SUPPLY: 1_500_000,
+    SEED_USG_LP_AMOUNT: 1_500_000,
     MIN_BORROW_USG: 1000n * 10n ** 18n,
     ORACLE_PRICE_DROP_PERCENT: 66n,
     DEBT_SAFETY_MARGIN_PERCENT: 5n,

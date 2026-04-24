@@ -29,8 +29,8 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
     // console.log("Setup the context for Onchain boost ( lockers + stAssets + NFT)");
     // await executeBoostContext()
 
-    console.log("Seed USG LPs");
-    await lpDeployContext.fetchLPsAndSeedLps(baseContext, 10_000);
+    const seedLpAmount = baseLpDeposit ?? 10_000;
+    await lpDeployContext.fetchLPsAndSeedLps(baseContext, seedLpAmount);
 
     console.log("Deploy and setup Oracles");
     // Setup and create all oracles

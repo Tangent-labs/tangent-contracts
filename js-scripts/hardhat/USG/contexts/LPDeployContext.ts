@@ -5,7 +5,8 @@ import { Addressable, AddressLike, BigNumberish, MaxUint256, parseUnits, ZeroAdd
 import { WStablesContext } from "./WStableContext";
 import { COMMON_ERC20S } from "@tangent/defi-resources";
 import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
-import { impersonateAccount, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { impersonateAccount, setStorageAt, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { giveTokenToAddresss } from "../../thief/thief";
 
 export type StableLP = {
     [name: string]: ICurveStableSwapNG;
@@ -164,18 +165,34 @@ export class LpDeployContext {
         return lp;
     }
 
+
+    async addUsgBeforeDeployingLP(baseContext: BaseContext, requiredUSGAmount: bigint) {
+        const usgAddress = await baseContext.USG.getAddress();
+        await giveTokenToAddresss(baseContext.owner, usgAddress, requiredUSGAmount, 0, false);
+    }
+
     async seedLP(baseContext: BaseContext, coins: IERC20Metadata[], lp: ICurveStableSwapNG, amounts: BigNumberish[],
     ) {
-        await impersonateAccount(await baseContext.owner.getAddress())
+        const ownerAddress = await baseContext.owner.getAddress();
+        await impersonateAccount(ownerAddress)
 
-        await coins[0].connect(baseContext.owner).approve(lp, MaxUint256);
-        await coins[1].connect(baseContext.owner).approve(lp, MaxUint256);
+        try {
+            const usgAddress = (await baseContext.USG.getAddress()).toLowerCase();
+            const usgIndex = (await Promise.all(coins.map((coin) => coin.getAddress()))).findIndex((address) => address.toLowerCase() === usgAddress);
 
-        await lp.connect(baseContext.owner)["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
+            if (usgIndex !== -1) {
+                await this.addUsgBeforeDeployingLP(baseContext, parseUnits(amounts[usgIndex].toString(), 18));
+            }
 
-        await this._usersApproveLp(baseContext, coins, lp);
+            await coins[0].connect(baseContext.owner).approve(lp, MaxUint256);
+            await coins[1].connect(baseContext.owner).approve(lp, MaxUint256);
 
-        await stopImpersonatingAccount(await baseContext.owner.getAddress())
+            await lp.connect(baseContext.owner)["add_liquidity(uint256[],uint256)"]([parseUnits(amounts[0].toString(), await coins[0].decimals()), parseUnits(amounts[1].toString(), await coins[1].decimals())], 0);
+
+            await this._usersApproveLp(baseContext, coins, lp);
+        } finally {
+            await stopImpersonatingAccount(ownerAddress)
+        }
 
     }
 

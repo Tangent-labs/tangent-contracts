@@ -7,6 +7,17 @@ import * as path from "path";
 
 export type UserMarketParams = Record<string, Record<string, string>>;
 
+export type AddressMarketEntry = {
+    marketAddress: string;
+    collatName?: string;
+    marketName?: string;
+};
+
+export function getMarketLabel(addresses: {markets?: AddressMarketEntry[]} | null | undefined, marketAddress: string): string {
+    const market = (addresses?.markets || []).find((m) => m.marketAddress.toLowerCase() === marketAddress.toLowerCase());
+    return market?.collatName || market?.marketName || marketAddress;
+}
+
 /**
  * Dynamically loads addresses.json from the project root.
  * This function reads the file fresh each time it's called,
