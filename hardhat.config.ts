@@ -9,6 +9,13 @@ import "hardhat-contract-sizer";
 import * as dotenv from "dotenv";
 dotenv.config();
 
+
+const forkBloc = process.env.STARTING_BLOCK ? parseInt(process.env.STARTING_BLOCK) : 24770812;
+const forkRpc = process.env.FORK_RPC ||` https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`;
+
+console.log({forkBloc, forkRpc});
+
+
 const config: HardhatUserConfig = {
     vyper: {
         version: "0.3.10",
@@ -45,8 +52,8 @@ const config: HardhatUserConfig = {
             //     path: "m/44'/60'/0'/0",
             // },
             forking: {
-                url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
-                blockNumber: 24770812,
+                url: forkRpc,
+                blockNumber: forkBloc,
             },
             timeout: 100_000_000,
         },
@@ -57,13 +64,13 @@ const config: HardhatUserConfig = {
                 interval: 12_000,
             },
             forking: {
-                url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
-                blockNumber: 24770812,
+                url: forkRpc,
+                blockNumber: forkBloc,
             },
         },
 
         mainnet: {
-            url: `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`,
+            url: forkRpc,
             accounts: [process.env.PRIVATE_KEY!]
         },
         tangent: {
