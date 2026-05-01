@@ -63,7 +63,7 @@ contract PointPrices is UsgInfo {
             usgPrice = usgInfo.UsgPrice;
             // Calculate sUsg price based on the exchange rate
             IERC4626 sUsg = IERC4626(addresses.sUsg);
-            sUsgPrice = sUsg.totalAssets() > 0 ? (sUsg.convertToAssets(1 ether) * usgPrice) / 1 ether : 1;
+            sUsgPrice = sUsg.totalAssets() != 0 ? (sUsg.convertToAssets(1 ether) * usgPrice) / 1 ether : 1 ether;
         } else {
             usgPrice = 0;
             sUsgPrice = usgPrice;
