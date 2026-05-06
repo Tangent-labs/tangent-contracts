@@ -1,11 +1,10 @@
+import { mine } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { CURVE_LPS } from "@tangent/defi-resources";
 import { BaseContext } from "../contexts/BaseContext";
-import { MarketContext, ConvexCrvMarketKeys, ConvexFxnMarketKeys, BasicERC20MarketKeys, StakeDaoVaultV2MarketsKeys, CurveGaugeMarketsKeys } from "../contexts/MarketContext";
-import { OracleContext } from "../contexts/OracleContext";
 import { LpDeployContext } from "../contexts/LPDeployContext";
+import { ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, StakeDaoVaultV2MarketsKeys } from "../contexts/MarketContext";
+import { OracleContext } from "../contexts/OracleContext";
 import { WStablesContext } from "../contexts/WStableContext";
-import { executeBoostContext } from "../contexts/OnchainBoostContext";
-import { mine } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposit?: number) {
     const baseContext = new BaseContext(userCount);
@@ -36,50 +35,26 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
     // Setup and create all oracles
     await oracleContext.fetchUSGOracleAndDeployMarketOracles();
 
-    // Define markets to deploy
-    const convexCrvMarkets: ConvexCrvMarketKeys[] = [
-        // Stable USD
-        "crvUSD_USDC",
-        "crvUSD_USDT",
-        "USDC_USDT",
-        // "frxUSD_USDe",
-
-        // Stable ETH
-        "frxETH_WETH",
-        // "pxETH_WETH",
-        // "pxETH_stETH",
-
-        // Stable BTC
-        // "cbBTC_WBTC
-
-    ];
 
     const stakeDaoVaultMarkets: StakeDaoVaultV2MarketsKeys[] = [
-        "crvUSD_USDC",
-        "crvUSD_USDT",
-        "GHO_crvUSD",
-        "frxUSD_msUSD",
-        "msETH_OETH",
-        "ETHPlus_WETH",
-        "tBTC_cbBTC",
+        "frxUSD_sUSDS",
+        "BOLD_USDC",
+        "eUSD_USDC",
+        "scrvUSD_sUSDe",
+        "USDT_crvUSD",
+        "frxUSD_OUSD",
+        "frxUSD_sDOLA",
+        "frxUSD_scrvUSD",
     ];
 
     const curveGaugeMarkets: CurveGaugeMarketsKeys[] = [
         "PYUSD_USDC",
         "RLUSD_USDC",
-        "stUSDS_USDS"
+        // "stUSDS_USDS"
     ];
     const convexFxnMarkets: ConvexFxnMarketKeys[] = [
         "USDC_fxUSD",
-        "fxUSD_reUSD",
-        "GHO_fxUSD",
-        "msUSD_fxUSD",
-    ];
-
-    const pendlePTMarkets: BasicERC20MarketKeys[] = [
-        // "Pendle PT - wstUSR 25/06/26",
-        "Pendle PT - sUSDe 07/05/26",
-        "Pendle PT - USDe 07/05/26"
+        "fxUSD_reUSD"
     ];
 
 
@@ -91,17 +66,11 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
     console.log("Deploy Curve Gauge markets");
     await marketContext.deployCurveGaugeMarkets(curveGaugeMarkets, baseContext, oracleContext, baseContext.users);
 
-    // Deploy Convex CRV markets
-    console.log("Deploy convex CRV markets");
-    await marketContext.deployConvexCrvMarkets(convexCrvMarkets, baseContext, oracleContext);
 
     // Deploy Convex FXN markets
     console.log("Deploy convex FXN markets");
     await marketContext.deployConvexFxnMarkets(convexFxnMarkets, baseContext, oracleContext);
 
-    // Deploy Pendle PT markets
-    console.log("Deploy Pendle PT markets");
-    await marketContext.deployBasicERC20Markets(pendlePTMarkets, baseContext, oracleContext);
 
     // Approve LPs with test users
     await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-USDC"].getAddress());
