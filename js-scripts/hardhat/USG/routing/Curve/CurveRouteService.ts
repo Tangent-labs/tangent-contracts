@@ -1,10 +1,10 @@
-import { ethers } from "hardhat";
 import { AddressLike, MaxUint256, ZeroAddress } from "ethers";
 import fs from "fs";
+import { ethers } from "hardhat";
 import path from "path";
 
-import { routers } from "@tangent/defi-resources";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
+import { routers } from "@tangent/defi-resources";
 
 import { giveTokenToAddresss } from "../../../thief/thief";
 import { LIQUIDATION_ASSETS, separatedCurvePoolToken, ThiefConfig } from "./config";

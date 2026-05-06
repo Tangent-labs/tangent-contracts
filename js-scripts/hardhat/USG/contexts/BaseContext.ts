@@ -2,37 +2,39 @@ import { ethers } from "hardhat";
 
 import { COMMON_ERC20S, CURVE_LPS } from "@tangent/defi-resources";
 
-import { MainSetup } from "../../Main.setup";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { impersonateAccount, setStorageAt, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { AddressLike, MaxUint256, parseEther } from "ethers";
+import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
 import {
+    BasicERC20Market,
     ControlTower,
     ConvexCrvLPMarket,
     ConvexFxnLPMarket,
+    CurveGaugeMarket,
     IERC20Metadata,
     IPegKeeperRegulator,
     IPegKeeperV2,
     IRCalculator,
     IYearnV3Vault,
-    BasicERC20Market,
+    MarketCreator,
+    MarketViewer,
+    PendlePTRouter,
     RewardAccumulator,
-    VsTAN,
+    StakeDaoVaultV2Market,
     TAN,
     USG,
-    ZappingProxy,
-    PendlePTRouter,
-    MarketCreator,
-    CurveGaugeMarket,
-    MarketViewer,
-    StakeDaoVaultV2Market
+    VsTAN,
+    ZappingProxy
 } from "../../../../typechain-types";
+import { MainSetup } from "../../Main.setup";
+import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CURVE_GAUGE, USGMarketType } from "../config/market";
+import { STATIC_CONFIG_CONVEX_CURVE } from "../config/markets/convex_crv";
+import { STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/markets/stakeDao";
 import { LpDeployContext } from "./LPDeployContext";
-import { impersonateAccount, setStorageAt, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { ConvexCrvMarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, BasicERC20MarketKeys, StakeDaoVaultV2MarketsKeys } from "./MarketContext";
-import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_CURVE, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CURVE_GAUGE, STATIC_CONFIG_STAKEDAO_VAULT_V2, USGMarketType } from "../config/market";
+import { BasicERC20MarketKeys, ConvexCrvMarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, StakeDaoVaultV2MarketsKeys } from "./MarketContext";
 import { OracleContext } from "./OracleContext";
 import { WStablesContext } from "./WStableContext";
-import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
 
 export class BaseContext extends MainSetup {
     owner!: HardhatEthersSigner;

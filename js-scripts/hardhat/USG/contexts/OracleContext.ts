@@ -1,11 +1,11 @@
+import { CHAINLINK_PRICE_FEEDS, COMMON_ERC20S, CURVE_LPS, PENDLE_POOLS } from "@tangent/defi-resources";
+import { ZeroAddress } from "ethers";
 import { ethers } from "hardhat";
-import { CHAINLINK_PRICE_FEEDS, PENDLE_POOLS, COMMON_ERC20S, CURVE_LPS } from "@tangent/defi-resources";
+import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
 import { IAggregatorStablePriceV3, IPriceOracle } from "../../../../typechain-types";
 import { BaseContext } from "./BaseContext";
 import { LpDeployContext } from "./LPDeployContext";
-import { chainlinkOracleParams, oracleCoinFromCurveLPParams, oracleCryptoSwapParams, oracleDuoPoolStableParams, oracleERC4626Params, oraclePendlePTParams } from "./oracleParams";
-import { ZeroAddress } from "ethers";
-import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
+import { chainlinkOracleParams, oracleCoinFromCurveLPParams, oracleDuoPoolStableParams, oracleERC4626Params, oraclePendlePTParams } from "./oracleParams";
 
 export class OracleContext {
     USGOracle!: IAggregatorStablePriceV3;
@@ -70,17 +70,17 @@ export class OracleContext {
         for (let index = 0; index < oracleCoinFromCurveLPParams.length; index++) {
             const item = oracleCoinFromCurveLPParams[index];
             const curveLP = CURVE_LPS[item.lp];
-            const coin0Oracle = this.oracles[item.coin0Oracle];
+            const otherStableOracle = this.oracles[item.otherStableOracle];
 
             if (!curveLP) {
                 throw Error(`ERC4626 ${item.lp} not configured in defi-resources in CURVE_LPS for ${item.oracleName}`);
             }
 
-            if (!coin0Oracle) {
-                throw Error(`Oracle0 ${item.coin0Oracle} not deployed for ${item.oracleName}`);
+            if (!otherStableOracle) {
+                throw Error(`Oracle0 ${item.otherStableOracle} not deployed for ${item.oracleName}`);
             }
 
-            const oracle = (await OracleCoinFromCurveLPFactory.deploy(curveLP, coin0Oracle, item.isReversed, item.key)) as unknown as IPriceOracle;
+            const oracle = (await OracleCoinFromCurveLPFactory.deploy(curveLP, otherStableOracle, item.isReversed, item.key)) as unknown as IPriceOracle;
             this.oracles[item.key] = oracle
             this.oraclesCoinFromCurveLP[item.key] = oracle
 

@@ -1,23 +1,19 @@
-import { ethers } from "hardhat";
 import { AddressLike, ContractTransactionReceipt, Interface, MaxUint256, Signer } from "ethers";
-import { ConvexCrvLPMarket, ConvexFxnLPMarket, BasicERC20Market, CurveGaugeMarket, StakeDaoVaultV2Market } from "../../../../typechain-types";
+import { ethers } from "hardhat";
+import { BasicERC20Market, ConvexCrvLPMarket, ConvexFxnLPMarket, CurveGaugeMarket, StakeDaoVaultV2Market } from "../../../../typechain-types";
+import {
+    STATIC_CONFIG_BASIC_ERC20s,
+    STATIC_CONFIG_CONVEX_FXN,
+    STATIC_CONFIG_CURVE_GAUGE,
+} from "../config/market";
 import { BaseContext } from "./BaseContext";
 import { OracleContext } from "./OracleContext";
-import {
-    HEC_CONFIG_IR_PARAMS,
-    HEC_CONFIG_RC_PARAMS,
-    LEC_CONFIG_IR_PARAMS,
-    LEC_CONFIG_RC_PARAMS,
-    STATIC_CONFIG_CONVEX_CURVE,
-    STATIC_CONFIG_CONVEX_FXN,
-    STATIC_CONFIG_BASIC_ERC20s,
-    STATIC_CONFIG_CURVE_GAUGE,
-    STATIC_CONFIG_STAKEDAO_VAULT_V2,
-} from "../config/market";
 
+import { impersonateAccount, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import * as MarketCreator from "../../../../artifacts/src/USG/Utilities/MarketCreator.sol/MarketCreator.json";
 import { MarketInitStruct } from "../../../../typechain-types/src/USG/Market/BasicERC20Market";
-import { impersonateAccount, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { STATIC_CONFIG_CONVEX_CURVE } from "../config/markets/convex_crv";
+import { STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/markets/stakeDao";
 
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;
@@ -47,34 +43,6 @@ export class MarketContext {
         };
     }
 
-    async deployConvexCrvMarkets(keys: ConvexCrvMarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
-        for (let index = 0; index < keys.length; index++) {
-            const key = keys[index];
-            const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key];
-            if (!staticConfig) {
-                throw Error(`No static config for ${key} market`)
-            }
-            const oracle = oracleContext.oracles[staticConfig.collatName]
-            if (!oracle) {
-                throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
-            }
-            await impersonateAccount(await baseContext.owner.getAddress())
-            const receipt = await (
-                await baseContext.marketCreator
-                    .connect(baseContext.owner)
-                    .createConvexCrvMarket(
-                        this.marketInit(staticConfig, oracle, "Convex CRV - " + staticConfig.collatName),
-                        staticConfig.pid,
-                        HEC_CONFIG_IR_PARAMS,
-                        HEC_CONFIG_RC_PARAMS
-                    )
-            ).wait();
-
-            await stopImpersonatingAccount(await baseContext.owner.getAddress())
-            await this.parseCreateMarketLogs(key, receipt!);
-
-        }
-    }
 
     async deployConvexFxnMarkets(keys: ConvexFxnMarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
         for (let index = 0; index < keys.length; index++) {
@@ -95,8 +63,8 @@ export class MarketContext {
                     .createConvexFxnMarket(
                         this.marketInit(staticConfig, oracle, "Convex FXN - " + staticConfig.collatName),
                         staticConfig.pid,
-                        LEC_CONFIG_IR_PARAMS,
-                        LEC_CONFIG_RC_PARAMS
+                        staticConfig.irConfig,
+                        staticConfig.rcConfig
                     )
             ).wait();
             await stopImpersonatingAccount(await baseContext.owner.getAddress())
@@ -125,8 +93,8 @@ export class MarketContext {
                     .createCurveGaugeMarket(
                         this.marketInit(staticConfig, oracle, `Curve Gauge - ${key}`),
                         staticConfig.gaugeToken,
-                        LEC_CONFIG_IR_PARAMS,
-                        LEC_CONFIG_RC_PARAMS,
+                        staticConfig.irConfig,
+                        staticConfig.rcConfig,
                     )
             ).wait();
             await stopImpersonatingAccount(await baseContext.owner.getAddress())
@@ -167,8 +135,8 @@ export class MarketContext {
                     .createStakeDaoVaultV2Market(
                         this.marketInit(staticConfig, oracle, `StakeDao Vault - ${key}`),
                         staticConfig.vaultToken,
-                        LEC_CONFIG_IR_PARAMS,
-                        LEC_CONFIG_RC_PARAMS,
+                        staticConfig.irConfig,
+                        staticConfig.rcConfig,
                     )
             ).wait();
             await stopImpersonatingAccount(await baseContext.owner.getAddress())
@@ -177,51 +145,83 @@ export class MarketContext {
             await this.parseCreateMarketLogs(key, receipt!);
 
 
-            const market = this.stakeDaoVaultMarkets[key]
-            const vault = await ethers.getContractAt("IStakeDaoVaultV2", await market.receiptToken())
-            const collat = await ethers.getContractAt("IERC20", staticConfig.collatToken)
-            for (let index = 0; index < 3; index++) {
-                const user = users[index];
+            // const market = this.stakeDaoVaultMarkets[key]
+            // const vault = await ethers.getContractAt("IStakeDaoVaultV2", await market.receiptToken())
+            // const collat = await ethers.getContractAt("IERC20", staticConfig.collatToken)
+            // for (let index = 0; index < 3; index++) {
+            //     const user = users[index];
 
-                await impersonateAccount(await user.getAddress())
+            //     await impersonateAccount(await user.getAddress())
 
-                await collat.connect(user).approve(vault, MaxUint256);
-                await vault.connect(user)["deposit(uint256,address)"](await collat.balanceOf(user) / 2n, user)
+            //     await collat.connect(user).approve(vault, MaxUint256);
+            //     await vault.connect(user)["deposit(uint256,address)"](await collat.balanceOf(user) / 2n, user)
 
-                await stopImpersonatingAccount(await user.getAddress())
+            //     await stopImpersonatingAccount(await user.getAddress())
 
-            }
+            // }
         }
     }
 
-    async deployBasicERC20Markets(keys: BasicERC20MarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
-        for (let index = 0; index < keys.length; index++) {
-            const key = keys[index];
-            const staticConfig = STATIC_CONFIG_BASIC_ERC20s[key];
-            if (!staticConfig) {
-                throw Error(`No static config for ${key} market`)
-            }
-            const oracle = oracleContext.oracles[staticConfig.collatName]
-            if (!oracle) {
-                throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
-            }
-            await impersonateAccount(await baseContext.owner.getAddress())
+    // async deployBasicERC20Markets(keys: BasicERC20MarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
+    //     for (let index = 0; index < keys.length; index++) {
+    //         const key = keys[index];
+    //         const staticConfig = STATIC_CONFIG_BASIC_ERC20s[key];
+    //         if (!staticConfig) {
+    //             throw Error(`No static config for ${key} market`)
+    //         }
+    //         const oracle = oracleContext.oracles[staticConfig.collatName]
+    //         if (!oracle) {
+    //             throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
+    //         }
+    //         await impersonateAccount(await baseContext.owner.getAddress())
 
-            const receipt = await (
-                await baseContext.marketCreator
-                    .connect(baseContext.owner)
-                    .createBasicERC20Market(
-                        this.marketInit(staticConfig, oracle, key),
-                        LEC_CONFIG_IR_PARAMS,
-                        LEC_CONFIG_RC_PARAMS
-                    )
-            ).wait();
-            await stopImpersonatingAccount(await baseContext.owner.getAddress())
+    //         const receipt = await (
+    //             await baseContext.marketCreator
+    //                 .connect(baseContext.owner)
+    //                 .createBasicERC20Market(
+    //                     this.marketInit(staticConfig, oracle, key),
+    //                     LEC_CONFIG_IR_PARAMS,
+    //                     LEC_CONFIG_RC_PARAMS
+    //                 )
+    //         ).wait();
+    //         await stopImpersonatingAccount(await baseContext.owner.getAddress())
 
 
-            await this.parseCreateMarketLogs(key, receipt!);
-        }
-    }
+    //         await this.parseCreateMarketLogs(key, receipt!);
+    //     }
+    // }
+
+
+
+
+    // async deployConvexCrvMarkets(keys: ConvexCrvMarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
+    //     for (let index = 0; index < keys.length; index++) {
+    //         const key = keys[index];
+    //         const staticConfig = STATIC_CONFIG_CONVEX_CURVE[key];
+    //         if (!staticConfig) {
+    //             throw Error(`No static config for ${key} market`)
+    //         }
+    //         const oracle = oracleContext.oracles[staticConfig.collatName]
+    //         if (!oracle) {
+    //             throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
+    //         }
+    //         await impersonateAccount(await baseContext.owner.getAddress())
+    //         const receipt = await (
+    //             await baseContext.marketCreator
+    //                 .connect(baseContext.owner)
+    //                 .createConvexCrvMarket(
+    //                     this.marketInit(staticConfig, oracle, "Convex CRV - " + staticConfig.collatName),
+    //                     staticConfig.pid,
+    //                     IR_PARAMS_HEC_USD_S,
+    //                     HEC_CONFIG_RC_PARAMS
+    //                 )
+    //         ).wait();
+
+    //         await stopImpersonatingAccount(await baseContext.owner.getAddress())
+    //         await this.parseCreateMarketLogs(key, receipt!);
+
+    //     }
+    // }
 
     async parseCreateMarketLogs(key: string, receipt: ContractTransactionReceipt) {
         const iface = new Interface(MarketCreator.abi);
