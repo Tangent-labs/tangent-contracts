@@ -44,13 +44,14 @@ contract MarketListUI is GetMarketDetails {
         }
 
         uint256 USGTotalSupply = USG.totalSupply() - USGOnPegKeeper;
+        uint256 sUSGCirculatingSupply = sUSG.totalSupply() - sUSG.balanceOf(address(sUSG));
         uint256 USGPrice = USGOracle.price();
         revert MarketDetailsUIOutError(
             MarketDetailsUIOut({
                 USGPrice: USGPrice,
                 USGSupply: USGTotalSupply,
                 sUSGPrice: (USGPrice * sUSG.pricePerShare()) / 1e18,
-                sUSGSupply: sUSG.totalSupply(),
+                sUSGSupply:sUSGCirculatingSupply,
                 USGPercentageInsUSG: USGTotalSupply == 0 ? 0 : (USG.balanceOf(address(sUSG)) * 1e18) / USGTotalSupply,
                 rowInfos: rows
             })

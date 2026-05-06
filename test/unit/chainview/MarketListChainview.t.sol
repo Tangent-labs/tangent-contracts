@@ -27,6 +27,9 @@ contract MarketListChainview is MarketDeploymentContext {
 
         try new MarketListUI(usr1, USGOracle, usg, sUSG, markets, pegKeepers, marketViewer) {} catch (bytes memory reason) {
             assertTrue(reason.length > 3, "Chainview failed");
+            MarketListUI.MarketDetailsUIOut memory result = abi.decode(removeFirst4Bytes(reason), (MarketListUI.MarketDetailsUIOut));
+            assertEq(result.sUSGSupply, sUSG.totalSupply() - sUSG.balanceOf(address(sUSG)), "sUSG circulating supply");
+            
         }
     }
 }

@@ -1,5 +1,5 @@
 import {ethers} from "hardhat";
-import {formatEther} from "ethers";
+import {formatEther, formatUnits, MaxUint256, parseUnits} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import * as fs from "fs";
 import * as path from "path";
@@ -17,7 +17,10 @@ import {borrow} from "../actions/borrow";
 
 import {MockOracle} from "../../../../typechain-types";
 import { deployMainnetAddresses } from "../actions/deployMainnetAddresses";
-import { impersonateAccount, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { impersonateAccount, setBalance, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+
+const DEFAULT_ENSO_ROUTER = "0xF75584eF6673aD213a685a1B58Cc0330B8eA22Cf";
+const DEFAULT_LIQUIDATION_USDC_PER_WALLET = "2000";
 
 // ============================================================================
 // CONFIGURATION TYPES
@@ -362,17 +365,10 @@ export class LiquidationContext {
                     hasEnoughTokens = true;
                     currentMarketDeposit[userAddress] = formatEther(depositAmount);
 
-                    // Create different position types:
-                    // Most users: LIQUIDATABLE position (64% LTV = 6400 USD)
-                    //   - After 66% price drop: positionValue = 6600 USD, debt = 6400 USD
-                    //   - healthRatio = (6600 * 0.94) / 6400 = 0.97 < 1 → LIQUIDATABLE
-                    //   - debt (6400) < positionValue (6600) → not seizable, just liquidatable
-                    // Last user only (if 3+ users): SEIZABLE position (80% LTV = 8000 USD, or maxLTV if lower)
-                    //   - After 66% price drop: positionValue = 6600 USD, debt >= 6600 USD
-                    //   - debt >= positionValue → SEIZABLE
-                    // This ensures more liquidatable positions than seizable ones
-                    const isLastUser = userIndex === userAddresses.length - 1;
-                    if (isLastUser && userAddresses.length >= 3) {
+                    // Simple mode alternates deterministic position types:
+                    // user 0: liquidatable at 64% LTV, user 1: seizable at 80% LTV.
+                    const isSeizableUser = userIndex % 2 === 1;
+                    if (isSeizableUser) {
                         // SEIZABLE: 80% LTV = 8000 USD (or maxLTV if it's lower than 80%)
                         // maxLTV is in basis points (100_000 = 100%)
                         const DENOMINATOR = 100_000n;
@@ -567,5 +563,48 @@ export class LiquidationContext {
 
         await deposit(this.baseContext.users as HardhatEthersSigner[], depositParams);
         await borrow(this.baseContext.users as HardhatEthersSigner[], borrowParams);
+        await this.prepareLiquidationWallets();
+    }
+
+    async prepareLiquidationWallets(): Promise<void> {
+        if (!this.baseContext) {
+            throw new Error("BaseContext not initialized");
+        }
+
+        const walletPks = (process.env.WALLET_PKS || "")
+            .split(",")
+            .map((pk) => pk.trim())
+            .filter(Boolean);
+
+        if (!walletPks.length) {
+            console.log("No WALLET_PKS configured, skipping liquidation wallet USDC funding and Enso approval");
+            return;
+        }
+
+        const ensoRouter = process.env.ENSO_ROUTER || DEFAULT_ENSO_ROUTER;
+        const usdc = this.baseContext.coins["USDC"];
+        const usdcPerWallet = parseUnits(process.env.LIQUIDATION_USDC_PER_WALLET || DEFAULT_LIQUIDATION_USDC_PER_WALLET, 6);
+        const ownerAddress = await this.baseContext.owner.getAddress();
+        const ownerBalance = await usdc.balanceOf(ownerAddress);
+        const totalRequired = usdcPerWallet * BigInt(walletPks.length);
+
+        if (ownerBalance < totalRequired) {
+            throw new Error(
+                `Not enough USDC on setup owner to fund liquidation wallets: required=${formatUnits(totalRequired, 6)}, balance=${formatUnits(ownerBalance, 6)}`
+            );
+        }
+
+        await impersonateAccount(ownerAddress);
+        try {
+            for (const pk of walletPks) {
+                const wallet = new ethers.Wallet(pk, ethers.provider);
+                await setBalance(wallet.address, ethers.parseEther("1000"));
+                await usdc.connect(this.baseContext.owner).transfer(wallet.address, usdcPerWallet);
+                await usdc.connect(wallet).approve(ensoRouter, MaxUint256);
+                console.log(`Prepared liquidation wallet ${wallet.address}: funded ${formatUnits(usdcPerWallet, 6)} USDC and approved Enso router ${ensoRouter}`);
+            }
+        } finally {
+            await stopImpersonatingAccount(ownerAddress);
+        }
     }
 }
