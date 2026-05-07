@@ -1,5 +1,18 @@
 import { IRParamsStruct } from "../../../../typechain-types/src/USG/Utilities/IRCalculator";
 
+
+export const ZERO_IR_PARAMS: IRParamsStruct = {
+    isHEC: false,
+    rMin: 0,
+    rMax: 0,
+    pMin: 980_000,
+    pInf: 980_000,
+    pMax: 1_000_000,
+    a1: 1000,
+    a2: 2075,
+    k: 1_225,
+};
+
 export const IR_PARAMS_LEC_USD_S: IRParamsStruct = {
     isHEC: false,
     rMin: 3_198,
