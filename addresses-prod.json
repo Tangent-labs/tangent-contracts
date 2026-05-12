@@ -1,0 +1,52 @@
+{
+    "utilities": {
+        "controlTower": "0xf3f7669dceed2f985815011c19ed68f667267215",
+        "rewardAccumulator": "0x1461D76aA1C9c523398301D9174098c6D53ce639",
+        "zappingProxy": "0xa9e0021d8917c51f496823605d218d7e78719c99",
+        "marketCreator": "0x214C8A1023B30032a2Eded109146658C6D6F2781",
+        "irCalculator": "0xB4e1d3bBd2843263d58B4D648C599512cea6e88b",
+        "pegKeeperRegulator": "0x887706612730b7a227f3bffd8c9a6e6c3cb3f19e",
+        "pendlePTRouter": "0x8b5aCE406E682A44afcC7bcab4f20bccb7cD2F52",
+        "marketViewer": "0x05aFEe1B483DdA7273be250f93219b607EA2477D"
+    },
+    "tokens": {
+        "USG": "0xb1c2db5d6ca03fce73dbd304d320bf76c55ae1b1",
+        "sUSG": "0xf17d6f98a5c6eaa99d149079984119e0a4ef6900"
+    },
+    "implementations": {
+        "convexCrvMarket": "0x68e75bfc46fe4cd2eaa1ceb1fd68990916a0ebfb",
+        "convexFxnMarket": "0xa6c6193abaf2f1b72ed251984d391eaac7c31e77",
+        "basicERC20Market": "0xb10ec742bc530b4fd5484f6364993d9bd98642b8"
+    },
+    "markets": [
+        {
+            "marketAddress": "0x4742a56668FBacbc11087f516C4b01ebc48F716f",
+            "marketName": "PYUSD/USDC",
+            "collatAddress": "0x383e6b4437b59fff47b619cba855ca29342a8559",
+            "marketType": "CRV_Gauge"
+        }
+    ],
+    "oracles": {
+        "chainlink": {
+            "USDC": "0xfc3dff91fb8a7ac53f61d9d465d71d1b89e01fe4",
+            "USDT": "0x06acead7af9abe0b2a3b2e914b54c9368935b292",
+            "PYUSD": "0xcba777240d1a0bd66c8ff67544a054862687b6ef"
+        },
+        "erc4626s": {},
+        "coinFromCurveLp": {},
+        "duoPoolStable": {
+            "USDC_USDT": "0x0695758772db50a0aa0255afdb7535de23168542",
+            "PYUSD_USDC": "0xcf434527aefbc808e3e3400ab489a0e25c4af4ca"
+        },
+        "USG": "0x970b2f2cec66f92de81dae6af363d1d135dd2f97"
+    },
+    "lps": {
+        "USG-USDC": "0x97ba10115da528c113462ede9c20d7adc806d93f",
+        "USG-frxUSD": "0xefc056790bb19702b2164ec6ea6ba3ae01d81195"
+    },
+    "wStables": {},
+    "pegKeepers": {
+        "USG-USDC": "0xf89615f75c8161dc185c03020240905f6b66bad9",
+        "USG-frxUSD": "0x8a7f16508d1e8b48bdf36023f378cc04d9506d4e"
+    }
+}
