@@ -1,8 +1,9 @@
 import fs from 'fs/promises';
+import { CVX_REWARDS_CVG_ETH, TOPIC0_WITHDRAWN_CONVEX } from '../addresses';
 
 const API_KEY = 'Y6R57JU6DIDE8HMWW4QEI3C9U5KXDTUQJ1';
-const CONTRACT_ADDRESS = '0x865E59EBc3EE9EdD5656cD79b382f5153E466545';
-const TOPIC0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const CONTRACT_ADDRESS = CVX_REWARDS_CVG_ETH;
+const TOPIC0 = TOPIC0_WITHDRAWN_CONVEX;
 
 const FROM_BLOCK = 19124399;
 const TO_BLOCK = 20434300;
@@ -35,7 +36,6 @@ async function fetchLogs(fromBlock: number, toBlock: number, page: number = 1): 
         `&toBlock=${toBlock}` +
         `&apikey=${API_KEY}`;
 
-    console.log(url)
 
     console.log(`Fetching blocks ${fromBlock} → ${toBlock} (page ${page})`);
 
@@ -95,7 +95,7 @@ async function main() {
         logs: allLogs
     };
 
-    await fs.writeFile('./js-scripts/hardhat/cvgCompensation/snapshotitos/transfer-logs-stkCvgSdt.json', JSON.stringify(output, null, 2));
+    await fs.writeFile('./js-scripts/hardhat/cvgCompensation/snapshotitos/withdraw-logs-ConvexCRV-CVG-ETH.json', JSON.stringify(output, null, 2));
 
     console.log('\n✅ Terminé !');
     console.log(`Total de logs récupérés : ${allLogs.length}`);

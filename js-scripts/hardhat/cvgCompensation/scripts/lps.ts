@@ -12,7 +12,7 @@ export async function getLpRecomputed(allVoters: string[]) {
     const cvgFraxBpCurveGauge = "0x8a111b47b31bba40c2f0d2f9a8cf6b6c4b50114e"
     const cvgFraxBpSdtGauge = ""
     const cvgFraxBpConvexCurve = ""
-    const cvgFraxBpConvexCurve = ""
+    const cvgFraxBpFrax = ""
 
 
 
