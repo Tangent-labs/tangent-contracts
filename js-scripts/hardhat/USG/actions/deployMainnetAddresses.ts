@@ -74,6 +74,7 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
 
     // Approve LPs with test users
     await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-USDC"].getAddress());
+    await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-frxUSD"].getAddress());
     await baseContext.approveCurveLP(CURVE_LPS.crvUSD_USDC);
 
     return { baseContext, oracleContext, marketContext, lpDeployContext, wStableContext };
