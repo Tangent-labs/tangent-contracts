@@ -1,0 +1,1351 @@
+{
+  "generatedAt": "2026-05-21T13:40:55.677Z",
+  "csvSource": "remote_google_sheets",
+  "curveApiUrl": "https://api.curve.finance/v1/getPools/all/ethereum",
+  "thresholds": {
+    "criticalUsd": 20000,
+    "warnUsd": 100000,
+    "softUsd": 500000
+  },
+  "summary": {
+    "totalRoutes": 82,
+    "uniquePools": 60,
+    "poolCountByState": {
+      "missing_local_label": 0,
+      "unknown_api": 0,
+      "critical": 2,
+      "warn": 0,
+      "soft": 6,
+      "ok": 46,
+      "wrapper": 6
+    },
+    "routeCountByState": {
+      "missing_local_label": 0,
+      "unknown_api": 0,
+      "critical": 2,
+      "warn": 0,
+      "soft": 17,
+      "ok": 63,
+      "wrapper": 0
+    }
+  },
+  "pools": [
+    {
+      "label": "DOLA/USR",
+      "address": "0x38de22a3175708d45e7c7c64cd78479c8b56f76e",
+      "state": "critical",
+      "usdDepth": 1464.8220087640266,
+      "apiName": "DOLA/USR",
+      "routeDisplays": [
+        "wstUSR >> wstUSR >> USR >> DOLA/USR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "DOLA/wstUSR",
+      "address": "0x64273624eb57c5ca961d366cbf3968e760bf0452",
+      "state": "critical",
+      "usdDepth": 2176.3493654248327,
+      "apiName": "DOLA/wstUSR",
+      "routeDisplays": [
+        "wstUSR >> DOLA/wstUSR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "sUSDe/sUSDS",
+      "address": "0x3cef1afc0e8324b57293a6e7ce663781bbefbb79",
+      "state": "soft",
+      "usdDepth": 140677.47802530404,
+      "apiName": "sUSDe/sUSDS",
+      "routeDisplays": [
+        "USDT/USDe >> USDT/USDe >> USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "crvUSD/sUSDe >> crvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "GHO/fxUSD",
+      "address": "0x74345504eaea3d9408fc69ae7eb2d14095643c5b",
+      "state": "soft",
+      "usdDepth": 148560.12979596597,
+      "apiName": "GHO/fxUSD",
+      "routeDisplays": [
+        "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/crvUSD >> GHO/crvUSD >> GHO >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/fxUSD >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "GHO/fxUSD >> GHO/fxUSD >> GHO >> GHO/cbBTC/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "USDT/USDe",
+      "address": "0x5b03cccab7ba3010fa5cad23746cbf0794938e96",
+      "state": "soft",
+      "usdDepth": 277670.4579391092,
+      "apiName": "Curve Strategic Ethena Reserves",
+      "routeDisplays": [
+        "USDT/USDe >> USDT/USDe >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "USDT/USDe >> USDT/USDe >> USDT >> USDT/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDT/USDe >> USDT/USDe >> USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "frxUSD/OUSD",
+      "address": "0x68d03ed49800e92d7aa8ab171424007e55fd1f49",
+      "state": "soft",
+      "usdDepth": 339009.1967456953,
+      "apiName": "frxUSD/OUSD",
+      "routeDisplays": [
+        "frxUSD/OUSD >> frxUSD/OUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/OUSD >> frxUSD/OUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "ETH+/ETH",
+      "address": "0x7fb53345f1b21ab5d9510adb38f7d3590be6364b",
+      "state": "soft",
+      "usdDepth": 446279.60582542175,
+      "apiName": "Curve.fi Factory Crypto Pool: ETH+/ETH",
+      "routeDisplays": [
+        "ETH+/WETH >> ETH+/WETH >> ETH+ >> ETH+/ETH >> ETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "frxUSD/scrvUSD",
+      "address": "0x4d968a5db8da0822a2f08840f553de4129aae5f3",
+      "state": "soft",
+      "usdDepth": 495392.8588345643,
+      "apiName": "frxUSD/scrvUSD",
+      "routeDisplays": [
+        "frxUSD/scrvUSD >> frxUSD/scrvUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/scrvUSD >> frxUSD/scrvUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "frxETH/ETH",
+      "address": "0xf43211935c781d5ca1a41d2041f397b8a7366c7a",
+      "state": "ok",
+      "usdDepth": 591317.5288251707,
+      "apiName": "Curve.fi ETH/frxETH",
+      "routeDisplays": [
+        "frxETH/WETH >> frxETH/WETH >> frxETH >> frxETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "fxUSD/reUSD",
+      "address": "0xb0ef04ace97d350e24efa5139d2590d26a61a8dc",
+      "state": "ok",
+      "usdDepth": 613909.250032213,
+      "apiName": "reUSD/fxUSD",
+      "routeDisplays": [
+        "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> fxUSD/reUSD >> reUSD >> reUSD/sfrxUSD >> sfrxUSD >> sfrxUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> fxUSD/reUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "crvUSD/sUSDe",
+      "address": "0x57064f49ad7123c92560882a45518374ad982e85",
+      "state": "ok",
+      "usdDepth": 662583.0033927835,
+      "apiName": "sUSDe/crvUSD",
+      "routeDisplays": [
+        "crvUSD/sUSDe >> crvUSD/sUSDe >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "crvUSD/sUSDe >> crvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "crvUSD/sUSDe >> crvUSD/sUSDe >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "USDC/USDe",
+      "address": "0x02950460e2b9529d0e00284a5fa2d7bdf3fa4d72",
+      "state": "ok",
+      "usdDepth": 694904.5846095358,
+      "apiName": "USDe-USDC",
+      "routeDisplays": [
+        "USDe >> USDC/USDe >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "msETH/OETH",
+      "address": "0xb5b93dde9d87563184d31f3b7f85dd58404e2ee0",
+      "state": "ok",
+      "usdDepth": 782895.667259879,
+      "apiName": "msETH/OETH",
+      "routeDisplays": [
+        "msETH/OETH >> msETH/OETH >> msETH >> msETH/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "msETH/OETH >> msETH/OETH >> OETH >> OETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "msETH/OETH >> msETH/OETH >> OETH >> OETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "frxUSD/sDOLA",
+      "address": "0x9d8afd5ce19a3b948049468188f1de13951a4383",
+      "state": "ok",
+      "usdDepth": 795049.4446972379,
+      "apiName": "frxUSD/sDOLA",
+      "routeDisplays": [
+        "frxUSD/sDOLA >> frxUSD/sDOLA >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/sDOLA >> frxUSD/sDOLA >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "msUSD/fxUSD",
+      "address": "0x138bb0f3208bd729a561f3786ddb97bbc69e6628",
+      "state": "ok",
+      "usdDepth": 1143187.208226137,
+      "apiName": "msUSD/fxUSD",
+      "routeDisplays": [
+        "frxUSD/msUSD >> frxUSD/msUSD >> msUSD >> msUSD/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "GHO/crvUSD",
+      "address": "0x635ef0056a597d13863b73825cca297236578595",
+      "state": "ok",
+      "usdDepth": 1178047.9204166606,
+      "apiName": "GHO/crvUSD",
+      "routeDisplays": [
+        "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/crvUSD >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/crvUSD >> GHO/crvUSD >> GHO >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/crvUSD >> GHO/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "GHO/fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "OETH/ETH",
+      "address": "0x94b17476a93b3262d87b9a326965d1e91f9c13e7",
+      "state": "ok",
+      "usdDepth": 1297166.366352099,
+      "apiName": "Curve.fi Factory Pool: OETH",
+      "routeDisplays": [
+        "msETH/OETH >> msETH/OETH >> OETH >> OETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "frxUSD/sUSDS",
+      "address": "0x81a2612f6dea269a6dd1f6deab45c5424ee2c4b7",
+      "state": "ok",
+      "usdDepth": 1626275.1791732493,
+      "apiName": "frxUSD/sUSDS",
+      "routeDisplays": [
+        "USDT/USDe >> USDT/USDe >> USDT >> USDT/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDT/USDe >> USDT/USDe >> USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "crvUSD/sUSDe >> crvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "wstUSR >> DOLA/wstUSR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "wstUSR >> wstUSR >> USR >> DOLA/USR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDe >> sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/sUSDS >> frxUSD/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined"
+      ]
+    },
+    {
+      "label": "sUSDS/frxUSD",
+      "address": "0x81a2612f6dea269a6dd1f6deab45c5424ee2c4b7",
+      "state": "ok",
+      "usdDepth": 1626275.1791732493,
+      "apiName": "frxUSD/sUSDS",
+      "routeDisplays": [
+        "USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "GHO/cbBTC/ETH",
+      "address": "0x8a4f252812dff2a8636e4f7eb249d8fc2e3bd77f",
+      "state": "ok",
+      "usdDepth": 2038104.4749974865,
+      "apiName": "TricryptoGHO",
+      "routeDisplays": [
+        "GHO/fxUSD >> GHO/fxUSD >> GHO >> GHO/cbBTC/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "tBTC/cbBTC >> tBTC/cbBTC >> cbBTC >> GHO/cbBTC/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "tBTC/cbBTC",
+      "address": "0xae6ee608b297305abf3eb609b81febbb8f6a0bb3",
+      "state": "ok",
+      "usdDepth": 2045192.07323042,
+      "apiName": "tBTC/cbBTC",
+      "routeDisplays": [
+        "tBTC/cbBTC >> tBTC/cbBTC >> cbBTC >> cbBTC/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "tBTC/cbBTC >> tBTC/cbBTC >> tBTC >> tBTC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "tBTC/cbBTC >> tBTC/cbBTC >> cbBTC >> GHO/cbBTC/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "USG-USDC*",
+      "address": "0x97ba10115da528c113462ede9c20d7adc806d93f",
+      "state": "ok",
+      "usdDepth": 2219363.2667590706,
+      "apiName": "USG/USDC",
+      "routeDisplays": [
+        "USDC/fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDC/crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> crvUSD/USDT >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "USDT/crvUSD >> USDT/crvUSD >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "crvUSD/USDT >> crvUSD/USDT >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDT/USDe >> USDT/USDe >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "GHO/crvUSD >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/crvUSD >> GHO/crvUSD >> GHO >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> reUSD/scrvUSD >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> fxUSD/reUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "PYUSD/USDC >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "RLUSD/USDC >> RLUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> stUSDS >> stUSDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/msUSD >> frxUSD/msUSD >> msUSD >> msUSD/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/msUSD >> frxUSD/msUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "crvUSD/sUSDe >> crvUSD/sUSDe >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/fxUSD >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/fxUSD >> GHO/fxUSD >> GHO >> GHO/cbBTC/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "ETH+/WETH >> ETH+/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "ETH+/WETH >> ETH+/WETH >> WETH >> WBTC/ETH/USDT >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "tBTC/cbBTC >> tBTC/cbBTC >> cbBTC >> cbBTC/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "tBTC/cbBTC >> tBTC/cbBTC >> cbBTC >> GHO/cbBTC/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "msETH/OETH >> msETH/OETH >> msETH >> msETH/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "msETH/OETH >> msETH/OETH >> OETH >> OETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "USDC/USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "USDe >> USDC/USDe >> USDC >> USG-USDC* >> USG*",
+        "sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "frxETH/WETH >> frxETH/WETH >> frxETH >> frxETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "WBTC >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "USDC >> USG-USDC* >> USG*",
+        "frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "USDC >> USG-USDC* >> USG-USDC*",
+        "frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined",
+        "frxUSD/sUSDS >> frxUSD/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined",
+        "BOLD/USDC >> BOLD/USDC >> USDC >> USG-USDC* >> USG*",
+        "eUSD/USDC >> eUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/OUSD >> frxUSD/OUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/sDOLA >> frxUSD/sDOLA >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/scrvUSD >> frxUSD/scrvUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "crvUSD/ETH/CRV",
+      "address": "0x4ebdf703948ddcea3b11f675b4d1fba9d2414a14",
+      "state": "ok",
+      "usdDepth": 2324742.639483799,
+      "apiName": "TriCRV",
+      "routeDisplays": [
+        "ETH+/WETH >> ETH+/WETH >> ETH+ >> ETH+/ETH >> ETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "msETH/OETH >> msETH/OETH >> OETH >> OETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxETH/WETH >> frxETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "PYUSD/crvUSD",
+      "address": "0x625e92624bc2d88619accc1788365a69767f6200",
+      "state": "ok",
+      "usdDepth": 2693779.2525673197,
+      "apiName": "pyUSD/crvUSD",
+      "routeDisplays": [
+        "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "USG-frxUSD*",
+      "address": "0xefc056790bb19702b2164ec6ea6ba3ae01d81195",
+      "state": "ok",
+      "usdDepth": 2746396.545663123,
+      "apiName": "USG/frxUSD",
+      "routeDisplays": [
+        "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> fxUSD/reUSD >> reUSD >> reUSD/sfrxUSD >> sfrxUSD >> sfrxUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDT/crvUSD >> USDT/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDT/USDe >> USDT/USDe >> USDT >> USDT/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDT/USDe >> USDT/USDe >> USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "GHO/crvUSD >> GHO/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> sfrxUSD >> sfrxUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "RLUSD/USDC >> RLUSD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/msUSD >> frxUSD/msUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "crvUSD/sUSDe >> crvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "crvUSD/sUSDe >> crvUSD/sUSDe >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "GHO/fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "ETH+/WETH >> ETH+/WETH >> ETH+ >> ETH+/ETH >> ETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "tBTC/cbBTC >> tBTC/cbBTC >> tBTC >> tBTC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "msETH/OETH >> msETH/OETH >> OETH >> OETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC/USDT >> USDC/USDT >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC/USDT >> USDC/USDT >> USDT >> USDT/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "wstUSR >> DOLA/wstUSR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "wstUSR >> wstUSR >> USR >> DOLA/USR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDe >> sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxETH/WETH >> frxETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD >> USG-frxUSD* >> USG*",
+        "USDT >> USDC/USDT >> USDC >> crvUSD/USDC >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG-frxUSD* >> USG* >> undefined",
+        "frxUSD >> USG-frxUSD* >> USG-frxUSD*",
+        "frxUSD/sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "BOLD/USDC >> BOLD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "eUSD/USDC >> eUSD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/OUSD >> frxUSD/OUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/sDOLA >> frxUSD/sDOLA >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/scrvUSD >> frxUSD/scrvUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "scrvUSD/sUSDe",
+      "address": "0xd29f8980852c2c76fc3f6e96a7aa06e0bedcc1b1",
+      "state": "ok",
+      "usdDepth": 2825735.3936515627,
+      "apiName": "LlamaThena",
+      "routeDisplays": [
+        "sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "eUSD/USDC",
+      "address": "0x08bfa22bb3e024cdfeb3eca53c0cb93bf59c4147",
+      "state": "ok",
+      "usdDepth": 3260391.9307085467,
+      "apiName": "eUSD/USDC",
+      "routeDisplays": [
+        "eUSD/USDC >> eUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "eUSD/USDC >> eUSD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "reUSD/sfrxUSD",
+      "address": "0xed785af60bed688baa8990cd5c4166221599a441",
+      "state": "ok",
+      "usdDepth": 3522074.3208372327,
+      "apiName": "reUSD/sfrxUSD",
+      "routeDisplays": [
+        "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> fxUSD/reUSD >> reUSD >> reUSD/sfrxUSD >> sfrxUSD >> sfrxUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> sfrxUSD >> sfrxUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> reUSD/scrvUSD >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> fxUSD/reUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "DOLA/sUSDS",
+      "address": "0x8b83c4aa949254895507d09365229bc3a8c7f710",
+      "state": "ok",
+      "usdDepth": 5600473.904941304,
+      "apiName": "DOLA/sUSDS",
+      "routeDisplays": [
+        "wstUSR >> DOLA/wstUSR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "wstUSR >> wstUSR >> USR >> DOLA/USR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDe >> sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "reUSD/scrvUSD",
+      "address": "0xc522a6606bba746d7960404f22a3db936b6f4f50",
+      "state": "ok",
+      "usdDepth": 5990069.857306806,
+      "apiName": "reUSD/scrvUSD",
+      "routeDisplays": [
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> reUSD/scrvUSD >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "stUSDS/USDS",
+      "address": "0x2c7c98a3b1582d83c43987202aeff638312478ae",
+      "state": "ok",
+      "usdDepth": 7077528.185996873,
+      "apiName": "USDS/stUSDS",
+      "routeDisplays": [
+        "stUSDS/USDS >> stUSDS/USDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> stUSDS >> stUSDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "BOLD/USDC",
+      "address": "0xefc6516323fbd28e80b85a497b65a86243a54b3e",
+      "state": "ok",
+      "usdDepth": 7135440.868833779,
+      "apiName": "BOLD/USDC Pool",
+      "routeDisplays": [
+        "BOLD/USDC >> BOLD/USDC >> USDC >> USG-USDC* >> USG*",
+        "BOLD/USDC >> BOLD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "USDC/fxUSD",
+      "address": "0x5018be882dcce5e3f2f3b0913ae2096b9b3fb61f",
+      "state": "ok",
+      "usdDepth": 8086708.906369329,
+      "apiName": "USDC/fxUSD",
+      "routeDisplays": [
+        "USDC/fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> fxUSD/reUSD >> reUSD >> reUSD/sfrxUSD >> sfrxUSD >> sfrxUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "GHO/crvUSD >> GHO/crvUSD >> GHO >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> fxUSD/reUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/msUSD >> frxUSD/msUSD >> msUSD >> msUSD/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/fxUSD >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "frxETH/WETH",
+      "address": "0x9c3b46c0ceb5b9e304fcd6d88fc50f7dd24b31bc",
+      "state": "ok",
+      "usdDepth": 8609959.412042577,
+      "apiName": "Curve.fi Factory Plain Pool: frxETH/WETH",
+      "routeDisplays": [
+        "frxETH/WETH >> frxETH/WETH >> frxETH >> frxETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "frxETH/WETH >> frxETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "WBTC/ETH/USDC",
+      "address": "0x7f86bf177dd4f3494b841a37e810a34dd56c829b",
+      "state": "ok",
+      "usdDepth": 9530780.07798901,
+      "apiName": "TricryptoUSDC",
+      "routeDisplays": [
+        "GHO/fxUSD >> GHO/fxUSD >> GHO >> GHO/cbBTC/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "ETH+/WETH >> ETH+/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "tBTC/cbBTC >> tBTC/cbBTC >> cbBTC >> GHO/cbBTC/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "msETH/OETH >> msETH/OETH >> msETH >> msETH/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "msETH/OETH >> msETH/OETH >> OETH >> OETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "frxETH/WETH >> frxETH/WETH >> frxETH >> frxETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "WBTC >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "USDC/USDT",
+      "address": "0x4f493b7de8aac7d55f71853688b1f7c8f0243c85",
+      "state": "ok",
+      "usdDepth": 10937622.155361205,
+      "apiName": "Curve.fi Strategic USD Reserves",
+      "routeDisplays": [
+        "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> crvUSD/USDT >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "USDT/crvUSD >> USDT/crvUSD >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "USDT/USDe >> USDT/USDe >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "ETH+/WETH >> ETH+/WETH >> WETH >> WBTC/ETH/USDT >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "USDC/USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "USDC/USDT >> USDC/USDT >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC/USDT >> USDC/USDT >> USDT >> USDT/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "USDT >> USDC/USDT >> USDC >> crvUSD/USDC >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/sUSDS >> frxUSD/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "WBTC/ETH/USDT",
+      "address": "0xd51a44d3fae010294c616388b506acda1bfaae46",
+      "state": "ok",
+      "usdDepth": 11300320.476358054,
+      "apiName": "Curve.fi USD-BTC-ETH",
+      "routeDisplays": [
+        "ETH+/WETH >> ETH+/WETH >> WETH >> WBTC/ETH/USDT >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "sfrxUSD/frxUSD",
+      "address": "0xf292eb6c5dcb693eaaf392d0562a01c3710e5978",
+      "state": "ok",
+      "usdDepth": 11801198.149823666,
+      "apiName": "sfrxUSD/frxUSD",
+      "routeDisplays": [
+        "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> fxUSD/reUSD >> reUSD >> reUSD/sfrxUSD >> sfrxUSD >> sfrxUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> sfrxUSD >> sfrxUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "frxUSD/msUSD",
+      "address": "0x9a9e2e70919c75d80aaaa1d483c46cdbb8ac4d1b",
+      "state": "ok",
+      "usdDepth": 11981417.189492673,
+      "apiName": "frxUSD/msUSD",
+      "routeDisplays": [
+        "frxUSD/msUSD >> frxUSD/msUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/msUSD >> frxUSD/msUSD >> msUSD >> msUSD/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/msUSD >> frxUSD/msUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "ETH+/WETH",
+      "address": "0x2c683fad51da2cd17793219cc86439c1875c353e",
+      "state": "ok",
+      "usdDepth": 12665367.401374958,
+      "apiName": "ETH+/ETH",
+      "routeDisplays": [
+        "ETH+/WETH >> ETH+/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+        "ETH+/WETH >> ETH+/WETH >> ETH+ >> ETH+/ETH >> ETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "ETH+/WETH >> ETH+/WETH >> WETH >> WBTC/ETH/USDT >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "msETH/WETH",
+      "address": "0xa4c567c662349bec3d0fb94c4e7f85ba95e208e4",
+      "state": "ok",
+      "usdDepth": 13476262.100473847,
+      "apiName": "Curve.fi Factory Plain Pool: msETH/WETH",
+      "routeDisplays": [
+        "msETH/OETH >> msETH/OETH >> msETH >> msETH/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "crvUSD/frxUSD",
+      "address": "0x13e12bb0e6a2f1a3d6901a59a9d585e89a6243e1",
+      "state": "ok",
+      "usdDepth": 18007698.91691887,
+      "apiName": "crvUSD/frxUSD",
+      "routeDisplays": [
+        "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDT/crvUSD >> USDT/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "GHO/crvUSD >> GHO/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "RLUSD/USDC >> RLUSD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/msUSD >> frxUSD/msUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "crvUSD/sUSDe >> crvUSD/sUSDe >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "GHO/fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "ETH+/WETH >> ETH+/WETH >> ETH+ >> ETH+/ETH >> ETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "tBTC/cbBTC >> tBTC/cbBTC >> tBTC >> tBTC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "msETH/OETH >> msETH/OETH >> OETH >> OETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC/USDT >> USDC/USDT >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC/USDT >> USDC/USDT >> USDT >> USDT/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxETH/WETH >> frxETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDT >> USDC/USDT >> USDC >> crvUSD/USDC >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG-frxUSD* >> USG* >> undefined",
+        "frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined",
+        "BOLD/USDC >> BOLD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "eUSD/USDC >> eUSD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/OUSD >> frxUSD/OUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/sDOLA >> frxUSD/sDOLA >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/scrvUSD >> frxUSD/scrvUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "USDC/crvUSD",
+      "address": "0x4dece678ceceb27446b35c672dc7d61f30bad69e",
+      "state": "ok",
+      "usdDepth": 22324523.250020325,
+      "apiName": "Curve.fi Factory Plain Pool: crvUSD/USDC",
+      "routeDisplays": [
+        "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDC/crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> crvUSD/USDT >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "crvUSD/USDT >> crvUSD/USDT >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "GHO/crvUSD >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> reUSD/scrvUSD >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "RLUSD/USDC >> RLUSD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/msUSD >> frxUSD/msUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "crvUSD/sUSDe >> crvUSD/sUSDe >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "tBTC/cbBTC >> tBTC/cbBTC >> cbBTC >> cbBTC/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDC/USDT >> USDC/USDT >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG-frxUSD* >> USG* >> undefined",
+        "frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined",
+        "BOLD/USDC >> BOLD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "eUSD/USDC >> eUSD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/OUSD >> frxUSD/OUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/sDOLA >> frxUSD/sDOLA >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "frxUSD/scrvUSD >> frxUSD/scrvUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "crvUSD/USDC",
+      "address": "0x4dece678ceceb27446b35c672dc7d61f30bad69e",
+      "state": "ok",
+      "usdDepth": 22324523.250020325,
+      "apiName": "Curve.fi Factory Plain Pool: crvUSD/USDC",
+      "routeDisplays": [
+        "USDT >> USDC/USDT >> USDC >> crvUSD/USDC >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "crvUSD/USDT",
+      "address": "0x390f3595bca2df7d23783dfd126427cceb997bf4",
+      "state": "ok",
+      "usdDepth": 24697205.677751824,
+      "apiName": "Curve.fi Factory Plain Pool: crvUSD/USDT",
+      "routeDisplays": [
+        "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> crvUSD/USDT >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "crvUSD/USDT >> crvUSD/USDT >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "USDT/crvUSD",
+      "address": "0x390f3595bca2df7d23783dfd126427cceb997bf4",
+      "state": "ok",
+      "usdDepth": 24697205.677751824,
+      "apiName": "Curve.fi Factory Plain Pool: crvUSD/USDT",
+      "routeDisplays": [
+        "USDT/crvUSD >> USDT/crvUSD >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+        "USDT/crvUSD >> USDT/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDC/USDT >> USDC/USDT >> USDT >> USDT/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "PYUSD/USDC",
+      "address": "0x383e6b4437b59fff47b619cba855ca29342a8559",
+      "state": "ok",
+      "usdDepth": 49233597.39896591,
+      "apiName": "PayPool",
+      "routeDisplays": [
+        "PYUSD/USDC >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> stUSDS >> stUSDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "USDT/sUSDS",
+      "address": "0x00836fe54625be242bcfa286207795405ca4fd10",
+      "state": "ok",
+      "usdDepth": 49994844.32602226,
+      "apiName": "Spark.fi USDT Reserve",
+      "routeDisplays": [
+        "USDT/USDe >> USDT/USDe >> USDT >> USDT/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "frxUSD/sUSDS >> frxUSD/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "OETH/WETH",
+      "address": "0xcc7d5785ad5755b6164e21495e07adb0ff11c2a8",
+      "state": "ok",
+      "usdDepth": 60026219.697682776,
+      "apiName": "OETH/WETH",
+      "routeDisplays": [
+        "msETH/OETH >> msETH/OETH >> OETH >> OETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "DOLA/sUSDe",
+      "address": "0x744793b5110f6ca9cc7cdfe1ce16677c3eb192ef",
+      "state": "ok",
+      "usdDepth": 61023744.10117732,
+      "apiName": "DOLA/sUSDe",
+      "routeDisplays": [
+        "USDe >> sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "tBTC/crvUSD",
+      "address": "0xf1f435b05d255a5dbde37333c0f61da6f69c6127",
+      "state": "ok",
+      "usdDepth": 63985820.95755732,
+      "apiName": "YB tBTC",
+      "routeDisplays": [
+        "tBTC/cbBTC >> tBTC/cbBTC >> tBTC >> tBTC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "RLUSD/USDC",
+      "address": "0xd001ae433f254283fece51d4acce8c53263aa186",
+      "state": "ok",
+      "usdDepth": 81651382.71722981,
+      "apiName": "RLUSD/USDC",
+      "routeDisplays": [
+        "RLUSD/USDC >> RLUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "RLUSD/USDC >> RLUSD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "PYUSD/USDS",
+      "address": "0xa632d59b9b804a956bfaa9b48af3a1b74808fc1f",
+      "state": "ok",
+      "usdDepth": 99988760.8815189,
+      "apiName": "Spark.fi PYUSD Reserve",
+      "routeDisplays": [
+        "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> stUSDS >> stUSDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "cbBTC/crvUSD",
+      "address": "0x83f24023d15d835a213df24fd309c47dab5beb32",
+      "state": "ok",
+      "usdDepth": 138828870.35395437,
+      "apiName": "YB cbBTC",
+      "routeDisplays": [
+        "tBTC/cbBTC >> tBTC/cbBTC >> cbBTC >> cbBTC/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "sUSDe",
+      "address": "0x9d39a5de30e57443bff2a8307a4256c8797a3497",
+      "state": "wrapper",
+      "usdDepth": null,
+      "apiName": null,
+      "routeDisplays": [
+        "USDT/USDe >> USDT/USDe >> USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+        "USDe >> sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "scrvUSD",
+      "address": "0x0655977feb2f289a4ab78af67bab0d17aab84367",
+      "state": "wrapper",
+      "usdDepth": null,
+      "apiName": null,
+      "routeDisplays": [
+        "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> reUSD/scrvUSD >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+        "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "sUSDS",
+      "address": "0xa3931d71877c0e7a3148cb7eb4463524fec27fbd",
+      "state": "wrapper",
+      "usdDepth": null,
+      "apiName": null,
+      "routeDisplays": [
+        "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+        "stUSDS/USDS >> stUSDS/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "stUSDS",
+      "address": "0x99cd4ec3f88a45940936f469e4bb72a2a701eeb9",
+      "state": "wrapper",
+      "usdDepth": null,
+      "apiName": null,
+      "routeDisplays": [
+        "stUSDS/USDS >> stUSDS/USDS >> stUSDS >> stUSDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*"
+      ]
+    },
+    {
+      "label": "wstUSR",
+      "address": "0x1202f5c7b4b9e47a1a484e8b270be34dbbc75055",
+      "state": "wrapper",
+      "usdDepth": null,
+      "apiName": null,
+      "routeDisplays": [
+        "wstUSR >> wstUSR >> USR >> DOLA/USR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*"
+      ]
+    },
+    {
+      "label": "USG*",
+      "address": "0xb1c2db5d6ca03fce73dbd304d320bf76c55ae1b1",
+      "state": "wrapper",
+      "usdDepth": null,
+      "apiName": null,
+      "routeDisplays": [
+        "USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG-frxUSD* >> USG* >> undefined",
+        "frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined",
+        "frxUSD/sUSDS >> frxUSD/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "display": "wstUSR >> wstUSR >> USR >> DOLA/USR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "critical",
+      "weakestPoolLabel": "DOLA/USR",
+      "weakestDepth": 1464.8220087640266
+    },
+    {
+      "display": "wstUSR >> DOLA/wstUSR >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "critical",
+      "weakestPoolLabel": "DOLA/wstUSR",
+      "weakestDepth": 2176.3493654248327
+    },
+    {
+      "display": "crvUSD/sUSDe >> crvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "sUSDe/sUSDS",
+      "weakestDepth": 140677.47802530404
+    },
+    {
+      "display": "USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "sUSDe/sUSDS",
+      "weakestDepth": 140677.47802530404
+    },
+    {
+      "display": "sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "sUSDe/sUSDS",
+      "weakestDepth": 140677.47802530404
+    },
+    {
+      "display": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "sUSDe/sUSDS",
+      "weakestDepth": 140677.47802530404
+    },
+    {
+      "display": "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "GHO/fxUSD",
+      "weakestDepth": 148560.12979596597
+    },
+    {
+      "display": "GHO/crvUSD >> GHO/crvUSD >> GHO >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "GHO/fxUSD",
+      "weakestDepth": 148560.12979596597
+    },
+    {
+      "display": "GHO/fxUSD >> GHO/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "GHO/fxUSD",
+      "weakestDepth": 148560.12979596597
+    },
+    {
+      "display": "GHO/fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "GHO/fxUSD",
+      "weakestDepth": 148560.12979596597
+    },
+    {
+      "display": "GHO/fxUSD >> GHO/fxUSD >> GHO >> GHO/cbBTC/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "GHO/fxUSD",
+      "weakestDepth": 148560.12979596597
+    },
+    {
+      "display": "USDT/USDe >> USDT/USDe >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "USDT/USDe",
+      "weakestDepth": 277670.4579391092
+    },
+    {
+      "display": "USDT/USDe >> USDT/USDe >> USDT >> USDT/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "USDT/USDe",
+      "weakestDepth": 277670.4579391092
+    },
+    {
+      "display": "USDT/USDe >> USDT/USDe >> USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "USDT/USDe",
+      "weakestDepth": 277670.4579391092
+    },
+    {
+      "display": "frxUSD/OUSD >> frxUSD/OUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "frxUSD/OUSD",
+      "weakestDepth": 339009.1967456953
+    },
+    {
+      "display": "frxUSD/OUSD >> frxUSD/OUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "frxUSD/OUSD",
+      "weakestDepth": 339009.1967456953
+    },
+    {
+      "display": "ETH+/WETH >> ETH+/WETH >> ETH+ >> ETH+/ETH >> ETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "ETH+/ETH",
+      "weakestDepth": 446279.60582542175
+    },
+    {
+      "display": "frxUSD/scrvUSD >> frxUSD/scrvUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "frxUSD/scrvUSD",
+      "weakestDepth": 495392.8588345643
+    },
+    {
+      "display": "frxUSD/scrvUSD >> frxUSD/scrvUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "soft",
+      "weakestPoolLabel": "frxUSD/scrvUSD",
+      "weakestDepth": 495392.8588345643
+    },
+    {
+      "display": "crvUSD/sUSDe >> crvUSD/sUSDe >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "crvUSD/sUSDe",
+      "weakestDepth": 662583.0033927835
+    },
+    {
+      "display": "crvUSD/sUSDe >> crvUSD/sUSDe >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "crvUSD/sUSDe",
+      "weakestDepth": 662583.0033927835
+    },
+    {
+      "display": "USDe >> USDC/USDe >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/USDe",
+      "weakestDepth": 694904.5846095358
+    },
+    {
+      "display": "msETH/OETH >> msETH/OETH >> msETH >> msETH/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "msETH/OETH",
+      "weakestDepth": 782895.667259879
+    },
+    {
+      "display": "msETH/OETH >> msETH/OETH >> OETH >> OETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "msETH/OETH",
+      "weakestDepth": 782895.667259879
+    },
+    {
+      "display": "msETH/OETH >> msETH/OETH >> OETH >> OETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "msETH/OETH",
+      "weakestDepth": 782895.667259879
+    },
+    {
+      "display": "frxUSD/sDOLA >> frxUSD/sDOLA >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "frxUSD/sDOLA",
+      "weakestDepth": 795049.4446972379
+    },
+    {
+      "display": "frxUSD/sDOLA >> frxUSD/sDOLA >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "frxUSD/sDOLA",
+      "weakestDepth": 795049.4446972379
+    },
+    {
+      "display": "GHO/crvUSD >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "GHO/crvUSD",
+      "weakestDepth": 1178047.9204166606
+    },
+    {
+      "display": "GHO/crvUSD >> GHO/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "GHO/crvUSD",
+      "weakestDepth": 1178047.9204166606
+    },
+    {
+      "display": "frxUSD/sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "frxUSD/sUSDS",
+      "weakestDepth": 1626275.1791732493
+    },
+    {
+      "display": "frxUSD/sUSDS >> frxUSD/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined",
+      "state": "ok",
+      "weakestPoolLabel": "frxUSD/sUSDS",
+      "weakestDepth": 1626275.1791732493
+    },
+    {
+      "display": "tBTC/cbBTC >> tBTC/cbBTC >> cbBTC >> cbBTC/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "tBTC/cbBTC",
+      "weakestDepth": 2045192.07323042
+    },
+    {
+      "display": "tBTC/cbBTC >> tBTC/cbBTC >> tBTC >> tBTC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "tBTC/cbBTC",
+      "weakestDepth": 2045192.07323042
+    },
+    {
+      "display": "tBTC/cbBTC >> tBTC/cbBTC >> cbBTC >> GHO/cbBTC/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "tBTC/cbBTC",
+      "weakestDepth": 2045192.07323042
+    },
+    {
+      "display": "USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USG-USDC*",
+      "weakestDepth": 2219363.2667590706
+    },
+    {
+      "display": "USDC >> USG-USDC* >> USG-USDC*",
+      "state": "ok",
+      "weakestPoolLabel": "USG-USDC*",
+      "weakestDepth": 2219363.2667590706
+    },
+    {
+      "display": "frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USG-frxUSD*",
+      "weakestDepth": 2746396.545663123
+    },
+    {
+      "display": "frxUSD >> USG-frxUSD* >> USG-frxUSD*",
+      "state": "ok",
+      "weakestPoolLabel": "USG-frxUSD*",
+      "weakestDepth": 2746396.545663123
+    },
+    {
+      "display": "sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "scrvUSD/sUSDe",
+      "weakestDepth": 2825735.3936515627
+    },
+    {
+      "display": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "scrvUSD/sUSDe",
+      "weakestDepth": 2825735.3936515627
+    },
+    {
+      "display": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "scrvUSD/sUSDe",
+      "weakestDepth": 2825735.3936515627
+    },
+    {
+      "display": "eUSD/USDC >> eUSD/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "eUSD/USDC",
+      "weakestDepth": 3260391.9307085467
+    },
+    {
+      "display": "eUSD/USDC >> eUSD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "eUSD/USDC",
+      "weakestDepth": 3260391.9307085467
+    },
+    {
+      "display": "reUSD/sfrxUSD >> reUSD/sfrxUSD >> sfrxUSD >> sfrxUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "reUSD/sfrxUSD",
+      "weakestDepth": 3522074.3208372327
+    },
+    {
+      "display": "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> reUSD/scrvUSD >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "reUSD/sfrxUSD",
+      "weakestDepth": 3522074.3208372327
+    },
+    {
+      "display": "reUSD/sfrxUSD >> reUSD/sfrxUSD >> reUSD >> fxUSD/reUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "reUSD/sfrxUSD",
+      "weakestDepth": 3522074.3208372327
+    },
+    {
+      "display": "stUSDS/USDS >> stUSDS/USDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "stUSDS/USDS",
+      "weakestDepth": 7077528.185996873
+    },
+    {
+      "display": "stUSDS/USDS >> stUSDS/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "stUSDS/USDS",
+      "weakestDepth": 7077528.185996873
+    },
+    {
+      "display": "stUSDS/USDS >> stUSDS/USDS >> stUSDS >> stUSDS >> USDS >> PYUSD/USDS >> PYUSD >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "stUSDS/USDS",
+      "weakestDepth": 7077528.185996873
+    },
+    {
+      "display": "BOLD/USDC >> BOLD/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "BOLD/USDC",
+      "weakestDepth": 7135440.868833779
+    },
+    {
+      "display": "BOLD/USDC >> BOLD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "BOLD/USDC",
+      "weakestDepth": 7135440.868833779
+    },
+    {
+      "display": "USDC/fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/fxUSD",
+      "weakestDepth": 8086708.906369329
+    },
+    {
+      "display": "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> fxUSD/reUSD >> reUSD >> reUSD/sfrxUSD >> sfrxUSD >> sfrxUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/fxUSD",
+      "weakestDepth": 8086708.906369329
+    },
+    {
+      "display": "frxETH/WETH >> frxETH/WETH >> frxETH >> frxETH/ETH >> ETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "frxETH/WETH",
+      "weakestDepth": 8609959.412042577
+    },
+    {
+      "display": "frxETH/WETH >> frxETH/WETH >> WETH >> crvUSD/ETH/CRV >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "frxETH/WETH",
+      "weakestDepth": 8609959.412042577
+    },
+    {
+      "display": "WBTC >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "WBTC/ETH/USDC",
+      "weakestDepth": 9530780.07798901
+    },
+    {
+      "display": "USDC/USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/USDT",
+      "weakestDepth": 10937622.155361205
+    },
+    {
+      "display": "USDC/USDT >> USDC/USDT >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/USDT",
+      "weakestDepth": 10937622.155361205
+    },
+    {
+      "display": "USDC/USDT >> USDC/USDT >> USDT >> USDT/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/USDT",
+      "weakestDepth": 10937622.155361205
+    },
+    {
+      "display": "USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/USDT",
+      "weakestDepth": 10937622.155361205
+    },
+    {
+      "display": "USDT >> USDC/USDT >> USDC >> crvUSD/USDC >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/USDT",
+      "weakestDepth": 10937622.155361205
+    },
+    {
+      "display": "frxUSD/msUSD >> frxUSD/msUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "frxUSD/msUSD",
+      "weakestDepth": 11981417.189492673
+    },
+    {
+      "display": "frxUSD/msUSD >> frxUSD/msUSD >> msUSD >> msUSD/fxUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "frxUSD/msUSD",
+      "weakestDepth": 11981417.189492673
+    },
+    {
+      "display": "frxUSD/msUSD >> frxUSD/msUSD >> frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "frxUSD/msUSD",
+      "weakestDepth": 11981417.189492673
+    },
+    {
+      "display": "ETH+/WETH >> ETH+/WETH >> WETH >> WBTC/ETH/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "ETH+/WETH",
+      "weakestDepth": 12665367.401374958
+    },
+    {
+      "display": "ETH+/WETH >> ETH+/WETH >> WETH >> WBTC/ETH/USDT >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "ETH+/WETH",
+      "weakestDepth": 12665367.401374958
+    },
+    {
+      "display": "frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "crvUSD/frxUSD",
+      "weakestDepth": 18007698.91691887
+    },
+    {
+      "display": "frxUSD >> crvUSD/frxUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG-USDC* >> USG* >> undefined",
+      "state": "ok",
+      "weakestPoolLabel": "crvUSD/frxUSD",
+      "weakestDepth": 18007698.91691887
+    },
+    {
+      "display": "USDC/crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/crvUSD",
+      "weakestDepth": 22324523.250020325
+    },
+    {
+      "display": "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/crvUSD",
+      "weakestDepth": 22324523.250020325
+    },
+    {
+      "display": "USDC/crvUSD >> USDC/crvUSD >> crvUSD >> crvUSD/USDT >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/crvUSD",
+      "weakestDepth": 22324523.250020325
+    },
+    {
+      "display": "USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/crvUSD",
+      "weakestDepth": 22324523.250020325
+    },
+    {
+      "display": "USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG-frxUSD* >> USG* >> undefined",
+      "state": "ok",
+      "weakestPoolLabel": "USDC/crvUSD",
+      "weakestDepth": 22324523.250020325
+    },
+    {
+      "display": "USDT/crvUSD >> USDT/crvUSD >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDT/crvUSD",
+      "weakestDepth": 24697205.677751824
+    },
+    {
+      "display": "USDT/crvUSD >> USDT/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "USDT/crvUSD",
+      "weakestDepth": 24697205.677751824
+    },
+    {
+      "display": "crvUSD/USDT >> crvUSD/USDT >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "crvUSD/USDT",
+      "weakestDepth": 24697205.677751824
+    },
+    {
+      "display": "PYUSD/USDC >> PYUSD/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "PYUSD/USDC",
+      "weakestDepth": 49233597.39896591
+    },
+    {
+      "display": "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/USDS >> USDS >> sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "PYUSD/USDC",
+      "weakestDepth": 49233597.39896591
+    },
+    {
+      "display": "PYUSD/USDC >> PYUSD/USDC >> PYUSD >> PYUSD/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "PYUSD/USDC",
+      "weakestDepth": 49233597.39896591
+    },
+    {
+      "display": "USDe >> sUSDe >> sUSDe >> DOLA/sUSDe >> DOLA >> DOLA/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "DOLA/sUSDe",
+      "weakestDepth": 61023744.10117732
+    },
+    {
+      "display": "RLUSD/USDC >> RLUSD/USDC >> USDC >> USG-USDC* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "RLUSD/USDC",
+      "weakestDepth": 81651382.71722981
+    },
+    {
+      "display": "RLUSD/USDC >> RLUSD/USDC >> USDC >> USDC/crvUSD >> crvUSD >> crvUSD/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "state": "ok",
+      "weakestPoolLabel": "RLUSD/USDC",
+      "weakestDepth": 81651382.71722981
+    }
+  ]
+}

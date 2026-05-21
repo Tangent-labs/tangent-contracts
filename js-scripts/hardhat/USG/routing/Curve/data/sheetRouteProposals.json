@@ -1,5 +1,10 @@
 {
-  "proposedRoutes": [],
+  "proposedRoutes": [
+    "fxUSD/reUSD >> fxUSD/reUSD >> fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*"
+  ],
   "assets": {},
-  "choices": []
+  "choices": [
+    "USDC/fxUSD"
+  ],
+  "uncoveredMarkets": []
 }

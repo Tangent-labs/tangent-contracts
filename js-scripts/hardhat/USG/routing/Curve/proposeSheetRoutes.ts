@@ -40,6 +40,7 @@ type ProposalArtifact = {
     proposedRoutes: string[];
     assets: Record<string, string>;
     choices: string[];
+    uncoveredMarkets: MissingEntry[];
 };
 
 const DATA_DIR = path.join(__dirname, "data");
@@ -128,6 +129,7 @@ async function main() {
                 .map((entry) => [entry.label, entry.address!])
         ),
         choices: buildMissingSheetChoices(proposals, csvLabels),
+        uncoveredMarkets: uncoveredMarketsWithoutProposal,
     };
 
     fs.writeFileSync(PROPOSAL_PATH, JSON.stringify(artifact, null, 2));
@@ -165,6 +167,7 @@ function buildRouteSuffixes(rows: string[][]) {
     const defaults = [
         ["USDC", "USG-USDC*", "USG*"],
         ["frxUSD", "USG-frxUSD*", "USG*"],
+        ["fxUSD", "USDC/fxUSD*", "USDC", "USG-USDC*", "USG*"],
     ];
 
     for (const row of [...rows, ...defaults]) {
@@ -268,7 +271,12 @@ function uniqueMissingEntries(entries: MissingEntry[]) {
 
 function printSummary(artifact: ProposalArtifact) {
     console.log(`Wrote ${PROPOSAL_PATH}`);
-    console.table([{ proposedRoutes: artifact.proposedRoutes.length, assets: Object.keys(artifact.assets).length, choices: artifact.choices.length }]);
+    console.table([{
+        proposedRoutes: artifact.proposedRoutes.length,
+        assets: Object.keys(artifact.assets).length,
+        choices: artifact.choices.length,
+        uncoveredMarkets: artifact.uncoveredMarkets.length,
+    }]);
     if (artifact.proposedRoutes.length) {
         console.log("\nProposed routes:\n");
         artifact.proposedRoutes.forEach((route) => console.log(route));
@@ -282,6 +290,10 @@ function printSummary(artifact: ProposalArtifact) {
     if (artifact.choices.length) {
         console.log("\nChoices:");
         artifact.choices.forEach((label) => console.log(label));
+    }
+    if (artifact.uncoveredMarkets.length) {
+        console.log("\nWarning: markets with no route and no proposal (no known hub suffix):");
+        artifact.uncoveredMarkets.forEach(({ label, address }) => console.log(`  ${label}${address ? ` (${address})` : ""}`));
     }
 }
 

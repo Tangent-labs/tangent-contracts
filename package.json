@@ -25,6 +25,8 @@
     "routing:propose-sheet-routes": "npx hardhat run js-scripts/hardhat/USG/routing/Curve/proposeSheetRoutes.ts --network localhost",
     "routing:hydrate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/hydrateFinalRoutes.ts --network localhost",
     "routing:test-curve-routes": "npx hardhat run js-scripts/hardhat/USG/routing/Curve/testFinalRoutes.ts --network localhost",
+    "routing:check-route-depths": "npx hardhat run js-scripts/hardhat/USG/routing/Curve/checkRoutePoolDepths.ts --network mainnet",
+    "routing:check-route-depths-hh": "npx hardhat run js-scripts/hardhat/USG/routing/Curve/checkRoutePoolDepths.ts --network localhost",
     "action:distribute-rewards-vsTan": "npx hardhat run js-scripts/hardhat/USG/actions/distributeRewardsVsTan.ts --network localhost",
     "action:distribute-rewards-markets": "npx hardhat run js-scripts/hardhat/USG/actions/distributeRewardsMarkets.ts --network localhost",
     "action:deposit-markets-USG": "npx hardhat run js-scripts/hardhat/USG/scripts/deposit.ts --network localhost",

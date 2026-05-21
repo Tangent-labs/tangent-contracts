@@ -347,10 +347,10 @@ export class LiquidationContext {
             const collatToken = await ethers.getContractAt("IERC20", collatTokenAddress);
             const marketInfo = await this.getMarketInfo(marketaddress);
 
-            const USD = 10_000n;
+            const USD = 5_000n;
             const PRICE = marketInfo.collateralPrice;
             const DECIMALS = marketInfo.collatDecimals;
-            // we deposit the equivalent of 10_000 USD in collateral
+            // we deposit the equivalent of 5_000 USD in collateral (min borrow = 3000, so 64% LTV needs at least 4688 USD deposit)
             const position10000Value = (USD * 10n ** DECIMALS * 10n ** 18n) / PRICE;
             const depositAmount = position10000Value;
 
@@ -374,15 +374,15 @@ export class LiquidationContext {
                         const DENOMINATOR = 100_000n;
                         const maxBorrowUSD = (USD * marketInfo.maxLTV) / DENOMINATOR;
                         // Target 80% LTV for seizable, but use maxLTV if it's lower
-                        const targetSeizableBorrowUSD = 8000n; // 80% of 10k
+                        const targetSeizableBorrowUSD = (USD * 80n) / 100n; // 80% of USD
                         const seizableBorrowUSD = maxBorrowUSD < targetSeizableBorrowUSD ? maxBorrowUSD : targetSeizableBorrowUSD;
                         // Borrow is in USD (not wei), so convert to string directly
                         currentMarketBorrow[userAddress] = seizableBorrowUSD.toString();
                     } else {
-                        // LIQUIDATABLE: 64% LTV = 6400 USD
+                        // LIQUIDATABLE: 64% LTV of USD
                         // This ensures healthRatio < 1 after 66% price drop even with 94% liquidation threshold
-                        // healthRatio = (6600 * 0.94) / 6400 = 0.97 < 1 ✓
-                        currentMarketBorrow[userAddress] = "6400";
+                        // healthRatio = (USD * 0.66 * 0.94) / (USD * 0.64) = 0.97 < 1 ✓
+                        currentMarketBorrow[userAddress] = ((USD * 64n) / 100n).toString();
                     }
                 }
             }
