@@ -8,6 +8,7 @@ import { STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CURVE_GAUGE } from "../../confi
 import { STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../../config/markets/stakeDao";
 import { CurveRouteService } from "./CurveRouteService";
 import { LIQUIDATION_ASSETS } from "./config";
+import { DepthState, SEVERITY_ORDER, classifyDepth, fetchCurvePools } from "./poolLiquidity";
 
 type AddressBook = {
     markets?: { marketName: string; collatAddress: string; marketType?: string }[];
@@ -28,6 +29,8 @@ type RouteProposal = {
     validationNotes: string[];
     missingValidationLabels: MissingEntry[];
     missingDefiResourceEntries: MissingEntry[];
+    liquidityState: DepthState;
+    minPoolDepthUsd: number | null;
 };
 
 type MissingEntry = {
@@ -36,11 +39,30 @@ type MissingEntry = {
     suggestedDefiResourceSection: "COMMON_ERC20S" | "CURVE_LPS" | "thiefConfig" | "unknown";
 };
 
+type RouteReplacement = {
+    marketLabel: string;
+    existingRoute: string;
+    existingRowCells: string[];
+    existingLiquidityState: DepthState;
+    existingMinPoolDepthUsd: number | null;
+    proposedRoute: string;
+    proposedRowCells: string[];
+    proposedLiquidityState: DepthState;
+    proposedMinPoolDepthUsd: number | null;
+};
+
 type ProposalArtifact = {
     proposedRoutes: string[];
     assets: Record<string, string>;
     choices: string[];
     uncoveredMarkets: MissingEntry[];
+    proposedRouteDetails: Array<{
+        routeString: string;
+        liquidityState: DepthState;
+        minPoolDepthUsd: number | null;
+        poolCount: number;
+    }>;
+    replacements: RouteReplacement[];
 };
 
 const DATA_DIR = path.join(__dirname, "data");
@@ -48,6 +70,42 @@ const PROPOSAL_PATH = path.join(DATA_DIR, "sheetRouteProposals.json");
 const ACCEPTED_CSV_PATH = path.join(DATA_DIR, "sheetRouteProposals.accepted.csv");
 
 const addresses = liquidationAddresses as unknown as AddressBook;
+
+// Addresses that are real Curve pools; token wrappers (sUSDe, wstUSR, …) are absent.
+const KNOWN_CURVE_POOL_ADDRESSES: ReadonlySet<string> = new Set([
+    ...Object.values(CURVE_LPS as Record<string, string>),
+    ...Object.values((liquidationAddresses as any).lps as Record<string, string> ?? {}),
+].map((a) => a.toLowerCase()));
+
+function mostSevere(a: DepthState, b: DepthState): DepthState {
+    return SEVERITY_ORDER.indexOf(a) <= SEVERITY_ORDER.indexOf(b) ? a : b;
+}
+
+function extractPoolLabels(rowCells: string[]): string[] {
+    return rowCells.filter((_, i) => i > 0 && i % 2 === 1);
+}
+
+function routeDepthState(
+    rowCells: string[],
+    poolDepthMap: Map<string, { name: string; usdDepth: number | null }>
+): { state: DepthState; minDepthUsd: number | null } {
+    const labels = extractPoolLabels(rowCells);
+    let worstState: DepthState = "ok";
+    let minDepthUsd: number | null = null;
+
+    for (const label of labels) {
+        if (label.endsWith("*")) continue;
+        const address = (LIQUIDATION_ASSETS as Record<string, string>)[label]?.toLowerCase();
+        if (!address) { worstState = mostSevere(worstState, "missing_local_label"); continue; }
+        if (!KNOWN_CURVE_POOL_ADDRESSES.has(address)) { worstState = mostSevere(worstState, "wrapper"); continue; }
+        const entry = poolDepthMap.get(address);
+        if (!entry || entry.usdDepth === null) { worstState = mostSevere(worstState, "unknown_api"); continue; }
+        const s = classifyDepth(entry.usdDepth);
+        worstState = mostSevere(worstState, s);
+        if (minDepthUsd === null || entry.usdDepth < minDepthUsd) minDepthUsd = entry.usdDepth;
+    }
+    return { state: worstState, minDepthUsd };
+}
 
 async function main() {
     const svc = new CurveRouteService();
@@ -61,6 +119,15 @@ async function main() {
     const existingMarketRoutes = new Set(csvRows.filter((row) => row[row.length - 1] === "USG*").map((row) => row[0]));
     const marketEntries = collectMarketEntries();
 
+    let poolDepthMap: Map<string, { name: string; usdDepth: number | null }>;
+    try {
+        poolDepthMap = await fetchCurvePools();
+        console.log(`Curve API: ${poolDepthMap.size} pools loaded`);
+    } catch (e: any) {
+        console.warn(`Warning: could not fetch Curve pool depths (${e.message}). Sorting by route length only.`);
+        poolDepthMap = new Map();
+    }
+
     const proposals: RouteProposal[] = [];
     const uncoveredMarketsWithoutProposal: MissingEntry[] = [];
 
@@ -69,7 +136,7 @@ async function main() {
             continue;
         }
 
-        const candidates = buildCandidateRows(market.label, routeSuffixes);
+        const candidates = buildCandidateRows(market.label, routeSuffixes, poolDepthMap);
         if (!candidates.length) {
             uncoveredMarketsWithoutProposal.push({
                 label: market.label,
@@ -79,7 +146,7 @@ async function main() {
             continue;
         }
 
-        for (const rowCells of candidates) {
+        for (const { rowCells, liquidityState, minPoolDepthUsd } of candidates) {
             const route = svc._formatRoutesFromCSV([...rowCells] as any);
             const labelValidation = svc.validateRouteRows([rowCells]);
             const missingValidationLabels = Array.from(labelValidation.missing).map((label) => missingEntryForLabel(label, marketEntries));
@@ -115,11 +182,51 @@ async function main() {
                 validationNotes,
                 missingValidationLabels,
                 missingDefiResourceEntries,
+                liquidityState,
+                minPoolDepthUsd,
             });
         }
     }
 
+    // Challenge mode: for every existing route, propose a replacement if a better-liquidity candidate exists
+    const existingLiquidationRows = csvRows.filter((row) => row[row.length - 1] === "USG*");
+    const replacements: RouteReplacement[] = [];
+    for (const existingRow of existingLiquidationRows) {
+        const { state: existingState, minDepthUsd: existingMinDepth } = routeDepthState(existingRow, poolDepthMap);
+        const marketLabel = existingRow[0];
+        const existingRoute = svc._formatRoutesFromCSV([...existingRow] as any);
+        const candidates = buildCandidateRows(marketLabel, routeSuffixes, poolDepthMap);
+        const bestCandidate = candidates.find(
+            (c) => SEVERITY_ORDER.indexOf(c.liquidityState) > SEVERITY_ORDER.indexOf(existingState)
+        );
+        if (!bestCandidate) continue;
+        replacements.push({
+            marketLabel,
+            existingRoute: existingRoute.display,
+            existingRowCells: existingRow,
+            existingLiquidityState: existingState,
+            existingMinPoolDepthUsd: existingMinDepth,
+            proposedRoute: svc._formatRoutesFromCSV([...bestCandidate.rowCells] as any).display,
+            proposedRowCells: bestCandidate.rowCells,
+            proposedLiquidityState: bestCandidate.liquidityState,
+            proposedMinPoolDepthUsd: bestCandidate.minPoolDepthUsd,
+        });
+    }
+
     const missingDefiResourceEntries = uniqueMissingEntries(proposals.flatMap((proposal) => proposal.missingDefiResourceEntries));
+
+    const detailsByRoute = new Map<string, { routeString: string; liquidityState: DepthState; minPoolDepthUsd: number | null; poolCount: number }>();
+    for (const p of proposals) {
+        if (!detailsByRoute.has(p.routeString)) {
+            detailsByRoute.set(p.routeString, {
+                routeString: p.routeString,
+                liquidityState: p.liquidityState,
+                minPoolDepthUsd: p.minPoolDepthUsd,
+                poolCount: (p.rowCells.length - 1) / 2,
+            });
+        }
+    }
+    const proposedRouteDetails = Array.from(detailsByRoute.values()).sort((a, b) => a.routeString.localeCompare(b.routeString));
 
     const artifact: ProposalArtifact = {
         proposedRoutes: uniqueStrings(proposals.map((proposal) => proposal.routeString)),
@@ -130,6 +237,8 @@ async function main() {
         ),
         choices: buildMissingSheetChoices(proposals, csvLabels),
         uncoveredMarkets: uncoveredMarketsWithoutProposal,
+        proposedRouteDetails,
+        replacements,
     };
 
     fs.writeFileSync(PROPOSAL_PATH, JSON.stringify(artifact, null, 2));
@@ -181,7 +290,11 @@ function buildRouteSuffixes(rows: string[][]) {
     return suffixes;
 }
 
-function buildCandidateRows(marketLabel: string, routeSuffixes: Map<string, string[][]>) {
+function buildCandidateRows(
+    marketLabel: string,
+    routeSuffixes: Map<string, string[][]>,
+    poolDepthMap: Map<string, { name: string; usdDepth: number | null }>
+): Array<{ rowCells: string[]; liquidityState: DepthState; minPoolDepthUsd: number | null }> {
     const hubs = uniqueStrings(marketLabel.split(/[/-]/).map((label) => label.trim()).filter(Boolean));
     const rows: string[][] = [];
 
@@ -191,7 +304,19 @@ function buildCandidateRows(marketLabel: string, routeSuffixes: Map<string, stri
         }
     }
 
-    return dedupeRows(rows).sort((a, b) => a.length - b.length || a.join(",").localeCompare(b.join(","))).slice(0, 3);
+    return dedupeRows(rows)
+        .map((rowCells) => {
+            const { state, minDepthUsd } = routeDepthState(rowCells, poolDepthMap);
+            return { rowCells, liquidityState: state, minPoolDepthUsd: minDepthUsd };
+        })
+        .sort((a, b) => {
+            const sd = SEVERITY_ORDER.indexOf(a.liquidityState) - SEVERITY_ORDER.indexOf(b.liquidityState);
+            if (sd !== 0) return sd;
+            const ld = a.rowCells.length - b.rowCells.length;
+            if (ld !== 0) return ld;
+            return a.rowCells.join(",").localeCompare(b.rowCells.join(","));
+        })
+        .slice(0, 3);
 }
 
 function findMissingDefiResourceEntries(rowCells: string[], marketEntries: { label: string; address: string }[]) {
@@ -273,6 +398,7 @@ function printSummary(artifact: ProposalArtifact) {
     console.log(`Wrote ${PROPOSAL_PATH}`);
     console.table([{
         proposedRoutes: artifact.proposedRoutes.length,
+        replacements: artifact.replacements.length,
         assets: Object.keys(artifact.assets).length,
         choices: artifact.choices.length,
         uncoveredMarkets: artifact.uncoveredMarkets.length,
@@ -290,6 +416,13 @@ function printSummary(artifact: ProposalArtifact) {
     if (artifact.choices.length) {
         console.log("\nChoices:");
         artifact.choices.forEach((label) => console.log(label));
+    }
+    if (artifact.replacements.length) {
+        console.log("\nReplacement proposals (better liquidity available):");
+        console.table(artifact.replacements.flatMap((r) => [
+            { market: r.marketLabel, version: "current",  state: r.existingLiquidityState,  minUsd: r.existingMinPoolDepthUsd?.toFixed(0) ?? "?", route: r.existingRoute },
+            { market: "",            version: "proposal", state: r.proposedLiquidityState,  minUsd: r.proposedMinPoolDepthUsd?.toFixed(0) ?? "?", route: r.proposedRoute },
+        ]));
     }
     if (artifact.uncoveredMarkets.length) {
         console.log("\nWarning: markets with no route and no proposal (no known hub suffix):");
