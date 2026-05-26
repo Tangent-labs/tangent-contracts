@@ -40,7 +40,7 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
         "frxUSD_sUSDS",
         "BOLD_USDC",
         "eUSD_USDC",
-        "scrvUSD_sUSDe",
+        "reUSD_scrvUSD",
         "USDT_crvUSD",
         "frxUSD_OUSD",
         "frxUSD_sDOLA",

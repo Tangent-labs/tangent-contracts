@@ -80,11 +80,11 @@ export class BaseContext extends MainSetup {
 
 
         // Market implementations
-        this.marketCvxCrvImplem = await ethers.getContractAt("ConvexCrvLPMarket", PROD_ADDRESSES.CONVEX_CRV_LP_MARKET)
-        this.marketCvxFxnImplem = await ethers.getContractAt("ConvexFxnLPMarket", PROD_ADDRESSES.CONVEX_FXN_LP_MARKET)
-        this.marketCurveGaugeImplem = await ethers.getContractAt("CurveGaugeMarket", PROD_ADDRESSES.CURVE_GAUGE_MARKET)
-        this.marketStakeDaoVaultV2Implem = await ethers.getContractAt("StakeDaoVaultV2Market", PROD_ADDRESSES.STAKEDAO_VAULT_MARKET)
-        this.marketBasicER20Implem = await ethers.getContractAt("BasicERC20Market", PROD_ADDRESSES.BASIC_ERC20_MARKET)
+        this.marketCvxCrvImplem = await ethers.getContractAt("ConvexCrvLPMarket", PROD_ADDRESSES.MARKETS_IMPLEMENTATION.CONVEX_CRV_LP_MARKET)
+        this.marketCvxFxnImplem = await ethers.getContractAt("ConvexFxnLPMarket", PROD_ADDRESSES.MARKETS_IMPLEMENTATION.CONVEX_FXN_LP_MARKET)
+        this.marketCurveGaugeImplem = await ethers.getContractAt("CurveGaugeMarket", PROD_ADDRESSES.MARKETS_IMPLEMENTATION.CURVE_GAUGE_MARKET)
+        this.marketStakeDaoVaultV2Implem = await ethers.getContractAt("StakeDaoVaultV2Market", PROD_ADDRESSES.MARKETS_IMPLEMENTATION.STAKEDAO_VAULT_MARKET)
+        this.marketBasicER20Implem = await ethers.getContractAt("BasicERC20Market", PROD_ADDRESSES.MARKETS_IMPLEMENTATION.BASIC_ERC20_MARKET)
 
         // Markets utils
         this.irCalculator = await ethers.getContractAt("IRCalculator", PROD_ADDRESSES.IR_CALCULATOR)

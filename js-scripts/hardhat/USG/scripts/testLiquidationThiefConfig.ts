@@ -10,7 +10,7 @@ const LIQUIDATION_TOKENS = [
     {name: "frxUSD_sUSDS", address: CURVE_LPS.DUO_frxUSD_sUSDS},
     {name: "BOLD_USDC", address: CURVE_LPS.DUO_BOLD_USDC},
     {name: "eUSD_USDC", address: CURVE_LPS.DUO_eUSD_USDC},
-    {name: "scrvUSD_sUSDe", address: CURVE_LPS.DUO_scrvUSD_sUSDe},
+    {name: "reUSD_scrvUSD", address: CURVE_LPS.DUO_reUSD_scrvUSD},
     {name: "USDT_crvUSD", address: CURVE_LPS.DUO_USDT_crvUSD},
     {name: "frxUSD_OUSD", address: CURVE_LPS.DUO_frxUSD_OUSD},
     {name: "frxUSD_sDOLA", address: CURVE_LPS.DUO_frxUSD_sDOLA},
