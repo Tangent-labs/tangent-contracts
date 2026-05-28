@@ -5,7 +5,7 @@ export const IR_PARAMS_LEC_USD_S: IRParamsStruct = {
     rMin: 3_198,
     rMax: 109_861,
     pMin: 980_000,
-    pInf: 980_000,
+    pInf: 985_000,
     pMax: 1_000_000,
     a1: 1000,
     a2: 2075,

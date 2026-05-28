@@ -60,6 +60,7 @@ export const PROD_ADDRESSES = {
             crvUSD: "0x31acd625f66a587fa77c7c7c603240377513ead7",
             RLUSD: "0x747582f3c12dd89219f788cdc152cfc9c7a54e16",
             USDS: "0xc866d0d6532db2d3904d91dc69b6279d1b4a0e0c"
+            PYUSD: '0x01ddf74e6e27d73c12e16047dc78d0398b40ff88'
         },
         CHAINLINK: {
             USDC: '0xfc3dff91fb8a7ac53f61d9d465d71d1b89e01fe4',
@@ -96,6 +97,13 @@ export const PROD_ADDRESSES = {
             frxUSD_scrvUSD: "0xf31be70c9d9596b23088125345f044065b0bf886",
             USDC_fxUSD: "0x35c62ac45ddf3079e2daa0b8957862a1800920da",
             reUSD_fxUSD: "0x9f162292bc39f194a3ca87e39700293bd9aa710a"
+            PYUSD: '0xcba777240d1a0bd66c8ff67544a054862687b6ef'
+        },
+        COIN_FROM_CURVE_LP: {
+        },
+        CURVE_LP_STABLE_DUO: {
+            USDC_USDT: '0x0695758772db50a0aa0255afdb7535de23168542',
+            PYUSD_USDC: '0xcf434527aefbc808e3e3400ab489a0e25c4af4ca'
         }
 
     }

@@ -27,7 +27,7 @@ abstract contract UsgInfo {
         info.UsgPrice = usgOracle.price_w();
 
         // 3. Supply of sUSG
-        info.sUsgSupply = sUSG.totalSupply();
+        info.sUsgSupply = sUSG.totalSupply() - sUSG.balanceOf(address(sUSG));
 
         // 4. Amount of tgUSD staked on sUSG
         info.usgStakedOnSgUsd = sUSG.totalAssets();

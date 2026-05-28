@@ -24,15 +24,19 @@ contract sUSGUI is GetMarketDetails {
 
     error sUSGUIOutError(sUSGUIOut output);
 
-    constructor(address account, IAggregatorStablePriceV3 USGOracle, IERC20Metadata USG, IYearnV3Vault sUSG) {
-        uint256 USGTotalSupply = USG.totalSupply();
+    constructor(address account, IAggregatorStablePriceV3 USGOracle, IERC20Metadata USG, IYearnV3Vault sUSG, address[] memory pegKeepers) {
+        uint256 USGOnPegKeeper;
+        for (uint256 i; i < pegKeepers.length; i++) {
+            USGOnPegKeeper += USG.balanceOf(pegKeepers[i]);
+        }
+        uint256 USGTotalSupply = USG.totalSupply() - USGOnPegKeeper;
         uint256 USGPrice = USGOracle.price();
         revert sUSGUIOutError(
             sUSGUIOut({
                 USGPrice: USGPrice,
                 USGSupply: USGTotalSupply,
                 sUSGPrice: (USGPrice * sUSG.pricePerShare()) / 1e18,
-                sUSGSupply: sUSG.totalSupply(),
+                sUSGSupply: sUSG.totalSupply() - sUSG.balanceOf(address(sUSG)),
                 USGPercentageInsUSG: USGTotalSupply == 0 ? 0 : (USG.balanceOf(address(sUSG)) * 1e18) / USGTotalSupply,
                 USGBalance: account == address(0) ? 0 : USG.balanceOf(account),
                 sUSGBalance: account == address(0) ? 0 : sUSG.balanceOf(account),
