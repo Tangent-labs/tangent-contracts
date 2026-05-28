@@ -6,6 +6,7 @@ import path from "path";
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
 import { routers } from "@tangent/defi-resources";
 
+import { SpecialTokenGiver } from "../../../thief/SpecialTokenGiver";
 import { giveTokenToAddresss } from "../../../thief/thief";
 import { LIQUIDATION_ASSETS, separatedCurvePoolToken, ThiefConfig } from "./config";
 
@@ -290,7 +291,12 @@ export class CurveRouteService {
         let initialInBalance = isETH ? await ethers.provider.getBalance(user.address) : await tokenInContract.balanceOf(user.address);
         const amountIn = ethers.parseUnits(amount, thiefConfig?.decimals || 18);
 
-        if (thiefConfig || isTgAsset) {
+        if (SpecialTokenGiver.supports(tokenIn)) {
+            if (initialInBalance < amountIn) {
+                await SpecialTokenGiver.giveToken(tokenIn, amountIn, [user.address]);
+                initialInBalance = await tokenInContract.balanceOf(user.address);
+            }
+        } else if (thiefConfig || isTgAsset) {
             if (initialInBalance < amountIn) {
                 await giveTokenToAddresss(user, tokenIn, amountIn, thiefConfig?.slot || 0, !!thiefConfig ? thiefConfig.isVyper : !isTgAsset);
                 initialInBalance = await tokenInContract.balanceOf(user.address);

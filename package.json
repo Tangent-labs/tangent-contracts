@@ -9,7 +9,7 @@
     "test": "test"
   },
   "scripts": {
-    "hh-node": "npx hardhat node --hostname 0.0.0.0",
+    "hh-node": "npx hardhat node --hostname 0.0.0.0 --show-stack-traces",
     "anvil-node": "anvil --fork-url https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q --chain-id 31337",
     "deploy:usg-local": "npx hardhat run js-scripts/hardhat/USG/scripts/deployMainnetAddresses.ts --network localhost",
     "deploy:usg-staging": "npx hardhat run js-scripts/hardhat/USG/scripts/deployMainnetAddresses.ts --network staging",
