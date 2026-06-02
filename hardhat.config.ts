@@ -13,7 +13,7 @@ dotenv.config();
 const forkBloc = process.env.STARTING_BLOCK ? parseInt(process.env.STARTING_BLOCK) : 25059739;
 const forkRpc = process.env.FORK_RPC || `https://eth-mainnet.g.alchemy.com/v2/uWrdyee0LcK0X3l1fpUlv`;
 
-
+const cvgExploitBlock = 20434300
 
 const config: HardhatUserConfig = {
     vyper: {
