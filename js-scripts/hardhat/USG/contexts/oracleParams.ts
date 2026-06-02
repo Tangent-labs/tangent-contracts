@@ -57,6 +57,7 @@ export const oracleERC4626Params: {
     underlyingOracle: string;
 }[] = [
         { erc4626: "sUSDe", oracleName: "sUSDe / USD", underlyingOracle: "USDe" },
+        { erc4626: "scrvUSD", oracleName: "scrvUSD / USD", underlyingOracle: "crvUSD" },
     ];
 
 export const oracleCoinFromCurveLPParams: {
@@ -102,7 +103,7 @@ export const oracleDuoPoolStableParams: {
         { key: "frxUSD/OUSD", oracleName: "frxUSD_OUSD / USD", lp: "DUO_frxUSD_OUSD", coin0Oracle: "frxUSD", coin1Oracle: "OUSD" },
         { key: "frxUSD/msUSD", oracleName: "frxUSD_msUSD / USD", lp: "DUO_frxUSD_msUSD", coin0Oracle: "frxUSD", coin1Oracle: "msUSD" },
         { key: "reUSD/sfrxUSD", oracleName: "reUSD_sfrxUSD / USD", lp: "DUO_reUSD_sfrxUSD", coin0Oracle: "reUSD", coin1Oracle: "frxUSD" },
-        { key: "scrvUSD/sUSDe", oracleName: "scrvUSD_sUSDe / USD", lp: "DUO_scrvUSD_sUSDe", coin0Oracle: "crvUSD", coin1Oracle: "USDe" },
+        { key: "reUSD/scrvUSD", oracleName: "reUSD_scrvUSD / USD", lp: "DUO_reUSD_scrvUSD", coin0Oracle: "reUSD", coin1Oracle: "scrvUSD" },
         { key: "frxUSD/crvUSD", oracleName: "frxUSD_crvUSD / USD", lp: "DUO_crvUSD_frxUSD", coin0Oracle: "frxUSD", coin1Oracle: "crvUSD" },
         { key: "PYUSD/USDC", oracleName: "PYUSD_USDC / USD", lp: "DUO_PYUSD_USDC", coin0Oracle: "PYUSD", coin1Oracle: "USDC" },
         { key: "RLUSD/USDC", oracleName: "RLUSD_USDC / USD", lp: "DUO_RLUSD_USDC", coin0Oracle: "USDC", coin1Oracle: "RLUSD" },

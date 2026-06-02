@@ -209,7 +209,7 @@ export class LiquidationContext {
     // -------------------------------------------------------------------------
 
     async doDeploy(): Promise<void> {
-        const deployed = await deployMainnetAddresses(this.config.USER_COUNT, this.config.SEED_USG_LP_AMOUNT);
+        const deployed = await deployMainnetAddresses(this.config.USER_COUNT, this.config.SEED_USG_LP_AMOUNT, true);
 
         this.baseContext = deployed.baseContext;
         this.marketContext = deployed.marketContext;
@@ -343,52 +343,61 @@ export class LiquidationContext {
             let hasEnoughTokens = false;
 
             const market = await ethers.getContractAt("MarketExternalActions", marketaddress);
-            const collatTokenAddress = await market.collatToken();
+            let collatTokenAddress: string;
+            try {
+                collatTokenAddress = await market.collatToken();
+            } catch (err) {
+                console.error(`Failed collatToken() for market ${marketaddress}`);
+                console.error(`Possible wrong ABI/market type or invalid address for this market.`);
+                throw err;
+            }
             const collatToken = await ethers.getContractAt("IERC20", collatTokenAddress);
             const marketInfo = await this.getMarketInfo(marketaddress);
 
-            const USD = 10_000n;
+            const USD = 5_000n;
             const PRICE = marketInfo.collateralPrice;
             const DECIMALS = marketInfo.collatDecimals;
-            // we deposit the equivalent of 10_000 USD in collateral
+            // we deposit the equivalent of 5_000 USD in collateral (min borrow = 3000, so 64% LTV needs at least 4688 USD deposit)
             const position10000Value = (USD * 10n ** DECIMALS * 10n ** 18n) / PRICE;
             const depositAmount = position10000Value;
 
-            // Check if users have enough tokens before creating positions
-            for (let userIndex = 0; userIndex < userAddresses.length; userIndex++) {
-                const userAddress = userAddresses[userIndex];
+            const eligibleUsers: string[] = [];
+            const DENOMINATOR = 100_000n;
+            const maxBorrowUSD = (USD * marketInfo.maxLTV) / DENOMINATOR;
+            const targetLiquidatableBorrowUSD = (USD * 64n) / 100n;
+            const targetSeizableBorrowUSD = (USD * 80n) / 100n;
+            const liquidatableBorrowUSD = maxBorrowUSD < targetLiquidatableBorrowUSD ? maxBorrowUSD : targetLiquidatableBorrowUSD;
+            const seizableBorrowUSD = maxBorrowUSD < targetSeizableBorrowUSD ? maxBorrowUSD : targetSeizableBorrowUSD;
 
+            // Check if users have enough tokens before creating positions
+            for (const userAddress of userAddresses) {
                 const balance = await collatToken.balanceOf(userAddress);
                 console.log("balance", marketInfo.collatName, balance);
 
                 if (balance >= depositAmount) {
                     hasEnoughTokens = true;
-                    currentMarketDeposit[userAddress] = formatEther(depositAmount);
-
-                    // Simple mode alternates deterministic position types:
-                    // user 0: liquidatable at 64% LTV, user 1: seizable at 80% LTV.
-                    const isSeizableUser = userIndex % 2 === 1;
-                    if (isSeizableUser) {
-                        // SEIZABLE: 80% LTV = 8000 USD (or maxLTV if it's lower than 80%)
-                        // maxLTV is in basis points (100_000 = 100%)
-                        const DENOMINATOR = 100_000n;
-                        const maxBorrowUSD = (USD * marketInfo.maxLTV) / DENOMINATOR;
-                        // Target 80% LTV for seizable, but use maxLTV if it's lower
-                        const targetSeizableBorrowUSD = 8000n; // 80% of 10k
-                        const seizableBorrowUSD = maxBorrowUSD < targetSeizableBorrowUSD ? maxBorrowUSD : targetSeizableBorrowUSD;
-                        // Borrow is in USD (not wei), so convert to string directly
-                        currentMarketBorrow[userAddress] = seizableBorrowUSD.toString();
-                    } else {
-                        // LIQUIDATABLE: 64% LTV = 6400 USD
-                        // This ensures healthRatio < 1 after 66% price drop even with 94% liquidation threshold
-                        // healthRatio = (6600 * 0.94) / 6400 = 0.97 < 1 ✓
-                        currentMarketBorrow[userAddress] = "6400";
-                    }
+                    eligibleUsers.push(userAddress);
                 }
             }
 
-            // Only add market if at least one user has enough tokens
-            if (hasEnoughTokens && Object.keys(currentMarketDeposit).length > 0) {
+            if (!hasEnoughTokens) {
+                console.log(`No users have enough ${marketInfo.collatName} to create positions`);
+                continue;
+            }
+
+            if (eligibleUsers.length >= 1) {
+                const userAddress = eligibleUsers[0];
+                currentMarketDeposit[userAddress] = formatEther(depositAmount);
+                currentMarketBorrow[userAddress] = liquidatableBorrowUSD.toString();
+            }
+
+            if (eligibleUsers.length >= 2) {
+                const userAddress = eligibleUsers[1];
+                currentMarketDeposit[userAddress] = formatEther(depositAmount);
+                currentMarketBorrow[userAddress] = seizableBorrowUSD.toString();
+            }
+
+            if (Object.keys(currentMarketDeposit).length > 0) {
                 depositParams[marketaddress] = currentMarketDeposit;
                 borrowParams[marketaddress] = currentMarketBorrow;
             }

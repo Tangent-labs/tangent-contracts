@@ -21,22 +21,20 @@ export class OracleContext {
 
         await this.deployChainlinkWrappers();
         await this.deployOracleCoinFromCurveLP();
+        await this.deployOracleCoinERC4626();
         await this.deployOracleDuoPoolStable();
 
         // await this.deployOracleCryptoSwap();
-        await this.deployOracleCoinERC4626();
-
         await this.deployOraclePendlePT();
     }
 
     async deployAndSetupOracles(baseContext: BaseContext, lpDeployContext: LpDeployContext) {
         await this.deployChainlinkWrappers();
         await this.deployOracleCoinFromCurveLP();
+        await this.deployOracleCoinERC4626();
         await this.deployOracleDuoPoolStable();
 
         // await this.deployOracleCryptoSwap();
-        await this.deployOracleCoinERC4626();
-
         await this.deployOraclePendlePT();
 
         this.USGOracle = (await (

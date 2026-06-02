@@ -1,5 +1,5 @@
 import { COMMON_ERC20S, CURVE_LPS } from "@tangent/defi-resources";
-import { SDT_BOLD_USDC_VAULT, SDT_crvUSD_USDT_VAULT, SDT_eUSD_USDC_VAULT, SDT_frxUSD_OUSD_VAULT, SDT_frxUSD_scrvUSD_VAULT, SDT_frxUSD_sDOLA_VAULT, SDT_frxUSD_sUSDS_VAULT, SDT_scrvUSD_sUSDe_VAULT } from "@tangent/defi-resources/build/ressources/erc20/stakeDao";
+import { SDT_BOLD_USDC_VAULT, SDT_crvUSD_USDT_VAULT, SDT_eUSD_USDC_VAULT, SDT_frxUSD_OUSD_VAULT, SDT_frxUSD_scrvUSD_VAULT, SDT_frxUSD_sDOLA_VAULT, SDT_frxUSD_sUSDS_VAULT, SDT_reUSD_scrvUSD_VAULT } from "@tangent/defi-resources/build/ressources/erc20/stakeDao";
 import { parseEther } from "ethers";
 import { IR_PARAMS_HEC_USD_S, IR_PARAMS_LEC_USD_A, IR_PARAMS_LEC_USD_B, IR_PARAMS_LEC_USD_S } from "../irParams";
 import { MINIMUM_LOAN } from "../market";
@@ -47,15 +47,15 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
     },
 
 
-    scrvUSD_sUSDe: {
-        collatName: "scrvUSD/sUSDe",
-        collatToken: CURVE_LPS.DUO_scrvUSD_sUSDe,
+    reUSD_scrvUSD: {
+        collatName: "reUSD/scrvUSD",
+        collatToken: CURVE_LPS.DUO_reUSD_scrvUSD,
         liquidationThreshold: 85_250,
         maxLTV: 84_000,
         maxMarketDebt: parseEther("500000"),
         minimumLoan: MINIMUM_LOAN,
         rewardTokens: [COMMON_ERC20S.CRV],
-        vaultToken: SDT_scrvUSD_sUSDe_VAULT,
+        vaultToken: SDT_reUSD_scrvUSD_VAULT,
         irConfig: IR_PARAMS_LEC_USD_B,
         rcConfig: RC_PARAMS_LEC_USD_S_A_B
     },

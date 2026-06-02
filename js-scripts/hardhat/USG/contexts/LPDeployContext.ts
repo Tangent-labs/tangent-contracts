@@ -26,18 +26,27 @@ export type CryptoSwapDeployParams = {
 const USG_USDC = "USG-USDC";
 const USG_frxUSD = "USG-frxUSD";
 
+const MAINNET_USG_STABLE_LPS = {
+    [USG_USDC]: PROD_ADDRESSES.USG_USDC,
+    [USG_frxUSD]: PROD_ADDRESSES.USG_frxUSD,
+} as const;
+
 
 export class LpDeployContext {
     stableLp: StableLP = {};
     tanLP?: ICurveCryptoSwap;
 
+    async fetchMainnetStableLps() {
+        for (const [name, address] of Object.entries(MAINNET_USG_STABLE_LPS)) {
+            this.stableLp[name] = await ethers.getContractAt("ICurveStableSwapNG", address)
+        }
+    }
 
     async fetchLPsAndSeedLps(baseContext: BaseContext, baseDeposit?: number) {
         const amount = baseDeposit || 500_000;
 
 
-        this.stableLp[USG_USDC] = await ethers.getContractAt("ICurveStableSwapNG", PROD_ADDRESSES.USG_USDC)
-        this.stableLp[USG_frxUSD] = await ethers.getContractAt("ICurveStableSwapNG", PROD_ADDRESSES.USG_frxUSD)
+        await this.fetchMainnetStableLps();
 
 
         await this.seedLP(baseContext, [baseContext.coins["USDC"], baseContext.coins["USG"]], this.stableLp[USG_USDC], [amount, amount])
