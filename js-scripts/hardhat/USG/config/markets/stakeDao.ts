@@ -1,9 +1,9 @@
 import { COMMON_ERC20S, CURVE_LPS } from "@tangent/defi-resources";
-import { SDT_BOLD_USDC_VAULT, SDT_crvUSD_USDT_VAULT, SDT_eUSD_USDC_VAULT, SDT_frxUSD_OUSD_VAULT, SDT_frxUSD_scrvUSD_VAULT, SDT_frxUSD_sDOLA_VAULT, SDT_frxUSD_sUSDS_VAULT, SDT_reUSD_scrvUSD_VAULT } from "@tangent/defi-resources/build/ressources/erc20/stakeDao";
+import { SDT_BOLD_USDC_VAULT, SDT_crvUSD_USDT_VAULT, SDT_ETHPlus_WETH_VAULT, SDT_eUSD_USDC_VAULT, SDT_frxUSD_OUSD_VAULT, SDT_frxUSD_scrvUSD_VAULT, SDT_frxUSD_sDOLA_VAULT, SDT_frxUSD_sUSDS_VAULT, SDT_reUSD_scrvUSD_VAULT, SDT_tBTC_cbBTC_VAULT } from "@tangent/defi-resources/build/ressources/erc20/stakeDao";
 import { parseEther } from "ethers";
-import { IR_PARAMS_HEC_USD_S, IR_PARAMS_LEC_USD_A, IR_PARAMS_LEC_USD_B, IR_PARAMS_LEC_USD_S } from "../irParams";
+import { IR_PARAMS_HEC_USD_S, IR_PARAMS_LEC_USD_A, IR_PARAMS_LEC_USD_B, IR_PARAMS_LEC_USD_S, IR_PARAMS_LEC_VOL } from "../irParams";
 import { MINIMUM_LOAN } from "../market";
-import { RC_PARAMS_HEC_USD_BASE, RC_PARAMS_LEC_USD_S_A_B } from "../rcParams";
+import { RC_PARAMS_HEC_USD_BASE, RC_PARAMS_LEC_USD_S_A_B, RC_PARAMS_LEC_VOL } from "../rcParams";
 
 export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
 
@@ -107,5 +107,29 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         vaultToken: SDT_frxUSD_scrvUSD_VAULT,
         irConfig: IR_PARAMS_LEC_USD_B,
         rcConfig: RC_PARAMS_HEC_USD_BASE
+    },
+    tBTC_cbBTC: {
+        collatName: "tBTC/cbBTC",
+        collatToken: CURVE_LPS.DUO_tBTC_cbBTC,
+        liquidationThreshold: 85_250,
+        maxLTV: 84_000,
+        maxMarketDebt: parseEther("250000"),
+        minimumLoan: MINIMUM_LOAN,
+        rewardTokens: [COMMON_ERC20S.CRV],
+        vaultToken: SDT_tBTC_cbBTC_VAULT,
+        irConfig: IR_PARAMS_LEC_VOL,
+        rcConfig: RC_PARAMS_LEC_VOL
+    },
+    "ETH+_WETH": {
+        collatName: "ETH+/WETH",
+        collatToken: CURVE_LPS.DUO_ETHplus_WETH,
+        liquidationThreshold: 85_250,
+        maxLTV: 84_000,
+        maxMarketDebt: parseEther("250000"),
+        minimumLoan: MINIMUM_LOAN,
+        rewardTokens: [COMMON_ERC20S.CRV],
+        vaultToken: SDT_ETHPlus_WETH_VAULT,
+        irConfig: IR_PARAMS_LEC_VOL,
+        rcConfig: RC_PARAMS_LEC_VOL
     },
 };

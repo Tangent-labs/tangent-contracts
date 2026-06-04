@@ -47,3 +47,15 @@ export const IR_PARAMS_HEC_USD_S: IRParamsStruct = {
     a2: 2300,
     k: 50,
 };
+
+export const IR_PARAMS_LEC_VOL: IRParamsStruct = {
+    isHEC: false,
+    rMin: 2_469,
+    rMax: 160_944,
+    pMin: 980_000,
+    pInf: 997_250,
+    pMax: 1_000_000,
+    a1: 75,
+    a2: 3650,
+    k: 100,
+};
