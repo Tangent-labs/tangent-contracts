@@ -1,8 +1,8 @@
-import {setStorageAt} from "@nomicfoundation/hardhat-network-helpers";
-import {GlobalHelper} from "../GlobalHelper";
+import { setStorageAt } from "@nomicfoundation/hardhat-network-helpers";
+import { GlobalHelper } from "../GlobalHelper";
 
-import {parseUnits, Signer} from "ethers";
-import {THIEF_TOKEN_CONFIG} from "@tangent/defi-resources/build/ressources/erc20/thiefConfig";
+import { THIEF_TOKEN_CONFIG } from "@tangent/defi-resources/build/ressources/erc20/thiefConfig";
+import { parseUnits, Signer } from "ethers";
 
 export interface TokenAmounts {
     slotBalance: number;
@@ -30,7 +30,7 @@ export async function giveTokensToAddresses(users: Signer[], tokensAmounts: Toke
                 }
                 await setStorageAt(tokenAmount.address, storageSlot, parseUnits(tokenAmount.amount.toString(), tokenAmount.decimals));
             } catch (e) {
-                console.error(`error token : ${tokenAmount.address} , ${tokenAmount.amount} , ${tokenAmount.slotBalance || "--"} `);
+                // console.error(`error token : ${tokenAmount.address} , ${tokenAmount.amount} , ${tokenAmount.slotBalance || "--"} `);
             }
         }
     }

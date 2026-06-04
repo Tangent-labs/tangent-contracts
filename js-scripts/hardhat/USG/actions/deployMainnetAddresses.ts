@@ -1,15 +1,108 @@
-import { mine, impersonateAccount, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import { impersonateAccount, mine, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { CURVE_LPS } from "@tangent/defi-resources";
 import { ethers } from "hardhat";
 import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
+import { DebtIR } from "../../../../typechain-types";
 import { BaseContext } from "../contexts/BaseContext";
 import { LpDeployContext } from "../contexts/LPDeployContext";
 import { ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, StakeDaoVaultV2MarketsKeys } from "../contexts/MarketContext";
-import { DebtIR } from "../../../../typechain-types";
 import { OracleContext } from "../contexts/OracleContext";
 import { WStablesContext } from "../contexts/WStableContext";
+import { PendleKeys } from "./pendleActions";
 
 type ProdMarketAddresses = Record<string, string>;
+
+
+export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposit?: number, isLiquidationContext: boolean = false) {
+    const baseContext = new BaseContext(userCount);
+    const oracleContext = new OracleContext();
+    const marketContext = new MarketContext();
+    const lpDeployContext = new LpDeployContext();
+    const wStableContext = new WStablesContext();
+
+
+    await mine(1)
+
+    console.log("Setup Users");
+    await baseContext.setupTestUsers();
+
+    console.log("Fetches Mainnet contracts");
+    await baseContext.fetchMainnetContracts();
+
+    console.log("Give ERC20 to users");
+    await baseContext.setUpERC20();
+
+    const seedLpAmount = baseLpDeposit ?? 10_000;
+    await lpDeployContext.fetchLPsAndSeedLps(baseContext, seedLpAmount);
+
+    console.log("Deploy and setup Oracles");
+    // Setup and create all oracles
+    await oracleContext.fetchUSGOracleAndDeployMarketOracles();
+
+
+    const stakeDaoVaultMarkets: StakeDaoVaultV2MarketsKeys[] = [
+        "frxUSD_sUSDS",
+        "BOLD_USDC",
+        "eUSD_USDC",
+        "reUSD_scrvUSD",
+        "USDT_crvUSD",
+        "frxUSD_OUSD",
+        "frxUSD_sDOLA",
+        "frxUSD_scrvUSD",
+        // New contracts
+        "tBTC_cbBTC",
+        "ETH+_WETH"
+    ];
+
+    const curveGaugeMarkets: CurveGaugeMarketsKeys[] = [
+        "PYUSD_USDC",
+        "RLUSD_USDC",
+    ];
+    const convexFxnMarkets: ConvexFxnMarketKeys[] = [
+        "USDC_fxUSD",
+        "fxUSD_reUSD"
+    ];
+
+    // New contract
+    const pendleMarkets: PendleKeys[] = [
+        "sUSDe 08/13/2026",
+    ];
+
+
+    // Deploy StakeDAO Vault markets
+    const missingStakeDaoVaultMarkets = await useProdStakeDaoVaultMarkets(baseContext, marketContext, stakeDaoVaultMarkets);
+    if (missingStakeDaoVaultMarkets.length > 0) {
+        console.log("Deploy missing StakeDao VaultV2 markets", missingStakeDaoVaultMarkets);
+        await marketContext.deployStakeDaoVaultV2Markets(missingStakeDaoVaultMarkets, baseContext, oracleContext, baseContext.users);
+    }
+
+    // Deploy Curve Gauge markets
+    const missingCurveGaugeMarkets = await useProdCurveGaugeMarkets(baseContext, marketContext, curveGaugeMarkets, isLiquidationContext);
+    if (missingCurveGaugeMarkets.length > 0) {
+        console.log("Deploy missing Curve Gauge markets", missingCurveGaugeMarkets);
+        await marketContext.deployCurveGaugeMarkets(missingCurveGaugeMarkets, baseContext, oracleContext, baseContext.users);
+    }
+
+
+    // Deploy Convex FXN markets
+    const missingConvexFxnMarkets = await useProdConvexFxnMarkets(baseContext, marketContext, convexFxnMarkets, isLiquidationContext);
+    if (missingConvexFxnMarkets.length > 0) {
+        console.log("Deploy missing convex FXN markets");
+        await marketContext.deployConvexFxnMarkets(missingConvexFxnMarkets, baseContext, oracleContext);
+    }
+
+
+    // Deploy Pendle PT markets
+    await marketContext.deployBasicERC20Markets(pendleMarkets, baseContext, oracleContext);
+
+
+    // Approve LPs with test users
+    await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-USDC"].getAddress());
+    await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-frxUSD"].getAddress());
+    await baseContext.approveCurveLP(CURVE_LPS.crvUSD_USDC);
+
+    return { baseContext, oracleContext, marketContext, lpDeployContext, wStableContext };
+}
 
 function getProdMarketAddress(prodMarkets: ProdMarketAddresses, key: string) {
     const reversedKey = key.split("_").reverse().join("_");
@@ -44,16 +137,13 @@ async function bumpProdMarketMaxDebt(baseContext: BaseContext, market: DebtIR, k
     await stopImpersonatingAccount(await baseContext.owner.getAddress());
 }
 
-async function useProdStakeDaoVaultMarkets(baseContext: BaseContext, marketContext: MarketContext, keys: StakeDaoVaultV2MarketsKeys[], isLiquidationContext: boolean) {
-    if (!isLiquidationContext) {
-        return keys;
-    }
-
+async function useProdStakeDaoVaultMarkets(baseContext: BaseContext, marketContext: MarketContext, keys: StakeDaoVaultV2MarketsKeys[]) {
     const missingKeys: StakeDaoVaultV2MarketsKeys[] = [];
     const prodMarkets = PROD_ADDRESSES.MARKETS.STAKEDAO_VAULT as ProdMarketAddresses;
 
     for (const key of keys) {
         const prodAddress = getProdMarketAddress(prodMarkets, key);
+
         if (!prodAddress) {
             missingKeys.push(key);
             continue;
@@ -65,11 +155,13 @@ async function useProdStakeDaoVaultMarkets(baseContext: BaseContext, marketConte
             continue;
         }
 
-        if (!(await isCleanProdMarket(prodAddress))) {
-            console.log(`Prod StakeDao VaultV2 market ${key} at ${prodAddress} already has existing debt at fork block; falling back to local deploy.`);
-            missingKeys.push(key);
-            continue;
-        }
+
+        // if (!(await isCleanProdMarket(prodAddress))) {
+        //     console.log(`Prod StakeDao VaultV2 market ${key} at ${prodAddress} already has existing debt at fork block; falling back to local deploy.`);
+        //     missingKeys.push(key);
+        //     continue;
+        // }
+        // console.log("zozo")
 
         const market = await ethers.getContractAt("StakeDaoVaultV2Market", prodAddress);
         marketContext.stakeDaoVaultMarkets[key] = market;
@@ -81,15 +173,14 @@ async function useProdStakeDaoVaultMarkets(baseContext: BaseContext, marketConte
 }
 
 async function useProdCurveGaugeMarkets(baseContext: BaseContext, marketContext: MarketContext, keys: CurveGaugeMarketsKeys[], isLiquidationContext: boolean) {
-    if (!isLiquidationContext) {
-        return keys;
-    }
 
     const missingKeys: CurveGaugeMarketsKeys[] = [];
     const prodMarkets = PROD_ADDRESSES.MARKETS.CURVE_GAUGE as ProdMarketAddresses;
 
     for (const key of keys) {
         const prodAddress = getProdMarketAddress(prodMarkets, key);
+
+        console.log(key, prodAddress)
         if (!prodAddress) {
             missingKeys.push(key);
             continue;
@@ -101,11 +192,11 @@ async function useProdCurveGaugeMarkets(baseContext: BaseContext, marketContext:
             continue;
         }
 
-        if (!(await isCleanProdMarket(prodAddress))) {
-            console.log(`Prod Curve Gauge market ${key} at ${prodAddress} already has existing debt at fork block; falling back to local deploy.`);
-            missingKeys.push(key);
-            continue;
-        }
+        // if (!(await isCleanProdMarket(prodAddress))) {
+        //     console.log(`Prod Curve Gauge market ${key} at ${prodAddress} already has existing debt at fork block; falling back to local deploy.`);
+        //     missingKeys.push(key);
+        //     continue;
+        // }
 
         const market = await ethers.getContractAt("CurveGaugeMarket", prodAddress);
         marketContext.curveGaugeMarkets[key] = market;
@@ -117,7 +208,7 @@ async function useProdCurveGaugeMarkets(baseContext: BaseContext, marketContext:
 }
 
 async function useProdConvexFxnMarkets(baseContext: BaseContext, marketContext: MarketContext, keys: ConvexFxnMarketKeys[], isLiquidationContext: boolean) {
-    
+
 
     const missingKeys: ConvexFxnMarketKeys[] = [];
     const prodMarkets = PROD_ADDRESSES.MARKETS.CONVEX_FXN as ProdMarketAddresses;
@@ -150,86 +241,5 @@ async function useProdConvexFxnMarkets(baseContext: BaseContext, marketContext: 
     return missingKeys;
 }
 
-export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposit?: number, isLiquidationContext: boolean = false) {
-    const baseContext = new BaseContext(userCount);
-    const oracleContext = new OracleContext();
-    const marketContext = new MarketContext();
-    const lpDeployContext = new LpDeployContext();
-    const wStableContext = new WStablesContext();
 
-
-    await mine(1)
-
-    console.log("Setup Users");
-    await baseContext.setupTestUsers();
-
-    console.log("Fetches Mainnet contracts");
-    await baseContext.fetchMainnetContracts();
-
-    console.log("Give ERC20 to users");
-    await baseContext.setUpERC20();
-
-    // console.log("Setup the context for Onchain boost ( lockers + stAssets + NFT)");
-    // await executeBoostContext()
-
-    const seedLpAmount = baseLpDeposit ?? 10_000;
-    await lpDeployContext.fetchLPsAndSeedLps(baseContext, seedLpAmount);
-
-    console.log("Deploy and setup Oracles");
-    // Setup and create all oracles
-    await oracleContext.fetchUSGOracleAndDeployMarketOracles();
-
-
-    const stakeDaoVaultMarkets: StakeDaoVaultV2MarketsKeys[] = [
-        "frxUSD_sUSDS",
-        "BOLD_USDC",
-        "eUSD_USDC",
-        "reUSD_scrvUSD",
-        "USDT_crvUSD",
-        "frxUSD_OUSD",
-        "frxUSD_sDOLA",
-        "frxUSD_scrvUSD",
-    ];
-
-    const curveGaugeMarkets: CurveGaugeMarketsKeys[] = [
-        "PYUSD_USDC",
-        "RLUSD_USDC",
-        // "stUSDS_USDS"
-    ];
-    const convexFxnMarkets: ConvexFxnMarketKeys[] = [
-        "USDC_fxUSD",
-        "fxUSD_reUSD"
-    ];
-
-
-    // Deploy StakeDAO Vault markets
-    const missingStakeDaoVaultMarkets = await useProdStakeDaoVaultMarkets(baseContext, marketContext, stakeDaoVaultMarkets, isLiquidationContext);
-    if (missingStakeDaoVaultMarkets.length > 0) {
-        console.log("Deploy missing StakeDao VaultV2 markets");
-        await marketContext.deployStakeDaoVaultV2Markets(missingStakeDaoVaultMarkets, baseContext, oracleContext, baseContext.users);
-    }
-
-    // Deploy Curve Gauge markets
-    const missingCurveGaugeMarkets = await useProdCurveGaugeMarkets(baseContext, marketContext, curveGaugeMarkets, isLiquidationContext);
-    if (missingCurveGaugeMarkets.length > 0) {
-        console.log("Deploy missing Curve Gauge markets");
-        await marketContext.deployCurveGaugeMarkets(missingCurveGaugeMarkets, baseContext, oracleContext, baseContext.users);
-    }
-
-
-    // Deploy Convex FXN markets
-    const missingConvexFxnMarkets = await useProdConvexFxnMarkets(baseContext, marketContext, convexFxnMarkets, isLiquidationContext);
-    if (missingConvexFxnMarkets.length > 0) {
-        console.log("Deploy missing convex FXN markets");
-        await marketContext.deployConvexFxnMarkets(missingConvexFxnMarkets, baseContext, oracleContext);
-    }
-
-
-    // Approve LPs with test users
-    await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-USDC"].getAddress());
-    await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-frxUSD"].getAddress());
-    await baseContext.approveCurveLP(CURVE_LPS.crvUSD_USDC);
-
-    return { baseContext, oracleContext, marketContext, lpDeployContext, wStableContext };
-}
 
