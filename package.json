@@ -21,6 +21,8 @@
     "liquidation-context-test": "npx hardhat run js-scripts/hardhat/USG/scripts/liquidationTestRun.ts --network localhost",
     "liquidation-check": "npx hardhat run js-scripts/hardhat/USG/scripts/LiquidationCheck.ts --network localhost",
     "saving-account-context": "npx hardhat run js-scripts/hardhat/USG/scripts/savingaccountSetUp.ts --network localhost",
+    "morpho-context": "npx hardhat run js-scripts/hardhat/USG/scripts/morphoSetUp.ts --network localhost",
+    "morpho-example-scenario": "npx hardhat run js-scripts/hardhat/USG/scripts/morphoExampleScenario.ts --network localhost",
     "routing:generate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/generateCurveRoutes.ts --network localhost",
     "routing:propose-sheet-routes": "npx hardhat run js-scripts/hardhat/USG/routing/Curve/proposeSheetRoutes.ts --network localhost",
     "routing:hydrate-routes": "npx hardhat run  js-scripts/hardhat/USG/routing/Curve/hydrateFinalRoutes.ts --network localhost",

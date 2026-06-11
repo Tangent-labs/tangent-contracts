@@ -32,6 +32,7 @@ import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CUR
 import { STATIC_CONFIG_CONVEX_CURVE } from "../config/markets/convex_crv";
 import { STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/markets/stakeDao";
 import { LpDeployContext } from "./LPDeployContext";
+import { MORPHO_ADDRESSES_JSON } from "./MorphoContext";
 import { BasicERC20MarketKeys, ConvexCrvMarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, StakeDaoVaultV2MarketsKeys } from "./MarketContext";
 import { OracleContext } from "./OracleContext";
 import { WStablesContext } from "./WStableContext";
@@ -447,5 +448,6 @@ export async function createJSONAddress(
             "USG-USDC": await baseContext.pegKeeperUSG_USDC.getAddress(),
             "USG-frxUSD": await baseContext.pegKeeperUSG_frxUSD.getAddress(),
         },
+        morpho: MORPHO_ADDRESSES_JSON,
     };
 }
