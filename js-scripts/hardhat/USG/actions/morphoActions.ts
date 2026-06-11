@@ -1,5 +1,4 @@
 import {parseEther} from "ethers";
-import {Contract} from "ethers";
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
 import {MorphoContext} from "../contexts/MorphoContext";
 
@@ -30,7 +29,6 @@ export const getMorphoContext = async (): Promise<MorphoContext> => {
     if (!context) {
         context = new MorphoContext();
         await context.setup();
-        await context.ensureMarket();
         initialOraclePrice = await context.oraclePrice();
     }
     return context;
@@ -47,7 +45,7 @@ export const morphoSupplyCollateral = async (user: HardhatEthersSigner, amount: 
     const assets = parseEther(amount.toString());
     await ctx.fundCollateral(user, assets);
     const beneficiary = (onBehalf ?? user).address;
-    const tx = await (ctx.morpho.connect(user) as Contract).getFunction("supplyCollateral")(ctx.marketParams, assets, beneficiary, "0x");
+    const tx = await ctx.morpho.connect(user).supplyCollateral(ctx.marketParams, assets, beneficiary, "0x");
     await ctx.record("actions", `supplyCollateral ${amount} sUSG onBehalf ${ctx.label(beneficiary)}`, user.address, tx);
 };
 
@@ -58,12 +56,7 @@ export const morphoSupplyCollateral = async (user: HardhatEthersSigner, amount: 
  */
 export const morphoWithdrawCollateral = async (user: HardhatEthersSigner, amount: number, receiver?: HardhatEthersSigner) => {
     const ctx = await getMorphoContext();
-    const tx = await (ctx.morpho.connect(user) as Contract).getFunction("withdrawCollateral")(
-        ctx.marketParams,
-        parseEther(amount.toString()),
-        user.address,
-        (receiver ?? user).address
-    );
+    const tx = await ctx.morpho.connect(user).withdrawCollateral(ctx.marketParams, parseEther(amount.toString()), user.address, (receiver ?? user).address);
     await ctx.record("actions", `withdrawCollateral ${amount} sUSG`, user.address, tx);
 };
 
@@ -83,7 +76,7 @@ export const morphoSeedLoanLiquidity = async (amount: number = 200000) => {
 export const morphoBorrow = async (user: HardhatEthersSigner, amount: number) => {
     const ctx = await getMorphoContext();
     const assets = parseEther(amount.toString());
-    const tx = await (ctx.morpho.connect(user) as Contract).getFunction("borrow")(ctx.marketParams, assets, 0n, user.address, user.address);
+    const tx = await ctx.morpho.connect(user).borrow(ctx.marketParams, assets, 0n, user.address, user.address);
     await ctx.record("actions", `borrow ${amount} frxUSD`, user.address, tx);
 };
 
@@ -95,7 +88,7 @@ export const morphoRepay = async (user: HardhatEthersSigner, amount: number) => 
     const ctx = await getMorphoContext();
     const assets = parseEther(amount.toString());
     await ctx.fundLoanToken(user, assets);
-    const tx = await (ctx.morpho.connect(user) as Contract).getFunction("repay")(ctx.marketParams, assets, 0n, user.address, "0x");
+    const tx = await ctx.morpho.connect(user).repay(ctx.marketParams, assets, 0n, user.address, "0x");
     await ctx.record("actions", `repay ${amount} frxUSD`, user.address, tx);
 };
 
@@ -118,12 +111,12 @@ export const morphoLiquidatePartial = async (borrower: HardhatEthersSigner) => {
     await ctx.pushUtilization(); // real-oracle mode: interest must accrue fast enough to go underwater
     await ctx.fundLiquidator();
     const liquidator = ctx.accounts.liquidator;
-    const morpho = ctx.morpho.connect(liquidator) as Contract;
+    const morpho = ctx.morpho.connect(liquidator);
 
     const tryLiquidate = async () => {
         const position = await ctx.morpho.position(ctx.marketId, borrower.address);
         try {
-            await morpho.getFunction("liquidate").staticCall(ctx.marketParams, borrower.address, 0n, position.borrowShares / 2n, "0x");
+            await morpho.liquidate.staticCall(ctx.marketParams, borrower.address, 0n, position.borrowShares / 2n, "0x");
             return true;
         } catch {
             return false;
@@ -132,7 +125,7 @@ export const morphoLiquidatePartial = async (borrower: HardhatEthersSigner) => {
     await ctx.makeLiquidatable(borrower, tryLiquidate, 7 * 86400, 60, "actions-liquidation");
 
     const position = await ctx.morpho.position(ctx.marketId, borrower.address);
-    const tx = await morpho.getFunction("liquidate")(ctx.marketParams, borrower.address, 0n, position.borrowShares / 2n, "0x");
+    const tx = await morpho.liquidate(ctx.marketParams, borrower.address, 0n, position.borrowShares / 2n, "0x");
     await ctx.record("actions", `liquidate ${ctx.label(borrower.address)} (repay half the borrow shares)`, liquidator.address, tx);
 };
 
@@ -144,12 +137,12 @@ export const morphoLiquidateFull = async (borrower: HardhatEthersSigner) => {
     await ctx.pushUtilization(); // real-oracle mode: interest must accrue fast enough to go underwater
     await ctx.fundLiquidator();
     const liquidator = ctx.accounts.liquidator;
-    const morpho = ctx.morpho.connect(liquidator) as Contract;
+    const morpho = ctx.morpho.connect(liquidator);
 
     const tryLiquidate = async () => {
         const position = await ctx.morpho.position(ctx.marketId, borrower.address);
         try {
-            await morpho.getFunction("liquidate").staticCall(ctx.marketParams, borrower.address, position.collateral, 0n, "0x");
+            await morpho.liquidate.staticCall(ctx.marketParams, borrower.address, position.collateral, 0n, "0x");
             return true;
         } catch {
             return false;
@@ -158,7 +151,7 @@ export const morphoLiquidateFull = async (borrower: HardhatEthersSigner) => {
     await ctx.makeLiquidatable(borrower, tryLiquidate, 30 * 86400, 36, "actions-bad-debt");
 
     const position = await ctx.morpho.position(ctx.marketId, borrower.address);
-    const tx = await morpho.getFunction("liquidate")(ctx.marketParams, borrower.address, position.collateral, 0n, "0x");
+    const tx = await morpho.liquidate(ctx.marketParams, borrower.address, position.collateral, 0n, "0x");
     await ctx.record("actions", `liquidate ${ctx.label(borrower.address)} (seize full collateral)`, liquidator.address, tx);
 };
 

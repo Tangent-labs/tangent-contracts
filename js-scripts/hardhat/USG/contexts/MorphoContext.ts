@@ -1,8 +1,9 @@
 import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
-import {setCode, setStorageAt, time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import {Contract, ContractTransactionResponse, MaxUint256, formatEther, parseEther} from "ethers";
-import {artifacts, ethers} from "hardhat";
-import {GlobalHelper} from "../../GlobalHelper";
+import {time} from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import {ContractTransactionResponse, MaxUint256, formatEther, parseEther} from "ethers";
+import {ethers} from "hardhat";
+import {giveTokenToAddress, giveTokenToAddresss} from "../../thief/thief";
+import {IERC20, IMorpho, MockMorphoOracle} from "../../../../typechain-types";
 import hardhatConfig from "../../../../hardhat.config";
 
 export const MORPHO_BLUE = "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb";
@@ -44,33 +45,10 @@ export const MORPHO_ADDRESSES_JSON = {
     },
 };
 
-const MP = "(address loanToken, address collateralToken, address oracle, address irm, uint256 lltv)";
-const MORPHO_ABI = [
-    `function createMarket(${MP} marketParams)`,
-    `function supply(${MP} marketParams, uint256 assets, uint256 shares, address onBehalf, bytes data) returns (uint256, uint256)`,
-    `function supplyCollateral(${MP} marketParams, uint256 assets, address onBehalf, bytes data)`,
-    `function withdrawCollateral(${MP} marketParams, uint256 assets, address onBehalf, address receiver)`,
-    `function borrow(${MP} marketParams, uint256 assets, uint256 shares, address onBehalf, address receiver) returns (uint256, uint256)`,
-    `function repay(${MP} marketParams, uint256 assets, uint256 shares, address onBehalf, bytes data) returns (uint256, uint256)`,
-    `function liquidate(${MP} marketParams, address borrower, uint256 seizedAssets, uint256 repaidShares, bytes data) returns (uint256, uint256)`,
-    `function accrueInterest(${MP} marketParams)`,
-    "function market(bytes32 id) view returns (uint128 totalSupplyAssets, uint128 totalSupplyShares, uint128 totalBorrowAssets, uint128 totalBorrowShares, uint128 lastUpdate, uint128 fee)",
-    "function position(bytes32 id, address user) view returns (uint256 supplyShares, uint128 borrowShares, uint128 collateral)",
-    "function isIrmEnabled(address irm) view returns (bool)",
-    "function isLltvEnabled(uint256 lltv) view returns (bool)",
-    `event CreateMarket(bytes32 indexed id, ${MP} marketParams)`,
-    "event Supply(bytes32 indexed id, address indexed caller, address indexed onBehalf, uint256 assets, uint256 shares)",
-    "event SupplyCollateral(bytes32 indexed id, address indexed caller, address indexed onBehalf, uint256 assets)",
-    "event WithdrawCollateral(bytes32 indexed id, address caller, address indexed onBehalf, address indexed receiver, uint256 assets)",
-    "event Borrow(bytes32 indexed id, address caller, address indexed onBehalf, address indexed receiver, uint256 assets, uint256 shares)",
-    "event Repay(bytes32 indexed id, address indexed caller, address indexed onBehalf, uint256 assets, uint256 shares)",
-    "event Liquidate(bytes32 indexed id, address indexed caller, address indexed borrower, uint256 repaidAssets, uint256 repaidShares, uint256 seizedAssets, uint256 badDebtAssets, uint256 badDebtShares)",
-    "event AccrueInterest(bytes32 indexed id, uint256 prevBorrowRate, uint256 interest, uint256 feeShares)",
-];
-const ORACLE_ABI = ["function price() view returns (uint256)"];
-const ERC20_ABI = ["function balanceOf(address account) view returns (uint256)", "function approve(address spender, uint256 amount) returns (bool)"];
-
 const ORACLE_PRICE_SCALE = 10n ** 36n;
+// sUSG is not in THIEF_TOKEN_CONFIG: Yearn V3 vault (Vyper), balance_of mapping at slot 18
+// (found by storage probing on the fork)
+const SUSG_BALANCE_SLOT = 18;
 
 export interface MorphoStep {
     scenario: string;
@@ -81,23 +59,17 @@ export interface MorphoStep {
     events: {name: string; args: Record<string, string>}[];
 }
 
-interface SlotInfo {
-    layout: "solidity" | "vyper" | "oz";
-    slot: number;
-}
-
 export class MorphoContext {
-    morpho!: Contract;
-    sUSG!: Contract;
-    frxUSD!: Contract;
+    morpho!: IMorpho;
+    sUSG!: IERC20;
+    frxUSD!: IERC20;
     marketParams: MorphoMarketParams = {...PROD_MARKET_PARAMS};
     marketId: string = EXPECTED_MARKET_ID;
     oracleMode: "real" | "mock" = "real";
-    mockOracle?: Contract;
+    mockOracle?: MockMorphoOracle;
 
     accounts: Record<string, HardhatEthersSigner> = {};
     steps: MorphoStep[] = [];
-    private slotCache: Record<string, SlotInfo> = {};
 
     async setup() {
         const signers = await ethers.getSigners();
@@ -113,9 +85,9 @@ export class MorphoContext {
             liquidator: signers[8],
             utilizationFiller: signers[9], // pushes utilization up so interest accrual is fast (real-oracle mode)
         };
-        this.morpho = new ethers.Contract(MORPHO_BLUE, MORPHO_ABI, this.accounts.ops);
-        this.sUSG = new ethers.Contract(this.marketParams.collateralToken, ERC20_ABI, this.accounts.ops);
-        this.frxUSD = new ethers.Contract(this.marketParams.loanToken, ERC20_ABI, this.accounts.ops);
+        this.morpho = await ethers.getContractAt("IMorpho", MORPHO_BLUE);
+        this.sUSG = await ethers.getContractAt("IERC20", this.marketParams.collateralToken);
+        this.frxUSD = await ethers.getContractAt("IERC20", this.marketParams.loanToken);
     }
 
     computeMarketId(params: MorphoMarketParams): string {
@@ -136,69 +108,8 @@ export class MorphoContext {
 
     // ---------------------------------------------------------------- market
 
-    async ensureMarket() {
-        const computed = this.computeMarketId(PROD_MARKET_PARAMS);
-        if (computed.toLowerCase() !== EXPECTED_MARKET_ID.toLowerCase()) {
-            throw new Error(`Market id mismatch: computed ${computed}, expected ${EXPECTED_MARKET_ID}`);
-        }
-
-        this.marketParams = {...PROD_MARKET_PARAMS};
-        this.marketId = EXPECTED_MARKET_ID;
-
-        const forceMock = process.env.MORPHO_MOCK_ORACLE === "1";
-        const realOraclePrice = await this.tryReadOracle(PROD_MARKET_PARAMS.oracle);
-        const mockBytecode = (await artifacts.readArtifact("MockMorphoOracle")).deployedBytecode;
-        const alreadyInjected = (await ethers.provider.getCode(PROD_MARKET_PARAMS.oracle)).toLowerCase() === mockBytecode.toLowerCase();
-        if (alreadyInjected) {
-            // a previous run already swapped the oracle for the mock
-            this.oracleMode = "mock";
-            this.mockOracle = new ethers.Contract(PROD_MARKET_PARAMS.oracle, [...ORACLE_ABI, "function setPrice(uint256 _price)"], this.accounts.ops);
-        } else if (!forceMock && realOraclePrice !== null) {
-            this.oracleMode = "real";
-        } else {
-            // The real oracle was deployed after the pinned fork block (or is forced off):
-            // inject the mock's bytecode AT the real oracle address so the market params —
-            // and therefore the market id — stay identical to mainnet.
-            this.oracleMode = "mock";
-            await this.injectMockOracle(realOraclePrice ?? ORACLE_PRICE_SCALE);
-            const reason = forceMock ? "MORPHO_MOCK_ORACLE=1" : "real oracle has no code at this fork block";
-            console.info("\x1b[33m%s\x1b[0m", `Mock oracle bytecode injected at ${PROD_MARKET_PARAMS.oracle} (${reason}); market id unchanged`);
-        }
-
-        const market = await this.morpho.market(this.marketId);
-        if (market.lastUpdate !== 0n) {
-            console.log(`Market ${this.marketId} already exists on the fork (lastUpdate=${market.lastUpdate}), reusing it`);
-            return;
-        }
-
-        const [irmOk, lltvOk] = await Promise.all([this.morpho.isIrmEnabled(this.marketParams.irm), this.morpho.isLltvEnabled(this.marketParams.lltv)]);
-        if (!irmOk || !lltvOk) {
-            throw new Error(`createMarket prerequisites missing at fork block: isIrmEnabled=${irmOk}, isLltvEnabled=${lltvOk}`);
-        }
-        const tx = await this.morpho.connect(this.accounts.ops).getFunction("createMarket")(this.marketParams);
-        await this.record("setup", "createMarket", this.accounts.ops.address, tx);
-        console.info("\x1b[32m%s\x1b[0m", `Market created on fork: ${this.marketId}`);
-    }
-
-    private async tryReadOracle(oracleAddress: string): Promise<bigint | null> {
-        if ((await ethers.provider.getCode(oracleAddress)) === "0x") return null;
-        try {
-            const oracle = new ethers.Contract(oracleAddress, ORACLE_ABI, ethers.provider);
-            return await oracle.price();
-        } catch {
-            return null;
-        }
-    }
-
-    private async injectMockOracle(initialPrice: bigint) {
-        const artifact = await artifacts.readArtifact("MockMorphoOracle");
-        await setCode(PROD_MARKET_PARAMS.oracle, artifact.deployedBytecode);
-        this.mockOracle = new ethers.Contract(PROD_MARKET_PARAMS.oracle, [...ORACLE_ABI, "function setPrice(uint256 _price)"], this.accounts.ops);
-        await (await this.mockOracle.setPrice(initialPrice)).wait();
-    }
-
     async oraclePrice(): Promise<bigint> {
-        const oracle = new ethers.Contract(this.marketParams.oracle, ORACLE_ABI, ethers.provider);
+        const oracle = await ethers.getContractAt("IMorphoOracle", this.marketParams.oracle);
         try {
             return await oracle.price();
         } catch (e) {
@@ -208,62 +119,15 @@ export class MorphoContext {
 
     // --------------------------------------------------------------- funding
 
-    // Brute-force the balanceOf storage slot (sUSG is a Vyper Yearn V3 vault, frxUSD a Solidity ERC20).
-    private async findBalanceSlot(tokenAddress: string): Promise<SlotInfo> {
-        const cached = this.slotCache[tokenAddress];
-        if (cached) return cached;
-
-        const probe = "0x00000000000000000000000000000000DeaDBeef";
-        const token = new ethers.Contract(tokenAddress, ERC20_ABI, ethers.provider);
-        const marker = 1357924680135790n;
-        const candidates: (SlotInfo & {hash: string})[] = [{layout: "oz", slot: 0, hash: GlobalHelper.calculateERC20OZUpgradeable(probe)}];
-        for (let slot = 0; slot < 200; slot++) {
-            candidates.push({layout: "solidity", slot, hash: GlobalHelper.calculateStorageSlotEthersSolidity(probe, slot)});
-            candidates.push({layout: "vyper", slot, hash: GlobalHelper.calculateStorageSlotEthersVyper(probe, slot)});
-        }
-        for (const candidate of candidates) {
-            const previous = await ethers.provider.send("eth_getStorageAt", [tokenAddress, candidate.hash, "latest"]);
-            await setStorageAt(tokenAddress, candidate.hash, marker);
-            let balance = 0n;
-            try {
-                balance = await token.balanceOf(probe);
-            } catch {
-                // proxies can revert mid-probe, keep scanning
-            }
-            await setStorageAt(tokenAddress, candidate.hash, BigInt(previous));
-            if (balance === marker) {
-                this.slotCache[tokenAddress] = {layout: candidate.layout, slot: candidate.slot};
-                return this.slotCache[tokenAddress];
-            }
-        }
-        throw new Error(`Could not find balanceOf storage slot for ${tokenAddress}`);
-    }
-
-    async deal(token: Contract, user: HardhatEthersSigner, amount: bigint) {
-        const tokenAddress = await token.getAddress();
-        const slotInfo = await this.findBalanceSlot(tokenAddress);
-        let hash: string;
-        if (slotInfo.layout === "oz") {
-            hash = GlobalHelper.calculateERC20OZUpgradeable(user.address);
-        } else if (slotInfo.layout === "vyper") {
-            hash = GlobalHelper.calculateStorageSlotEthersVyper(user.address, slotInfo.slot);
-        } else {
-            hash = GlobalHelper.calculateStorageSlotEthersSolidity(user.address, slotInfo.slot);
-        }
-        const previous = await ethers.provider.send("eth_getStorageAt", [tokenAddress, hash, "latest"]);
-        await setStorageAt(tokenAddress, hash, BigInt(previous) + amount);
-        const balance = await token.balanceOf(user.address);
-        if (balance < amount) throw new Error(`deal failed for ${tokenAddress}: balance ${balance} < ${amount}`);
-    }
-
+    // Note: the thief utilities SET the balance (storage write), they do not add to it
     async fundCollateral(user: HardhatEthersSigner, amount: bigint) {
-        await this.deal(this.sUSG, user, amount);
-        await (await this.sUSG.connect(user).getFunction("approve")(MORPHO_BLUE, MaxUint256)).wait();
+        await giveTokenToAddresss(user, this.marketParams.collateralToken, amount, SUSG_BALANCE_SLOT, true);
+        await (await this.sUSG.connect(user).approve(MORPHO_BLUE, MaxUint256)).wait();
     }
 
     async fundLoanToken(user: HardhatEthersSigner, amount: bigint) {
-        await this.deal(this.frxUSD, user, amount);
-        await (await this.frxUSD.connect(user).getFunction("approve")(MORPHO_BLUE, MaxUint256)).wait();
+        await giveTokenToAddress(user, "frxUSD", amount);
+        await (await this.frxUSD.connect(user).approve(MORPHO_BLUE, MaxUint256)).wait();
     }
 
     // ------------------------------------------------------------- scenarios
@@ -271,7 +135,7 @@ export class MorphoContext {
     async seedLoanLiquidity(amount: bigint = parseEther("200000")) {
         const lp = this.accounts.loanSupplier;
         await this.fundLoanToken(lp, amount);
-        const tx = await this.morpho.connect(lp).getFunction("supply")(this.marketParams, amount, 0n, lp.address, "0x");
+        const tx = await this.morpho.connect(lp).supply(this.marketParams, amount, 0n, lp.address, "0x");
         await this.record("seed-liquidity", `supply ${formatEther(amount)} frxUSD`, lp.address, tx);
     }
 
@@ -279,15 +143,15 @@ export class MorphoContext {
     async scenarioSimple() {
         const user = this.accounts.userA;
         await this.fundCollateral(user, parseEther("10000"));
-        const morpho = this.morpho.connect(user) as Contract;
+        const morpho = this.morpho.connect(user);
 
-        let tx = await morpho.getFunction("supplyCollateral")(this.marketParams, parseEther("10000"), user.address, "0x");
+        let tx = await morpho.supplyCollateral(this.marketParams, parseEther("10000"), user.address, "0x");
         await this.record("simple", "supplyCollateral 10000 sUSG", user.address, tx);
 
-        tx = await morpho.getFunction("withdrawCollateral")(this.marketParams, parseEther("4000"), user.address, user.address);
+        tx = await morpho.withdrawCollateral(this.marketParams, parseEther("4000"), user.address, user.address);
         await this.record("simple", "withdrawCollateral 4000 sUSG (partial)", user.address, tx);
 
-        tx = await morpho.getFunction("withdrawCollateral")(this.marketParams, parseEther("6000"), user.address, user.address);
+        tx = await morpho.withdrawCollateral(this.marketParams, parseEther("6000"), user.address, user.address);
         await this.record("simple", "withdrawCollateral 6000 sUSG (full exit)", user.address, tx);
     }
 
@@ -297,15 +161,10 @@ export class MorphoContext {
         const beneficiary = this.accounts.userC;
         await this.fundCollateral(caller, parseEther("5000"));
 
-        let tx = await (this.morpho.connect(caller) as Contract).getFunction("supplyCollateral")(this.marketParams, parseEther("5000"), beneficiary.address, "0x");
+        let tx = await this.morpho.connect(caller).supplyCollateral(this.marketParams, parseEther("5000"), beneficiary.address, "0x");
         await this.record("on-behalf", "userB supplyCollateral 5000 sUSG onBehalf of userC", caller.address, tx);
 
-        tx = await (this.morpho.connect(beneficiary) as Contract).getFunction("withdrawCollateral")(
-            this.marketParams,
-            parseEther("1000"),
-            beneficiary.address,
-            beneficiary.address
-        );
+        tx = await this.morpho.connect(beneficiary).withdrawCollateral(this.marketParams, parseEther("1000"), beneficiary.address, beneficiary.address);
         await this.record("on-behalf", "userC withdrawCollateral 1000 sUSG", beneficiary.address, tx);
     }
 
@@ -315,21 +174,21 @@ export class MorphoContext {
         const price = await this.oraclePrice();
         let supplyAmount = parseEther("10000");
         await this.fundCollateral(user, supplyAmount);
-        const morpho = this.morpho.connect(user) as Contract;
+        const morpho = this.morpho.connect(user);
 
         for (let i = 0; i < iterations; i++) {
-            let tx = await morpho.getFunction("supplyCollateral")(this.marketParams, supplyAmount, user.address, "0x");
+            let tx = await morpho.supplyCollateral(this.marketParams, supplyAmount, user.address, "0x");
             await this.record("loop", `loop ${i + 1}: supplyCollateral ${formatEther(supplyAmount)} sUSG`, user.address, tx);
 
             // borrow 60% of the freshly supplied collateral's value (total LTV stays well under the 86% lltv)
             const borrowAmount = (((supplyAmount * price) / ORACLE_PRICE_SCALE) * 60n) / 100n;
-            tx = await morpho.getFunction("borrow")(this.marketParams, borrowAmount, 0n, user.address, user.address);
+            tx = await morpho.borrow(this.marketParams, borrowAmount, 0n, user.address, user.address);
             await this.record("loop", `loop ${i + 1}: borrow ${formatEther(borrowAmount)} frxUSD`, user.address, tx);
 
             supplyAmount = (borrowAmount * ORACLE_PRICE_SCALE) / price;
             await this.fundCollateral(user, supplyAmount); // simulated frxUSD -> sUSG swap
         }
-        const tx = await morpho.getFunction("supplyCollateral")(this.marketParams, supplyAmount, user.address, "0x");
+        const tx = await morpho.supplyCollateral(this.marketParams, supplyAmount, user.address, "0x");
         await this.record("loop", `loop end: supplyCollateral ${formatEther(supplyAmount)} sUSG`, user.address, tx);
     }
 
@@ -343,14 +202,14 @@ export class MorphoContext {
 
     async openMaxBorrowPosition(user: HardhatEthersSigner, collateralAmount: bigint, scenario: string) {
         await this.fundCollateral(user, collateralAmount);
-        const morpho = this.morpho.connect(user) as Contract;
-        let tx = await morpho.getFunction("supplyCollateral")(this.marketParams, collateralAmount, user.address, "0x");
+        const morpho = this.morpho.connect(user);
+        let tx = await morpho.supplyCollateral(this.marketParams, collateralAmount, user.address, "0x");
         await this.record(scenario, `supplyCollateral ${formatEther(collateralAmount)} sUSG`, user.address, tx);
 
         const price = await this.oraclePrice();
         // 99.8% of max borrow: healthy at open, underwater after the first interest accrual / price drop
         const borrowAmount = (((((collateralAmount * price) / ORACLE_PRICE_SCALE) * this.marketParams.lltv) / parseEther("1")) * 998n) / 1000n;
-        tx = await morpho.getFunction("borrow")(this.marketParams, borrowAmount, 0n, user.address, user.address);
+        tx = await morpho.borrow(this.marketParams, borrowAmount, 0n, user.address, user.address);
         await this.record(scenario, `borrow ${formatEther(borrowAmount)} frxUSD (99.8% of max)`, user.address, tx);
     }
 
@@ -367,10 +226,10 @@ export class MorphoContext {
         const collateralNeeded = (((((extraBorrow * ORACLE_PRICE_SCALE) / price) * parseEther("1")) / this.marketParams.lltv) * 105n) / 100n;
 
         await this.fundCollateral(filler, collateralNeeded);
-        const morpho = this.morpho.connect(filler) as Contract;
-        let tx = await morpho.getFunction("supplyCollateral")(this.marketParams, collateralNeeded, filler.address, "0x");
+        const morpho = this.morpho.connect(filler);
+        let tx = await morpho.supplyCollateral(this.marketParams, collateralNeeded, filler.address, "0x");
         await this.record("utilization-filler", `supplyCollateral ${formatEther(collateralNeeded)} sUSG`, filler.address, tx);
-        tx = await morpho.getFunction("borrow")(this.marketParams, extraBorrow, 0n, filler.address, filler.address);
+        tx = await morpho.borrow(this.marketParams, extraBorrow, 0n, filler.address, filler.address);
         await this.record("utilization-filler", `borrow ${formatEther(extraBorrow)} frxUSD (utilization -> ${targetPercent}%)`, filler.address, tx);
     }
 
@@ -388,7 +247,7 @@ export class MorphoContext {
                 console.log(`${label}: mock oracle price -> ${formatEther(newPrice / 10n ** 18n)} frxUSD/sUSG`);
             } else {
                 await time.increase(jumpSeconds);
-                await (await this.morpho.getFunction("accrueInterest")(this.marketParams)).wait();
+                await (await this.morpho.accrueInterest(this.marketParams)).wait();
                 console.log(`${label}: +${jumpSeconds / 86400} days, debt now ${formatEther(await this.borrowAssetsOf(borrower.address))} frxUSD`);
             }
         }
@@ -399,12 +258,12 @@ export class MorphoContext {
     async scenarioLiquidation() {
         const borrower = this.accounts.userE;
         const liquidator = this.accounts.liquidator;
-        const morpho = this.morpho.connect(liquidator) as Contract;
+        const morpho = this.morpho.connect(liquidator);
 
         const tryLiquidate = async () => {
             const position = await this.morpho.position(this.marketId, borrower.address);
             try {
-                await morpho.getFunction("liquidate").staticCall(this.marketParams, borrower.address, 0n, position.borrowShares / 2n, "0x");
+                await morpho.liquidate.staticCall(this.marketParams, borrower.address, 0n, position.borrowShares / 2n, "0x");
                 return true;
             } catch {
                 return false;
@@ -413,7 +272,7 @@ export class MorphoContext {
         await this.makeLiquidatable(borrower, tryLiquidate, 7 * 86400, 60, "liquidation");
 
         const position = await this.morpho.position(this.marketId, borrower.address);
-        const tx = await morpho.getFunction("liquidate")(this.marketParams, borrower.address, 0n, position.borrowShares / 2n, "0x");
+        const tx = await morpho.liquidate(this.marketParams, borrower.address, 0n, position.borrowShares / 2n, "0x");
         await this.record("liquidation", "liquidate userE (repay half the borrow shares)", liquidator.address, tx);
     }
 
@@ -421,12 +280,12 @@ export class MorphoContext {
     async scenarioBadDebt() {
         const borrower = this.accounts.userF;
         const liquidator = this.accounts.liquidator;
-        const morpho = this.morpho.connect(liquidator) as Contract;
+        const morpho = this.morpho.connect(liquidator);
 
         const tryLiquidate = async () => {
             const position = await this.morpho.position(this.marketId, borrower.address);
             try {
-                await morpho.getFunction("liquidate").staticCall(this.marketParams, borrower.address, position.collateral, 0n, "0x");
+                await morpho.liquidate.staticCall(this.marketParams, borrower.address, position.collateral, 0n, "0x");
                 return true;
             } catch {
                 return false;
@@ -435,7 +294,7 @@ export class MorphoContext {
         await this.makeLiquidatable(borrower, tryLiquidate, 30 * 86400, 36, "bad-debt");
 
         const position = await this.morpho.position(this.marketId, borrower.address);
-        const tx = await morpho.getFunction("liquidate")(this.marketParams, borrower.address, position.collateral, 0n, "0x");
+        const tx = await morpho.liquidate(this.marketParams, borrower.address, position.collateral, 0n, "0x");
         await this.record("bad-debt", "liquidate userF (seize full collateral, realize bad debt)", liquidator.address, tx);
     }
 

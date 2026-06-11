@@ -12,13 +12,12 @@ async function main() {
 
     const scenarios = (process.env.MORPHO_SCENARIOS || "simple,onbehalf,loop,liquidation,baddebt")
         .split(",")
-        .map(s => s.trim().toLowerCase())
+        .map((s) => s.trim().toLowerCase())
         .filter(Boolean);
     const enabled = (name: string) => scenarios.includes(name);
 
     const context = new MorphoContext();
     await context.setup();
-    await context.ensureMarket();
     console.info("\x1b[32m%s\x1b[0m", `Morpho market ready (${context.oracleMode} oracle): ${context.marketId}`);
 
     await context.seedLoanLiquidity();

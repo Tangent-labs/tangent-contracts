@@ -13,12 +13,13 @@ contract TaskListUI {
         uint256[] memory balances = new uint256[](tokens.length + 1);
 
         for (uint256 i; i < tokens.length; ) {
-            // Low-level staticcall so a broken or codeless token (e.g. a synthetic
-            // points-DB address with no contract) yields 0 instead of reverting the batch
-            (bool ok, bytes memory data) = address(tokens[i]).staticcall(
-                abi.encodeWithSelector(IERC20.balanceOf.selector, account)
-            );
-            balances[i] = (ok && data.length >= 32) ? abi.decode(data, (uint256)) : 0;
+            if (address(tokens[i]).code.length > 0) {
+                try tokens[i].balanceOf(account) returns (uint256 balance) {
+                    balances[i] = balance;
+                } catch {
+                    balances[i] = 0;
+                }
+            }
             unchecked {
                 ++i;
             }

@@ -448,6 +448,5 @@ export async function createJSONAddress(
             "USG-USDC": await baseContext.pegKeeperUSG_USDC.getAddress(),
             "USG-frxUSD": await baseContext.pegKeeperUSG_frxUSD.getAddress(),
         },
-        morpho: MORPHO_ADDRESSES_JSON,
     };
 }
