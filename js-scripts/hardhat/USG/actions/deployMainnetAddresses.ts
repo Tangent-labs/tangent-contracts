@@ -5,10 +5,9 @@ import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
 import { DebtIR } from "../../../../typechain-types";
 import { BaseContext } from "../contexts/BaseContext";
 import { LpDeployContext } from "../contexts/LPDeployContext";
-import { ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, StakeDaoVaultV2MarketsKeys } from "../contexts/MarketContext";
+import { BasicERC20MarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, StakeDaoVaultV2MarketsKeys } from "../contexts/MarketContext";
 import { OracleContext } from "../contexts/OracleContext";
 import { WStablesContext } from "../contexts/WStableContext";
-import { PendleKeys } from "./pendleActions";
 
 type ProdMarketAddresses = Record<string, string>;
 
@@ -64,8 +63,8 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
     ];
 
     // New contract
-    const pendleMarkets: PendleKeys[] = [
-        "sUSDe 08/13/2026",
+    const pendleMarkets: BasicERC20MarketKeys[] = [
+        "Pendle PT - sUSDe 08/13/2026",
     ];
 
 

@@ -83,7 +83,7 @@ export const STATIC_CONFIG_CURVE_GAUGE = {
 
 export const STATIC_CONFIG_BASIC_ERC20s =
 {
-    "sUSDe 08/13/2026": {
+    "Pendle PT - sUSDe 08/13/2026": {
         collatName: "sUSDe 08/13/2026",
         collatToken: PENDLE_POOLS["sUSDe 08/13/2026"].PT,
         liquidationThreshold: 94_000,
