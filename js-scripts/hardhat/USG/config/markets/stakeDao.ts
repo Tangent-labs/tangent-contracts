@@ -1,9 +1,9 @@
 import { COMMON_ERC20S, CURVE_LPS } from "@tangent/defi-resources";
 import { SDT_BOLD_USDC_VAULT, SDT_crvUSD_USDT_VAULT, SDT_ETHPlus_WETH_VAULT, SDT_eUSD_USDC_VAULT, SDT_frxUSD_OUSD_VAULT, SDT_frxUSD_scrvUSD_VAULT, SDT_frxUSD_sDOLA_VAULT, SDT_frxUSD_sUSDS_VAULT, SDT_reUSD_scrvUSD_VAULT, SDT_tBTC_cbBTC_VAULT } from "@tangent/defi-resources/build/ressources/erc20/stakeDao";
 import { parseEther } from "ethers";
-import { IR_PARAMS_HEC_USD_S, IR_PARAMS_LEC_USD_A, IR_PARAMS_LEC_USD_B, IR_PARAMS_LEC_USD_S, IR_PARAMS_LEC_VOL } from "../irParams";
+import { IR_PARAMS_HEC_USD_S, IR_PARAMS_HEC_VOL, IR_PARAMS_LEC_USD_A, IR_PARAMS_LEC_USD_B, IR_PARAMS_LEC_USD_S, IR_PARAMS_LEC_VOL } from "../irParams";
 import { MINIMUM_LOAN } from "../market";
-import { RC_PARAMS_HEC_USD_BASE, RC_PARAMS_LEC_USD_S_A_B, RC_PARAMS_LEC_VOL } from "../rcParams";
+import { RC_PARAMS_HEC_USD_BASE, RC_PARAMS_HEC_VOL, RC_PARAMS_LEC_USD_S_A_B, RC_PARAMS_LEC_VOL } from "../rcParams";
 
 export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
 
@@ -111,8 +111,8 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
     tBTC_cbBTC: {
         collatName: "tBTC/cbBTC",
         collatToken: CURVE_LPS.DUO_tBTC_cbBTC,
-        liquidationThreshold: 85_250,
-        maxLTV: 84_000,
+        liquidationThreshold: 82_000,
+        maxLTV: 78_000,
         maxMarketDebt: parseEther("250000"),
         minimumLoan: MINIMUM_LOAN,
         rewardTokens: [COMMON_ERC20S.CRV],
@@ -123,8 +123,8 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
     "ETH+_WETH": {
         collatName: "ETH+/WETH",
         collatToken: CURVE_LPS.DUO_ETHplus_WETH,
-        liquidationThreshold: 85_250,
-        maxLTV: 84_000,
+        liquidationThreshold: 76_000,
+        maxLTV: 72_000,
         maxMarketDebt: parseEther("250000"),
         minimumLoan: MINIMUM_LOAN,
         rewardTokens: [COMMON_ERC20S.CRV],
@@ -132,4 +132,16 @@ export const STATIC_CONFIG_STAKEDAO_VAULT_V2 = {
         irConfig: IR_PARAMS_LEC_VOL,
         rcConfig: RC_PARAMS_LEC_VOL
     },
+    msETH_WETH: {
+        collatName: "msETH/WETH",
+        collatToken: CURVE_LPS.DUO_msETH_WETH,
+        liquidationThreshold: 76_000,
+        maxLTV: 72_000,
+        maxMarketDebt: parseEther("250000"),
+        minimumLoan: MINIMUM_LOAN,
+        rewardTokens: [COMMON_ERC20S.CRV],
+        vaultToken: "0x7053FA875C478045124CE3Ef740a189b6037DF91",
+        irConfig: IR_PARAMS_HEC_VOL,
+        rcConfig: RC_PARAMS_HEC_VOL
+    }
 };

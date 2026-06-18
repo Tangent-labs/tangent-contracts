@@ -131,6 +131,7 @@ export const oracleDuoPoolStableParams: {
         { key: "pxETH/stETH", oracleName: "pxETH_stETH / USD", lp: "LP_pxETH_stETH", coin0Oracle: "pxETH", coin1Oracle: "stETH" },
         { key: "ETH+/WETH", oracleName: "ETH+_WETH / USD", lp: "DUO_ETHplus_WETH", coin0Oracle: "ETH+", coin1Oracle: "WETH" }, //Verify coin order
         { key: "msETH/OETH", oracleName: "msETH_OETH / USD", lp: "DUO_msETH_OETH", coin0Oracle: "msETH", coin1Oracle: "OETH" }, // Verify coin order
+        { key: "msETH/WETH", oracleName: "msETH_WETH / USD", lp: "DUO_msETH_WETH", coin0Oracle: "msETH", coin1Oracle: "WETH" }, // Verify coin order
 
         // BTC
         { key: "tBTC/cbBTC", oracleName: "tBTC_cbBTC / USD", lp: "DUO_tBTC_cbBTC", coin0Oracle: "tBTC", coin1Oracle: "cbBTC" },

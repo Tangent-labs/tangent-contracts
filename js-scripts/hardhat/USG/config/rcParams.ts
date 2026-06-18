@@ -27,3 +27,12 @@ export const RC_PARAMS_LEC_VOL: RCParamsStruct = {
     startCutPrice: 1_000_000,
     endCutPrice: 980_000,
 };
+
+export const RC_PARAMS_HEC_VOL: RCParamsStruct = {
+    harvestFeePercentage: 500,
+    startCutPercentage: 50_000,
+    endCutPercentage: 100_000,
+    stepAmount: 6,
+    startCutPrice: 999_000,
+    endCutPrice: 995_000,
+};
