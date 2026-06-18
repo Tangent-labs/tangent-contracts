@@ -50,7 +50,8 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
         "frxUSD_scrvUSD",
         // New contracts
         "tBTC_cbBTC",
-        "ETH+_WETH"
+        "ETH+_WETH",
+        "msETH_WETH"
     ];
 
     const curveGaugeMarkets: CurveGaugeMarketsKeys[] = [
@@ -92,7 +93,7 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
 
 
     // Deploy Pendle PT markets
-    await marketContext.deployBasicERC20Markets(pendleMarkets, baseContext, oracleContext);
+    // await marketContext.deployBasicERC20Markets(pendleMarkets, baseContext, oracleContext);
 
 
     // Approve LPs with test users
