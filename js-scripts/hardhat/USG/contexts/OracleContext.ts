@@ -3,8 +3,6 @@ import { ZeroAddress } from "ethers";
 import { ethers } from "hardhat";
 import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
 import { IAggregatorStablePriceV3, IPriceOracle } from "../../../../typechain-types";
-import { BaseContext } from "./BaseContext";
-import { LpDeployContext } from "./LPDeployContext";
 import { chainlinkOracleParams, oracleCoinFromCurveLPParams, oracleDuoPoolStableParams, oracleERC4626Params, oraclePendlePTParams } from "./oracleParams";
 
 export class OracleContext {
@@ -19,34 +17,37 @@ export class OracleContext {
     async fetchUSGOracleAndDeployMarketOracles() {
         this.USGOracle = await ethers.getContractAt("AggregatorStablePriceV3", PROD_ADDRESSES.USG_ORACLE)
 
+        const chainlinkProd = PROD_ADDRESSES.ORACLES.CHAINLINK
+        for (const key of Object.keys(chainlinkProd) as Array<keyof typeof chainlinkProd>) {
+            const oracle = await ethers.getContractAt("IPriceOracle", chainlinkProd[key])
+            this.oracles[key] = oracle
+            this.oraclesChainlink[key] = oracle
+        }
+
+        const oracleCoinFromCurveLP = PROD_ADDRESSES.ORACLES.COIN_FROM_CURVE_LP
+        for (const key of Object.keys(oracleCoinFromCurveLP) as Array<keyof typeof oracleCoinFromCurveLP>) {
+            const oracle = await ethers.getContractAt("IPriceOracle", oracleCoinFromCurveLP[key])
+            this.oracles[key] = oracle
+            this.oraclesCoinFromCurveLP[key] = oracle
+        }
+
+        const duoPoolStable = PROD_ADDRESSES.ORACLES.CURVE_LP_STABLE_DUO
+        for (const key of Object.keys(duoPoolStable) as Array<keyof typeof duoPoolStable>) {
+            const oracle = await ethers.getContractAt("IPriceOracle", duoPoolStable[key])
+            this.oracles[key] = oracle
+            this.oraclesDuoPoolStable[key] = oracle
+        }
+
+
         await this.deployChainlinkWrappers();
         await this.deployOracleCoinFromCurveLP();
+        await this.deployOracleCoinERC4626();
         await this.deployOracleDuoPoolStable();
 
         // await this.deployOracleCryptoSwap();
-        await this.deployOracleCoinERC4626();
-
         await this.deployOraclePendlePT();
     }
 
-    async deployAndSetupOracles(baseContext: BaseContext, lpDeployContext: LpDeployContext) {
-        await this.deployChainlinkWrappers();
-        await this.deployOracleCoinFromCurveLP();
-        await this.deployOracleDuoPoolStable();
-
-        // await this.deployOracleCryptoSwap();
-        await this.deployOracleCoinERC4626();
-
-        await this.deployOraclePendlePT();
-
-        this.USGOracle = (await (
-            await ethers.getContractFactory("AggregatorStablePriceV3")
-        ).deploy(baseContext.USG, "1000000000000000", baseContext.owner)) as unknown as IAggregatorStablePriceV3;
-        await this.USGOracle.waitForDeployment();
-
-        await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-USDC"]);
-        await this.USGOracle.connect(baseContext.owner).add_price_pair(lpDeployContext.stableLp["USG-frxUSD"]);
-    }
 
     async deployChainlinkWrappers() {
         const ChainlinkWrapperFactory = await ethers.getContractFactory("OracleChainlinkWrapper");

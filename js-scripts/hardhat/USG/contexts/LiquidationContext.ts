@@ -1,21 +1,20 @@
-import {ethers} from "hardhat";
-import {formatEther, formatUnits, MaxUint256, parseUnits} from "ethers";
-import {HardhatEthersSigner} from "@nomicfoundation/hardhat-ethers/signers";
+import { ethers } from "hardhat";
+import { formatEther, formatUnits, MaxUint256, parseUnits } from "ethers";
+import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import * as fs from "fs";
 import * as path from "path";
 
-import {BaseContext, createJSONAddress} from "./BaseContext";
-import {MarketContext} from "./MarketContext";
-import {OracleContext} from "./OracleContext";
-import {LpDeployContext} from "./LPDeployContext";
-import {WStablesContext} from "./WStableContext";
+import { BaseContext, createJSONAddress } from "./BaseContext";
+import { MarketContext } from "./MarketContext";
+import { OracleContext } from "./OracleContext";
+import { LpDeployContext } from "./LPDeployContext";
+import { WStablesContext } from "./WStableContext";
 
-import {deployUSG} from "../actions/deployUSG";
-import {loadAddresses, UserMarketParams, AddressMarketEntry} from "../actions/common";
-import {deposit} from "../actions/deposit";
-import {borrow} from "../actions/borrow";
+import { loadAddresses, UserMarketParams, AddressMarketEntry } from "../actions/common";
+import { deposit } from "../actions/deposit";
+import { borrow } from "../actions/borrow";
 
-import {MockOracle} from "../../../../typechain-types";
+import { MockOracle } from "../../../../typechain-types";
 import { deployMainnetAddresses } from "../actions/deployMainnetAddresses";
 import { impersonateAccount, setBalance, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
@@ -40,15 +39,15 @@ export type LiquidationConfig = {
     USERS_TO_USE?: number; // Number of users to actually use (for simple mode)
     // Position size distribution (for chaos mode)
     POSITION_SIZE?: {
-        SMALL: {value: bigint; probability: number};
-        MEDIUM: {min: bigint; max: bigint; probability: number};
-        LARGE: {min: bigint; max: bigint; probability: number};
+        SMALL: { value: bigint; probability: number };
+        MEDIUM: { min: bigint; max: bigint; probability: number };
+        LARGE: { min: bigint; max: bigint; probability: number };
     };
     // Position type distribution (for chaos mode)
     POSITION_TYPES?: {
-        SAFE: {ltvRange: [number, number]; probability: number};
-        LIQUIDATABLE: {ltvRange: [number, number]; probability: number};
-        SEIZABLE: {ltvRange: [number, number]; probability: number};
+        SAFE: { ltvRange: [number, number]; probability: number };
+        LIQUIDATABLE: { ltvRange: [number, number]; probability: number };
+        SEIZABLE: { ltvRange: [number, number]; probability: number };
     };
     // Mode: 'simple' uses fixed positions, 'chaos' uses random distribution
     MODE: "simple" | "chaos";
@@ -58,7 +57,7 @@ export type LiquidationConfig = {
 // TYPES
 // ============================================================================
 
-export type DepositBorrowSpecific = Record<string, Record<string, {deposit: string; borrow: string}>>;
+export type DepositBorrowSpecific = Record<string, Record<string, { deposit: string; borrow: string }>>;
 
 export type LiquidationMarketInfo = {
     toObject: () => LiquidationMarketInfo;
@@ -69,7 +68,7 @@ export type LiquidationMarketInfo = {
     market: string;
 };
 
-export type LiquidationUserInInfo = {account: string; market: string};
+export type LiquidationUserInInfo = { account: string; market: string };
 
 export type LiquidationAccountInfo = {
     toObject: () => LiquidationAccountInfo;
@@ -122,7 +121,7 @@ function getRandomPositionSizeUSD(config: LiquidationConfig): bigint {
         throw new Error("POSITION_SIZE not defined in config");
     }
     const rand = Math.random();
-    const {SMALL, MEDIUM, LARGE} = config.POSITION_SIZE;
+    const { SMALL, MEDIUM, LARGE } = config.POSITION_SIZE;
 
     if (rand < SMALL.probability) {
         return SMALL.value;
@@ -133,12 +132,12 @@ function getRandomPositionSizeUSD(config: LiquidationConfig): bigint {
     return randomBigIntBetween(LARGE.min, LARGE.max);
 }
 
-function getRandomPositionType(config: LiquidationConfig): {intent: PositionIntent; borrowPercentage: number} {
+function getRandomPositionType(config: LiquidationConfig): { intent: PositionIntent; borrowPercentage: number } {
     if (!config.POSITION_TYPES) {
         throw new Error("POSITION_TYPES not defined in config");
     }
     const rand = Math.random();
-    const {SAFE, LIQUIDATABLE, SEIZABLE} = config.POSITION_TYPES;
+    const { SAFE, LIQUIDATABLE, SEIZABLE } = config.POSITION_TYPES;
 
     if (rand < SAFE.probability) {
         return {
@@ -175,7 +174,7 @@ async function getFilteredMarkets(config: LiquidationConfig): Promise<string[]> 
     }
 
     const excludedAddresses = config.EXCLUDED_MARKETS.map((name) => resolveMarketAddress(name)).filter(Boolean);
-    return markets.map((m) => m.marketAddress).filter((addr: string)  => !excludedAddresses.includes(addr));
+    return markets.map((m) => m.marketAddress).filter((addr: string) => !excludedAddresses.includes(addr));
 }
 
 // ============================================================================
@@ -209,7 +208,7 @@ export class LiquidationContext {
     // -------------------------------------------------------------------------
 
     async doDeploy(): Promise<void> {
-        const deployed = await deployMainnetAddresses(this.config.USER_COUNT, this.config.SEED_USG_LP_AMOUNT);
+        const deployed = await deployMainnetAddresses(this.config.USER_COUNT, this.config.SEED_USG_LP_AMOUNT, true);
 
         this.baseContext = deployed.baseContext;
         this.marketContext = deployed.marketContext;
@@ -333,7 +332,7 @@ export class LiquidationContext {
     // POSITION GENERATION - SIMPLE MODE
     // -------------------------------------------------------------------------
 
-    private async getBorrowAndDepositParamsSimple(marketAddresses: string[], userAddresses: string[]): Promise<{depositParams: UserMarketParams; borrowParams: UserMarketParams}> {
+    private async getBorrowAndDepositParamsSimple(marketAddresses: string[], userAddresses: string[]): Promise<{ depositParams: UserMarketParams; borrowParams: UserMarketParams }> {
         const depositParams: UserMarketParams = {};
         const borrowParams: UserMarketParams = {};
 
@@ -343,7 +342,14 @@ export class LiquidationContext {
             let hasEnoughTokens = false;
 
             const market = await ethers.getContractAt("MarketExternalActions", marketaddress);
-            const collatTokenAddress = await market.collatToken();
+            let collatTokenAddress: string;
+            try {
+                collatTokenAddress = await market.collatToken();
+            } catch (err) {
+                console.error(`Failed collatToken() for market ${marketaddress}`);
+                console.error(`Possible wrong ABI/market type or invalid address for this market.`);
+                throw err;
+            }
             const collatToken = await ethers.getContractAt("IERC20", collatTokenAddress);
             const marketInfo = await this.getMarketInfo(marketaddress);
 
@@ -354,10 +360,16 @@ export class LiquidationContext {
             const position10000Value = (USD * 10n ** DECIMALS * 10n ** 18n) / PRICE;
             const depositAmount = position10000Value;
 
-            // Check if users have enough tokens before creating positions
-            for (let userIndex = 0; userIndex < userAddresses.length; userIndex++) {
-                const userAddress = userAddresses[userIndex];
+            const eligibleUsers: string[] = [];
+            const DENOMINATOR = 100_000n;
+            const maxBorrowUSD = (USD * marketInfo.maxLTV) / DENOMINATOR;
+            const targetLiquidatableBorrowUSD = (USD * 64n) / 100n;
+            const targetSeizableBorrowUSD = (USD * 80n) / 100n;
+            const liquidatableBorrowUSD = maxBorrowUSD < targetLiquidatableBorrowUSD ? maxBorrowUSD : targetLiquidatableBorrowUSD;
+            const seizableBorrowUSD = maxBorrowUSD < targetSeizableBorrowUSD ? maxBorrowUSD : targetSeizableBorrowUSD;
 
+            // Check if users have enough tokens before creating positions
+            for (const userAddress of userAddresses) {
                 const balance = await collatToken.balanceOf(userAddress);
                 console.log("balance", marketInfo.collatName, balance);
 
@@ -387,14 +399,30 @@ export class LiquidationContext {
                 }
             }
 
-            // Only add market if at least one user has enough tokens
-            if (hasEnoughTokens && Object.keys(currentMarketDeposit).length > 0) {
+            if (!hasEnoughTokens) {
+                console.log(`No users have enough ${marketInfo.collatName} to create positions`);
+                continue;
+            }
+
+            if (eligibleUsers.length >= 1) {
+                const userAddress = eligibleUsers[0];
+                currentMarketDeposit[userAddress] = formatEther(depositAmount);
+                currentMarketBorrow[userAddress] = liquidatableBorrowUSD.toString();
+            }
+
+            if (eligibleUsers.length >= 2) {
+                const userAddress = eligibleUsers[1];
+                currentMarketDeposit[userAddress] = formatEther(depositAmount);
+                currentMarketBorrow[userAddress] = seizableBorrowUSD.toString();
+            }
+
+            if (Object.keys(currentMarketDeposit).length > 0) {
                 depositParams[marketaddress] = currentMarketDeposit;
                 borrowParams[marketaddress] = currentMarketBorrow;
             }
         }
 
-        return {depositParams, borrowParams};
+        return { depositParams, borrowParams };
     }
 
     // -------------------------------------------------------------------------
@@ -429,12 +457,12 @@ export class LiquidationContext {
                 maxMarketDebt: info.maxMarketDebt,
                 minimumLoan: info.minimumLoan,
                 initialTotalDebt,
-                effectiveMaxDebt:info.maxMarketDebt,
+                effectiveMaxDebt: info.maxMarketDebt,
             };
 
             console.log(
                 `📊 ${info.collatName}: maxDebt=${ethers.formatEther(info.maxMarketDebt)}, ` +
-                    `minLoan=${ethers.formatEther(info.minimumLoan)}, initialDebt=${ethers.formatEther(initialTotalDebt)}`
+                `minLoan=${ethers.formatEther(info.minimumLoan)}, initialDebt=${ethers.formatEther(initialTotalDebt)}`
             );
         }
 
@@ -445,13 +473,13 @@ export class LiquidationContext {
         marketAddress: string,
         currentTotalDebt: bigint,
         limits: MarketLimits
-    ): Promise<{deposit: string; borrow: string; newTotalDebt: bigint; intent: PositionIntent} | null> {
-        const {collateralPrice, collatDecimals} = await this.getMarketInfo(marketAddress);
+    ): Promise<{ deposit: string; borrow: string; newTotalDebt: bigint; intent: PositionIntent } | null> {
+        const { collateralPrice, collatDecimals } = await this.getMarketInfo(marketAddress);
 
         const usd = getRandomPositionSizeUSD(this.config);
         const positionValue = (usd * 10n ** collatDecimals * 10n ** 18n) / collateralPrice;
 
-        const {intent, borrowPercentage} = getRandomPositionType(this.config);
+        const { intent, borrowPercentage } = getRandomPositionType(this.config);
         const effectiveMinBorrow = limits.minimumLoan > (this.config.MIN_BORROW_USG || 0n) ? limits.minimumLoan : this.config.MIN_BORROW_USG || 0n;
 
         let borrowAmountWei = (usd * BigInt(Math.floor(borrowPercentage * 10000)) * 10n ** 18n) / 10000n;
@@ -475,14 +503,14 @@ export class LiquidationContext {
         };
     }
 
-    private async getBorrowAndDepositParamsChaos(): Promise<{depositParams: UserMarketParams; borrowParams: UserMarketParams}> {
+    private async getBorrowAndDepositParamsChaos(): Promise<{ depositParams: UserMarketParams; borrowParams: UserMarketParams }> {
         const filteredMarketAddresses = await getFilteredMarkets(this.config);
 
         const marketLimits = await this.buildMarketLimits(filteredMarketAddresses, []);
 
         const depositParams: UserMarketParams = {};
         const borrowParams: UserMarketParams = {};
-        const intentCount: Record<PositionIntent, number> = {safe: 0, liquidatable: 0, seizable: 0};
+        const intentCount: Record<PositionIntent, number> = { safe: 0, liquidatable: 0, seizable: 0 };
         let positionCount = 0;
         const maxPositionCount = this.config.MAX_POSITION_COUNT || Infinity;
 
@@ -497,7 +525,7 @@ export class LiquidationContext {
 
         for (const userAddress of this.userAddresses) {
             if (positionCount >= maxPositionCount) break;
-          
+
 
             for (const marketAddress of filteredMarketAddresses) {
                 if (positionCount >= maxPositionCount) break;
@@ -529,7 +557,7 @@ export class LiquidationContext {
         }
 
         console.log("Position distribution:", intentCount);
-        return {depositParams, borrowParams};
+        return { depositParams, borrowParams };
     }
 
     // -------------------------------------------------------------------------

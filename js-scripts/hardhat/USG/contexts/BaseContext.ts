@@ -4,7 +4,7 @@ import { COMMON_ERC20S, CURVE_LPS } from "@tangent/defi-resources";
 
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { impersonateAccount, setStorageAt, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { AddressLike, MaxUint256, parseEther } from "ethers";
+import { MaxUint256, parseEther } from "ethers";
 import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses";
 import {
     BasicERC20Market,
@@ -32,6 +32,7 @@ import { STATIC_CONFIG_BASIC_ERC20s, STATIC_CONFIG_CONVEX_FXN, STATIC_CONFIG_CUR
 import { STATIC_CONFIG_CONVEX_CURVE } from "../config/markets/convex_crv";
 import { STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/markets/stakeDao";
 import { LpDeployContext } from "./LPDeployContext";
+import { MORPHO_ADDRESSES_JSON } from "./MorphoContext";
 import { BasicERC20MarketKeys, ConvexCrvMarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, StakeDaoVaultV2MarketsKeys } from "./MarketContext";
 import { OracleContext } from "./OracleContext";
 import { WStablesContext } from "./WStableContext";
@@ -80,11 +81,11 @@ export class BaseContext extends MainSetup {
 
 
         // Market implementations
-        this.marketCvxCrvImplem = await ethers.getContractAt("ConvexCrvLPMarket", PROD_ADDRESSES.CONVEX_CRV_LP_MARKET)
-        this.marketCvxFxnImplem = await ethers.getContractAt("ConvexFxnLPMarket", PROD_ADDRESSES.CONVEX_FXN_LP_MARKET)
-        this.marketCurveGaugeImplem = await ethers.getContractAt("CurveGaugeMarket", PROD_ADDRESSES.CURVE_GAUGE_MARKET)
-        this.marketStakeDaoVaultV2Implem = await ethers.getContractAt("StakeDaoVaultV2Market", PROD_ADDRESSES.STAKEDAO_VAULT_MARKET)
-        this.marketBasicER20Implem = await ethers.getContractAt("BasicERC20Market", PROD_ADDRESSES.BASIC_ERC20_MARKET)
+        this.marketCvxCrvImplem = await ethers.getContractAt("ConvexCrvLPMarket", PROD_ADDRESSES.MARKETS_IMPLEMENTATION.CONVEX_CRV_LP_MARKET)
+        this.marketCvxFxnImplem = await ethers.getContractAt("ConvexFxnLPMarket", PROD_ADDRESSES.MARKETS_IMPLEMENTATION.CONVEX_FXN_LP_MARKET)
+        this.marketCurveGaugeImplem = await ethers.getContractAt("CurveGaugeMarket", PROD_ADDRESSES.MARKETS_IMPLEMENTATION.CURVE_GAUGE_MARKET)
+        this.marketStakeDaoVaultV2Implem = await ethers.getContractAt("StakeDaoVaultV2Market", PROD_ADDRESSES.MARKETS_IMPLEMENTATION.STAKEDAO_VAULT_MARKET)
+        this.marketBasicER20Implem = await ethers.getContractAt("BasicERC20Market", PROD_ADDRESSES.MARKETS_IMPLEMENTATION.BASIC_ERC20_MARKET)
 
         // Markets utils
         this.irCalculator = await ethers.getContractAt("IRCalculator", PROD_ADDRESSES.IR_CALCULATOR)
@@ -183,58 +184,7 @@ export class BaseContext extends MainSetup {
         await this.sTAN["set_deposit_limit(uint256)"](ethers.MaxUint256);
     }
 
-    async deployContracts2(USGOracle: AddressLike, lpDeployContext: LpDeployContext) {
-        this.irCalculator = await (await ethers.getContractFactory("IRCalculator")).deploy(this.owner, this.controlTower, USGOracle, this.USG);
-        await this.irCalculator.waitForDeployment();
-        await this.USG.setIsIRProducer(this.irCalculator, true);
 
-        this.rewardAccumulator = await (await ethers.getContractFactory("RewardAccumulator")).deploy(this.owner, this.controlTower, USGOracle);
-        await this.rewardAccumulator.waitForDeployment();
-
-        this.marketCreator = await (
-            await ethers.getContractFactory("MarketCreator")
-        ).deploy(
-            this.owner,
-            this.controlTower,
-            this.USG,
-            this.irCalculator,
-            this.rewardAccumulator,
-            this.zappingProxy,
-            this.marketCvxCrvImplem,
-            this.marketCvxFxnImplem,
-            this.marketCurveGaugeImplem,
-            this.marketStakeDaoVaultV2Implem,
-            this.marketBasicER20Implem
-        );
-        await this.marketCreator.waitForDeployment();
-
-        this.pegKeeperRegulator = (await (
-            await ethers.getContractFactory("PegKeeperRegulator")
-        ).deploy(this.USG, USGOracle, this.feeTreso, this.owner, this.owner)) as unknown as IPegKeeperRegulator;
-        await this.pegKeeperRegulator.waitForDeployment();
-
-        this.pegKeeperUSG_USDC = (await (
-            await ethers.getContractFactory("PegKeeperV2")
-        ).deploy(lpDeployContext.stableLp["USG-USDC"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
-        await this.pegKeeperUSG_USDC.waitForDeployment();
-
-        this.pegKeeperUSG_frxUSD = (await (
-            await ethers.getContractFactory("PegKeeperV2")
-        ).deploy(lpDeployContext.stableLp["USG-frxUSD"], "20000", this.pegKeeperRegulator, this.owner)) as unknown as IPegKeeperV2;
-        await this.pegKeeperUSG_frxUSD.waitForDeployment();
-
-        await this.pegKeeperRegulator.connect(this.owner).add_peg_keepers([this.pegKeeperUSG_USDC, this.pegKeeperUSG_frxUSD]);
-
-        await this.USG.connect(this.owner).setIsPegKeeper(this.pegKeeperUSG_USDC, true);
-        await this.USG.connect(this.owner).setIsPegKeeper(this.pegKeeperUSG_frxUSD, true);
-
-        await this.controlTower.connect(this.owner).setIsMarketCreator(this.marketCreator, true);
-
-        await this.USG.mintPegKeeper(this.pegKeeperUSG_USDC, ethers.parseEther("10000000"))
-        await this.USG.mintPegKeeper(this.pegKeeperUSG_frxUSD, ethers.parseEther("1000000"))
-
-        this.pendlePTRouter = await (await ethers.getContractFactory("PendlePTRouter")).deploy();
-    }
 
     async setUpERC20() {
         this.coins["USG"] = await ethers.getContractAt("IERC20Metadata", PROD_ADDRESSES.USG);
