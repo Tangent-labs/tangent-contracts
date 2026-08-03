@@ -22,17 +22,16 @@ contract GetOraclePTMarketPrice is MarketDeploymentContext {
         assertEq(oraclePrice, USDePrice);
         console.log("USDe POST expi =>", oraclePrice);
     }
-
     function test_price_sUSD_PT_pre_expi() external {
-        OraclePendlePT ptOracle = new OraclePendlePT(IPendleMarketV3(0x8dAe8ECe668cf80d348873F23D456448E8694883), oracles[AddrERC4626.sUSDe], 400, 18, "PT sUSDe / USD");
+        OraclePendlePT ptOracle = new OraclePendlePT(IPendleMarketV3(0x8dAe8ECe668cf80d348873F23D456448E8694883), oracles[AddrERC4626.sUSDS], 400, 18, "PT sUSDS / USD");
         uint256 oraclePrice = ptOracle.latestAnswer(true);
-        console.log("sUSDe pre expi =>", oraclePrice);
+        console.log("sUSDS pre expi =>", oraclePrice);
     }
 
     function test_price_USD_PT_pre_expi() external {
-        OraclePendlePT ptOracle = new OraclePendlePT(IPendleMarketV3(0xA3336f04f7AfbF26714331e395054F33B77C9b8D), oracles[AddrClassicERC20.USDe], 400, 18, "PT USDe / USD");
+        OraclePendlePT ptOracle = new OraclePendlePT(IPendleMarketV3(0xA3336f04f7AfbF26714331e395054F33B77C9b8D), oracles[AddrClassicERC20.USDS], 400, 18, "PT USDS / USD");
         uint256 oraclePrice = ptOracle.latestAnswer(true);
-        console.log("USDe pre expi =>", oraclePrice);
+        console.log("USDS pre expi =>", oraclePrice);
     }
 
     function test_price_PT_BTC() external {
@@ -42,10 +41,10 @@ contract GetOraclePTMarketPrice is MarketDeploymentContext {
     }
 
     // function test_price_USD_PT_post_expi() external {
-    //     uint256 oraclePrice = oracles[AddrPTPendle.sUSDe_05_02_26].latestAnswer(true);
+    //     uint256 oraclePrice = oracles[AddrPTPendle.sUSDS_05_02_26].latestAnswer(true);
 
-    //     uint256 sUSDePrice = oracles[AddrERC4626.sUSDe].latestAnswer(true);
-    //     uint256 oneUSDeInsUSDe = AddrERC4626.sUSDe.convertToShares(1e18);
+    //     uint256 sUSDSPrice = oracles[AddrERC4626.sUSDS].latestAnswer(true);
+    //     uint256 oneUSDSInsUSDS = AddrERC4626.sUSDS.convertToShares(1e18);
 
     //     assertEq(oraclePrice, oracleValueBeforeSwap);
     // }

@@ -20,6 +20,8 @@ library AddrMarketPendle {
     IPendleMarketV3 constant wstUSR_29_01_26 = IPendleMarketV3(0x39C3F8e0E7C6F44Dc8F0397FEb124517ba82e26E);
     IPendleMarketV3 constant sUSDe_05_02_26 = IPendleMarketV3(0xed81f8bA2941C3979de2265C295748a6b6956567);
     IPendleMarketV3 constant mHyperBTC_30_04_26 = IPendleMarketV3(0xC60b85ceF3Ccfa46d9EAD992c6F2C3bA319f71Ed);
+    IPendleMarketV3 constant reUSD_10_12_26 = IPendleMarketV3(0x13285bCbc27F92b47B4EDB99D744C07B48C977c0);
+    IPendleMarketV3 constant sUSDS_26_11_26 = IPendleMarketV3(0x9C560eBaF78e596cbcC27411d633a74D628dd7dC);
 }
 
 library AddrPTPendle {
@@ -35,6 +37,8 @@ library AddrPTPendle {
     IPendlePTToken constant wstUSR_29_01_26 = IPendlePTToken(0xfCeEB7586bab730fA400A5BF3FcF298d0DB4c7e7);
     IPendlePTToken constant sUSDe_05_02_26 = IPendlePTToken(0xE8483517077afa11A9B07f849cee2552f040d7b2);
     IPendlePTToken constant mHyperBTC_30_04_26 = IPendlePTToken(0x450e39fE80936C502c7C0D9D032C46c9A8b040b3);
+    IPendlePTToken constant reUSD_10_12_26 = IPendlePTToken(0xeCfaFdC7741323a945A163ed068B5a3C43483957);
+    IPendlePTToken constant sUSDS_26_11_26 = IPendlePTToken(0xdC169AbE56461A2E0c034Da431Ac2a3ebf596094);
 }
 
 library AddrSYPendle {
@@ -48,6 +52,8 @@ library AddrSYPendle {
     IPendleSYToken constant wstUSR_29_01_26 = IPendleSYToken(0x6c78661c00D797C9c7fCBE4BCacbD9612A61C07f);
     IPendleSYToken constant sUSDe_05_02_26 = IPendleSYToken(0x50CBf8837791aB3D8dcfB3cE3d1B0d128e1105d4);
     IPendleSYToken constant mHyperBTC_30_04_26 = IPendleSYToken(0x95FC228A926828B4d95f52C1d52b345E743153f0);
+    IPendleSYToken constant reUSD_10_12_26 = IPendleSYToken(0x9487Bd5A3b16Ecb5F3184453E3ee75B800141648);
+    IPendleSYToken constant sUSDS_26_11_26 = IPendleSYToken(0xBe3d4ec488A0a042BB86F9176C24f8CD54018BA7);
 }
 library AddrYTPendle {
     IPendleYTToken constant sUSDe_31_07_25 = IPendleYTToken(0xb7E51D15161C49C823f3951D579DEd61cD27272B);
@@ -59,5 +65,7 @@ library AddrYTPendle {
     IPendleYTToken constant USDe_27_11_25 = IPendleYTToken(0x99C92D4Da7a81c7698EF33a39D7538d0f92623f7);
     IPendleYTToken constant wstUSR_29_01_26 = IPendleYTToken(0x112B56037552d9A5142493F44480BA98C2586805);
     IPendleYTToken constant sUSDe_05_02_26 = IPendleYTToken(0xe36c6c271779C080Ba2e68E1E68410291a1b3F7A);
-    IPendleSYToken constant mHyperBTC_30_04_26 = IPendleSYToken(0x716F2d368e8a90f708c2c52D4fa0b081E0a451a1);
+    IPendleYTToken constant mHyperBTC_30_04_26 = IPendleYTToken(0x716F2d368e8a90f708c2c52D4fa0b081E0a451a1);
+    IPendleYTToken constant reUSD_10_12_26 = IPendleYTToken(0xA8bD3B21291AcE53927b35563fc80615919E63D7);
+    IPendleYTToken constant sUSDS_26_11_26 = IPendleYTToken(0xC7B8551C6B286Ce0b44952320e940Bd3Dee58A09);
 }

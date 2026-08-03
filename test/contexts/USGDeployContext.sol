@@ -108,7 +108,7 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
 
     constructor() {
         // baseFork = vm.createSelectFork("base", 24379193);
-        mainnetFork = vm.createSelectFork("mainnet", 24482945);
+        mainnetFork = vm.createSelectFork("mainnet", 25674516);
 
         vm.startPrank(owner);
 
@@ -130,7 +130,6 @@ contract USGDeployContext is StdCheats, StdUtils, AssertERC20, LowLevel {
         pendlePTRouter = new PendlePTRouter();
 
         controlTower = new ControlTower(owner, feeTreasury);
-
         tan = new TAN(owner);
 
         // Deploy USG on Base

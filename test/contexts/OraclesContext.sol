@@ -133,10 +133,6 @@ contract OraclesContext is USGDeployContext {
         oracles[AddrClassicERC20.CRV] = new OracleChainlinkWrapper(AddrChainlinkOracle.CRV, 1000000000000, address(0), "CRV / USD");
         vm.label(address(AddrChainlinkOracle.CRV), "Oracle CRV");
 
-        OracleChainlinkWrapper USRFallback = new OracleChainlinkWrapper(AddrRestoneOracle.USR, 1000000000000, address(0), "Redstone Fallback USR / USD");
-        oracles[AddrClassicERC20.USR] = new OracleChainlinkWrapper(AddrChainlinkOracle.USR, 1000000000000, address(USRFallback), "USR / USD");
-        vm.label(address(AddrChainlinkOracle.USR), "Oracle USR");
-
         oracles[AddrClassicERC20.stETH] = new OracleChainlinkWrapper(AddrChainlinkOracle.stETH, 1000000000000, address(0), "stETH / USD");
         vm.label(address(AddrChainlinkOracle.stETH), "Oracle stETH");
 
@@ -178,10 +174,6 @@ contract OraclesContext is USGDeployContext {
         oracles[AddrClassicERC20.eBTC] = new OracleCoinFromCurveLP(address(AddrCurveStableLP.eBTC_WBTC), oracles[AddrClassicERC20.WBTC], 1, "eBTC / USD");
         vm.label(address(oracles[AddrClassicERC20.eBTC]), "Oracle eBTC");
 
-        // Oracle RLP
-        oracles[AddrClassicERC20.RLP] = new OracleCoinFromCurveLP(address(AddrCryptoSwapLP.USR_RLP), oracles[AddrClassicERC20.USR], 0, "RLP / USD");
-        vm.label(address(oracles[AddrClassicERC20.RLP]), "Oracle RLP");
-
         // Oracle CVX
         oracles[AddrClassicERC20.CVX] = new OracleCoinFromCurveLP(address(AddrCryptoSwapLP.CVX_ETH_POOL), oracles[AddrClassicERC20.WETH], 0, "CVX / USD");
         vm.label(address(oracles[AddrClassicERC20.CVX]), "Oracle CVX");
@@ -203,10 +195,6 @@ contract OraclesContext is USGDeployContext {
         // Oracle GHO_CBBTC_ETH
         oracles[AddrCryptoSwapLP.GHO_cbBTC_ETH] = new OracleCryptoSwap(address(AddrCryptoSwapLP.GHO_cbBTC_ETH), oracles[AddrClassicERC20.GHO], "GHO_cbBTC_ETH / USD");
         vm.label(address(oracles[AddrCryptoSwapLP.GHO_cbBTC_ETH]), "Oracle LP GHO/cbBTC/ETH");
-
-        // Oracle USR_RLP
-        oracles[AddrCryptoSwapLP.USR_RLP] = new OracleCryptoSwap(address(AddrCryptoSwapLP.USR_RLP), oracles[AddrClassicERC20.USR], "USR_RLP / USD");
-        vm.label(address(oracles[AddrCryptoSwapLP.USR_RLP]), "Oracle LP USR/RLP");
 
         // Oracle CVX_ETH
         oracles[AddrCryptoSwapLP.CVX_ETH_LP] = new OracleCryptoSwap(address(AddrCryptoSwapLP.CVX_ETH_POOL), oracles[AddrClassicERC20.WETH], "CVX_ETH / USD");
@@ -359,9 +347,7 @@ contract OraclesContext is USGDeployContext {
         // Oracle scrvUSD
         oracles[AddrERC4626.scrvUSD] = new OracleERC4626(AddrERC4626.scrvUSD, oracles[AddrClassicERC20.crvUSD], "crvUSD / USD");
         vm.label(address(oracles[AddrERC4626.scrvUSD]), "Oracle scrvUSD");
-        // Oracle wstUSR
-        oracles[AddrERC4626.wstUSR] = new OracleERC4626(AddrERC4626.wstUSR, oracles[AddrClassicERC20.USR], "wstUSR / USD");
-        vm.label(address(oracles[AddrERC4626.wstUSR]), "Oracle wstUSR");
+
         // Oracle sfrxUSD
         oracles[AddrERC4626.sfrxUSD] = new OracleERC4626(AddrERC4626.sfrxUSD, oracles[AddrClassicERC20.frxUSD], "sfrxUSD / USD");
         vm.label(address(oracles[AddrERC4626.sfrxUSD]), "Oracle sfrxUSD");
@@ -376,6 +362,9 @@ contract OraclesContext is USGDeployContext {
         oracles[AddrPTPendle.USDe_27_11_25] = new OraclePendlePT(AddrMarketPendle.USDe_27_11_25, oracles[AddrClassicERC20.USDe], 900, 18, "PT sUSDe 27/11/25 / USD");
         vm.label(address(oracles[AddrPTPendle.USDe_27_11_25]), "Oracle PT USDe_27_11_25");
 
+        oracles[AddrPTPendle.sUSDS_26_11_26] = new OraclePendlePT(AddrMarketPendle.sUSDS_26_11_26, oracles[AddrERC4626.sUSDS], 900, 18, "PT SUSDSs 26/11/26 / USD");
+        vm.label(address(oracles[AddrPTPendle.sUSDS_26_11_26]), "Oracle PT sUSDS_26_11_26");
+
         // // Oracle PT sUSDE 31_07_25
         // oracles[AddrPTPendle.sUSDe_31_07_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], 900, 18, "PT sUSDe 31/07/25 Linear / USD");
         // vm.label(address(oracles[AddrPTPendle.sUSDe_31_07_25]), "Oracle PT sUSDe 31_07_25");
@@ -387,14 +376,6 @@ contract OraclesContext is USGDeployContext {
         // // Oracle PT eBTC 26_06_25
         // oracles[AddrPTPendle.eBTC_26_06_25] = new OraclePendlePT(AddrMarketPendle.eBTC_26_06_25, oracles[AddrClassicERC20.eBTC], 900, 18, "PT sUSDe 26/06/25 Linear / USD");
         // vm.label(address(oracles[AddrPTPendle.eBTC_26_06_25]), "Oracle PT eBTC 26_06_25");
-
-        // // Oracle PT wstUSR_25_09_25
-        // oracles[AddrPTPendle.wstUSR_25_09_25] = new OraclePendlePT(AddrMarketPendle.wstUSR_25_09_25, oracles[AddrERC4626.wstUSR], 900, 18, "PT sUSDe 25/09/25 Linear / USD");
-        // vm.label(address(oracles[AddrPTPendle.wstUSR_25_09_25]), "Oracle PT wstUSR_25_09_25");
-
-        // // Oracle PT USR_04_09_25
-        // oracles[AddrPTPendle.USR_04_09_25] = new OraclePendlePT(AddrMarketPendle.USR_04_09_25, oracles[AddrClassicERC20.USR], 900, 18, "PT sUSDe 04/09/25 Linear");
-        // vm.label(address(oracles[AddrPTPendle.USR_04_09_25]), "Oracle PT USR_04_09_25");
 
         // // Oracle PT sUSDe_27_11_25
         // oracles[AddrPTPendle.sUSDe_27_11_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_27_11_25, oracles[AddrERC4626.sUSDe], 900, 18, "PT sUSDe 27/11/25 Linear");
