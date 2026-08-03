@@ -19,6 +19,7 @@ export const PROD_ADDRESSES = {
     REWARDS_ACCUMULATOR: "0x1461D76aA1C9c523398301D9174098c6D53ce639",
     MARKET_CREATOR: "0x214C8A1023B30032a2Eded109146658C6D6F2781",
     PENDLE_PT_ROUTER: "0x8b5aCE406E682A44afcC7bcab4f20bccb7cD2F52",
+    PAUSER_PROXY: "0x10b1f36452e27f08b0b5747f577ff816b0e6b5fa",
 
     MARKETS_IMPLEMENTATION: {
         CONVEX_CRV_LP_MARKET: "0x68e75bfc46fe4cd2eaa1ceb1fd68990916a0ebfb",
@@ -53,14 +54,14 @@ export const PROD_ADDRESSES = {
             USDC: '0xe10885152b5c5d36fab30490e82339ea6482a4c3',
             USDT: '0xa3e8636213ec899e9ee6e94c1fdde8fae0ba1291',
             PYUSD: '0x01ddf74e6e27d73c12e16047dc78d0398b40ff88',
-            USDe: "0x5d634da5e979155ae5f9bf6b56f451d69cb3df9b"
+            USDe: "0x5d634da5e979155ae5f9bf6b56f451d69cb3df9b",
+            ETH: '0xddb637645349d0579fa627f3f583e52f53b7d600'
 
         },
         COIN_FROM_CURVE_LP_FALLBACK: {
             crvUSD: "0x31acd625f66a587fa77c7c7c603240377513ead7",
             RLUSD: "0x747582f3c12dd89219f788cdc152cfc9c7a54e16",
-            USDS: "0xc866d0d6532db2d3904d91dc69b6279d1b4a0e0c",
-            PYUSD: '0x01ddf74e6e27d73c12e16047dc78d0398b40ff88'
+            USDS: "0xc866d0d6532db2d3904d91dc69b6279d1b4a0e0c"
         },
         CHAINLINK: {
             USDC: '0xfc3dff91fb8a7ac53f61d9d465d71d1b89e01fe4',
@@ -69,7 +70,8 @@ export const PROD_ADDRESSES = {
             crvUSD: '0x63f1715e46d9ce230f09a34c7d051ec0f738fe2b',
             RLUSD: '0x8ce9fb9a62dbae1cd8a3abbf5bf1e8b522d2f957',
             USDS: "0xe3adae98edd21c0b4a4c3e05e7e1136dad2163bd",
-            USDe: '0xa3daa1d1e1fe2694db205eec4db7e89b2656c3f4'
+            USDe: '0xa3daa1d1e1fe2694db205eec4db7e89b2656c3f4',
+            ETH: '0x0f76534bbb9e5ee2c15f2ef7695afae4ceae9ccc'
 
         },
         COIN_FROM_CURVE_LP: {
@@ -80,7 +82,8 @@ export const PROD_ADDRESSES = {
             fxUSD: "0x905f644ad88f98a42ed830746b2a96c3378deefb",
             DOLA: "0x0124b3e9a4477ac694b37fbf6314fb5d7ed0b074",
             frxUSD: "0x8aa49a3ba86ed4c9fe8fa787934d2f7860509859",
-            eUSD: "0xa8c43f747f17181eef26753371f52b3bb61651be"
+            eUSD: "0xa8c43f747f17181eef26753371f52b3bb61651be",
+            msETH: "0xa7a0090b16aaea028f5082f203a1f515e3d96e6c"
 
         },
         CURVE_LP_STABLE_DUO: {
@@ -97,8 +100,9 @@ export const PROD_ADDRESSES = {
             frxUSD_scrvUSD: "0xf31be70c9d9596b23088125345f044065b0bf886",
             USDC_fxUSD: "0x35c62ac45ddf3079e2daa0b8957862a1800920da",
             reUSD_fxUSD: "0x9f162292bc39f194a3ca87e39700293bd9aa710a",
-            PYUSD: '0xcba777240d1a0bd66c8ff67544a054862687b6ef'
-        },
+            msETH_WETH: "0x66d7753f2e72a5d64cee1d7ec4e1af2110f8185a"
+        }
+
     }
 
 }

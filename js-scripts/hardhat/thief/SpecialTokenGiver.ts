@@ -31,36 +31,72 @@ async function setMappingValue(token: string, account: string, mappingSlot: numb
     await setUint256At(token, storageSlot, value);
 }
 
-class OUSDTokenGiver implements SpecialTokenGiverImplementation {
-    token = COMMON_ERC20S.OUSD;
+// Generic giver for the Origin rebasing tokens (OUSD / OETH).
+// OETH is `contract OETH is OUSD {}` (it only overrides name/symbol/decimals), so both
+// share the exact same storage layout and the slots below are valid for the two of them.
+class RebaseTokenGiver implements SpecialTokenGiverImplementation {
+    token: string;
+
     private totalSupplySlot = 154;
     private creditBalancesSlot = 157;
+    private rebasingCreditsSlot = 158;
     private nonRebasingSupplySlot = 160;
     private alternativeCreditsPerTokenSlot = 161;
     private rebaseStateSlot = 162;
+
+    // RebaseOptions enum: 0 = NotSet, 1 = StdNonRebasing, 2 = StdRebasing, 3/4 = yield delegation
     private stdNonRebasing = 1n;
     private nonRebasingCreditsPerToken = ethers.parseEther("1");
 
+    constructor(token: string) {
+        this.token = token;
+    }
+
     async giveToken(amount: bigint, addresses: string[]) {
-        let totalDelta = 0n;
+        const erc20 = await ethers.getContractAt("IERC20Metadata", this.token);
+
+        let totalSupplyDelta = 0n;
+        let nonRebasingSupplyDelta = 0n;
+        let rebasingCreditsDelta = 0n;
 
         for (const address of addresses) {
-            const currentBalance = await getMappingValue(this.token, address, this.creditBalancesSlot);
+            const rebaseState = await getMappingValue(this.token, address, this.rebaseStateSlot);
+            if (rebaseState > this.stdNonRebasing + 1n) {
+                throw new Error(`${address} is a yield delegation account on ${this.token}, cannot force its balance`);
+            }
+
+            // balanceOf != creditBalances as soon as the account is rebasing, so we ask the token itself
+            const currentBalance = await erc20.balanceOf(address);
             if (currentBalance >= amount) {
                 continue;
             }
 
-            const delta = amount - currentBalance;
-            totalDelta += delta;
+            const currentCredits = await getMappingValue(this.token, address, this.creditBalancesSlot);
+            const wasRebasing = (await getMappingValue(this.token, address, this.alternativeCreditsPerTokenSlot)) === 0n;
 
+            // The account becomes non rebasing with 1e18 credits per token, so credits == balance
             await setMappingValue(this.token, address, this.creditBalancesSlot, amount);
             await setMappingValue(this.token, address, this.alternativeCreditsPerTokenSlot, this.nonRebasingCreditsPerToken);
             await setMappingValue(this.token, address, this.rebaseStateSlot, this.stdNonRebasing);
+
+            totalSupplyDelta += amount - currentBalance;
+            if (wasRebasing) {
+                // Whole balance moves from the rebasing side to the non rebasing side
+                nonRebasingSupplyDelta += amount;
+                rebasingCreditsDelta -= currentCredits;
+            } else {
+                nonRebasingSupplyDelta += amount - currentBalance;
+            }
         }
 
-        if (totalDelta > 0n) {
-            await increaseRawSlot(this.token, this.totalSupplySlot, totalDelta);
-            await increaseRawSlot(this.token, this.nonRebasingSupplySlot, totalDelta);
+        if (totalSupplyDelta > 0n) {
+            await increaseRawSlot(this.token, this.totalSupplySlot, totalSupplyDelta);
+        }
+        if (nonRebasingSupplyDelta > 0n) {
+            await increaseRawSlot(this.token, this.nonRebasingSupplySlot, nonRebasingSupplyDelta);
+        }
+        if (rebasingCreditsDelta !== 0n) {
+            await increaseRawSlot(this.token, this.rebasingCreditsSlot, rebasingCreditsDelta);
         }
     }
 }
@@ -69,7 +105,8 @@ export class SpecialTokenGiver {
     private static registry = new Map<string, SpecialTokenGiverImplementation>();
 
     static {
-        this.register(new OUSDTokenGiver());
+        this.register(new RebaseTokenGiver(COMMON_ERC20S.OUSD));
+        this.register(new RebaseTokenGiver(COMMON_ERC20S.OETH));
     }
 
     static register(implementation: SpecialTokenGiverImplementation) {

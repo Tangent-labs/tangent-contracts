@@ -10,10 +10,8 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 
-const forkBloc = 25335949; // process.env.STARTING_BLOCK ? parseInt(process.env.STARTING_BLOCK) : 24770812;
+const forkBloc = 25651999; // process.env.STARTING_BLOCK ? parseInt(process.env.STARTING_BLOCK) : 24770812;
 const forkRpc = process.env.FORK_RPC || `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`;
-
-
 
 const config: HardhatUserConfig = {
     vyper: {

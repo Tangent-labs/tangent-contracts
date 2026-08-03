@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 import path from "path";
 
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
-import { routers } from "@tangent/defi-resources";
+import { COMMON_ERC20S, routers } from "@tangent/defi-resources";
 
 import { SpecialTokenGiver } from "../../../thief/SpecialTokenGiver";
 import { giveTokenToAddresss } from "../../../thief/thief";
@@ -221,6 +221,8 @@ export class CurveRouteService {
 
         let coins: string[] = [];
         for (const [_, route] of pools.entries()) {
+            // if (route.display === "OETH >> OETH/WETH >> WETH") {
+
             if (["sUSDe >> sUSDe >> USDe"].includes(route.display)) {
                 infos.push({ info: `${route.display} no route => USDe not unwrapable directely`, route });
             }
@@ -243,6 +245,7 @@ export class CurveRouteService {
                     errors.push({ error: error.message, route });
                 }
             }
+            // }
         }
         return { success: params, errors, infos };
     }
@@ -342,12 +345,12 @@ export class CurveRouteService {
         const poolTypes = [1, 2, 3, 10, 20, 30];
 
         const amount = "1";
-
+        const oeth = await ethers.getContractAt("ERC20", COMMON_ERC20S.OETH)
         const tokenInContract = await ethers.getContractAt("IERC20Metadata", route.in);
         const amountIn = ethers.parseUnits(amount, thiefData?.decimals || 18);
 
         try {
-            await this.prepareUserForExchange(route.in, route.display, user, amount, thiefData);
+            await this.prepareUserForExchange(route.in, route.display, user, amount + 0.3, thiefData);
         } catch (e: any) {
             throw new Error(e.message);
         }

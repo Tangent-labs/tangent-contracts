@@ -229,9 +229,12 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             name: "eUSD_USDC",
         },
         {
-            ...obj.reUSD_scrvUSD,
+            slotBalance: 38,
+            decimals: 18,
+            isVyper: true,
+            address: CURVE_LPS.DUO_scrvUSD_sUSDe,
             amount: mintedAmount,
-            name: "reUSD_scrvUSD",
+            name: "scrvUSD_sUSDe",
         },
         {
             ...obj.frxUSD_OUSD,
