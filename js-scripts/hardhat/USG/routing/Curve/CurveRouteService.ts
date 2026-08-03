@@ -297,8 +297,6 @@ export class CurveRouteService {
         if (SpecialTokenGiver.supports(tokenIn)) {
             if (initialInBalance < amountIn) {
                 await SpecialTokenGiver.giveToken(tokenIn, amountIn, [user.address]);
-                const oeth = await ethers.getContractAt("ERC20", COMMON_ERC20S.OETH)
-                console.log("OETH BALANCE BLABLABLA", await oeth.balanceOf(user))
                 initialInBalance = await tokenInContract.balanceOf(user.address);
             }
         } else if (thiefConfig || isTgAsset) {
