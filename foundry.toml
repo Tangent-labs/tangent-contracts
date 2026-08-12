@@ -30,6 +30,7 @@ remappings = [
     "@openzeppelin/=lib/openzeppelin-contracts",
     "@openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable",
     "@openzeppelin-foundry-upgrades/=lib/openzeppelin-foundry-upgrades/src/",
+    "@safe/=lib/safe-smart-account/contracts/",
 ]
 
 [rpc_endpoints]

@@ -10,12 +10,8 @@ import { CRV_DUO_USR_RLP, CRV_TRI_CRYPTO_USDT, CRV_TRI_GHO_cbBTC_ETH, TRI_crvUSD
 import { getSlot } from "../../thief/slotGuesser";
 
 const tokens = [
-    { name: "crvUSD_ETH_CRV", address: TRI_crvUSD_ETH_CRV, isVyper: true },
-    { name: "GHO_cbBTC_WETH", address: CRV_TRI_GHO_cbBTC_ETH, isVyper: true },
-    { name: "USDT_WBTC_WETH", address: CRV_TRI_CRYPTO_USDT, isVyper: true },
-    { name: "USR_RLP", address: CRV_DUO_USR_RLP, isVyper: true },
-    { name: "USDe_27_11_25", address: PENDLE_POOLS["sUSDe 09/25/25"].PT, isVyper: false },
-    { name: "sUSDe_27_11_25", address: PENDLE_POOLS["sUSDe 09/25/25"].PT, isVyper: false },
+    { name: "crvUSD_ETH_CRV", address: "0x48d670d189b4b48757992d36897bca6e3f889040", isVyper: true },
+
 ];
 
 async function main() {
