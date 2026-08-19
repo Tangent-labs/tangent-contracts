@@ -3,11 +3,12 @@ import { PROD_ADDRESSES } from "../../../../ignition/prod_addresses"
 import { MaxUint256, parseEther, parseUnits, Signer } from "ethers"
 import { impersonateAccount, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers"
 import { COMMON_ERC20S } from "@tangent/defi-resources"
-import { giveTokenToAddress } from "../../thief/thief"
+import { giveTokenToAddress, giveTokenToAddresss } from "../../thief/thief"
 
 export async function deployTan() {
     const tan = await ethers.deployContract("TAN", [PROD_ADDRESSES.DAO])
     const vsTAN = await ethers.deployContract("VsTAN", [PROD_ADDRESSES.DAO, PROD_ADDRESSES.CONTROL_TOWER, tan, PROD_ADDRESSES.USG, PROD_ADDRESSES.sUSG, PROD_ADDRESSES.ZAPPING_PROXY, parseEther("1000")])
+    const USG = await ethers.getContractAt("USG", PROD_ADDRESSES.USG)
 
     console.log("TAN", await tan.getAddress())
     console.log("vsTAN", await vsTAN.getAddress())
@@ -23,8 +24,15 @@ export async function deployTan() {
         const signer = signers[index];
         await tan.connect(dao).transfer(signer, parseEther("333000"))
     }
+    await vsTAN.connect(dao).addNewReward(PROD_ADDRESSES.USG)
+
+    await giveTokenToAddresss(dao, PROD_ADDRESSES.USG, parseEther("100000"), 0, false)
+
+    await USG.connect(dao).approve(vsTAN, MaxUint256)
+    await vsTAN.connect(dao).processRewards([{ amount: parseEther("10000"), token: PROD_ADDRESSES.USG }])
 
     await stopImpersonatingAccount(PROD_ADDRESSES.DAO)
+
 
     const lp = await deploy_TAN_ETH_LP(await tan.getAddress(), signers[0])
     console.log("LP TAN/WETH", await lp.getAddress())
