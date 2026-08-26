@@ -98,6 +98,12 @@
             "marketType": "STAKEDAO_CRV_Vault"
         },
         {
+            "marketAddress": "0x244c24c94d5bbdba43c408b702ded98e436df721",
+            "marketName": "reUSD/sDOLA",
+            "collatAddress": "0x48d670D189B4b48757992D36897bCa6E3f889040",
+            "marketType": "STAKEDAO_CRV_Vault"
+        },
+        {
             "marketAddress": "0x849cf82e0ebcfeab8270cc5a3ea3b26cd481b754",
             "marketName": "USDC/fxUSD",
             "collatAddress": "0x5018be882dcce5e3f2f3b0913ae2096b9b3fb61f",

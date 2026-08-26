@@ -8,6 +8,7 @@ import { LpDeployContext } from "../contexts/LPDeployContext";
 import { BasicERC20MarketKeys, ConvexFxnMarketKeys, CurveGaugeMarketsKeys, MarketContext, StakeDaoVaultV2MarketsKeys } from "../contexts/MarketContext";
 import { OracleContext } from "../contexts/OracleContext";
 import { WStablesContext } from "../contexts/WStableContext";
+import { parseEther } from "ethers";
 
 type ProdMarketAddresses = Record<string, string>;
 
@@ -91,7 +92,6 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
         await marketContext.deployConvexFxnMarkets(missingConvexFxnMarkets, baseContext, oracleContext);
     }
 
-
     // Deploy Pendle PT markets
     // await marketContext.deployBasicERC20Markets(pendleMarkets, baseContext, oracleContext);
 
@@ -100,6 +100,11 @@ export async function deployMainnetAddresses(userCount: number = 5, baseLpDeposi
     await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-USDC"].getAddress());
     await baseContext.approveCurveLP(await lpDeployContext.stableLp["USG-frxUSD"].getAddress());
     await baseContext.approveCurveLP(CURVE_LPS.crvUSD_USDC);
+
+
+    const tan = await ethers.deployContract("TAN", [PROD_ADDRESSES.DAO])
+    const vsTAN = await ethers.deployContract("VsTAN", [PROD_ADDRESSES.DAO, PROD_ADDRESSES.CONTROL_TOWER, tan, PROD_ADDRESSES.USG, PROD_ADDRESSES.sUSG, PROD_ADDRESSES.ZAPPING_PROXY, parseEther("1000")])
+
 
     return { baseContext, oracleContext, marketContext, lpDeployContext, wStableContext };
 }

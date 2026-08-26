@@ -100,7 +100,8 @@ export const PROD_ADDRESSES = {
             frxUSD_scrvUSD: "0xf31be70c9d9596b23088125345f044065b0bf886",
             USDC_fxUSD: "0x35c62ac45ddf3079e2daa0b8957862a1800920da",
             reUSD_fxUSD: "0x9f162292bc39f194a3ca87e39700293bd9aa710a",
-            msETH_WETH: "0x66d7753f2e72a5d64cee1d7ec4e1af2110f8185a"
+            msETH_WETH: "0x66d7753f2e72a5d64cee1d7ec4e1af2110f8185a",
+            reUSD_sDOLA: "0x48d670D189B4b48757992D36897bCa6E3f889040"
         }
 
     }
