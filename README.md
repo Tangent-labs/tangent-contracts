@@ -7,8 +7,8 @@ Smart contracts powering **Tangent Protocol**, a collateralized debt platform bu
 - **USG** — the protocol's stablecoin, minted against deposited collateral.
 - **sUSG** — an ERC-4626 savings vault (built on Yearn V3) that lets users stake USG for yield.
 - **TAN / vsTAN** — the protocol's governance token and its vote-escrowed form, used to distribute protocol rewards.
-- **Markets** (`ConvexCrvLPMarket`, `ConvexFxnLPMarket`, `BasicERC20Market`) — collateral/debt markets that let users deposit collateral, borrow USG, and get liquidated when under-collateralized.
-- **Oracles** — price feeds for LP and stable-swap collateral (see [`documentation/CurveOracle.md`](documentation/CurveOracle.md) for the manipulation-resistance rationale).
+- **Markets** collateral/debt markets that let users deposit collateral, borrow USG, and get liquidated when under-collateralized.
+- **Oracles** — price feeds for collaterals.
 - **ZappingProxy** — lets users deposit/repay with any ERC20 by swapping into the market's collateral via Enso Finance (see [`documentation/features/ZapDeposit.md`](documentation/features/ZapDeposit.md) / [`ZapRepay.md`](documentation/features/ZapRepay.md)).
 - **Liquidations** — permissionless liquidation of unhealthy positions (see [`documentation/features/Liquidations.md`](documentation/features/Liquidations.md)).
 
@@ -59,7 +59,7 @@ More architecture notes live under [`documentation/`](documentation), including 
 
 - **Solidity** contracts, built and tested with **[Foundry](https://book.getfoundry.sh/getting-started/installation)** (Forge/Anvil).
 - **Hardhat** + **TypeScript** for deployment scripts, local node forking, and protocol-state/action scripts.
-- **Vyper** for select oracle components.
+- **Vyper** for USG oracle and PegKeepers, forked from @Curve_fi.
 - OpenZeppelin upgradeable contracts.
 
 ## Getting Started
@@ -74,6 +74,8 @@ npm install
 ## Tests
 
 Foundry docs: https://book.getfoundry.sh/reference/forge/forge-test
+
+NB : Nowadays, most of public RPC fails to run the tests fully and it costs of private RPC credits.
 
 ```bash
 forge test
