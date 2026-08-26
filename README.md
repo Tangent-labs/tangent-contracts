@@ -1,157 +1,204 @@
-# USG
+# Tangent Contracts
 
-You need to have foundry in order to be able to work on this repo. [You can see this tutorial to install it](https://book.getfoundry.sh/getting-started/installation)
+Smart contracts powering **Tangent Protocol**, a collateralized debt platform built around **USG**, an overcollateralized stablecoin backed by Curve/Convex LP tokens and other yield-bearing collateral.
 
-## Install dependencies
+## Overview
+
+- **USG** — the protocol's stablecoin, minted against deposited collateral.
+- **sUSG** — an ERC-4626 savings vault (built on Yearn V3) that lets users stake USG for yield.
+- **TAN / vsTAN** — the protocol's governance token and its vote-escrowed form, used to distribute protocol rewards.
+- **Markets** (`ConvexCrvLPMarket`, `ConvexFxnLPMarket`, `BasicERC20Market`) — collateral/debt markets that let users deposit collateral, borrow USG, and get liquidated when under-collateralized.
+- **Oracles** — price feeds for LP and stable-swap collateral (see [`documentation/CurveOracle.md`](documentation/CurveOracle.md) for the manipulation-resistance rationale).
+- **ZappingProxy** — lets users deposit/repay with any ERC20 by swapping into the market's collateral via Enso Finance (see [`documentation/features/ZapDeposit.md`](documentation/features/ZapDeposit.md) / [`ZapRepay.md`](documentation/features/ZapRepay.md)).
+- **Liquidations** — permissionless liquidation of unhealthy positions (see [`documentation/features/Liquidations.md`](documentation/features/Liquidations.md)).
+
+More architecture notes live under [`documentation/`](documentation), including market class inheritance ([`documentation/archi/MarketClass.md`](documentation/archi/MarketClass.md)) and routing ([`documentation/archi/routing.md`](documentation/archi/routing.md)).
+
+## Architecture Overview
 
 ```
+                             ┌─────────────────────────┐
+                             │       ControlTower      │  Access control & roles
+                             └────────────┬────────────┘
+                                          │
+          ┌───────────────────────────────┼──────────────────────────────┐
+          │                               │                              │
+  ┌───────▼──────┐              ┌─────────▼────────┐            ┌───────▼─────────┐
+  │ MarketCreator│              │   IRCalculator   │            │RewardAccumulator│
+  │  (Factory)   │              │  (Rate Engine)   │            │ (Yield Splitter)│
+  └───────┬──────┘              └─────────┬────────┘            └───────┬─────────┘
+          │                               │                              │
+          │  deploys                      │  checkpoints                 │  distributes
+          ▼                               ▼                              ▼
+  ┌────────────────────────────────────────────────────────────────────────────────┐
+  │                               Market (per collateral)                          │
+  │   BasicERC20 │ ConvexCrvLP │ ConvexFxnLP │ CurveGauge │ StakeDaoVault          │
+  └───────────────────────┬─────────────────────────────┬──────────────────────────┘
+          ▲               │  mints / burns               │  stakes collateral
+          │               ▼                              ▼
+  ┌───────┴──────┐  ┌─────────────┐             ┌──────────────────────┐
+  │ ZappingProxy │  │     USG     │             │   Yield Protocols    │
+  │ (Swap Router)│  │ (Stablecoin)│             │ Convex / Curve /     │
+  └──────────────┘  └──────┬──────┘             │ StakeDao             │
+   any token in            │  trades in         └──────────────────────┘
+   collateral out          ▼
+                  ┌─────────────────┐
+                  │   USG/x LP Pool │  on-chain price reference
+                  │  (e.g. Curve)   │
+                  └────────┬────────┘
+                           │  mint / burn to defend peg
+                           ▼
+                  ┌─────────────────┐
+                  │   PegKeepers    │
+                  └─────────────────┘
+```
+
+---
+
+## Stack
+
+- **Solidity** contracts, built and tested with **[Foundry](https://book.getfoundry.sh/getting-started/installation)** (Forge/Anvil).
+- **Hardhat** + **TypeScript** for deployment scripts, local node forking, and protocol-state/action scripts.
+- **Vyper** for select oracle components.
+- OpenZeppelin upgradeable contracts.
+
+## Getting Started
+
+Install [Foundry](https://book.getfoundry.sh/getting-started/installation), then install dependencies:
+
+```bash
 forge install
+npm install
 ```
 
-## Tests Commands
+## Tests
 
-For more info : https://book.getfoundry.sh/reference/forge/forge-test
+Foundry docs: https://book.getfoundry.sh/reference/forge/forge-test
 
-```
+```bash
 forge test
 ```
 
-To run all tests in a folder :
+Run all tests in a folder:
 
-```
+```bash
 forge test --match-path test/USG/*.t.sol
 ```
 
-**-v** : for the `--verbosity` part you can use up to 5 v from `-v` to `-vvvvv`
-**--fail-fast** : stop running tests after the first failure.
+- `-v` to `-vvvvv`: increase verbosity.
+- `--fail-fast`: stop after the first failing test.
 
-## Run a node forked from mainnet
+Coverage report:
 
+```bash
+npm run test:coverage
 ```
+
+## Local Development
+
+Run a node forked from mainnet:
+
+```bash
 npm run hh-node
 ```
 
-## Deploy the dev context of USG
-
-```
-npm run deploy-USG
-```
-
-## Actions
-
-### Stake on markets
-
-Stake some collateral on all markets with test users
-
-```
-npm run stake-markets-USG
-```
-
-### Borrow USG
-
-Borrow some USG on all markets with test users
-
-```
-npm run borrow-markets-USG
-```
-
-### Pass some time
-
-Increase the time on the test node in days basis.
-
-```
-DAYS=3 npm run time-travel
-```
-
-### Distribute rewards into all markets
-
-Distribute rewards into markets in order to be processed. We are transfering rewards directly into markets before harvest and streaming.
-
-```
-npm run distribute-rewards-markets
-```
-
-### Distribute and streams USG rewards into VsTAN
-
-Distribute rewards USG into VsTAN and start the streaming process.
-
-```
-npm run distribute-rewards-vsTan
-```
-
-### Swap in a Curve LP
-
-- AMOUNT_IN is the float amount in number. The script takes into account decimals in.
-
-```
-LP=0x4DEcE678ceceb27446b35C672dC7d61F30bAD69E AMOUNT_IN=100 I=0 J=1 npm run swap-curve
-```
-
-## Install vyper with rye
-
-1. Install rye (Scoop is the recommended package manager for Windows developpers)
+Deploy the USG dev context to it:
 
 ```bash
-scoop install rye
+npm run deploy:usg-local
 ```
 
-2. Create a pyproject.toml file with the following content:
+### Test actions
 
-```toml
-[project]
-name = "tangent-contracts"
-version = "0.1.0"
-description = "Tangent Contracts for Foundry and Vyper"
-authors = [ { name = "Me", email = "me@local.org" }]
-dependencies = [
-    "vyper == 0.3.10"
-]
-```
-
-3. Run rye sync to install vyper
+Deposit collateral on all markets with test users:
 
 ```bash
-rye sync
+npm run action:deposit-markets-USG
 ```
 
-4.  activate the virtual environment
+Borrow USG on all markets with test users:
 
 ```bash
-source .venv/bin/activate
+npm run action:borrow-markets-USG
 ```
 
-5. Test the vyper compiler
+Advance the test node's clock, in days:
 
 ```bash
-vyper --version
+DAYS=3 npm run action:time-travel
 ```
 
-# Liquidation routes generation
+Push rewards into markets (transferred directly, ahead of harvest/streaming):
 
-## Generate Liquidation Routes
-
-This script generates liquidation path from the `js-scripts\hardhat\USG\data\routes.csv`,
-and create the file `js-scripts\hardhat\USG\data\verifiedRoutes.json`
-
-```
-npm run generate-routes
+```bash
+npm run action:distribute-rewards-markets
 ```
 
-## Test Exchange Routes
+Distribute USG rewards into vsTAN and start streaming:
 
-This script tests the generated liquidation routes from `js-scripts\hardhat\USG\data\verifiedRoutes.json` to
-`js-scripts\hardhat\USG\data\successRoutes.json`.
-
-```
-npm run test-exchange-routes
+```bash
+npm run action:distribute-rewards-vsTan
 ```
 
-## Hydrate Route (2 ways)
+## Liquidation Routing
 
-This script takes a generated route with string `js-scripts\hardhat\USG\data\tplRoute.json` and "hydrates" with addresses in `js-scripts\hardhat\USG\data\hydratedRoute.json` that can be use by the liquidation bot.
+Scripts under `js-scripts/hardhat/USG/routing/Curve` build and validate the swap routes used by the liquidation bot to unwind seized collateral.
 
-by changing the script you can also take `js-scripts\hardhat\USG\data\successRoutes.json` and make it a template `js-scripts\hardhat\USG\data\tplRoute.json`
+Generate liquidation routes from `js-scripts/hardhat/USG/data/routes.csv` into `js-scripts/hardhat/USG/data/verifiedRoutes.json`:
 
+```bash
+npm run routing:generate-routes
 ```
-npm run hydrate-route
+
+Test the generated routes, writing results to `js-scripts/hardhat/USG/data/successRoutes.json`:
+
+```bash
+npm run routing:test-curve-routes
 ```
+
+Hydrate a route template (`js-scripts/hardhat/USG/data/tplRoute.json`) with live addresses into `js-scripts/hardhat/USG/data/hydratedRoute.json` (the same script can also turn a `successRoutes.json` result back into a template):
+
+```bash
+npm run routing:hydrate-routes
+```
+
+## Vyper Setup
+
+Some oracle components are written in Vyper. To install it via [rye](https://rye.astral.sh):
+
+1. Install rye (on Windows, Scoop is the recommended package manager):
+
+   ```bash
+   scoop install rye
+   ```
+
+2. Create a `pyproject.toml`:
+
+   ```toml
+   [project]
+   name = "tangent-contracts"
+   version = "0.1.0"
+   description = "Tangent Contracts for Foundry and Vyper"
+   authors = [ { name = "Me", email = "me@local.org" } ]
+   dependencies = [
+       "vyper == 0.3.10"
+   ]
+   ```
+
+3. Install:
+
+   ```bash
+   rye sync
+   ```
+
+4. Activate the virtual environment:
+
+   ```bash
+   source .venv/bin/activate
+   ```
+
+5. Verify:
+
+   ```bash
+   vyper --version
+   ```
