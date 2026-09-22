@@ -23,7 +23,7 @@ ignored_error_codes = [
 # dynamic_test_linking=true
 fs_permissions = [{ access = "read-write", path = "./" }]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
-
+auto_detect_remappings = false
 remappings = [
     "@contracts/=./contracts/",
     "@tests/=./tests/",
@@ -35,7 +35,7 @@ remappings = [
 
 [rpc_endpoints]
 forkito = 'http://127.0.0.1:8545'
-mainnet = 'https://eth-mainnet.g.alchemy.com/v2/-B6yE_6-PCUSNtRIaezM-XpqioX_Ysgu'
+mainnet = '${FORK_RPC}'
 staging = 'https://rpc.tangent.finance'
 
 base = 'https://base.llamarpc.com'
@@ -53,4 +53,3 @@ preserve_state = true
 # fail_on_revert = true
 shrink_run_limit = 3
 fuzz_runs = 5
-
