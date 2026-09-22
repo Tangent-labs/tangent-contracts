@@ -31,25 +31,28 @@ remappings = [
     "@openzeppelin-upgradeable/=lib/openzeppelin-contracts-upgradeable",
     "@openzeppelin-foundry-upgrades/=lib/openzeppelin-foundry-upgrades/src/",
     "@safe/=lib/safe-smart-account/contracts/",
+    "forge-std/=lib/forge-std/src/",
+    "erc4626-tests/=lib/openzeppelin-contracts-upgradeable/lib/erc4626-tests/",
+    "halmos-cheatcodes/=lib/openzeppelin-contracts-upgradeable/lib/halmos-cheatcodes/src/",
+    "openzeppelin-contracts-upgradeable/=lib/openzeppelin-contracts-upgradeable/",
+    "openzeppelin-contracts/=lib/openzeppelin-contracts-upgradeable/lib/openzeppelin-contracts/",
+    "openzeppelin-foundry-upgrades/=lib/openzeppelin-foundry-upgrades/src/",
+    "safe-smart-account/=lib/safe-smart-account/",
 ]
 
 [rpc_endpoints]
 forkito = 'http://127.0.0.1:8545'
 mainnet = '${FORK_RPC}'
 staging = 'https://rpc.tangent.finance'
-
 base = 'https://base.llamarpc.com'
 
 [fuzz]
 runs = 10
-depth = 10
 # fuzz_runs = 10
 
 [invariant]
 runs = 10
 depth = 10
 dictionary_weight = 80
-preserve_state = true
 # fail_on_revert = true
 shrink_run_limit = 3
-fuzz_runs = 5

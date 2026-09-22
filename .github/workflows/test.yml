@@ -28,7 +28,7 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: v1.1.0
+          version: v1.8.3
 
       - name: Install npm dependencies
         run: |
