@@ -67,4 +67,7 @@ library AddrCryptoSwapLP {
 
     ICurveCryptoSwap constant CVX_ETH_POOL = ICurveCryptoSwap(0xB576491F1E6e5E62f1d8F26062Ee822B40B0E0d4);
     IERC20Metadata constant CVX_ETH_LP = IERC20Metadata(0x3A283D9c08E8b55966afb64C515f5143cf907611);
+
+    ICurveCryptoSwap constant FXN_ETH_POOL = ICurveCryptoSwap(0xC15F285679a1Ef2d25F53D4CbD0265E1D02F2A92);
+    IERC20Metadata constant FXN_ETH_LP = IERC20Metadata(0xE06A65e09Ae18096B99770A809BA175FA05960e2);
 }

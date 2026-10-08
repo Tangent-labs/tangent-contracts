@@ -51,7 +51,7 @@ contract MarketListUI is GetMarketDetails {
                 USGPrice: USGPrice,
                 USGSupply: USGTotalSupply,
                 sUSGPrice: (USGPrice * sUSG.pricePerShare()) / 1e18,
-                sUSGSupply:sUSGCirculatingSupply,
+                sUSGSupply: sUSGCirculatingSupply,
                 USGPercentageInsUSG: USGTotalSupply == 0 ? 0 : (USG.balanceOf(address(sUSG)) * 1e18) / USGTotalSupply,
                 rowInfos: rows
             })
