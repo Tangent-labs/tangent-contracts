@@ -98,7 +98,7 @@
             "marketType": "STAKEDAO_CRV_Vault"
         },
         {
-            "marketAddress": "0x3a283d9c08e8b55966afb64c515f5143cf907611",
+            "marketAddress": "0xe4622622bfb74dce6019d5d41150d8824b83bf9a",
             "marketName": "CVX/ETH",
             "collatAddress": "0x3A283D9c08E8b55966afb64C515f5143cf907611",
             "marketType": "STAKEDAO_CRV_Vault"
