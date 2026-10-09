@@ -221,6 +221,106 @@ contract CvxEthOracleAttack is MarketDeploymentContext {
         }
     }
 
+    /// Multi-block attack by someone who builds k consecutive blocks (no arbitrage in between):
+    /// block N swap, blocks N+1..N+k-1 keep the pool untouched, block N+k poke + use oracle + swap back.
+    /// Logs the oracle move and the attacker's round-trip loss in ETH.
+    function test_multiblock_cost() external {
+        for (uint256 dir; dir < 2; dir++) {
+            (uint256 i, uint256 j) = dir == 0 ? (uint256(0), uint256(1)) : (uint256(1), uint256(0));
+            console.log(dir == 0 ? "PUMP CVX (inflate collat)" : "DUMP CVX (trigger liquidations)");
+            for (uint256 k = 1; k <= 3; k++) {
+                uint256 snap = vm.snapshotState();
+                _swap(0, 1, 0.01 ether); // sync the stored EMA first
+                uint256 before = oracle.latestAnswer(true);
+                uint256 po = pool.price_oracle();
+
+                IERC20Metadata tIn = i == 0 ? weth : cvx;
+                IERC20Metadata tOut = i == 0 ? cvx : weth;
+                uint256 amountIn = pool.balances(i);
+                vm.startPrank(usr3);
+                deal(address(tIn), usr3, amountIn);
+                tIn.approve(address(pool), MAX_UINT);
+                tOut.approve(address(pool), MAX_UINT);
+                uint256 out = pool.exchange(i, j, amountIn, 0);
+                vm.stopPrank();
+
+                skip(12 * k);
+                _swap(0, 1, 0.01 ether); // attacker's own poke in block N+k
+                uint256 manipulated = oracle.latestAnswer(true);
+
+                vm.prank(usr3);
+                uint256 back = pool.exchange(j, i, out, 0);
+                uint256 lossIn = amountIn - back;
+                uint256 lossEth = i == 0 ? lossIn : (lossIn * po) / 1e18;
+
+                console.log("  blocks held", k);
+                _log("    oracle", before, manipulated);
+                console.log("    attacker round-trip loss (ETH)", lossEth / 1e18);
+                vm.revertToState(snap);
+            }
+        }
+    }
+
+    /// Old v2 pools store price_oracle and only update it in tweak_price (any swap / liquidity op).
+    /// Time alone never moves the oracle; the first interaction applies the whole elapsed EMA weight,
+    /// using last_prices (the price of the previous trade).
+    function test_price_oracle_only_moves_on_interaction() external {
+        // At the fork block the stored EMA is stale: the first trade of a block writes the catch-up
+        // (weighted by the time since the previous trade) before applying its own price.
+        uint256 stale = pool.price_oracle();
+        _swap(0, 1, 0.01 ether);
+        _log("EMA catch-up on first trade of the block", stale, pool.price_oracle());
+
+        uint256 emaBefore = pool.price_oracle();
+        _swap(0, 1, pool.balances(0)); // pump: sets last_prices far above the EMA
+        assertEq(pool.price_oracle(), emaBefore, "same block: EMA not written yet");
+
+        skip(1 hours);
+        assertEq(pool.price_oracle(), emaBefore, "time alone does not move the stored EMA");
+
+        _swap(0, 1, 0.01 ether); // any trade, e.g. the arbitrageur's back-run
+        _log("EMA: 1h idle then first trade", emaBefore, pool.price_oracle());
+        assertGt(pool.price_oracle(), emaBefore * 15 / 10, "first trade applies the full 1h EMA weight at once");
+    }
+
+    /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
+                    ACCURACY DURING REAL MOVES
+    =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
+
+    /// Simulates a real CVX crash / pump: sell (buy) 5% of the reserve every hour.
+    /// Compares lp_price() to the value of what an LP actually owns (balances valued at price_oracle).
+    /// Positive "overvaluation" = the oracle says the LP is worth more than its share of the pool.
+    function test_accuracy_crash() external {
+        _trend(1, 0, "CVX crash");
+    }
+
+    function test_accuracy_pump() external {
+        _trend(0, 1, "CVX pump");
+    }
+
+    function _trend(uint256 i, uint256 j, string memory label) internal {
+        console.log(label);
+        uint256 po0 = pool.price_oracle();
+        for (uint256 step; step < 24; step++) {
+            _swap(i, j, pool.balances(i) / 20);
+            skip(1 hours);
+            _swap(0, 1, 0.01 ether); // poke EMA / tweak_price
+            if (step % 4 != 3) continue;
+
+            uint256 po = pool.price_oracle();
+            uint256 fair = ((pool.balances(0) + (pool.balances(1) * po) / 1e18) * 1e18) / lp.totalSupply();
+            uint256 lpPrice = pool.lp_price();
+            assertApproxEqRel(lpPrice, fair, 0.01e18, "lp_price deviates > 1% from the LP's real share of the pool");
+            console.log("  hour", step + 1);
+            console.log("    CVX move bps");
+            console.logInt((int256(po) - int256(po0)) * 10_000 / int256(po0));
+            console.log("    scale/oracle bps");
+            console.logInt((int256(pool.price_scale()) - int256(po)) * 10_000 / int256(po));
+            console.log("    lp_price overvaluation bps");
+            console.logInt((int256(lpPrice) - int256(fair)) * 10_000 / int256(fair));
+        }
+    }
+
     /* =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-=
                             HELPERS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
