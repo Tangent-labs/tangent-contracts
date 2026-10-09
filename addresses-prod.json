@@ -98,6 +98,12 @@
             "marketType": "STAKEDAO_CRV_Vault"
         },
         {
+            "marketAddress": "0x3a283d9c08e8b55966afb64c515f5143cf907611",
+            "marketName": "CVX/ETH",
+            "collatAddress": "0x3A283D9c08E8b55966afb64C515f5143cf907611",
+            "marketType": "STAKEDAO_CRV_Vault"
+        },
+        {
             "marketAddress": "0x244c24c94d5bbdba43c408b702ded98e436df721",
             "marketName": "reUSD/sDOLA",
             "collatAddress": "0x48d670D189B4b48757992D36897bCa6E3f889040",
@@ -154,6 +160,9 @@
             "msETH_WETH": "0x66d7753f2e72a5d64cee1d7ec4e1af2110f8185a",
             "msETH_OETH": "0xb53b1e50643ba89e1be280d6e04186f90b698a81",
             "cbBTC_WBTC": "0xbc3066e81f4db2b55be8edde4d5c86ac979a5176"
+        },
+        "cryptoSwap": {
+            "CVX_ETH": "0x55Efb3aF5206ccec916067a3ab4Ef4EB18cf6af8"
         },
         "USG": "0x970b2f2cec66f92de81dae6af363d1d135dd2f97"
     },
