@@ -204,6 +204,20 @@ contract MarketInitParams is WStableContext {
             }),
             pid: PidCvxFxnBooster.USDC_fxUSD_LP
         });
+
+        // Convex FXN - FXN_ETH (volatile)
+        cvxFxnLPMaps[address(AddrCryptoSwapLP.FXN_ETH_LP)] = ParamsInitConvexFxnLPMarket({
+            marketInit: MarketInitSimplified({
+                name: "Convex FXN - FXN-ETH",
+                collat: AddrCryptoSwapLP.FXN_ETH_LP,
+                maxLTV: 70_000,
+                liquidationThreshold: 80_000,
+                liquidationFee: 5_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether
+            }),
+            pid: PidCvxFxnBooster.FXN_ETH_LP
+        });
     }
 
     function initCurveGaugeParams() public {
@@ -283,6 +297,20 @@ contract MarketInitParams is WStableContext {
                 maxMarketDebt: 1_000_000 ether
             }),
             vaultToken: AddrStakeDaoVaultV2.USDT_crvUSD_LP
+        });
+
+        // StakeDao - CVX-ETH (volatile)
+        stakeDaoVaultV2Maps[address(AddrCryptoSwapLP.CVX_ETH_LP)] = ParamsInitStakeDaoVaultV2Market({
+            marketInit: MarketInitSimplified({
+                name: "StakeDao - CVX-ETH",
+                collat: AddrCryptoSwapLP.CVX_ETH_LP,
+                maxLTV: 70_000,
+                liquidationThreshold: 80_000,
+                liquidationFee: 5_000,
+                minimumLoan: 3_000 ether,
+                maxMarketDebt: 1_000_000 ether
+            }),
+            vaultToken: AddrStakeDaoVaultV2.CVX_ETH_LP
         });
     }
 

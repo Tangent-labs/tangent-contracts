@@ -14,6 +14,7 @@ export const ThiefConfig = [
 export const separatedCurvePoolToken: { [lpToken: string]: string } = {
     [CURVE_LPS.FRAX_USDC_LP]: CURVE_LPS.DUO_FRAXBP_POOL,
     [CURVE_LPS.DUO_stETH_ETH]: "0xDC24316b9AE028F1497c275EB9192a3Ea0f67022",
+    [CURVE_LPS.DUO_ETH_CVX_TOKEN]: CURVE_LPS.DUO_ETH_CVX,
 };
 
 export const LIQUIDATION_ASSETS: Record<string, string> = {
@@ -143,6 +144,6 @@ export const LIQUIDATION_ASSETS: Record<string, string> = {
     "GHO/cbBTC/ETH": CURVE_LPS.TRI_GHO_cbBTC_ETH,
     "WBTC/ETH/USDT": CURVE_LPS.TRI_POOL_CRYPTO_USDT2,
     "frxETH/ETH": CURVE_LPS.FRXETH_ETH_LP,
-    "reUSD/sDOLA": "0x48d670d189b4b48757992d36897bca6e3f889040"
-
+    "reUSD/sDOLA": "0x48d670d189b4b48757992d36897bca6e3f889040",
+    "CVX/ETH": CURVE_LPS.DUO_ETH_CVX_TOKEN
 };

@@ -211,6 +211,10 @@ contract OraclesContext is USGDeployContext {
         // Oracle CVX_ETH
         oracles[AddrCryptoSwapLP.CVX_ETH_LP] = new OracleCryptoSwap(address(AddrCryptoSwapLP.CVX_ETH_POOL), oracles[AddrClassicERC20.WETH], "CVX_ETH / USD");
         vm.label(address(oracles[AddrCryptoSwapLP.CVX_ETH_LP]), "Oracle LP CVX/ETH");
+
+        // Oracle FXN_ETH
+        oracles[AddrCryptoSwapLP.FXN_ETH_LP] = new OracleCryptoSwap(address(AddrCryptoSwapLP.FXN_ETH_POOL), oracles[AddrClassicERC20.WETH], "FXN_ETH / USD");
+        vm.label(address(oracles[AddrCryptoSwapLP.FXN_ETH_LP]), "Oracle LP FXN/ETH");
     }
 
     function setupCurveStableLPOracles() internal {
