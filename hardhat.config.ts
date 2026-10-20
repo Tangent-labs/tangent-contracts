@@ -66,10 +66,6 @@ const config: HardhatUserConfig = {
             },
         },
 
-        mainnet: {
-            url: forkRpc,
-            accounts: [process.env.PRIVATE_KEY!]
-        },
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "https://rpc.tangent.finance",
