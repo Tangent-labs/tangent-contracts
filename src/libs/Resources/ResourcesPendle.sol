@@ -23,6 +23,11 @@ library AddrMarketPendle {
 
     IPendleMarketV3 constant sUSDe_07_05_26 = IPendleMarketV3(0x8dAe8ECe668cf80d348873F23D456448E8694883);
     IPendleMarketV3 constant USDe_07_05_26 = IPendleMarketV3(0xA3336f04f7AfbF26714331e395054F33B77C9b8D);
+
+    IPendleMarketV3 constant sUSDe_26_11_26 = IPendleMarketV3(0x47ad2Cd1DD15739A7a035b9d3B7828d916FEF77E);
+    IPendleMarketV3 constant sUSDS_26_11_26 = IPendleMarketV3(0x9C560eBaF78e596cbcC27411d633a74D628dd7dC);
+    IPendleMarketV3 constant reUSD_10_12_26 = IPendleMarketV3(0x13285bCbc27F92b47B4EDB99D744C07B48C977c0);
+    IPendleMarketV3 constant USD3_17_12_26 = IPendleMarketV3(0x4A5067C3fF1abb7449244025B0e37fEAF77D8E3e);
 }
 
 library AddrPTPendle {
@@ -40,6 +45,11 @@ library AddrPTPendle {
 
     IPendlePTToken constant sUSDe_07_05_26 = IPendlePTToken(0x3de0ff76E8b528C092d47b9DaC775931cef80F49);
     IPendlePTToken constant USDe_07_05_26 = IPendlePTToken(0xAeBf0Bb9f57E89260d57f31AF34eB58657d96Ce0);
+
+    IPendlePTToken constant sUSDe_26_11_26 = IPendlePTToken(0xB195B618EA52b77CB2a58846F452f59f8dFa9390);
+    IPendlePTToken constant sUSDS_26_11_26 = IPendlePTToken(0xdC169AbE56461A2E0c034Da431Ac2a3ebf596094);
+    IPendlePTToken constant reUSD_10_12_26 = IPendlePTToken(0xeCfaFdC7741323a945A163ed068B5a3C43483957);
+    IPendlePTToken constant USD3_17_12_26 = IPendlePTToken(0x7f47c3e6b2c00fC4eB4d5Ae50d0Ab0Ab6888Eb4D);
 }
 
 library AddrSYPendle {
