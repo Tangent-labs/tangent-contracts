@@ -15,20 +15,22 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
 
     function test_estimate_PT_price_linear_expired() external {
         uint256 price = linearDiscountPTOracleExpired.latestAnswerUpdate(true);
-        (, IPriceOracle oracle, , ) = linearDiscountPTOracleExpired.params();
-        assertEq(price, oracle.latestAnswer(true));
+        (IPriceOracle oracle, , IPendleSYToken sy, , ) = linearDiscountPTOracleExpired.params();
+        // 1 expired PT = 1 accounting asset (USDe), not 1 sUSDe
+        assertEq(price, (oracle.latestAnswer(true) * 1 ether) / sy.exchangeRate());
     }
 
     function test_estimate_PT_price_linear_not_expired() external {
         uint256 price1 = linearDiscountPTOracleNotExpired.latestAnswer(true);
         uint256 maturity = AddrMarketPendle.sUSDe_27_11_25.expiry();
 
-        (, IPriceOracle oracle, , uint256 baseDiscountPerYear) = linearDiscountPTOracleExpired.params();
+        (IPriceOracle oracle, uint256 baseDiscountPerYear, IPendleSYToken sy, , ) = linearDiscountPTOracleNotExpired.params();
+        uint256 assetPrice = (oracle.latestAnswer(true) * 1 ether) / sy.exchangeRate();
 
         uint256 timeLeft = maturity - block.timestamp;
         uint256 discount = (timeLeft * baseDiscountPerYear) / 365 days;
         assertEq(discount, linearDiscountPTOracleNotExpired.getCurrentDiscount());
-        assertEq((oracle.latestAnswer(true) * (1 ether - discount)) / 1 ether, price1);
+        assertEq((assetPrice * (1 ether - discount)) / 1 ether, price1);
 
         skip(1 weeks);
 
@@ -39,15 +41,23 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
         timeLeft = maturity - block.timestamp;
         discount = (timeLeft * baseDiscountPerYear) / 365 days;
         assertEq(discount, linearDiscountPTOracleNotExpired.getCurrentDiscount());
-        assertEq((oracle.latestAnswer(true) * (1 ether - discount)) / 1 ether, price2);
+        assetPrice = (oracle.latestAnswer(true) * 1 ether) / sy.exchangeRate();
+        assertEq((assetPrice * (1 ether - discount)) / 1 ether, price2);
 
         skip(14 weeks);
 
-        assertEq(linearDiscountPTOracleNotExpired.latestAnswer(true), oracle.latestAnswer(true));
+        assertEq(linearDiscountPTOracleNotExpired.latestAnswer(true), (oracle.latestAnswer(true) * 1 ether) / sy.exchangeRate());
     }
 
     function test_create_linear_discount_contract_with_discount_more_than_100() external {
         vm.expectRevert(abi.encodeWithSelector(OraclePendlePTLinearDiscount.DiscountMoreThan100Percent.selector));
         new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], 1 ether + 1, "PT sUSDe31/07/25 Linear");
+    }
+
+    function test_create_linear_discount_contract_with_cumulated_discount_more_than_100() external {
+        // 60%/year with 2 years left => 120% discount
+        vm.mockCall(address(AddrMarketPendle.sUSDe_27_11_25), abi.encodeWithSelector(IPendleMarketV3.expiry.selector), abi.encode(block.timestamp + 2 * 365 days));
+        vm.expectRevert(abi.encodeWithSelector(OraclePendlePTLinearDiscount.DiscountMoreThan100Percent.selector));
+        new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_27_11_25, oracles[AddrERC4626.sUSDe], 6e17, "PT sUSDe 27/11/25 Linear");
     }
 }
