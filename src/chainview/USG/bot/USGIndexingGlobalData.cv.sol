@@ -16,7 +16,7 @@ import {ISharedLiquidityGauge} from "../../../interfaces/externals/FXN/ISharedLi
 import {IStashTokenWrapper} from "../../../interfaces/externals/Convex/IStashTokenWrapper.sol";
 import {IAggregatorStablePriceV3} from "../../../interfaces/externals/LlamaLend/IAggregatorStablePriceV3.sol";
 import {IPegKeeperV2} from "../../../interfaces/externals/LlamaLend/IPegKeeperV2.sol";
-import {IRewardAccumulator} from "../../../interfaces/internals/USG/IRewardAccumulator.sol";
+import {IRewardAccumulator, Reward} from "../../../interfaces/internals/USG/IRewardAccumulator.sol";
 import {IDebtIR} from "../../../interfaces/internals/USG/IDebtIR.sol";
 import {IIRCalculator} from "../../../interfaces/internals/USG/IIRCalculator.sol";
 import {IMarketViewer} from "../../../interfaces/internals/USG/IMarketViewer.sol";
@@ -187,7 +187,9 @@ contract USGIndexingGlobalData is UsgInfo {
         TokenAmount[] memory aprs = new TokenAmount[](rewardTokens.length);
         for (uint256 j; j < rewardTokens.length; j++) {
             IERC20 rewardToken = rewardTokens[j];
-            aprs[j] = TokenAmount({token: rewardToken, amount: rewardAccumulator.getRewardData(market, rewardToken).rewardRate * ONE_YEAR});
+            Reward memory rData = rewardAccumulator.getRewardData(market, rewardToken);
+            uint256 amount = rData.periodFinish < block.timestamp ? 0 : rData.rewardRate;
+            aprs[j] = TokenAmount({token: rewardToken, amount: amount * ONE_YEAR});
         }
         return aprs;
     }

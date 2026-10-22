@@ -1,0 +1,166 @@
+{
+  "proposedRoutes": [],
+  "assets": {},
+  "choices": [],
+  "uncoveredMarkets": [],
+  "proposedRouteDetails": [],
+  "replacements": [
+    {
+      "marketLabel": "USDC/fxUSD",
+      "existingRoute": "USDC/fxUSD >> USDC/fxUSD >> fxUSD >> GHO/fxUSD >> GHO >> GHO/crvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "existingRowCells": [
+        "USDC/fxUSD",
+        "USDC/fxUSD",
+        "fxUSD",
+        "GHO/fxUSD",
+        "GHO",
+        "GHO/crvUSD",
+        "crvUSD",
+        "USDC/crvUSD",
+        "USDC",
+        "USG-USDC*",
+        "USG*"
+      ],
+      "existingLiquidityState": "soft",
+      "existingMinPoolDepthUsd": 128588.63087273168,
+      "proposedRoute": "USDC/fxUSD >> USDC/fxUSD >> USDC >> USG-USDC* >> USG*",
+      "proposedRowCells": [
+        "USDC/fxUSD",
+        "USDC/fxUSD",
+        "USDC",
+        "USG-USDC*",
+        "USG*"
+      ],
+      "proposedLiquidityState": "ok",
+      "proposedMinPoolDepthUsd": 8341655.864284512
+    },
+    {
+      "marketLabel": "crvUSD/sUSDe",
+      "existingRoute": "crvUSD/sUSDe >> crvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> frxUSD/sUSDS >> frxUSD >> USG-frxUSD* >> USG*",
+      "existingRowCells": [
+        "crvUSD/sUSDe",
+        "crvUSD/sUSDe",
+        "sUSDe",
+        "sUSDe/sUSDS",
+        "sUSDS",
+        "frxUSD/sUSDS",
+        "frxUSD",
+        "USG-frxUSD*",
+        "USG*"
+      ],
+      "existingLiquidityState": "soft",
+      "existingMinPoolDepthUsd": 102523.84652483542,
+      "proposedRoute": "crvUSD/sUSDe >> crvUSD/sUSDe >> sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "proposedRowCells": [
+        "crvUSD/sUSDe",
+        "crvUSD/sUSDe",
+        "sUSDe",
+        "scrvUSD/sUSDe",
+        "scrvUSD",
+        "scrvUSD",
+        "crvUSD",
+        "USDC/crvUSD",
+        "USDC",
+        "USG-USDC*",
+        "USG*"
+      ],
+      "proposedLiquidityState": "ok",
+      "proposedMinPoolDepthUsd": 662809.975818166
+    },
+    {
+      "marketLabel": "USDe",
+      "existingRoute": "USDe >> sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "existingRowCells": [
+        "USDe",
+        "sUSDe",
+        "sUSDe",
+        "sUSDe/sUSDS",
+        "sUSDS",
+        "sUSDS/frxUSD",
+        "frxUSD",
+        "USG-frxUSD*",
+        "USG*"
+      ],
+      "existingLiquidityState": "soft",
+      "existingMinPoolDepthUsd": 102523.84652483542,
+      "proposedRoute": "USDe >> USDe >> USDe >> USDC/USDe >> USDC >> USG-USDC* >> USG*",
+      "proposedRowCells": [
+        "USDe",
+        "USDe",
+        "USDe",
+        "USDC/USDe",
+        "USDC",
+        "USG-USDC*",
+        "USG*"
+      ],
+      "proposedLiquidityState": "ok",
+      "proposedMinPoolDepthUsd": 694822.5489322306
+    },
+    {
+      "marketLabel": "sUSDe",
+      "existingRoute": "sUSDe >> sUSDe/sUSDS >> sUSDS >> sUSDS/frxUSD >> frxUSD >> USG-frxUSD* >> USG*",
+      "existingRowCells": [
+        "sUSDe",
+        "sUSDe/sUSDS",
+        "sUSDS",
+        "sUSDS/frxUSD",
+        "frxUSD",
+        "USG-frxUSD*",
+        "USG*"
+      ],
+      "existingLiquidityState": "soft",
+      "existingMinPoolDepthUsd": 102523.84652483542,
+      "proposedRoute": "sUSDe >> sUSDe >> sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "proposedRowCells": [
+        "sUSDe",
+        "sUSDe",
+        "sUSDe",
+        "scrvUSD/sUSDe",
+        "scrvUSD",
+        "scrvUSD",
+        "crvUSD",
+        "USDC/crvUSD",
+        "USDC",
+        "USG-USDC*",
+        "USG*"
+      ],
+      "proposedLiquidityState": "ok",
+      "proposedMinPoolDepthUsd": 2809305.8835187834
+    },
+    {
+      "marketLabel": "scrvUSD/sUSDe",
+      "existingRoute": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> sUSDe/sUSDS >> sUSDS >> USDT/sUSDS >> USDT >> USDC/USDT >> USDC >> USG-USDC* >> USG*",
+      "existingRowCells": [
+        "scrvUSD/sUSDe",
+        "scrvUSD/sUSDe",
+        "sUSDe",
+        "sUSDe/sUSDS",
+        "sUSDS",
+        "USDT/sUSDS",
+        "USDT",
+        "USDC/USDT",
+        "USDC",
+        "USG-USDC*",
+        "USG*"
+      ],
+      "existingLiquidityState": "soft",
+      "existingMinPoolDepthUsd": 102523.84652483542,
+      "proposedRoute": "scrvUSD/sUSDe >> scrvUSD/sUSDe >> sUSDe >> scrvUSD/sUSDe >> scrvUSD >> scrvUSD >> crvUSD >> USDC/crvUSD >> USDC >> USG-USDC* >> USG*",
+      "proposedRowCells": [
+        "scrvUSD/sUSDe",
+        "scrvUSD/sUSDe",
+        "sUSDe",
+        "scrvUSD/sUSDe",
+        "scrvUSD",
+        "scrvUSD",
+        "crvUSD",
+        "USDC/crvUSD",
+        "USDC",
+        "USG-USDC*",
+        "USG*"
+      ],
+      "proposedLiquidityState": "ok",
+      "proposedMinPoolDepthUsd": 2809305.8835187834
+    }
+  ]
+}

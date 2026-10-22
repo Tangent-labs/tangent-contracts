@@ -10,10 +10,8 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 
-const forkBloc = process.env.STARTING_BLOCK ? parseInt(process.env.STARTING_BLOCK) : 25059739;
-const forkRpc = process.env.FORK_RPC || `https://eth-mainnet.g.alchemy.com/v2/uWrdyee0LcK0X3l1fpUlv`;
-
-const cvgExploitBlock = 20434300
+const forkBloc = 25651999; // process.env.STARTING_BLOCK ? parseInt(process.env.STARTING_BLOCK) : 24770812;
+const forkRpc = process.env.FORK_RPC || `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`;
 
 const config: HardhatUserConfig = {
     vyper: {
@@ -68,10 +66,6 @@ const config: HardhatUserConfig = {
             },
         },
 
-        mainnet: {
-            url: forkRpc,
-            accounts: [process.env.PRIVATE_KEY!]
-        },
         tangent: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "https://rpc.tangent.finance",

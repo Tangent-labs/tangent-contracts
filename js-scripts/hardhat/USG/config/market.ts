@@ -81,39 +81,16 @@ export const STATIC_CONFIG_CURVE_GAUGE = {
 
 
 
-export const STATIC_CONFIG_BASIC_ERC20s: { [marketKey: string]: MarketConfig } = {
-    "Pendle PT - USDe 07/05/26": {
-        collatName: "USDe 07/05/26",
-        collatToken: PENDLE_POOLS["USDe 07/05/26"].PT,
+export const STATIC_CONFIG_BASIC_ERC20s =
+{
+    "Pendle PT - sUSDe 08/13/2026": {
+        collatName: "sUSDe 08/13/2026",
+        collatToken: PENDLE_POOLS["sUSDe 08/13/2026"].PT,
         liquidationThreshold: 94_000,
         maxLTV: 90_000,
         maxMarketDebt: parseEther("2000000"),
         minimumLoan: MINIMUM_LOAN,
         rewardTokens: [],
         logo: "PT_USDe"
-    },
-    "Pendle PT - sUSDe 07/05/26": {
-        collatName: "sUSDe 07/05/26",
-        collatToken: PENDLE_POOLS["sUSDe 07/05/26"].PT,
-        liquidationThreshold: 94_000,
-        maxLTV: 90_000,
-        maxMarketDebt: parseEther("2000000"),
-        minimumLoan: MINIMUM_LOAN,
-        rewardTokens: [],
-        logo: "PT_sUSDe"
-    },
-    "Pendle PT - wstUSR 25/06/26": {
-        collatName: "wstUSR 25/06/26",
-        collatToken: PENDLE_POOLS["wstUSR 25/06/26"].PT,
-        liquidationThreshold: 94_000,
-        maxLTV: 90_000,
-        maxMarketDebt: parseEther("2000000"),
-        minimumLoan: MINIMUM_LOAN,
-        rewardTokens: [],
-        collatDecimals: 18,
-        logo: "PT_wstUSR"
-
-    },
-
-
+    }
 };

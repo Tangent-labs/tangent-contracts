@@ -175,6 +175,11 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
             amount: mintedAmount,
             name: "USDC_fxUSD",
         },
+        {
+            ...obj.fxUSD_reUSD,
+            amount: mintedAmount,
+            name: "fxUSD_reUSD",
+        },
         // {
         //     ...obj.CVX_ETH,
         //     amount: mintedAmount,
@@ -208,6 +213,44 @@ export function TOKENS_TO_GIVE_WITH_LP(mintedAmount: number) {
         },
 
         // StakeDao Vault LP tokens (Curve LP tokens)
+        {
+            ...obj.frxUSD_sUSDS,
+            amount: mintedAmount,
+            name: "frxUSD_sUSDS",
+        },
+        {
+            ...obj.BOLD_USDC,
+            amount: mintedAmount,
+            name: "BOLD_USDC",
+        },
+        {
+            ...obj.eUSD_USDC,
+            amount: mintedAmount,
+            name: "eUSD_USDC",
+        },
+        {
+            slotBalance: 38,
+            decimals: 18,
+            isVyper: true,
+            address: CURVE_LPS.DUO_scrvUSD_sUSDe,
+            amount: mintedAmount,
+            name: "scrvUSD_sUSDe",
+        },
+        {
+            ...obj.frxUSD_OUSD,
+            amount: mintedAmount,
+            name: "frxUSD_OUSD",
+        },
+        {
+            ...obj.frxUSD_sDOLA,
+            amount: mintedAmount,
+            name: "frxUSD_sDOLA",
+        },
+        {
+            ...obj.frxUSD_scrvUSD,
+            amount: mintedAmount,
+            name: "frxUSD_scrvUSD",
+        },
         {
             slotBalance: 0,
             decimals: 18,

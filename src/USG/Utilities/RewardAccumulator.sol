@@ -226,9 +226,9 @@ contract RewardAccumulator is IRewardAccumulator, LightOwnable, LightReentrancyG
 
             // Get and update the amount of rewards to claim
             TokenAmount[] memory tokenAmountsToClaim = _claimRewards(market, msg.sender);
-            // If the rewards returned by the gUSD is an empty array,
+            // If the rewards returned by the USG is an empty array,
             require(tokenAmountsToClaim.length != 0, NoRewardsToClaimFromContract(address(market)));
-            // Iterates over all erc20 received from the claim on the gUSD
+            // Iterates over all erc20 received from the claim on the USG
             for (uint256 tokenIndex; tokenIndex < tokenAmountsToClaim.length; ) {
                 IERC20 rewardToken = tokenAmountsToClaim[tokenIndex].token;
                 // If token is seen the first time (tokensToClaim[token] == 0)

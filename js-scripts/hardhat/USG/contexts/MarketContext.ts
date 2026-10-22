@@ -12,8 +12,10 @@ import { OracleContext } from "./OracleContext";
 import { impersonateAccount, stopImpersonatingAccount } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import * as MarketCreator from "../../../../artifacts/src/USG/Utilities/MarketCreator.sol/MarketCreator.json";
 import { MarketInitStruct } from "../../../../typechain-types/src/USG/Market/BasicERC20Market";
+import { IR_PARAMS_LEC_USD_S } from "../config/irParams";
 import { STATIC_CONFIG_CONVEX_CURVE } from "../config/markets/convex_crv";
 import { STATIC_CONFIG_STAKEDAO_VAULT_V2 } from "../config/markets/stakeDao";
+import { RC_PARAMS_LEC_USD_S_A_B } from "../config/rcParams";
 
 export type ConvexCrvMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_CURVE;
 export type ConvexFxnMarketKeys = keyof typeof STATIC_CONFIG_CONVEX_FXN;
@@ -162,34 +164,34 @@ export class MarketContext {
         }
     }
 
-    // async deployBasicERC20Markets(keys: BasicERC20MarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
-    //     for (let index = 0; index < keys.length; index++) {
-    //         const key = keys[index];
-    //         const staticConfig = STATIC_CONFIG_BASIC_ERC20s[key];
-    //         if (!staticConfig) {
-    //             throw Error(`No static config for ${key} market`)
-    //         }
-    //         const oracle = oracleContext.oracles[staticConfig.collatName]
-    //         if (!oracle) {
-    //             throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
-    //         }
-    //         await impersonateAccount(await baseContext.owner.getAddress())
+    async deployBasicERC20Markets(keys: BasicERC20MarketKeys[], baseContext: BaseContext, oracleContext: OracleContext) {
+        for (let index = 0; index < keys.length; index++) {
+            const key = keys[index];
+            const staticConfig = STATIC_CONFIG_BASIC_ERC20s[key];
+            if (!staticConfig) {
+                throw Error(`No static config for ${key} market`)
+            }
+            const oracle = oracleContext.oracles[staticConfig.collatName]
+            if (!oracle) {
+                throw Error(`No oracle deployed with key ${staticConfig.collatName} for ${key}`)
+            }
+            await impersonateAccount(await baseContext.owner.getAddress())
 
-    //         const receipt = await (
-    //             await baseContext.marketCreator
-    //                 .connect(baseContext.owner)
-    //                 .createBasicERC20Market(
-    //                     this.marketInit(staticConfig, oracle, key),
-    //                     LEC_CONFIG_IR_PARAMS,
-    //                     LEC_CONFIG_RC_PARAMS
-    //                 )
-    //         ).wait();
-    //         await stopImpersonatingAccount(await baseContext.owner.getAddress())
+            const receipt = await (
+                await baseContext.marketCreator
+                    .connect(baseContext.owner)
+                    .createBasicERC20Market(
+                        this.marketInit(staticConfig, oracle, key),
+                        IR_PARAMS_LEC_USD_S,
+                        RC_PARAMS_LEC_USD_S_A_B
+                    )
+            ).wait();
+            await stopImpersonatingAccount(await baseContext.owner.getAddress())
 
 
-    //         await this.parseCreateMarketLogs(key, receipt!);
-    //     }
-    // }
+            await this.parseCreateMarketLogs(key, receipt!);
+        }
+    }
 
 
 

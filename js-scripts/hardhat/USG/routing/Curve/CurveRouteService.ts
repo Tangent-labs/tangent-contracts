@@ -4,8 +4,9 @@ import { ethers } from "hardhat";
 import path from "path";
 
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers";
-import { routers } from "@tangent/defi-resources";
+import { COMMON_ERC20S, routers } from "@tangent/defi-resources";
 
+import { SpecialTokenGiver } from "../../../thief/SpecialTokenGiver";
 import { giveTokenToAddresss } from "../../../thief/thief";
 import { LIQUIDATION_ASSETS, separatedCurvePoolToken, ThiefConfig } from "./config";
 
@@ -70,6 +71,10 @@ export class CurveRouteService {
     }
 
     async getCsv() {
+        if (process.env.ROUTE_CSV_PATH) {
+            return fs.readFileSync(process.env.ROUTE_CSV_PATH, "utf-8");
+        }
+
         const sheetId = "1iHxA1src-lwCQjp396I6CCuM1u_catd2pp-EmjrSiT8";
         const gid = "2047399010";
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
@@ -82,37 +87,55 @@ export class CurveRouteService {
         return await response.text();
     }
 
-    async validateCsv() {
-        const names = new Set<string>();
-        const missings = new Set<string>();
-        const csvData = await this.getCsv();
-
-        const rows = csvData.split("\r").map((row: string) => row.split(","));
-
+    parseCsvRows(csvData: string) {
+        const rows = csvData.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n").map((row) => row.split(","));
         const formattedCsv: string[][] = [];
 
         for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            row[0] = row[0].replace("\n", "");
+            const row = rows[i].map((cell) => cell.trim());
             for (let j = 0; j < row.length; j++) {
-                const cell = row[j].trim();
-                names.add(cell);
-
-                // Remove empty cells
-                if (cell === "") {
+                if (row[j] === "") {
                     formattedCsv.push(row.slice(0, j));
                     break;
+                }
+                if (j === row.length - 1) {
+                    formattedCsv.push(row);
                 }
             }
         }
 
-        names.forEach((name) => {
-            if (name !== "" && !LIQUIDATION_ASSETS[name]) {
-                missings.add(name);
-            }
+        return formattedCsv.filter((row) => row.length >= 3);
+    }
+
+    async validateCsv() {
+        const names = new Set<string>();
+        const missings = new Set<string>();
+        const csvData = await this.getCsv();
+        const formattedCsv = this.parseCsvRows(csvData);
+
+        formattedCsv.forEach((row) => {
+            row.forEach((cell) => {
+                names.add(cell);
+                if (cell !== "" && !LIQUIDATION_ASSETS[cell]) {
+                    missings.add(cell);
+                }
+            });
         });
 
         return { csv: formattedCsv, valid: (missings.size || 0) === 0, missing: missings };
+    }
+
+    validateRouteRows(rows: string[][]) {
+        const missing = new Set<string>();
+        rows.forEach((row) => {
+            for (const cell of row) {
+                if (cell !== "" && !LIQUIDATION_ASSETS[cell]) {
+                    missing.add(cell);
+                }
+            }
+        });
+
+        return { valid: missing.size === 0, missing };
     }
 
     loadRoutesFromCSV(csvData: string[][]): RouteParams[] {
@@ -198,6 +221,8 @@ export class CurveRouteService {
 
         let coins: string[] = [];
         for (const [_, route] of pools.entries()) {
+            // if (route.display === "OETH >> OETH/WETH >> WETH") {
+
             if (["sUSDe >> sUSDe >> USDe"].includes(route.display)) {
                 infos.push({ info: `${route.display} no route => USDe not unwrapable directely`, route });
             }
@@ -220,6 +245,7 @@ export class CurveRouteService {
                     errors.push({ error: error.message, route });
                 }
             }
+            // }
         }
         return { success: params, errors, infos };
     }
@@ -268,7 +294,12 @@ export class CurveRouteService {
         let initialInBalance = isETH ? await ethers.provider.getBalance(user.address) : await tokenInContract.balanceOf(user.address);
         const amountIn = ethers.parseUnits(amount, thiefConfig?.decimals || 18);
 
-        if (thiefConfig || isTgAsset) {
+        if (SpecialTokenGiver.supports(tokenIn)) {
+            if (initialInBalance < amountIn) {
+                await SpecialTokenGiver.giveToken(tokenIn, amountIn, [user.address]);
+                initialInBalance = await tokenInContract.balanceOf(user.address);
+            }
+        } else if (thiefConfig || isTgAsset) {
             if (initialInBalance < amountIn) {
                 await giveTokenToAddresss(user, tokenIn, amountIn, thiefConfig?.slot || 0, !!thiefConfig ? thiefConfig.isVyper : !isTgAsset);
                 initialInBalance = await tokenInContract.balanceOf(user.address);
@@ -314,12 +345,12 @@ export class CurveRouteService {
         const poolTypes = [1, 2, 3, 10, 20, 30];
 
         const amount = "1";
-
+        const oeth = await ethers.getContractAt("ERC20", COMMON_ERC20S.OETH)
         const tokenInContract = await ethers.getContractAt("IERC20Metadata", route.in);
         const amountIn = ethers.parseUnits(amount, thiefData?.decimals || 18);
 
         try {
-            await this.prepareUserForExchange(route.in, route.display, user, amount, thiefData);
+            await this.prepareUserForExchange(route.in, route.display, user, amount + 0.3, thiefData);
         } catch (e: any) {
             throw new Error(e.message);
         }

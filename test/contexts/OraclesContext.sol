@@ -13,7 +13,6 @@ import {OracleDuoPoolStable} from "../../src/USG/Oracles/CurveLP/OracleDuoPoolSt
 // import {OracleTriPoolStable} from "../../src/USG/Oracles/CurveLP/OracleTriPoolStable.sol";
 import {OracleCryptoSwap} from "../../src/USG/Oracles/CurveLP/OracleCryptoSwap.sol";
 
-import {OraclePendlePT} from "../../src/USG/Oracles/Pendle/OraclePendlePT.sol";
 import {OraclePendlePTLinearDiscount} from "../../src/USG/Oracles/Pendle/OraclePendlePTLinearDiscount.sol";
 // import {OraclePendleLP} from "../../src/USG/Oracles/Pendle/OraclePendleLP.sol";
 
@@ -211,6 +210,10 @@ contract OraclesContext is USGDeployContext {
         // Oracle CVX_ETH
         oracles[AddrCryptoSwapLP.CVX_ETH_LP] = new OracleCryptoSwap(address(AddrCryptoSwapLP.CVX_ETH_POOL), oracles[AddrClassicERC20.WETH], "CVX_ETH / USD");
         vm.label(address(oracles[AddrCryptoSwapLP.CVX_ETH_LP]), "Oracle LP CVX/ETH");
+
+        // Oracle FXN_ETH
+        oracles[AddrCryptoSwapLP.FXN_ETH_LP] = new OracleCryptoSwap(address(AddrCryptoSwapLP.FXN_ETH_POOL), oracles[AddrClassicERC20.WETH], "FXN_ETH / USD");
+        vm.label(address(oracles[AddrCryptoSwapLP.FXN_ETH_LP]), "Oracle LP FXN/ETH");
     }
 
     function setupCurveStableLPOracles() internal {
@@ -368,56 +371,59 @@ contract OraclesContext is USGDeployContext {
     }
 
     function setupPendlePTTokens() internal {
+        // 15% / year linear discount to the accounting asset
+        uint256 PT_DISCOUNT_PER_YEAR = 15e16;
+
         // Oracle PT USDe_07_05_26
-        oracles[AddrPTPendle.USDe_07_05_26] = new OraclePendlePT(AddrMarketPendle.USDe_07_05_26, oracles[AddrClassicERC20.USDe], 20, 18, "USDe_07_05_26 / USD");
+        oracles[AddrPTPendle.USDe_07_05_26] = new OraclePendlePTLinearDiscount(AddrMarketPendle.USDe_07_05_26, oracles[AddrClassicERC20.USDe], PT_DISCOUNT_PER_YEAR, "USDe_07_05_26 / USD");
         vm.label(address(oracles[AddrPTPendle.USDe_07_05_26]), "Oracle PT USDe_07_05_26");
 
         // Oracle PT sUSDe_07_05_26
-        oracles[AddrPTPendle.sUSDe_07_05_26] = new OraclePendlePT(AddrMarketPendle.sUSDe_07_05_26, oracles[AddrERC4626.sUSDe], 20, 18, "sUSDe_07_05_26 / USD");
+        oracles[AddrPTPendle.sUSDe_07_05_26] = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_07_05_26, oracles[AddrERC4626.sUSDe], PT_DISCOUNT_PER_YEAR, "sUSDe_07_05_26 / USD");
         vm.label(address(oracles[AddrPTPendle.sUSDe_07_05_26]), "Oracle PT sUSDe_07_05_26");
 
         // Oracle PT sUSDe_25_09_25
-        oracles[AddrPTPendle.sUSDe_05_02_26] = new OraclePendlePT(AddrMarketPendle.sUSDe_05_02_26, oracles[AddrERC4626.sUSDe], 900, 18, "sUSDe_05_02_26 Linear / USD");
+        oracles[AddrPTPendle.sUSDe_05_02_26] = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_05_02_26, oracles[AddrERC4626.sUSDe], PT_DISCOUNT_PER_YEAR, "sUSDe_05_02_26 Linear / USD");
         vm.label(address(oracles[AddrPTPendle.sUSDe_05_02_26]), "Oracle PT sUSDe_05_02_26");
 
         // Oracle PT sUSDE 31_07_25
-        oracles[AddrPTPendle.sUSDe_31_07_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], 900, 18, "PT sUSDe 31/07/25 Linear / USD");
+        oracles[AddrPTPendle.sUSDe_31_07_25] = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], PT_DISCOUNT_PER_YEAR, "PT sUSDe 31/07/25 Linear / USD");
         vm.label(address(oracles[AddrPTPendle.sUSDe_31_07_25]), "Oracle PT sUSDe 31_07_25");
 
         // Oracle PT eUSDE 29_05_25
-        oracles[AddrPTPendle.eUSDe_29_05_25] = new OraclePendlePT(AddrMarketPendle.eUSDe_29_05_25, oracles[AddrClassicERC20.USDe], 900, 18, "PT eUSDe 29/05/25 Linear / USD");
+        oracles[AddrPTPendle.eUSDe_29_05_25] = new OraclePendlePTLinearDiscount(AddrMarketPendle.eUSDe_29_05_25, oracles[AddrClassicERC20.USDe], PT_DISCOUNT_PER_YEAR, "PT eUSDe 29/05/25 Linear / USD");
         vm.label(address(oracles[AddrPTPendle.eUSDe_29_05_25]), "Oracle PT eUSDe 29_05_25");
 
         // Oracle PT eBTC 26_06_25
-        oracles[AddrPTPendle.eBTC_26_06_25] = new OraclePendlePT(AddrMarketPendle.eBTC_26_06_25, oracles[AddrClassicERC20.eBTC], 900, 18, "PT sUSDe 26/06/25 Linear / USD");
+        oracles[AddrPTPendle.eBTC_26_06_25] = new OraclePendlePTLinearDiscount(AddrMarketPendle.eBTC_26_06_25, oracles[AddrClassicERC20.eBTC], PT_DISCOUNT_PER_YEAR, "PT sUSDe 26/06/25 Linear / USD");
         vm.label(address(oracles[AddrPTPendle.eBTC_26_06_25]), "Oracle PT eBTC 26_06_25");
 
         // Oracle PT wstUSR_25_09_25
-        oracles[AddrPTPendle.wstUSR_25_09_25] = new OraclePendlePT(AddrMarketPendle.wstUSR_25_09_25, oracles[AddrERC4626.wstUSR], 900, 18, "PT sUSDe 25/09/25 Linear / USD");
+        oracles[AddrPTPendle.wstUSR_25_09_25] = new OraclePendlePTLinearDiscount(AddrMarketPendle.wstUSR_25_09_25, oracles[AddrERC4626.wstUSR], PT_DISCOUNT_PER_YEAR, "PT sUSDe 25/09/25 Linear / USD");
         vm.label(address(oracles[AddrPTPendle.wstUSR_25_09_25]), "Oracle PT wstUSR_25_09_25");
 
         // Oracle PT sUSDe_25_09_25
-        oracles[AddrPTPendle.sUSDe_25_09_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_25_09_25, oracles[AddrERC4626.sUSDe], 900, 18, "PT sUSDe 25/09/25 Linear / USD");
+        oracles[AddrPTPendle.sUSDe_25_09_25] = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_25_09_25, oracles[AddrERC4626.sUSDe], PT_DISCOUNT_PER_YEAR, "PT sUSDe 25/09/25 Linear / USD");
         vm.label(address(oracles[AddrPTPendle.sUSDe_25_09_25]), "Oracle PT sUSDe_25_09_25");
 
         // Oracle PT USDe_25_09_25
-        oracles[AddrPTPendle.USDe_25_09_25] = new OraclePendlePT(AddrMarketPendle.USDe_25_09_25, oracles[AddrClassicERC20.USDe], 900, 18, "PT sUSDe 25/09/25 Linear / USD");
+        oracles[AddrPTPendle.USDe_25_09_25] = new OraclePendlePTLinearDiscount(AddrMarketPendle.USDe_25_09_25, oracles[AddrClassicERC20.USDe], PT_DISCOUNT_PER_YEAR, "PT sUSDe 25/09/25 Linear / USD");
         vm.label(address(oracles[AddrPTPendle.USDe_25_09_25]), "Oracle PT USDe_25_09_25");
 
         // Oracle PT USR_04_09_25
-        oracles[AddrPTPendle.USR_04_09_25] = new OraclePendlePT(AddrMarketPendle.USR_04_09_25, oracles[AddrClassicERC20.USR], 900, 18, "PT sUSDe 04/09/25 Linear");
+        oracles[AddrPTPendle.USR_04_09_25] = new OraclePendlePTLinearDiscount(AddrMarketPendle.USR_04_09_25, oracles[AddrClassicERC20.USR], PT_DISCOUNT_PER_YEAR, "PT sUSDe 04/09/25 Linear");
         vm.label(address(oracles[AddrPTPendle.USR_04_09_25]), "Oracle PT USR_04_09_25");
 
         // Oracle PT USDe_27_11_25
-        oracles[AddrPTPendle.USDe_27_11_25] = new OraclePendlePT(AddrMarketPendle.USDe_27_11_25, oracles[AddrClassicERC20.USDe], 900, 18, "PT sUSDe 27/11/25 Linear");
+        oracles[AddrPTPendle.USDe_27_11_25] = new OraclePendlePTLinearDiscount(AddrMarketPendle.USDe_27_11_25, oracles[AddrClassicERC20.USDe], PT_DISCOUNT_PER_YEAR, "PT sUSDe 27/11/25 Linear");
         vm.label(address(oracles[AddrPTPendle.USDe_27_11_25]), "Oracle PT USDe_27_11_25");
 
         // Oracle PT sUSDe_27_11_25
-        oracles[AddrPTPendle.sUSDe_27_11_25] = new OraclePendlePT(AddrMarketPendle.sUSDe_27_11_25, oracles[AddrERC4626.sUSDe], 900, 18, "PT sUSDe 27/11/25 Linear");
+        oracles[AddrPTPendle.sUSDe_27_11_25] = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_27_11_25, oracles[AddrERC4626.sUSDe], PT_DISCOUNT_PER_YEAR, "PT sUSDe 27/11/25 Linear");
         vm.label(address(oracles[AddrPTPendle.sUSDe_27_11_25]), "Oracle PT sUSDe_27_11_25");
 
         // Oracle PT wstUSR_25_09_25
-        oracles[AddrPTPendle.wstUSR_29_01_26] = new OraclePendlePT(AddrMarketPendle.wstUSR_29_01_26, oracles[AddrERC4626.wstUSR], 900, 18, "PT sUSDe 25/09/25 Linear / USD");
+        oracles[AddrPTPendle.wstUSR_29_01_26] = new OraclePendlePTLinearDiscount(AddrMarketPendle.wstUSR_29_01_26, oracles[AddrERC4626.wstUSR], PT_DISCOUNT_PER_YEAR, "PT sUSDe 25/09/25 Linear / USD");
         vm.label(address(oracles[AddrPTPendle.wstUSR_29_01_26]), "Oracle PT wstUSR_25_09_25");
     }
 
