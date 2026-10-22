@@ -87,7 +87,7 @@ export async function verifyContracts() {
     }
 
     for (const [key, value] of Object.entries(addresses.oracles.pendlePT)) {
-        await forceAbi(client, value, `Oracle ${key} / USD`, false, (await artifacts.readArtifact("OraclePendlePT")).abi);
+        await forceAbi(client, value, `Oracle ${key} / USD`, false, (await artifacts.readArtifact("OraclePendlePTLinearDiscount")).abi);
     }
 
     await forceAbi(client, addresses.oracles.USG, "Oracle USG", true, (await artifacts.readArtifact("AggregatorStablePriceV3")).abi);

@@ -10,7 +10,7 @@ contract LeveragePT is MarketDeploymentContext {
     uint256 constant ptAmount = 100_000 ether;
 
     function setUp() public {
-        collatToken = AddrPTPendle.sUSDe_27_11_25;
+        collatToken = AddrPTPendle.sUSDe_07_05_26;
 
         marketSUSDe = deployBasicERC20Market(collatToken);
 
@@ -51,9 +51,9 @@ contract LeveragePT is MarketDeploymentContext {
                         50_000 ether
                     ),
                     PendleSYToPT({
-                        market: AddrMarketPendle.sUSDe_27_11_25,
-                        pt: AddrPTPendle.sUSDe_27_11_25,
-                        sy: AddrSYPendle.sUSDe_27_11_25,
+                        market: AddrMarketPendle.sUSDe_07_05_26,
+                        pt: AddrPTPendle.sUSDe_07_05_26,
+                        sy: AddrSYPendle.sUSDe_07_05_26,
                         underlyingIn: address(AddrERC4626.sUSDe),
                         receiver: address(marketSUSDe),
                         minPTOut: 0
@@ -96,9 +96,9 @@ contract LeveragePT is MarketDeploymentContext {
                             10 ether
                         ),
                         PendleSYToPT({
-                            market: AddrMarketPendle.sUSDe_27_11_25,
-                            pt: AddrPTPendle.sUSDe_27_11_25,
-                            sy: AddrSYPendle.sUSDe_27_11_25,
+                            market: AddrMarketPendle.sUSDe_07_05_26,
+                            pt: AddrPTPendle.sUSDe_07_05_26,
+                            sy: AddrSYPendle.sUSDe_07_05_26,
                             underlyingIn: address(AddrERC4626.sUSDe),
                             receiver: address(marketSUSDe),
                             minPTOut: 0

@@ -4,7 +4,7 @@ import "../../../../contexts/MarketDeploymentContext.sol";
 
 contract PendleZappingDeposit is MarketDeploymentContext {
     BasicERC20Market public market;
-    IERC20Metadata public collatToken = AddrPTPendle.USDe_27_11_25;
+    IERC20Metadata public collatToken = AddrPTPendle.USDe_07_05_26;
     IERC20 usdc = AddrClassicERC20.USDC;
     function setUp() public {
         market = deployBasicERC20Market(collatToken);
@@ -51,9 +51,9 @@ contract PendleZappingDeposit is MarketDeploymentContext {
                             10 ** 6
                         ),
                         PendleSYToPT({
-                            market: AddrMarketPendle.USDe_27_11_25,
-                            pt: AddrPTPendle.USDe_27_11_25,
-                            sy: AddrSYPendle.USDe_27_11_25,
+                            market: AddrMarketPendle.USDe_07_05_26,
+                            pt: AddrPTPendle.USDe_07_05_26,
+                            sy: AddrSYPendle.USDe_07_05_26,
                             underlyingIn: address(AddrClassicERC20.USDe),
                             receiver: address(market),
                             minPTOut: 0
@@ -82,9 +82,9 @@ contract PendleZappingDeposit is MarketDeploymentContext {
     //                 routerCall: encoder.encodeSwapTokenForPT(
     //                     encoder.createCurveRouterNoReceiverNoMinDyStruct(Array.memoryAddress([address(AddrClassicERC20.USDe)]), new uint256[][](0), 10 ** 18),
     //                     PendleSYToPT({
-    //                         market: AddrMarketPendle.USDe_27_11_25,
-    //                         pt: AddrPTPendle.USDe_27_11_25,
-    //                         sy: AddrSYPendle.USDe_27_11_25,
+    //                         market: AddrMarketPendle.USDe_07_05_26,
+    //                         pt: AddrPTPendle.USDe_07_05_26,
+    //                         sy: AddrSYPendle.USDe_07_05_26,
     //                         underlyingIn: address(AddrClassicERC20.USDe),
     //                         receiver: address(market),
     //                         minPTOut: 0

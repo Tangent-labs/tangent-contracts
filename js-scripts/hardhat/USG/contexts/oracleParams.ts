@@ -151,7 +151,8 @@ export const oraclePendlePTParams: {
     key: keyof typeof PENDLE_POOLS;
     oracleName: string;
     underlyingOracle: string;
-    decimalsDelta: number;
+    // 1e18 = 100% / year
+    baseDiscountPerYear: bigint;
 }[] = [
-        { key: "sUSDe 08/13/2026", oracleName: "sUSDe_08_13_26 / USD", underlyingOracle: "sUSDe", decimalsDelta: 18 },
+        { key: "sUSDe 08/13/2026", oracleName: "sUSDe_08_13_26 / USD", underlyingOracle: "sUSDe", baseDiscountPerYear: 15n * 10n ** 16n },
     ];
