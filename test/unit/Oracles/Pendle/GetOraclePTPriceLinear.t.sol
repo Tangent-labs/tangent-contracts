@@ -15,7 +15,8 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
 
     function test_estimate_PT_price_linear_expired() external {
         uint256 price = linearDiscountPTOracleExpired.latestAnswerUpdate(true);
-        (IPriceOracle oracle, , IPendleSYToken sy, , ) = linearDiscountPTOracleExpired.params();
+        IPriceOracle oracle = linearDiscountPTOracleExpired.underlyingOracle();
+        IPendleSYToken sy = linearDiscountPTOracleExpired.sy();
         // 1 expired PT = 1 accounting asset (USDe), not 1 sUSDe
         assertEq(price, (oracle.latestAnswer(true) * 1 ether) / sy.exchangeRate());
     }
@@ -24,7 +25,9 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
         uint256 price1 = linearDiscountPTOracleNotExpired.latestAnswer(true);
         uint256 maturity = AddrMarketPendle.sUSDe_27_11_25.expiry();
 
-        (IPriceOracle oracle, uint256 baseDiscountPerYear, IPendleSYToken sy, , ) = linearDiscountPTOracleNotExpired.params();
+        IPriceOracle oracle = linearDiscountPTOracleNotExpired.underlyingOracle();
+        uint256 baseDiscountPerYear = linearDiscountPTOracleNotExpired.baseDiscountPerYear();
+        IPendleSYToken sy = linearDiscountPTOracleNotExpired.sy();
         uint256 assetPrice = (oracle.latestAnswer(true) * 1 ether) / sy.exchangeRate();
 
         uint256 timeLeft = maturity - block.timestamp;
@@ -47,6 +50,37 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
         skip(14 weeks);
 
         assertEq(linearDiscountPTOracleNotExpired.latestAnswer(true), (oracle.latestAnswer(true) * 1 ether) / sy.exchangeRate());
+    }
+
+    function test_estimate_PT_price_linear_sy_rate_drops() external {
+        IPriceOracle oracle = linearDiscountPTOracleExpired.underlyingOracle();
+        IPendleSYToken sy = linearDiscountPTOracleExpired.sy();
+        uint256 pyIndexStored = linearDiscountPTOracleExpired.yt().pyIndexStored();
+
+        // NAV write-down: SY rate falls 10% under the stored PY index, which never decreases
+        vm.mockCall(address(sy), abi.encodeWithSelector(IPendleSYToken.exchangeRate.selector), abi.encode((pyIndexStored * 9) / 10));
+
+        // 1 PT still redeems 1 / pyIndexStored SY, so the PT takes the loss
+        assertEq(linearDiscountPTOracleExpired.latestAnswer(true), (oracle.latestAnswer(true) * 1 ether) / pyIndexStored);
+    }
+
+    function test_estimate_PT_price_linear_sy_rate_drops_then_maturity() external {
+        OraclePendlePTLinearDiscount ptOracle = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_07_05_26, oracles[AddrERC4626.sUSDe], 2 * 10 ** 17, "PT sUSDe 07/05/26 Linear");
+        IPriceOracle oracle = ptOracle.underlyingOracle();
+        IPendleSYToken sy = ptOracle.sy();
+        uint256 pyIndexStored = ptOracle.yt().pyIndexStored();
+        uint256 maturity = AddrMarketPendle.sUSDe_07_05_26.expiry();
+        assertLt(block.timestamp, maturity);
+
+        // NAV write-down before maturity
+        vm.mockCall(address(sy), abi.encodeWithSelector(IPendleSYToken.exchangeRate.selector), abi.encode((pyIndexStored * 9) / 10));
+        uint256 assetPrice = (oracle.latestAnswer(true) * 1 ether) / pyIndexStored;
+        assertEq(ptOracle.latestAnswer(true), (assetPrice * (1 ether - ptOracle.getCurrentDiscount())) / 1 ether);
+
+        // After maturity the discount is gone, but the PT still redeems at the stored PY index
+        vm.warp(maturity + 1 weeks);
+        assertEq(ptOracle.getCurrentDiscount(), 0);
+        assertEq(ptOracle.latestAnswer(true), (oracle.latestAnswer(true) * 1 ether) / pyIndexStored);
     }
 
     function test_create_linear_discount_contract_with_discount_more_than_100() external {
