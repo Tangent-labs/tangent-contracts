@@ -9,8 +9,8 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
     function setUp() external {
         // Oracle PT sUSDE 31_07_25
         linearDiscountPTOracleExpired = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_31_07_25, oracles[AddrERC4626.sUSDe], 2 * 10 ** 17, "PT sUSDe 31/07/25 Linear");
-        // Oracle PT sUSDe 25_09_25
-        linearDiscountPTOracleNotExpired = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_27_11_25, oracles[AddrERC4626.sUSDe], 2 * 10 ** 17, "PT sUSDe 27/11/25 Linear");
+        // Oracle PT sUSDe 07_05_26
+        linearDiscountPTOracleNotExpired = new OraclePendlePTLinearDiscount(AddrMarketPendle.sUSDe_07_05_26, oracles[AddrERC4626.sUSDe], 2 * 10 ** 17, "PT sUSDe 07/05/26 Linear");
     }
 
     function test_estimate_PT_price_linear_expired() external {
@@ -23,7 +23,7 @@ contract GetOraclePTPriceLinear is MarketDeploymentContext {
 
     function test_estimate_PT_price_linear_not_expired() external {
         uint256 price1 = linearDiscountPTOracleNotExpired.latestAnswer(true);
-        uint256 maturity = AddrMarketPendle.sUSDe_27_11_25.expiry();
+        uint256 maturity = AddrMarketPendle.sUSDe_07_05_26.expiry();
 
         IPriceOracle oracle = linearDiscountPTOracleNotExpired.underlyingOracle();
         uint256 baseDiscountPerYear = linearDiscountPTOracleNotExpired.baseDiscountPerYear();

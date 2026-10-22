@@ -144,7 +144,7 @@ export class OracleContext {
     // }
 
     async deployOraclePendlePT() {
-        const OraclePendlePTFactory = await ethers.getContractFactory("OraclePendlePT");
+        const OraclePendlePTFactory = await ethers.getContractFactory("OraclePendlePTLinearDiscount");
         for (let index = 0; index < oraclePendlePTParams.length; index++) {
             const item = oraclePendlePTParams[index];
             const marketAddress = PENDLE_POOLS[item.key].MARKET;
@@ -155,7 +155,7 @@ export class OracleContext {
             if (!underlyingOracle) {
                 throw Error(`Underlying oracle ${item.underlyingOracle} can't be find for ${item.oracleName}`);
             }
-            const oracle = (await OraclePendlePTFactory.deploy(marketAddress, underlyingOracle, 900, item.decimalsDelta, item.oracleName)) as unknown as IPriceOracle;
+            const oracle = (await OraclePendlePTFactory.deploy(marketAddress, underlyingOracle, item.baseDiscountPerYear, item.oracleName)) as unknown as IPriceOracle;
             this.oracles[item.key] = oracle
             this.oraclesPendlePT[item.key] = oracle
 
