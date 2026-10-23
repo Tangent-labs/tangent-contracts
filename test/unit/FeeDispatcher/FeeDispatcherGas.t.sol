@@ -42,10 +42,10 @@ contract FeeDispatcherGas is Test {
 
         vm.startPrank(owner);
         _config(IERC20(address(AddrClassicERC20.CRV)), new OracleChainlinkWrapper(AddrChainlinkOracle.CRV, 90_000, address(0), ""), 100);
-        _config(IERC20(address(AddrClassicERC20.FXN)), new OracleCurveEmaOrSpot(address(AddrCryptoSwapLP.FXN_ETH_POOL), eth, false, ""), 200);
+        _config(IERC20(address(AddrClassicERC20.FXN)), new OracleCurveEmaOrSpot(address(AddrCryptoSwapLP.FXN_ETH_POOL), eth, 0, false, ""), 200);
         _config(IERC20(address(AddrClassicERC20.PYUSD)), new OracleChainlinkWrapper(AddrChainlinkOracle.PYUSD, 90_000, address(0), ""), 30);
         _config(IERC20(address(AddrClassicERC20.RLUSD)), new OracleChainlinkWrapper(AddrChainlinkOracle.RLUSD, 90_000, address(0), ""), 30);
-        _config(bold, new OracleCurveEmaOrSpot(BOLD_USDC_POOL, usdc, true, ""), 50);
+        _config(bold, new OracleCurveEmaOrSpot(BOLD_USDC_POOL, usdc, 0, true, ""), 50);
         vm.stopPrank();
 
         deal(address(USG), address(router), 10_000_000 ether);

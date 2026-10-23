@@ -385,7 +385,7 @@ contract FeeDispatcherTest is MarketDeploymentContext {
         assertEq(pool.coins(1), address(AddrClassicERC20.FXN), "FXN coin 1");
 
         IPriceOracle ethOracle = oracles[AddrClassicERC20.WETH];
-        OracleCurveEmaOrSpot fxnOracle = new OracleCurveEmaOrSpot(address(pool), ethOracle, false, "FXN / USD");
+        OracleCurveEmaOrSpot fxnOracle = new OracleCurveEmaOrSpot(address(pool), ethOracle, 0, false, "FXN / USD");
         uint256 ethPrice = ethOracle.latestAnswer(false);
 
         uint256 ema = pool.price_oracle();
@@ -405,13 +405,31 @@ contract FeeDispatcherTest is MarketDeploymentContext {
         assertEq(fxnOracle.latestAnswer(false), (spot * ethPrice) / 1e18, "Takes the spot");
     }
 
+    function test_oracleCurveEmaOrSpot_prices_coin_2() external {
+        ICurveTriCryptoSwap pool = AddrCryptoSwapLP.crvUSD_ETH_CRV;
+        assertEq(pool.coins(0), address(AddrClassicERC20.crvUSD), "crvUSD coin 0");
+        assertEq(pool.coins(2), address(AddrClassicERC20.CRV), "CRV coin 2");
+
+        IPriceOracle crvUsdOracle = oracles[AddrClassicERC20.crvUSD];
+        // Coin 2 => price index 1
+        OracleCurveEmaOrSpot crvFromPool = new OracleCurveEmaOrSpot(address(pool), crvUsdOracle, 1, false, "CRV / USD");
+
+        uint256 ema = pool.price_oracle(1);
+        uint256 spot = pool.last_prices(1);
+        assertEq(crvFromPool.latestAnswer(false), ((ema > spot ? ema : spot) * crvUsdOracle.latestAnswer(false)) / 1e18, "max(EMA, spot) of coin 2");
+
+        // Close to Chainlink CRV / USD
+        OracleChainlinkWrapper crvChainlink = new OracleChainlinkWrapper(AddrChainlinkOracle.CRV, 1000000000000, address(0), "CRV / USD");
+        assertApproxEqRel(crvFromPool.latestAnswer(false), crvChainlink.latestAnswer(false), 0.03e18, "Within 3% of Chainlink");
+    }
+
     function test_oracleCurveEmaOrSpot_detects_pool_type() external {
         IPriceOracle ethOracle = oracles[AddrClassicERC20.WETH];
         IPriceOracle usdcOracle = oracles[AddrClassicERC20.USDC];
 
-        OracleCurveEmaOrSpot crypto = new OracleCurveEmaOrSpot(address(AddrCryptoSwapLP.FXN_ETH_POOL), ethOracle, false, "FXN");
-        OracleCurveEmaOrSpot tricrypto = new OracleCurveEmaOrSpot(address(AddrCryptoSwapLP.crvUSD_ETH_CRV), oracles[AddrClassicERC20.crvUSD], false, "ETH");
-        OracleCurveEmaOrSpot ng = new OracleCurveEmaOrSpot(BOLD_USDC_POOL, usdcOracle, true, "BOLD");
+        OracleCurveEmaOrSpot crypto = new OracleCurveEmaOrSpot(address(AddrCryptoSwapLP.FXN_ETH_POOL), ethOracle, 0, false, "FXN");
+        OracleCurveEmaOrSpot tricrypto = new OracleCurveEmaOrSpot(address(AddrCryptoSwapLP.crvUSD_ETH_CRV), oracles[AddrClassicERC20.crvUSD], 0, false, "ETH");
+        OracleCurveEmaOrSpot ng = new OracleCurveEmaOrSpot(BOLD_USDC_POOL, usdcOracle, 0, true, "BOLD");
 
         assertEq(uint8(crypto.poolType()), uint8(CurvePoolType.CRYPTO));
         assertEq(uint8(tricrypto.poolType()), uint8(CurvePoolType.TRICRYPTO));
@@ -419,7 +437,7 @@ contract FeeDispatcherTest is MarketDeploymentContext {
         assertGt(tricrypto.latestAnswer(false), 0);
 
         vm.expectRevert(OracleCurveEmaOrSpot.UnsupportedPool.selector);
-        new OracleCurveEmaOrSpot(address(usg), usdcOracle, false, "Not a pool");
+        new OracleCurveEmaOrSpot(address(usg), usdcOracle, 0, false, "Not a pool");
     }
 
     /// @dev BOLD sits at ~0.98 long enough for the EMA to converge, then pumps sharply.
@@ -430,7 +448,7 @@ contract FeeDispatcherTest is MarketDeploymentContext {
         assertEq(pool.coins(1), address(AddrClassicERC20.USDC), "USDC coin 1");
 
         IPriceOracle usdcOracle = oracles[AddrClassicERC20.USDC];
-        OracleCurveEmaOrSpot boldOracle = new OracleCurveEmaOrSpot(address(pool), usdcOracle, true, "BOLD / USD");
+        OracleCurveEmaOrSpot boldOracle = new OracleCurveEmaOrSpot(address(pool), usdcOracle, 0, true, "BOLD / USD");
         OracleCoinFromCurveLP boldEmaOnly = new OracleCoinFromCurveLP(address(pool), usdcOracle, 1, "BOLD / USD EMA");
 
         vm.startPrank(usr1);

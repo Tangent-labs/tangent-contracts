@@ -9,8 +9,8 @@ import {OracleBase} from "../OracleBase.sol";
 
 enum CurvePoolType {
     CRYPTO, // 2 coins crypto (v2 / twocrypto-ng): price_oracle(), last_prices()
-    TRICRYPTO, // price_oracle(0), last_prices(0)
-    STABLESWAP_NG // price_oracle(0), get_p(0)
+    TRICRYPTO, // price_oracle(k), last_prices(k)
+    STABLESWAP_NG // price_oracle(k), get_p(k)
 }
 
 /// @title OracleCurveEmaOrSpot
@@ -19,19 +19,22 @@ enum CurvePoolType {
 /// @dev    ONLY meant for the FeeDispatcher sell floor, NEVER for collateral pricing.
 ///         The EMA lags a pump, which would let a dump fill below spot: taking the max closes that.
 ///         Spot is manipulable in the same tx, but through the max it can only raise the floor (dump reverts), never lower it.
+///         `priceIndex` follows Curve: index k prices coin k+1 in coin 0 (coin 2 => k = 1). Always 0 on 2 coins crypto pools.
 contract OracleCurveEmaOrSpot is OracleBase {
     address public immutable lp;
     IPriceOracle public immutable otherTokenOracle;
     CurvePoolType public immutable poolType;
     bool public immutable isReversed;
+    uint256 public immutable priceIndex;
 
     error UnsupportedPool();
 
-    constructor(address _lp, IPriceOracle _otherTokenOracle, bool _isReversed, string memory _oracleName) OracleBase(_oracleName) {
+    constructor(address _lp, IPriceOracle _otherTokenOracle, uint256 _priceIndex, bool _isReversed, string memory _oracleName) OracleBase(_oracleName) {
         lp = _lp;
         otherTokenOracle = _otherTokenOracle;
         poolType = _detectPoolType(_lp);
         isReversed = _isReversed;
+        priceIndex = _priceIndex;
     }
 
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {
@@ -49,11 +52,11 @@ contract OracleCurveEmaOrSpot is OracleBase {
             ema = ICurveCryptoSwap(lp).price_oracle();
             spot = ICurveCryptoSwap(lp).last_prices();
         } else if (poolType == CurvePoolType.TRICRYPTO) {
-            ema = ICurveTriCryptoSwap(lp).price_oracle(0);
-            spot = ICurveTriCryptoSwap(lp).last_prices(0);
+            ema = ICurveTriCryptoSwap(lp).price_oracle(priceIndex);
+            spot = ICurveTriCryptoSwap(lp).last_prices(priceIndex);
         } else {
-            ema = ICurveStableSwapNG(lp).price_oracle(0);
-            spot = ICurveStableSwapNG(lp).get_p(0);
+            ema = ICurveStableSwapNG(lp).price_oracle(priceIndex);
+            spot = ICurveStableSwapNG(lp).get_p(priceIndex);
         }
 
         // Reverse before taking the max, so the max is always on the priced token
