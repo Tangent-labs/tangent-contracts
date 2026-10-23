@@ -15,8 +15,9 @@ export async function recomputeLockers() {
     console.log(cycleId, await stakingService.cycleInfo(cycleId))
 
 
-    for (let tokenId = 1; tokenId <= nftSupply; tokenId++) {
-
+    // iterate by index: burned NFTs make max tokenId > totalSupply
+    for (let i = 0; i < nftSupply; i++) {
+        const tokenId = await positionManager.tokenByIndex(i)
 
         try {
             const tokenOwner = await positionManager.ownerOf(tokenId)

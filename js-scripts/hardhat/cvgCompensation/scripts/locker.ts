@@ -10,7 +10,9 @@ export async function recomputeLockers() {
     const lockingPositionAmount = await nft.totalSupply();
     const amountLocked: { [account: string]: bigint } = {};
 
-    for (let tokenId = 1; tokenId <= lockingPositionAmount; tokenId++) {
+    // iterate by index: burned NFTs make max tokenId > totalSupply
+    for (let i = 0; i < lockingPositionAmount; i++) {
+        const tokenId = await nft.tokenByIndex(i)
 
 
         try {

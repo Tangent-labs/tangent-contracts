@@ -10,12 +10,15 @@ export async function computeBonds() {
     const lockingPositionAmount = await nft.totalSupply();
     const amountLocked: { [account: string]: bigint } = {};
 
-    for (let tokenId = 1; tokenId <= lockingPositionAmount; tokenId++) {
+    // iterate by index: burned NFTs make max tokenId > totalSupply
+    for (let i = 0; i < lockingPositionAmount; i++) {
+        const tokenId = await nft.tokenByIndex(i)
 
 
         try {
             const tokenOwner = await nft.ownerOf(tokenId)
-            const cvgClaimable = (await bondDepository.getTokenVestingInfo(tokenId)).claimable;
+            const vesting = await bondDepository.getTokenVestingInfo(tokenId);
+            const cvgClaimable = vesting.claimable + vesting.pending; // unclaimed = vested + still vesting
 
             if (!amountLocked[tokenOwner]) {
                 amountLocked[tokenOwner] = cvgClaimable

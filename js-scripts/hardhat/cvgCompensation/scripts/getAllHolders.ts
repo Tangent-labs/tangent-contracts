@@ -1,9 +1,9 @@
 import fs from 'fs/promises';
 import { CVX_REWARDS_CVG_ETH, TOPIC0_WITHDRAWN_CONVEX } from '../addresses';
 
-const API_KEY = 'Y6R57JU6DIDE8HMWW4QEI3C9U5KXDTUQJ1';
-const CONTRACT_ADDRESS = CVX_REWARDS_CVG_ETH;
-const TOPIC0 = TOPIC0_WITHDRAWN_CONVEX;
+const CONTRACT_ADDRESS = process.env.CONTRACT || CVX_REWARDS_CVG_ETH;
+const TOPIC0 = process.env.TOPIC0 || TOPIC0_WITHDRAWN_CONVEX;
+const OUT = process.env.OUT || 'withdraw-logs-ConvexCRV-CVG-ETH';
 
 const FROM_BLOCK = 19124399;
 const TO_BLOCK = 20434300;
@@ -26,6 +26,8 @@ async function sleep(ms: number) {
 }
 
 async function fetchLogs(fromBlock: number, toBlock: number, page: number = 1): Promise<EtherscanLog[]> {
+
+    const API_KEY = process.env.ETHERSCAN_API_KEY
     const url = `https://api.etherscan.io/v2/api` +
         `?module=logs` +
         `&action=getLogs` +
@@ -95,7 +97,7 @@ async function main() {
         logs: allLogs
     };
 
-    await fs.writeFile('./js-scripts/hardhat/cvgCompensation/snapshotitos/withdraw-logs-ConvexCRV-CVG-ETH.json', JSON.stringify(output, null, 2));
+    await fs.writeFile(`./js-scripts/hardhat/cvgCompensation/logs/${OUT}.json`, JSON.stringify(output, null, 2));
 
     console.log('\n✅ Terminé !');
     console.log(`Total de logs récupérés : ${allLogs.length}`);
