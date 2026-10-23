@@ -48,6 +48,7 @@
     "@nomicfoundation/hardhat-ignition-ethers": "0.15.9",
     "@nomicfoundation/hardhat-toolbox": "5.0.0",
     "@nomiclabs/hardhat-vyper": "3.1.0",
+    "@openzeppelin/merkle-tree": "^1.0.8",
     "@tangent/defi-resources": "github:Tangent-labs/defi-resources#1b4e5ca77d534298703008c0107cf865e9a522ca",
     "@tenderly/hardhat-tenderly": "2.5.2",
     "@types/pg": "8.11.11",
