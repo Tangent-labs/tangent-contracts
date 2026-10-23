@@ -109,7 +109,6 @@ export const PROD_ADDRESSES = {
             ETH_CVX: "0x55efb3af5206ccec916067a3ab4ef4eb18cf6af8"
         }
 
-    }
-
+    },
 }
 

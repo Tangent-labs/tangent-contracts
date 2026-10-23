@@ -10,7 +10,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 
-const forkBloc = 25651999; // process.env.STARTING_BLOCK ? parseInt(process.env.STARTING_BLOCK) : 24770812;
+const forkBloc = process.env.STARTING_BLOCK ? parseInt(process.env.STARTING_BLOCK) : 25651999;
 const forkRpc = process.env.FORK_RPC || `https://eth-mainnet.g.alchemy.com/v2/zCrDEsqvlSdKaF_Tv0q4Q`;
 
 const config: HardhatUserConfig = {
@@ -39,15 +39,6 @@ const config: HardhatUserConfig = {
         localhost: {
             chainId: 31337, // Chain ID should match the hardhat network's chainid
             url: "http://127.0.0.1:8545",
-            // mining: {
-            //     auto: false,
-            //     interval: 12_000,
-            // },
-            // accounts: {
-            //     mnemonic: "test test test test test test test test test test test junk",
-            //     count: 300, // 👈 get as many as you want
-            //     path: "m/44'/60'/0'/0",
-            // },
             forking: {
                 url: forkRpc,
                 blockNumber: forkBloc,

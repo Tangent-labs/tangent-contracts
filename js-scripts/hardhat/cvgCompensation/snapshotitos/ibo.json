@@ -1,0 +1,548 @@
+[
+  {
+    "address": "0xaf0FDd39e5D92499B0eD9F68693DA99C0ec1e92e",
+    "values": {
+      "bought": "100000269802003837492183",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x641932eCCD1fA318c0195954A29E0d76373aAc9E",
+    "values": {
+      "bought": "59456455114089426978337",
+      "claimed": "59456455114089426978337"
+    }
+  },
+  {
+    "address": "0x16beAA538e809E902eD98769F8b65D9f70866f58",
+    "values": {
+      "bought": "38195927760646559081294",
+      "claimed": "38195927760646559081294"
+    }
+  },
+  {
+    "address": "0xf69EA6646cf682262E84cd7c67133eac59cef07b",
+    "values": {
+      "bought": "35438349208117991119445",
+      "claimed": "35438349208117991119445"
+    }
+  },
+  {
+    "address": "0xe7ce85F41D6473652Bf04576a10FC6750059237b",
+    "values": {
+      "bought": "31229496663406857663116",
+      "claimed": "31229496663406857663116"
+    }
+  },
+  {
+    "address": "0xaA90beFC76B37F487eEc5C1A593ea5b9826440bE",
+    "values": {
+      "bought": "29999978165029794476470",
+      "claimed": "29999978165029794476470"
+    }
+  },
+  {
+    "address": "0xc6c379c92dC947f82289f15b2A16587DD969c490",
+    "values": {
+      "bought": "29106352787403772642403",
+      "claimed": "14096217942260343140276"
+    }
+  },
+  {
+    "address": "0xdb3B2d1B37985fbfB28298106d6721cAd2211146",
+    "values": {
+      "bought": "27445152162278274765765",
+      "claimed": "27445152162278274765765"
+    }
+  },
+  {
+    "address": "0x6bFC090a5D78dBf885206ADC9A4048e48BECE14A",
+    "values": {
+      "bought": "26507416759576108101092",
+      "claimed": "26507416759576108101092"
+    }
+  },
+  {
+    "address": "0xb12a1149328976B00184Bc668386b69cbbF8F7a9",
+    "values": {
+      "bought": "25904512488159514235743",
+      "claimed": "25904512488159514235743"
+    }
+  },
+  {
+    "address": "0x1C6D7Bba392538E43f8C991ee78E51fddb754726",
+    "values": {
+      "bought": "25070807547229344042964",
+      "claimed": "25070807547229344042964"
+    }
+  },
+  {
+    "address": "0x9BBC502058450392Fb6A40F6A82bCfE450a389CF",
+    "values": {
+      "bought": "22482037348212415911627",
+      "claimed": "22482037348212415911627"
+    }
+  },
+  {
+    "address": "0x0ad087203f334832522F70fdB8F19aC78AF3384c",
+    "values": {
+      "bought": "21270969014178122209997",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x914b68718C3920ed020D172C96c8826827eF5C70",
+    "values": {
+      "bought": "16731734523145566090350",
+      "claimed": "16731734523145566090350"
+    }
+  },
+  {
+    "address": "0xA8AECb79085c0A94A97dA3424dc2b1b1c6C425Ba",
+    "values": {
+      "bought": "14999999999999999452818",
+      "claimed": "14999999999999999452818"
+    }
+  },
+  {
+    "address": "0xFEb00C145E7ebA390B33A8De0c5B267E1C8182aa",
+    "values": {
+      "bought": "14999985682891542222670",
+      "claimed": "14999985682891542222670"
+    }
+  },
+  {
+    "address": "0x1D4a0E9A0d1Fb0Ba8d080Fa9419ca4fD89049B5e",
+    "values": {
+      "bought": "14999977853892357687859",
+      "claimed": "14999977853892357687859"
+    }
+  },
+  {
+    "address": "0x95d4b05A61341592Dd0bFa6fd0dCBEbBfd0B5Da9",
+    "values": {
+      "bought": "14999965202753608784675",
+      "claimed": "14999965202753608784675"
+    }
+  },
+  {
+    "address": "0xA086415EB7b7D6094cc681E75a6120FE33066200",
+    "values": {
+      "bought": "14999375509128268710418",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x45F00a71aD07F32a785cca0c0C11486063Ea874d",
+    "values": {
+      "bought": "14999324097573596428278",
+      "claimed": "692816005191966367906"
+    }
+  },
+  {
+    "address": "0xE7064cC9eb9A44a67162db2b6275dFEdB3C490c2",
+    "values": {
+      "bought": "14999017950526623748291",
+      "claimed": "14999017950526623748291"
+    }
+  },
+  {
+    "address": "0x6EcBA7527448BB56cAba8CA7768D271DeAea72a9",
+    "values": {
+      "bought": "14872652909462725413645",
+      "claimed": "10660559241494701617400"
+    }
+  },
+  {
+    "address": "0xC53365f3411b76C8a829861f32554FE286d1ebEa",
+    "values": {
+      "bought": "12405651608105595835656",
+      "claimed": "12405651608105595835656"
+    }
+  },
+  {
+    "address": "0x136D02dC8Af604a5f943BE670F826B6cd5B9B660",
+    "values": {
+      "bought": "11674057649667405764966",
+      "claimed": "11674057649667405764966"
+    }
+  },
+  {
+    "address": "0x875f3c3B5B4063E5eABda63Bb088Ad46B70CA79D",
+    "values": {
+      "bought": "11420787816018065333951",
+      "claimed": "11420787816018065333951"
+    }
+  },
+  {
+    "address": "0x9d156bc7c8768294510A4A41883d5A4EB15b15E3",
+    "values": {
+      "bought": "11133015387513306023733",
+      "claimed": "11133015387513306023733"
+    }
+  },
+  {
+    "address": "0x1252bf1BEeA27b001d2e324069e92d83722Cd40F",
+    "values": {
+      "bought": "10411385511192489410925",
+      "claimed": "10411385511192489410925"
+    }
+  },
+  {
+    "address": "0xFdbBfB0Fe2986672af97Eca0e797D76A0bbF35c9",
+    "values": {
+      "bought": "9620506769954961776843",
+      "claimed": "9620506769954961776843"
+    }
+  },
+  {
+    "address": "0x07F00Bf1F5D9cf040472B28F1464BB08100cE3E5",
+    "values": {
+      "bought": "9310932506263386512298",
+      "claimed": "9310932506263386512298"
+    }
+  },
+  {
+    "address": "0xaAE1478eE9f89f07c789E7D2C3647E606Cfb0386",
+    "values": {
+      "bought": "8701833146277590722034",
+      "claimed": "8701833146277590722034"
+    }
+  },
+  {
+    "address": "0x92c66Dadc8B3eb8859E9dce25F47754d0aec185F",
+    "values": {
+      "bought": "8550862062960147755379",
+      "claimed": "8550862062960147755379"
+    }
+  },
+  {
+    "address": "0x7384E3F9f4367bD3961b42E8F2fa61d6b3Aa1509",
+    "values": {
+      "bought": "7715639145747754618378",
+      "claimed": "7715639145747754618378"
+    }
+  },
+  {
+    "address": "0x1b17E6045234237f86c9acDeA0b637a561DeFf2E",
+    "values": {
+      "bought": "7500000000000000000000",
+      "claimed": "7500000000000000000000"
+    }
+  },
+  {
+    "address": "0xc3bB99E36Bc916ba68a1cA7ab3cBC16d0527cF18",
+    "values": {
+      "bought": "7499994718983357523391",
+      "claimed": "7499994718983357523391"
+    }
+  },
+  {
+    "address": "0x09bCE8BFD6494AA41F99E3c0Ee29a4d6482abB7b",
+    "values": {
+      "bought": "7499993435799037295972",
+      "claimed": "7499993435799037295972"
+    }
+  },
+  {
+    "address": "0xCDD2fE5B9CE1C50e0Cc8eE44e20bda672692E28E",
+    "values": {
+      "bought": "7436326454731362706822",
+      "claimed": "7436326454731362706822"
+    }
+  },
+  {
+    "address": "0xCD16e7FdfA44eF400f03cfbeE28eC8A32d6626e0",
+    "values": {
+      "bought": "7392574897711752894515",
+      "claimed": "6150074717303205307852"
+    }
+  },
+  {
+    "address": "0xf6F85d9B96a43c87fD29E2FaCbF644DF6Bb029b0",
+    "values": {
+      "bought": "7179194785308056983523",
+      "claimed": "7179194785308056983523"
+    }
+  },
+  {
+    "address": "0x11d67Fa925877813B744aBC0917900c2b1D6Eb81",
+    "values": {
+      "bought": "6467608840105129619362",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x392027fDc620d397cA27F0c1C3dCB592F27A4dc3",
+    "values": {
+      "bought": "6412416648162795107068",
+      "claimed": "3214223844891601047417"
+    }
+  },
+  {
+    "address": "0x5691CCeA44Fc4a53886fF1b8666c89321f73C49D",
+    "values": {
+      "bought": "6007232019493616493904",
+      "claimed": "6007232019493616493904"
+    }
+  },
+  {
+    "address": "0xc674e7d16E6E5DEfc599F250fCA70c2f9B37ae34",
+    "values": {
+      "bought": "5953515253630371113303",
+      "claimed": "5953515253630371113303"
+    }
+  },
+  {
+    "address": "0x05967A419530DEfF49aF8B519Aa2205b7c86790B",
+    "values": {
+      "bought": "5394142578273133876190",
+      "claimed": "5394142578273133876190"
+    }
+  },
+  {
+    "address": "0xA8A9e2C366c56ce3968BbAc981D1a063e58dfA85",
+    "values": {
+      "bought": "5304163384761938521799",
+      "claimed": "3736193753666941404856"
+    }
+  },
+  {
+    "address": "0x920018c1363B9A83D6dBed966EC8a0B47f6d6667",
+    "values": {
+      "bought": "5205901228272205217911",
+      "claimed": "5205901228272205217911"
+    }
+  },
+  {
+    "address": "0x296E0C21DB4061EbF971e55d5db85011E7Ff9797",
+    "values": {
+      "bought": "4899205435445366169383",
+      "claimed": "4899205435445366169383"
+    }
+  },
+  {
+    "address": "0xf3F3d029753fa3c29f9936c1E0576dF79a3106Ac",
+    "values": {
+      "bought": "4692431228278452909569",
+      "claimed": "4692431228278452909569"
+    }
+  },
+  {
+    "address": "0xCEFa4200316b5D5AC61ca789D8edb5D38a4e3161",
+    "values": {
+      "bought": "4491515359584938603319",
+      "claimed": "4433125659910334401475"
+    }
+  },
+  {
+    "address": "0x3e3672B23eB22946A31263d2D178bF0fB1f4BBFD",
+    "values": {
+      "bought": "4444444444444444444444",
+      "claimed": "4444444444444444444444"
+    }
+  },
+  {
+    "address": "0x88F3FF0120ECAA2E0b4a9e37729D9EEcE8BEaDB2",
+    "values": {
+      "bought": "4421723900691257329442",
+      "claimed": "4421723900691257329442"
+    }
+  },
+  {
+    "address": "0x17ac83Fa732eAcb07D57C4767eb3aed2928c558C",
+    "values": {
+      "bought": "4383714445064138315672",
+      "claimed": "755521011031790295593"
+    }
+  },
+  {
+    "address": "0x13cbd624Af484c4C695ff0E1d0B7e125d45F2C76",
+    "values": {
+      "bought": "3961031821209781244806",
+      "claimed": "3961031821209781244806"
+    }
+  },
+  {
+    "address": "0xb888f9f40F6007C06681306bba976F5e25691E1b",
+    "values": {
+      "bought": "3579795396340392917734",
+      "claimed": "3579795396340392917734"
+    }
+  },
+  {
+    "address": "0xc31300642c30C9dF6201612dB1A104DD41e5868D",
+    "values": {
+      "bought": "3551172501943761308260",
+      "claimed": "3551172501943761308260"
+    }
+  },
+  {
+    "address": "0xa86Bd8539cf64AB5414bBCF32627b7f03f01e1A0",
+    "values": {
+      "bought": "3021850463107746641348",
+      "claimed": "3021850463107746641348"
+    }
+  },
+  {
+    "address": "0xae908652F4E5cCA3E7dF9d10d8DdcD70d34aB7A3",
+    "values": {
+      "bought": "2980546950991395418148",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x61fdff48D154c6079E43CBf14027057b367cb3b2",
+    "values": {
+      "bought": "2962803098087356270786",
+      "claimed": "2962803098087356270786"
+    }
+  },
+  {
+    "address": "0x605b3a9CeAaBa25448E7838AdFD52CE16a0761BF",
+    "values": {
+      "bought": "2776056864945753698540",
+      "claimed": "2776056864945753698540"
+    }
+  },
+  {
+    "address": "0x42aaBD3A2f2b64A44B99e0ab025657ba73B871a2",
+    "values": {
+      "bought": "1873153759820426550041",
+      "claimed": "1873153759820426550041"
+    }
+  },
+  {
+    "address": "0xa61301A5199671aB6C5d2E21c718fdDBDAB778E3",
+    "values": {
+      "bought": "1856762442325703801818",
+      "claimed": "1856762442325703801818"
+    }
+  },
+  {
+    "address": "0xC8D46eb7881975F9aE15216FeEBa2ff58E55803c",
+    "values": {
+      "bought": "1762802781582711794013",
+      "claimed": "1762802781582711794013"
+    }
+  },
+  {
+    "address": "0x507d0E9F12447DD1055d98bF82C92F17650fB8b5",
+    "values": {
+      "bought": "1297958307029662410280",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0xb1ca00e303E9B282E544D3c023D575650d091Cf4",
+    "values": {
+      "bought": "1233726459740692562340",
+      "claimed": "1233726459740692562340"
+    }
+  },
+  {
+    "address": "0xb957DccaA1CCFB1eB78B495B499801D591d8a403",
+    "values": {
+      "bought": "1222625883265875120536",
+      "claimed": "1222625883265875120536"
+    }
+  },
+  {
+    "address": "0xAe80e023289D72AbdE601a1AdA273026A8147c58",
+    "values": {
+      "bought": "1125206062079401226151",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x854647e8b36d0EDb55ad75Ba2AeC84236933eeeC",
+    "values": {
+      "bought": "1086506681276939206328",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x042796806943301623f76c2f5F1ed311372e12dF",
+    "values": {
+      "bought": "939383735182324367582",
+      "claimed": "939383735182324367582"
+    }
+  },
+  {
+    "address": "0xcD933883C8209a9f424E405c728a9291865bE08a",
+    "values": {
+      "bought": "733566144940395573444",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x4455AfEccD95F188Aa2841aE95fdaaD3D9fBC4Da",
+    "values": {
+      "bought": "579618912871352620639",
+      "claimed": "579618912871352620639"
+    }
+  },
+  {
+    "address": "0x6Fd5a849cc4BB26fdE7737395E3b4A91F3B78A5a",
+    "values": {
+      "bought": "469733468471751600425",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x78bfA2a0241804733c58091d431b5a840D9D6F73",
+    "values": {
+      "bought": "377355392391586219603",
+      "claimed": "372144965573948108996"
+    }
+  },
+  {
+    "address": "0x44174BF68B4357513409cdA705718Bc41A657f2b",
+    "values": {
+      "bought": "374111485222596333707",
+      "claimed": "374111485222596333707"
+    }
+  },
+  {
+    "address": "0x43A996fa50d2f378d707aCA9dDCDE1C30CB68f63",
+    "values": {
+      "bought": "371816322736568135341",
+      "claimed": "364374832496746607175"
+    }
+  },
+  {
+    "address": "0x0297fff94D1363f5aEe1C773fF9Ae7D35AD6f474",
+    "values": {
+      "bought": "369549150036954915003",
+      "claimed": "369549150036954915003"
+    }
+  },
+  {
+    "address": "0x946fc52087E5d2e2B8273B047b4DC65cE8d58436",
+    "values": {
+      "bought": "256553262688232013385",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x5e64bf03f0D2773780ac9B58444A53DfCc75Ce5E",
+    "values": {
+      "bought": "77741435338999642965",
+      "claimed": "0"
+    }
+  },
+  {
+    "address": "0x28893320E3Ec737271510b92b3eFe948144A396E",
+    "values": {
+      "bought": "64544151943257233279",
+      "claimed": "64544151943257233279"
+    }
+  },
+  {
+    "address": "0xF29a53cCA8Be4cCC45a5406a62107BF40ABeEA4E",
+    "values": {
+      "bought": "33282095230322074553",
+      "claimed": "33282095230322074553"
+    }
+  }
+]
