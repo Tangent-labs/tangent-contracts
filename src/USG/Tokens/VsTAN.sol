@@ -84,6 +84,9 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     /// @notice Mapping of claimable rewards for each token.
     mapping(uint256 => mapping(IERC20 => uint256)) public rewards; // position => reward token => amount
 
+    /// @notice Address allowed, with the owner, to process rewards (the FeeDispatcher).
+    address public rewardDistributor;
+
     error ZeroAmount();
     error MinLockAmountNotReached();
     error NotTokenOwner();
@@ -111,6 +114,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     event RewardPaid(uint256 indexed tokenId, IERC20 indexed _rewardToken, uint256 _reward);
     event SetKick(KickParams kick);
     event SetMinLock(uint256 minLock);
+    event SetRewardDistributor(address rewardDistributor);
     event AddNewReward(IERC20 newReward);
     event CreateLock(uint256 id, uint256 amount, bool isPerma);
     event IncreaseLockAmount(uint256 id, uint256 amount);
@@ -578,11 +582,17 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         emit SetMinLock(_newMinLock);
     }
 
+    function setRewardDistributor(address _rewardDistributor) external onlyOwner {
+        rewardDistributor = _rewardDistributor;
+        emit SetRewardDistributor(_rewardDistributor);
+    }
+
     /**
      * @notice Process rewards for the specified reward tokens
      * @param tokenAmounts Array of reward tokens and their amounts to distribute
      */
-    function processRewards(TokenAmount[] memory tokenAmounts) external onlyOwner updateReward(0) {
+    function processRewards(TokenAmount[] memory tokenAmounts) external updateReward(0) {
+        require(msg.sender == owner || msg.sender == rewardDistributor, OwnableUnauthorizedAccount(msg.sender));
         // Reward tokens updated
         uint256 rewardTokensLength = tokenAmounts.length;
         uint256 timestamp = block.timestamp;
