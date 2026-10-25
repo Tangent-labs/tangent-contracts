@@ -45,6 +45,9 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     uint256 internal constant ONE_WEEK = 1 weeks;
     /// @notice Maximum value for a uint48.
     uint48 public constant MAX_UINT48 = type(uint48).max;
+    /// @notice Delay during which a position can't be transferred after being modified (split, merge, claim, lock time/amount changes).
+    /// @dev    Prevents front-running a NFT sale.
+    uint256 public constant TRANSFER_COOLDOWN = 1 hours;
 
     uint256 public nextId = 1;
 
@@ -84,6 +87,9 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     /// @notice Mapping of claimable rewards for each token.
     mapping(uint256 => mapping(IERC20 => uint256)) public rewards; // position => reward token => amount
 
+    /// @notice Timestamp of the last modification of a position.
+    mapping(uint256 => uint256) public lastModification;
+
     /// @notice Address allowed, with the owner, to process rewards (the FeeDispatcher).
     address public rewardDistributor;
 
@@ -99,6 +105,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     error AlreadyMaxLock();
     error KickDelayIsNotPassed();
     error CantMerge2SamePosition();
+    error TransferCooldown();
 
     error HarvesterFeeToHigh();
     error NothingToClaim();
@@ -234,8 +241,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         // Cant increase time a position alreadyMaxLocked
         require(oldEndLockTime != newEnd, AlreadyMaxLock());
 
-        //
         locks[tokenId].endLockTime = newEnd;
+        lastModification[tokenId] = block.timestamp;
 
         emit IncreaseLockTime(tokenId);
     }
@@ -248,6 +255,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         uint48 oldEndLockTime = locks[tokenId].endLockTime;
         require(oldEndLockTime > block.timestamp, LockExpired());
         locks[tokenId].endLockTime = oldEndLockTime != MAX_UINT48 ? MAX_UINT48 : _newEndLockTime();
+        lastModification[tokenId] = block.timestamp;
         emit TogglePermaLock(tokenId);
     }
 
@@ -335,6 +343,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         _updateReward(newTokenId);
         locks[newTokenId] = Lock({endLockTime: endLockTime, amount: amountToRemove});
         locks[tokenId].amount = newAmount;
+        lastModification[tokenId] = block.timestamp;
         _mint(msg.sender, newTokenId);
 
         emit SplitPosition(tokenId, newTokenId, newAmount, amountToRemove);
@@ -362,6 +371,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         uint208 totalAmount = amountA + amountB;
         locks[tokenIdA] = Lock({endLockTime: endLockA < endLockB ? endLockB : endLockA, amount: totalAmount});
         delete locks[tokenIdB];
+        lastModification[tokenIdA] = block.timestamp;
 
         _burn(tokenIdB);
 
@@ -379,6 +389,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     function claimSimple(uint256 tokenId, bool isClaimAssUSG) external nonReentrant onlyTokenOwner(tokenId) updateReward(tokenId) {
         bool isClaimable = _claimSimple(tokenId, msg.sender, isClaimAssUSG);
         require(isClaimable, NothingToClaim());
+        lastModification[tokenId] = block.timestamp;
     }
 
     /**
@@ -437,6 +448,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
             }
             // Revert if there is nothing to claim on a position input
             require(isClaimable, NothingToClaim());
+            lastModification[positionId] = block.timestamp;
 
             unchecked {
                 ++positionIndex;
@@ -489,6 +501,16 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         }
     }
 
+    /**
+     * @dev Blocks transfers (not mints/burns) during the cooldown following a modification of the position.
+     */
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+        if (to != address(0) && _ownerOf(tokenId) != address(0)) {
+            require(block.timestamp >= lastModification[tokenId] + TRANSFER_COOLDOWN, TransferCooldown());
+        }
+        return super._update(to, tokenId, auth);
+    }
+
     function _createLock(uint208 amountIn, bool isPermaLock) internal {
         require(amountIn >= minLock, MinLockAmountNotReached());
 
@@ -510,6 +532,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         require(oldLockTime > block.timestamp, LockExpired());
 
         locks[tokenId] = Lock({endLockTime: oldLockTime != MAX_UINT48 ? _newEndLockTime() : MAX_UINT48, amount: oldAmount + amountIn});
+        lastModification[tokenId] = block.timestamp;
         // Increase the total amount locked
         totalSupplyVsTan += amountIn;
 
