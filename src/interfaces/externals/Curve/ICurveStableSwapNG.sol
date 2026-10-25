@@ -25,6 +25,7 @@ interface ICurveStableSwapNG is IERC20Metadata {
     function last_price(uint256 i) external view returns (uint256);
     function ema_price(uint256 i) external view returns (uint256);
     function get_p(uint256 i) external view returns (uint256);
+    function get_p() external view returns (uint256);
     function price_oracle() external view returns (uint256);
     function price_oracle(uint256 i) external view returns (uint256);
     function D_oracle() external view returns (uint256);

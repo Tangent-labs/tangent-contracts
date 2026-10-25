@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.22;
+pragma solidity ^0.8.28;
 
 import {ERC721, ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {IERC4626, IERC20} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
@@ -45,6 +45,9 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     uint256 internal constant ONE_WEEK = 1 weeks;
     /// @notice Maximum value for a uint48.
     uint48 public constant MAX_UINT48 = type(uint48).max;
+    /// @notice Delay during which a position can't be transferred after being modified (split, merge, claim, lock time/amount changes).
+    /// @dev    Prevents front-running a NFT sale.
+    uint256 public constant TRANSFER_COOLDOWN = 1 hours;
 
     uint256 public nextId = 1;
 
@@ -84,6 +87,12 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     /// @notice Mapping of claimable rewards for each token.
     mapping(uint256 => mapping(IERC20 => uint256)) public rewards; // position => reward token => amount
 
+    /// @notice Timestamp of the last modification of a position.
+    mapping(uint256 => uint256) public lastModification;
+
+    /// @notice Address allowed, with the owner, to process rewards (the FeeDispatcher).
+    address public rewardDistributor;
+
     error ZeroAmount();
     error MinLockAmountNotReached();
     error NotTokenOwner();
@@ -96,6 +105,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     error AlreadyMaxLock();
     error KickDelayIsNotPassed();
     error CantMerge2SamePosition();
+    error TransferCooldown();
 
     error HarvesterFeeToHigh();
     error NothingToClaim();
@@ -111,6 +121,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     event RewardPaid(uint256 indexed tokenId, IERC20 indexed _rewardToken, uint256 _reward);
     event SetKick(KickParams kick);
     event SetMinLock(uint256 minLock);
+    event SetRewardDistributor(address rewardDistributor);
     event AddNewReward(IERC20 newReward);
     event CreateLock(uint256 id, uint256 amount, bool isPerma);
     event IncreaseLockAmount(uint256 id, uint256 amount);
@@ -165,7 +176,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         _;
     }
 
-    modifier isReentrancyGuartEntered() {
+    modifier isReentrancyGuardEntered() {
         require(!_reentrancyGuardEntered(), ReentrancyGuardReentrantCall());
         _;
     }
@@ -230,8 +241,8 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         // Cant increase time a position alreadyMaxLocked
         require(oldEndLockTime != newEnd, AlreadyMaxLock());
 
-        //
         locks[tokenId].endLockTime = newEnd;
+        lastModification[tokenId] = block.timestamp;
 
         emit IncreaseLockTime(tokenId);
     }
@@ -244,6 +255,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         uint48 oldEndLockTime = locks[tokenId].endLockTime;
         require(oldEndLockTime > block.timestamp, LockExpired());
         locks[tokenId].endLockTime = oldEndLockTime != MAX_UINT48 ? MAX_UINT48 : _newEndLockTime();
+        lastModification[tokenId] = block.timestamp;
         emit TogglePermaLock(tokenId);
     }
 
@@ -331,6 +343,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         _updateReward(newTokenId);
         locks[newTokenId] = Lock({endLockTime: endLockTime, amount: amountToRemove});
         locks[tokenId].amount = newAmount;
+        lastModification[tokenId] = block.timestamp;
         _mint(msg.sender, newTokenId);
 
         emit SplitPosition(tokenId, newTokenId, newAmount, amountToRemove);
@@ -358,10 +371,11 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         uint208 totalAmount = amountA + amountB;
         locks[tokenIdA] = Lock({endLockTime: endLockA < endLockB ? endLockB : endLockA, amount: totalAmount});
         delete locks[tokenIdB];
+        lastModification[tokenIdA] = block.timestamp;
 
         _burn(tokenIdB);
 
-        // Claims the rewards of the burnt position or they will be lost for everÒ
+        // Claims the rewards of the burnt position or they will be lost for ever
         _claimSimple(tokenIdB, msg.sender, isClaimAssUSG);
 
         emit MergePositions(tokenIdA, tokenIdB, totalAmount);
@@ -375,6 +389,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
     function claimSimple(uint256 tokenId, bool isClaimAssUSG) external nonReentrant onlyTokenOwner(tokenId) updateReward(tokenId) {
         bool isClaimable = _claimSimple(tokenId, msg.sender, isClaimAssUSG);
         require(isClaimable, NothingToClaim());
+        lastModification[tokenId] = block.timestamp;
     }
 
     /**
@@ -433,6 +448,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
             }
             // Revert if there is nothing to claim on a position input
             require(isClaimable, NothingToClaim());
+            lastModification[positionId] = block.timestamp;
 
             unchecked {
                 ++positionIndex;
@@ -485,6 +501,16 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         }
     }
 
+    /**
+     * @dev Blocks transfers (not mints/burns) during the cooldown following a modification of the position.
+     */
+    function _update(address to, uint256 tokenId, address auth) internal override returns (address) {
+        if (to != address(0) && _ownerOf(tokenId) != address(0)) {
+            require(block.timestamp >= lastModification[tokenId] + TRANSFER_COOLDOWN, TransferCooldown());
+        }
+        return super._update(to, tokenId, auth);
+    }
+
     function _createLock(uint208 amountIn, bool isPermaLock) internal {
         require(amountIn >= minLock, MinLockAmountNotReached());
 
@@ -506,6 +532,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         require(oldLockTime > block.timestamp, LockExpired());
 
         locks[tokenId] = Lock({endLockTime: oldLockTime != MAX_UINT48 ? _newEndLockTime() : MAX_UINT48, amount: oldAmount + amountIn});
+        lastModification[tokenId] = block.timestamp;
         // Increase the total amount locked
         totalSupplyVsTan += amountIn;
 
@@ -578,11 +605,17 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         emit SetMinLock(_newMinLock);
     }
 
+    function setRewardDistributor(address _rewardDistributor) external onlyOwner {
+        rewardDistributor = _rewardDistributor;
+        emit SetRewardDistributor(_rewardDistributor);
+    }
+
     /**
      * @notice Process rewards for the specified reward tokens
      * @param tokenAmounts Array of reward tokens and their amounts to distribute
      */
-    function processRewards(TokenAmount[] memory tokenAmounts) external onlyOwner updateReward(0) {
+    function processRewards(TokenAmount[] memory tokenAmounts) external updateReward(0) {
+        require(msg.sender == owner || msg.sender == rewardDistributor, OwnableUnauthorizedAccount(msg.sender));
         // Reward tokens updated
         uint256 rewardTokensLength = tokenAmounts.length;
         uint256 timestamp = block.timestamp;
@@ -682,7 +715,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
                             VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function getRewardData(IERC20 erc20) external view isReentrancyGuartEntered returns (Reward memory) {
+    function getRewardData(IERC20 erc20) external view isReentrancyGuardEntered returns (Reward memory) {
         return rewardData[erc20];
     }
 
@@ -691,7 +724,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
      * @param tokenId ID of the locking position
      * @return Lock
      */
-    function getLock(uint256 tokenId) external view isReentrancyGuartEntered returns (Lock memory) {
+    function getLock(uint256 tokenId) external view isReentrancyGuardEntered returns (Lock memory) {
         return locks[tokenId];
     }
 
@@ -700,7 +733,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
      * @param  tokenId Address of the user
      * @return userRewards Array of rewards claimable by the position
      */
-    function claimableRewards(uint256 tokenId) external view isReentrancyGuartEntered returns (TokenAmount[] memory userRewards) {
+    function claimableRewards(uint256 tokenId) external view isReentrancyGuardEntered returns (TokenAmount[] memory userRewards) {
         userRewards = new TokenAmount[](rewardTokens.length);
 
         uint256 rsTanBalance = locks[tokenId].amount;

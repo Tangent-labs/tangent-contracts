@@ -11,7 +11,7 @@ interface IAggregatorStablePriceV3 {
     function MIN_LIQUIDITY() external pure returns (uint256);
     function TVL_MA_TIME() external pure returns (uint256);
 
-    function price_pairs(uint256) external view returns (address pool, bool is_inverse);
+    function price_pairs(uint256) external view returns (address pool, bool is_inverse, bool include_index);
     function n_price_pairs() external view returns (uint256);
     function last_timestamp() external view returns (uint256);
     function last_tvl(uint256) external view returns (uint256);

@@ -45,12 +45,12 @@ contract OraclePendlePTLinearDiscount is OracleBase {
         return _getCurrentDiscount(maturity, baseDiscountPerYear);
     }
 
-    function _getCurrentDiscount(uint256 maturity, uint256 baseDiscountPerYear) internal view returns (uint256) {
+    function _getCurrentDiscount(uint256 _maturity, uint256 _baseDiscountPerYear) internal view returns (uint256) {
         // Computes the time that left before the PT maturity
-        uint256 timeLeft = maturity > block.timestamp ? maturity - block.timestamp : 0;
+        uint256 timeLeft = _maturity > block.timestamp ? _maturity - block.timestamp : 0;
 
         // Computes the % discount estimation of the PT compared to its accounting asset.
-        return (timeLeft * baseDiscountPerYear) / 365 days;
+        return (timeLeft * _baseDiscountPerYear) / 365 days;
     }
 
     /**
