@@ -22,10 +22,11 @@ contract FeeDispatcherTest is MarketDeploymentContext {
 
     uint256 constant AMOUNT_CRV = 10_000 ether;
     address constant BOLD_USDC_POOL = 0xEFc6516323FbD28e80B85A497B65A86243a54B3E;
+    address constant DAO = 0xd2c46b4c28f4B7976d9f87687863c46Bb2f71Dbb;
 
     function setUp() external {
         vm.startPrank(owner);
-        dispatcher = new FeeDispatcher(owner, usg, zappingProxy, USGOracle);
+        dispatcher = new FeeDispatcher(owner, usg, zappingProxy, USGOracle, DAO);
         controlTower.setFeeTreasury(address(dispatcher));
 
         crvOracle = new MockOracle();

@@ -19,6 +19,7 @@ enum CurvePoolType {
 /// @dev    ONLY meant for the FeeDispatcher sell floor, NEVER for collateral pricing.
 ///         The EMA lags a pump, which would let a dump fill below spot: taking the max closes that.
 ///         Spot is manipulable in the same tx, but through the max it can only raise the floor (dump reverts), never lower it.
+///         The EMA can still be dragged over several blocks: ONLY use liquid pools.
 ///         `priceIndex` follows Curve: index k prices coin k+1 in coin 0 (coin 2 => k = 1). Always 0 on 2 coins crypto pools.
 contract OracleCurveEmaOrSpot is OracleBase {
     address public immutable lp;
@@ -35,6 +36,8 @@ contract OracleCurveEmaOrSpot is OracleBase {
         poolType = _detectPoolType(_lp);
         isReversed = _isReversed;
         priceIndex = _priceIndex;
+        // Fails the deployment on a misdetected pool (old stableswap exposing price_oracle()) or a wrong priceIndex
+        _computePrice(1e18);
     }
 
     function latestAnswer(bool isNoFailMode) external view override returns (uint256) {

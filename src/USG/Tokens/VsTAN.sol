@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.22;
+pragma solidity ^0.8.28;
 
 import {ERC721, ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import {IERC4626, IERC20} from "@openzeppelin/contracts/interfaces/IERC4626.sol";
@@ -176,7 +176,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
         _;
     }
 
-    modifier isReentrancyGuartEntered() {
+    modifier isReentrancyGuardEntered() {
         require(!_reentrancyGuardEntered(), ReentrancyGuardReentrantCall());
         _;
     }
@@ -375,7 +375,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
 
         _burn(tokenIdB);
 
-        // Claims the rewards of the burnt position or they will be lost for everÒ
+        // Claims the rewards of the burnt position or they will be lost for ever
         _claimSimple(tokenIdB, msg.sender, isClaimAssUSG);
 
         emit MergePositions(tokenIdA, tokenIdB, totalAmount);
@@ -715,7 +715,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
                             VIEWS
     =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=--=-=-=-= */
 
-    function getRewardData(IERC20 erc20) external view isReentrancyGuartEntered returns (Reward memory) {
+    function getRewardData(IERC20 erc20) external view isReentrancyGuardEntered returns (Reward memory) {
         return rewardData[erc20];
     }
 
@@ -724,7 +724,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
      * @param tokenId ID of the locking position
      * @return Lock
      */
-    function getLock(uint256 tokenId) external view isReentrancyGuartEntered returns (Lock memory) {
+    function getLock(uint256 tokenId) external view isReentrancyGuardEntered returns (Lock memory) {
         return locks[tokenId];
     }
 
@@ -733,7 +733,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
      * @param  tokenId Address of the user
      * @return userRewards Array of rewards claimable by the position
      */
-    function claimableRewards(uint256 tokenId) external view isReentrancyGuartEntered returns (TokenAmount[] memory userRewards) {
+    function claimableRewards(uint256 tokenId) external view isReentrancyGuardEntered returns (TokenAmount[] memory userRewards) {
         userRewards = new TokenAmount[](rewardTokens.length);
 
         uint256 rsTanBalance = locks[tokenId].amount;

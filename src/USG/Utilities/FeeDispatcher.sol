@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.22;
+pragma solidity ^0.8.27;
 
 import {SafeERC20, IERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
@@ -77,7 +77,7 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
     IZappingProxy public immutable zappingProxy;
     IAggregatorStablePriceV3 public immutable usgOracle;
     FeeDispatcherReceiver public immutable receiver;
-    address public constant dao = 0xd2c46b4c28f4B7976d9f87687863c46Bb2f71Dbb;
+    address public dao;
 
     /// @notice Tokens that can be dumped. Collaterals must NEVER be configured.
     mapping(IERC20 => TokenConfig) public tokenConfigs;
@@ -92,8 +92,9 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
     event Dumped(IERC20 indexed tokenIn, uint256 amountIn, uint256 amountOut);
     event Dispatched(uint256 totalUSG);
     event Claimed(IERC20 indexed token, uint256 amount);
-    event SetTokenConfig(IERC20 indexed token, TokenConfig config);
+    event SetTokenConfig(IERC20 indexed token, TokenConfig config, uint256 price);
     event SetActions(DispatchAction[] actions);
+    event SetDao(address dao);
 
     error TokenNotDumpable(IERC20 token);
     error SlippageTooHigh();
@@ -101,13 +102,17 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
     error NotHundredPercent();
     error InvalidAction();
     error MinBelowFloor();
+    error InvalidPrice();
+    error DispatchTooLow();
+    error InvalidDao();
 
-    constructor(address _owner, IERC20 _USG, IZappingProxy _zappingProxy, IAggregatorStablePriceV3 _usgOracle) {
+    constructor(address _owner, IERC20 _USG, IZappingProxy _zappingProxy, IAggregatorStablePriceV3 _usgOracle, address _dao) {
         _transferOwnership(_owner);
+        _setDao(_dao);
         USG = _USG;
         zappingProxy = _zappingProxy;
         usgOracle = _usgOracle;
-        // Deploys direclty the receiver
+        // Deploys directly the receiver
         receiver = new FeeDispatcherReceiver(_USG);
     }
 
@@ -168,7 +173,10 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
     }
 
     function _oracleFloor(uint256 amountIn, TokenConfig memory config, uint256 _usgPrice) internal view returns (uint256) {
-        return _floorFromPrice(amountIn, config.oracle.latestAnswer(false), config, _usgPrice);
+        uint256 tokenPrice = config.oracle.latestAnswer(false);
+        // A 0 price would give a 0 floor, letting anyone take the balance for free
+        require(tokenPrice != 0, InvalidPrice());
+        return _floorFromPrice(amountIn, tokenPrice, config, _usgPrice);
     }
 
     function _floorFromPrice(uint256 amountIn, uint256 tokenPrice, TokenConfig memory config, uint256 _usgPrice) internal pure returns (uint256) {
@@ -185,8 +193,9 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
         uint256[] memory tvls = usgOracle.ema_tvl();
         for (uint256 i; i < tvls.length; ) {
             if (tvls[i] >= MIN_LIQUIDITY) {
-                (address pool, bool isInverse, ) = usgOracle.price_pairs(i);
-                uint256 spot = ICurveStableSwapNG(pool).get_p(0);
+                (address pool, bool isInverse, bool includeIndex) = usgOracle.price_pairs(i);
+                // Same as the aggregator: old pools have no index
+                uint256 spot = includeIndex ? ICurveStableSwapNG(pool).get_p(0) : ICurveStableSwapNG(pool).get_p();
                 if (isInverse) spot = 1e36 / spot;
                 price = Math.min(price, spot);
             }
@@ -255,10 +264,13 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
 
     /**
      * @notice Dumpable tokens with their config, balance held and oracle floor of that balance, for the front end.
-     * @dev    A reverting oracle (e.g. stale feed) gives a floor of 0 instead of reverting the whole view.
+     * @dev    A reverting oracle (e.g. stale feed), token or USG one, gives a floor of 0 instead of reverting the whole view.
      */
     function getTokens() external view returns (TokenWithConfig[] memory tokensWithConfig) {
-        uint256 _usgPrice = usgPrice();
+        uint256 _usgPrice;
+        try this.usgPrice() returns (uint256 p) {
+            _usgPrice = p;
+        } catch {}
         uint256 length = _tokens.length;
         tokensWithConfig = new TokenWithConfig[](length);
         for (uint256 i; i < length; ) {
@@ -267,9 +279,11 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
             uint256 balance = token.balanceOf(address(this));
 
             uint256 floor;
-            try config.oracle.latestAnswer(false) returns (uint256 tokenPrice) {
-                floor = _floorFromPrice(balance, tokenPrice, config, _usgPrice);
-            } catch {}
+            if (_usgPrice != 0) {
+                try config.oracle.latestAnswer(false) returns (uint256 tokenPrice) {
+                    floor = _floorFromPrice(balance, tokenPrice, config, _usgPrice);
+                } catch {}
+            }
 
             tokensWithConfig[i] = TokenWithConfig({token: token, config: config, balance: balance, floor: floor});
             unchecked {
@@ -285,6 +299,7 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
     /**
      * @notice Sets the oracle and max slippage of a dumpable token. Oracle at address(0) makes it not dumpable.
      * @dev    Decimals are read from the token and stored with the config.
+     *         The oracle must answer a non zero price, emitted to be checked: a wrong oracle lets anyone drain the token.
      */
     function setTokenConfig(IERC20 token, IPriceOracle oracle, uint16 maxSlippageBps) external onlyOwner {
         require(token != USG, TokenNotDumpable(token));
@@ -298,13 +313,15 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
             _removeToken(token);
         }
 
-        TokenConfig memory config = TokenConfig({
-            oracle: oracle,
-            maxSlippageBps: maxSlippageBps,
-            decimals: isConfigured ? IERC20Metadata(address(token)).decimals() : 0
-        });
+        uint256 price;
+        if (isConfigured) {
+            price = oracle.latestAnswer(false);
+            require(price != 0, InvalidPrice());
+        }
+
+        TokenConfig memory config = TokenConfig({oracle: oracle, maxSlippageBps: maxSlippageBps, decimals: isConfigured ? IERC20Metadata(address(token)).decimals() : 0});
         tokenConfigs[token] = config;
-        emit SetTokenConfig(token, config);
+        emit SetTokenConfig(token, config, price);
     }
 
     function _removeToken(IERC20 token) internal {
@@ -339,6 +356,19 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
         }
         require(totalBps == BPS, NotHundredPercent());
         emit SetActions(newActions);
+    }
+
+    /**
+     * @notice Sets the receiver of `claim`. Dispatch actions targeting the old DAO must be updated with `setActions`.
+     */
+    function setDao(address _dao) external onlyOwner {
+        _setDao(_dao);
+    }
+
+    function _setDao(address _dao) internal {
+        require(_dao != address(0), InvalidDao());
+        dao = _dao;
+        emit SetDao(_dao);
     }
 
     /**

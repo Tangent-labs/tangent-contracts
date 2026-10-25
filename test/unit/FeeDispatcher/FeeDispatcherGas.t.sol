@@ -34,7 +34,7 @@ contract FeeDispatcherGas is Test {
         address owner = makeAddr("owner");
 
         router = new MockRouter();
-        dispatcher = new FeeDispatcher(owner, USG, new ZappingProxy(IControlTower(address(0))), USG_ORACLE);
+        dispatcher = new FeeDispatcher(owner, USG, new ZappingProxy(IControlTower(address(0))), USG_ORACLE, 0xd2c46b4c28f4B7976d9f87687863c46Bb2f71Dbb);
 
         IPriceOracle eth = new OracleChainlinkWrapper(AddrChainlinkOracle.ETH, 3_900, address(new OracleChainlinkWrapper(AddrRestoneOracle.ETH, 90_000, address(0), "")), "");
         IPriceOracle usdc = new OracleChainlinkWrapper(AddrChainlinkOracle.USDC, 90_000, address(new OracleChainlinkWrapper(AddrRestoneOracle.USDC, 90_000, address(0), "")), "");
