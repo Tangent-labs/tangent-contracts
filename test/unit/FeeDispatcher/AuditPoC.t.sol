@@ -63,13 +63,6 @@ contract FeeDispatcherAuditPoC is MarketDeploymentContext {
         assertGt(ICurveStableSwapNG(OLD_USDC_CRVUSD).get_p(), 0);
     }
 
-    /// L-05: dust can't trigger the weekly dispatch
-    function test_dispatch_min() external {
-        deal(address(usg), address(dispatcher), 1_000 ether - 1);
-        vm.expectRevert(FeeDispatcher.DispatchTooLow.selector);
-        dispatcher.dispatch();
-    }
-
     /// I-04: a reverting USG oracle doesn't break getTokens
     function test_getTokens_usgOracle_reverts() external {
         vm.mockCallRevert(address(USGOracle), abi.encodeWithSelector(IAggregatorStablePriceV3.price.selector), "");

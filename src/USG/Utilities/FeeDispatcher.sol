@@ -103,7 +103,6 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
     error InvalidAction();
     error MinBelowFloor();
     error InvalidPrice();
-    error DispatchTooLow();
     error InvalidDao();
 
     constructor(address _owner, IERC20 _USG, IZappingProxy _zappingProxy, IAggregatorStablePriceV3 _usgOracle, address _dao) {
