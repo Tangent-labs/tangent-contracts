@@ -1,0 +1,10 @@
+﻿Category,Exclude,Rules
+Lockers,,1 CVG = 1 token
+"LPs ETH ( prendre en compte Convex, StakeDao et CVG )",POD,1 CVG = 2 token
+Investors (seed & preseed ),,1 CVG = 1 token ( initial value of the investors )
+Holders,"DAO, Team wallet, Airdrop wallet, Vesting, Bonds, Staking, locking, lps, cvgCVX, bootstraping module",1 CVG = 1 token
+"LPs FRAXBP  ( prendre en compte Convex, StakeDao et CVG )",POD,1 CVG = 2 token
+Stakers,,1 CVG = 1 token
+IBO,,1 CVG unclaimed = 1 token
+WLs,,1 CVG unclaimed = 1 token
+Bonds,,1 CVG unclaimed = 1 token
