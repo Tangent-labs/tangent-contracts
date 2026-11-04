@@ -89,24 +89,31 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
 
     uint256 public lastDispatch;
 
+    /// @notice Min USG held to dispatch
+    uint256 public minDispatch;
+
     event Dumped(IERC20 indexed tokenIn, uint256 amountIn, uint256 amountOut);
     event Dispatched(uint256 totalUSG);
     event Claimed(IERC20 indexed token, uint256 amount);
     event SetTokenConfig(IERC20 indexed token, TokenConfig config, uint256 price);
     event SetActions(DispatchAction[] actions);
     event SetDao(address dao);
+    event SetMinDispatch(uint256 minDispatch);
 
     error TokenNotDumpable(IERC20 token);
     error SlippageTooHigh();
     error DispatchCooldown();
+    error BelowMinDispatch();
     error NotHundredPercent();
     error InvalidAction();
     error MinBelowFloor();
     error InvalidPrice();
     error InvalidDao();
 
-    constructor(address _owner, IERC20 _USG, IZappingProxy _zappingProxy, IAggregatorStablePriceV3 _usgOracle, address _dao) {
+    constructor(address _owner, IERC20 _USG, IZappingProxy _zappingProxy, IAggregatorStablePriceV3 _usgOracle, address _dao, uint256 _lastDispatch) {
         _transferOwnership(_owner);
+        // First dispatch possible at _lastDispatch + DISPATCH_COOLDOWN
+        lastDispatch = _lastDispatch;
         _setDao(_dao);
         USG = _USG;
         zappingProxy = _zappingProxy;
@@ -211,6 +218,7 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
     /**
      * @notice Dispatches the USG held along the actions.
      * @dev    Once per week, so the vsTAN stream and the sUSG unlock can't be spam-reset.
+     *         Needs at least `minDispatch` USG, so a dust dispatch can't burn the week.
      */
     function dispatch() external nonReentrant {
         require(block.timestamp >= lastDispatch + DISPATCH_COOLDOWN, DispatchCooldown());
@@ -218,6 +226,7 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
 
         IERC20 _USG = USG;
         uint256 total = _USG.balanceOf(address(this));
+        require(total >= minDispatch, BelowMinDispatch());
         uint256 length = _actions.length;
 
         for (uint256 i; i < length; ) {
@@ -368,6 +377,11 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
         require(_dao != address(0), InvalidDao());
         dao = _dao;
         emit SetDao(_dao);
+    }
+
+    function setMinDispatch(uint256 _minDispatch) external onlyOwner {
+        minDispatch = _minDispatch;
+        emit SetMinDispatch(_minDispatch);
     }
 
     /**

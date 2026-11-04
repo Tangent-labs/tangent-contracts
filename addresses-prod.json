@@ -11,7 +11,9 @@
     },
     "tokens": {
         "USG": "0xb1c2db5d6ca03fce73dbd304d320bf76c55ae1b1",
-        "sUSG": "0xf17d6f98a5c6eaa99d149079984119e0a4ef6900"
+        "sUSG": "0xf17d6f98a5c6eaa99d149079984119e0a4ef6900",
+        "TAN": "0xe6a705945Bf67a43BBb237B9EbD2C77801483eAc",
+        "vsTAN": "0xc37f599773cfe8d0764075fa86441f5ef973d848"
     },
     "implementations": {
         "convexCrvMarket": "0x68e75bfc46fe4cd2eaa1ceb1fd68990916a0ebfb",

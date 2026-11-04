@@ -26,7 +26,7 @@ contract FeeDispatcherTest is MarketDeploymentContext {
 
     function setUp() external {
         vm.startPrank(owner);
-        dispatcher = new FeeDispatcher(owner, usg, zappingProxy, USGOracle, DAO);
+        dispatcher = new FeeDispatcher(owner, usg, zappingProxy, USGOracle, DAO, block.timestamp - 1 weeks);
         controlTower.setFeeTreasury(address(dispatcher));
 
         crvOracle = new MockOracle();
@@ -313,6 +313,29 @@ contract FeeDispatcherTest is MarketDeploymentContext {
         dispatcher.dispatch();
     }
 
+    function test_dispatch_first_at_constructor_param() external {
+        FeeDispatcher fresh = new FeeDispatcher(owner, usg, zappingProxy, USGOracle, DAO, block.timestamp);
+        vm.expectRevert(FeeDispatcher.DispatchCooldown.selector);
+        fresh.dispatch();
+    }
+
+    function test_dispatch_min() external {
+        _setDefaultActions();
+        vm.prank(usr1);
+        vm.expectRevert(abi.encodeWithSelector(LightOwnable.OwnableUnauthorizedAccount.selector, usr1));
+        dispatcher.setMinDispatch(1_000 ether);
+
+        vm.prank(owner);
+        dispatcher.setMinDispatch(1_000 ether);
+
+        deal(address(usg), address(dispatcher), 1_000 ether - 1);
+        vm.expectRevert(FeeDispatcher.BelowMinDispatch.selector);
+        dispatcher.dispatch();
+
+        deal(address(usg), address(dispatcher), 1_000 ether);
+        dispatcher.dispatch();
+    }
+
     function test_dispatch_bubbles_revert() external {
         _setDefaultActions();
         vm.prank(owner);
@@ -390,7 +413,7 @@ contract FeeDispatcherTest is MarketDeploymentContext {
         uint256 ethPrice = ethOracle.latestAnswer(false);
 
         uint256 ema = pool.price_oracle();
-        uint256 spot = pool.last_prices();
+        uint256 spot = pool.get_dy(1, 0, 1 ether);
         assertEq(fxnOracle.latestAnswer(false), ((ema > spot ? ema : spot) * ethPrice) / 1e18, "max(EMA, spot)");
 
         // Pump FXN: buy it with WETH
@@ -400,7 +423,7 @@ contract FeeDispatcherTest is MarketDeploymentContext {
         pool.exchange(0, 1, 100 ether, 0);
         vm.stopPrank();
 
-        spot = pool.last_prices();
+        spot = pool.get_dy(1, 0, 1 ether);
         ema = pool.price_oracle();
         assertGt(spot, ema, "Spot above EMA after pump");
         assertEq(fxnOracle.latestAnswer(false), (spot * ethPrice) / 1e18, "Takes the spot");
@@ -416,7 +439,7 @@ contract FeeDispatcherTest is MarketDeploymentContext {
         OracleCurveEmaOrSpot crvFromPool = new OracleCurveEmaOrSpot(address(pool), crvUsdOracle, 1, false, "CRV / USD");
 
         uint256 ema = pool.price_oracle(1);
-        uint256 spot = pool.last_prices(1);
+        uint256 spot = pool.get_dy(2, 0, 1 ether);
         assertEq(crvFromPool.latestAnswer(false), ((ema > spot ? ema : spot) * crvUsdOracle.latestAnswer(false)) / 1e18, "max(EMA, spot) of coin 2");
 
         // Close to Chainlink CRV / USD
@@ -470,7 +493,7 @@ contract FeeDispatcherTest is MarketDeploymentContext {
         while (1e36 / pool.get_p(0) < 0.999 ether) pool.exchange(1, 0, 1_000_000e6, 0);
         vm.stopPrank();
 
-        uint256 spotPrice = ((1e36 / pool.get_p(0)) * usdcOracle.latestAnswer(false)) / 1e18;
+        uint256 spotPrice = ((pool.get_dy(0, 1, 1 ether) * 1e12) * usdcOracle.latestAnswer(false)) / 1e18;
         assertLt(boldEmaOnly.latestAnswer(false), depegPrice + 0.001 ether, "EMA-only still at depeg");
         assertEq(boldOracle.latestAnswer(false), spotPrice, "Takes the spot");
         assertGt(boldOracle.latestAnswer(false), boldEmaOnly.latestAnswer(false) + 0.015 ether, "Floor >1.5% above EMA-only");
