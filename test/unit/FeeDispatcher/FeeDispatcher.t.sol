@@ -26,7 +26,7 @@ contract FeeDispatcherTest is MarketDeploymentContext {
 
     function setUp() external {
         vm.startPrank(owner);
-        dispatcher = new FeeDispatcher(owner, usg, zappingProxy, USGOracle, DAO, block.timestamp - 1 weeks);
+        dispatcher = new FeeDispatcher(owner, usg, zappingProxy, USGOracle, DAO, block.timestamp - 1 weeks, 0);
         controlTower.setFeeTreasury(address(dispatcher));
 
         crvOracle = new MockOracle();
@@ -314,7 +314,7 @@ contract FeeDispatcherTest is MarketDeploymentContext {
     }
 
     function test_dispatch_first_at_constructor_param() external {
-        FeeDispatcher fresh = new FeeDispatcher(owner, usg, zappingProxy, USGOracle, DAO, block.timestamp);
+        FeeDispatcher fresh = new FeeDispatcher(owner, usg, zappingProxy, USGOracle, DAO, block.timestamp, 0);
         vm.expectRevert(FeeDispatcher.DispatchCooldown.selector);
         fresh.dispatch();
     }

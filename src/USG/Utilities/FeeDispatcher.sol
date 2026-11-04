@@ -110,10 +110,11 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
     error InvalidPrice();
     error InvalidDao();
 
-    constructor(address _owner, IERC20 _USG, IZappingProxy _zappingProxy, IAggregatorStablePriceV3 _usgOracle, address _dao, uint256 _lastDispatch) {
+    constructor(address _owner, IERC20 _USG, IZappingProxy _zappingProxy, IAggregatorStablePriceV3 _usgOracle, address _dao, uint256 _lastDispatch, uint256 _minDispatch) {
         _transferOwnership(_owner);
         // First dispatch possible at _lastDispatch + DISPATCH_COOLDOWN
         lastDispatch = _lastDispatch;
+        _setMinDispatch(_minDispatch);
         _setDao(_dao);
         USG = _USG;
         zappingProxy = _zappingProxy;
@@ -380,6 +381,10 @@ contract FeeDispatcher is LightOwnable, LightReentrancyGuardTransient {
     }
 
     function setMinDispatch(uint256 _minDispatch) external onlyOwner {
+        _setMinDispatch(_minDispatch);
+    }
+
+    function _setMinDispatch(uint256 _minDispatch) internal {
         minDispatch = _minDispatch;
         emit SetMinDispatch(_minDispatch);
     }
