@@ -39,8 +39,8 @@ struct KickParams {
 /// @notice Locking NFT contract of TAN.
 contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable, ZappingUtil, IVsTan {
     using SafeERC20 for IERC20;
-    /// @notice Duration for which tokens are locked (13 weeks).
-    uint256 public constant LOCK_DURATION = 13 weeks;
+    /// @notice Duration for which tokens are locked (6 weeks).
+    uint256 public constant LOCK_DURATION = 6 weeks;
     /// @notice One week in seconds.
     uint256 internal constant ONE_WEEK = 1 weeks;
     /// @notice Maximum value for a uint48.
@@ -142,7 +142,7 @@ contract VsTAN is LightOwnable, LightReentrancyGuardTransient, ERC721Enumerable,
      * @param _sUSG        sUSG token
      * @param _zappingProxy Zapping proxy contract used for zapping to TAN
      */
-    constructor(address _owner, IControlTower _controlTower, IERC20 _tan, IERC20 _USG, IERC4626 _sUSG, IZappingProxy _zappingProxy, uint256 _minLock) ERC721("VsTAN", "VsTAN") {
+    constructor(address _owner, IControlTower _controlTower, IERC20 _tan, IERC20 _USG, IERC4626 _sUSG, IZappingProxy _zappingProxy, uint256 _minLock) ERC721("vsTAN", "vsTAN") {
         _transferOwnership(_owner);
 
         controlTower = _controlTower;
