@@ -16,7 +16,7 @@ contract TogglePermaLock is MarketDeploymentContext {
 
     function test_togglePermaLock_from_false_to_true() external {
         vm.startPrank(usr1);
-        uint256 oldEndLockTimeExpected = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
+        uint256 oldEndLockTimeExpected = uint48(((block.timestamp + vsTan.LOCK_DURATION()) / 7 days) * 7 days);
 
         (uint48 oldEndLockTime, ) = vsTan.locks(2);
         assertEq(oldEndLockTimeExpected, oldEndLockTime);
@@ -30,7 +30,7 @@ contract TogglePermaLock is MarketDeploymentContext {
 
     function test_togglePermaLock_from_true_to_false() external {
         vm.startPrank(usr1);
-        uint256 nextEndLockTime = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
+        uint256 nextEndLockTime = uint48(((block.timestamp + vsTan.LOCK_DURATION()) / 7 days) * 7 days);
 
         (uint48 oldEndLockTime, ) = vsTan.locks(1);
         assertEq(oldEndLockTime, vsTan.MAX_UINT48());
@@ -45,7 +45,7 @@ contract TogglePermaLock is MarketDeploymentContext {
 
     function test_togglePermaLock_to_true_fails_bcs_lock_over() external {
         vm.startPrank(usr1);
-        skip(13 weeks);
+        skip(vsTan.LOCK_DURATION());
 
         vm.expectRevert(abi.encodeWithSelector(VsTAN.LockExpired.selector));
         vsTan.togglePermaLock(2);

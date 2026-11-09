@@ -37,7 +37,7 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         tan.approve(address(vsTan), fullAmount);
 
         vsTan.createLock(amount0, false);
-        uint48 endLockTime = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
+        uint48 endLockTime = uint48(((block.timestamp + vsTan.LOCK_DURATION()) / 7 days) * 7 days);
         (uint256 endLockTime0, ) = vsTan.locks(1);
 
         verifyReceiveERC20(tan, address(vsTan), amount1);
@@ -62,13 +62,13 @@ contract IncreaseLockAmount is MarketDeploymentContext {
         tan.approve(address(vsTan), MAX_UINT);
 
         vsTan.createLock(amount0, false);
-        uint48 endLockTime0 = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
+        uint48 endLockTime0 = uint48(((block.timestamp + vsTan.LOCK_DURATION()) / 7 days) * 7 days);
 
-        skip(6 weeks);
+        skip(2 weeks);
 
         vsTan.createLock(amount0, false);
 
-        skip(6 weeks);
+        skip(2 weeks);
 
         verifyReceiveERC20(tan, address(vsTan), amount1);
         verifyLostERC20(tan, usr1, amount1);
@@ -77,12 +77,12 @@ contract IncreaseLockAmount is MarketDeploymentContext {
 
         assertERC20Tracking();
 
-        uint48 endLockTime1Expected = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
+        uint48 endLockTime1Expected = uint48(((block.timestamp + vsTan.LOCK_DURATION()) / 7 days) * 7 days);
 
         (uint256 endLockTime1, uint256 amountLocked1) = vsTan.locks(1);
 
         assertEq(endLockTime1Expected, endLockTime1);
-        assertEq(endLockTime1, endLockTime0 + 12 weeks);
+        assertEq(endLockTime1, endLockTime0 + 4 weeks);
 
         assertEq(amountLocked1, fullAmount, "Amount locked on the token is right");
         assertEq(vsTan.totalSupplyVsTan(), fullAmount + amount0, "Total Supply increased properly");

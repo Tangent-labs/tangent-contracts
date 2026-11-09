@@ -46,7 +46,7 @@ contract Unlock is MarketDeploymentContext {
 
     function test_unlock_fails_bcs_token_not_owned() external {
         vm.startPrank(usr2);
-        skip(13 weeks);
+        skip(vsTan.LOCK_DURATION());
 
         vm.expectRevert(abi.encodeWithSelector(VsTAN.NotTokenOwner.selector));
         vsTan.unlock(2, false);

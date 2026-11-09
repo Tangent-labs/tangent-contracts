@@ -18,7 +18,7 @@ contract ClaimTotalSupplyBecomesZero is MarketDeploymentContext {
 
         vm.stopPrank();
 
-        skip(13 weeks);
+        skip(vsTan.LOCK_DURATION());
 
         vm.startPrank(owner);
         deal(address(usg), address(owner), 1_000 ether);
