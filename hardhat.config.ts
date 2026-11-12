@@ -69,6 +69,7 @@ const config: HardhatUserConfig = {
         },
     },
     paths: {
+        sources: "./src",
         cache: "cache_hardhat", // ← FORCE LE DOSSIER
     },
 };

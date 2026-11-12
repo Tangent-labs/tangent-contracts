@@ -15,7 +15,7 @@ contract IncreaseLockTime is MarketDeploymentContext {
     }
 
     function test_increase_time() external {
-        uint256 oldEndLockTimeExpected = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
+        uint256 oldEndLockTimeExpected = uint48(((block.timestamp + vsTan.LOCK_DURATION()) / 7 days) * 7 days);
 
         (uint48 oldEndLockTime, uint208 amountBefore) = vsTan.locks(2);
         assertEq(oldEndLockTimeExpected, oldEndLockTime);
@@ -38,7 +38,7 @@ contract IncreaseLockTime is MarketDeploymentContext {
     }
 
     function test_increase_on_expired_position() external {
-        skip(13 weeks);
+        skip(vsTan.LOCK_DURATION());
         vm.startPrank(usr1);
         vm.expectRevert(abi.encodeWithSelector(VsTAN.LockExpired.selector));
         vsTan.increaseLockTime(2);

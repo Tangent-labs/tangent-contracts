@@ -21,7 +21,7 @@ contract RageQuit is MarketDeploymentContext {
 
         skip(4 weeks + 3 days);
 
-        uint256 nextLockTime = uint48(((block.timestamp + 13 weeks) / 7 days) * 7 days);
+        uint256 nextLockTime = uint48(((block.timestamp + vsTan.LOCK_DURATION()) / 7 days) * 7 days);
 
         uint256 delta = nextLockTime - block.timestamp;
         uint256 penalty = (delta * amount) / vsTan.LOCK_DURATION();
@@ -77,7 +77,7 @@ contract RageQuit is MarketDeploymentContext {
     function test_rageQuit_not_permalocked_and_wait_after_lock() external {
         vm.startPrank(usr1);
 
-        skip(12 weeks);
+        skip(4 weeks);
 
         (uint256 endLockTime, ) = vsTan.locks(2);
 

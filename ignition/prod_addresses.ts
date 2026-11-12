@@ -1,5 +1,7 @@
+import { CURVE_LPS } from "@tangent/defi-resources";
 
-export const PROD_ADDRESSES = {
+export const PROD_ADDRESSES =
+{
     DAO: "0x461B62CB3A7e9Df8f800aE058AE92F855F2c27Ca",
     FEE_TRESO: "0x536d4e9C0944dE2aC6657d610Aa99fA5e97Ce493",
     CONTROL_TOWER: "0xf3f7669dceed2f985815011c19ed68f667267215",
@@ -44,11 +46,14 @@ export const PROD_ADDRESSES = {
             eUSD_USDC: '0xa6069a4a53b564eb0a312e08f5af19ae2ba5d67e',
             reUSD_scrvUSD: '0x161d6fa48b0e0152763c3929a3813bd177fc099f',
             frxUSD_OUSD: '0x56dbc69208044748af4d33392e25fc9336f11931',
-            cbBTC_WBTC: '0x4903f0d3698ddc5ca66040b235de0a2126a41437',
+            msETH_WETH: '0x7b1b38cad63B0715A0adFeEB75E46431b48E73B6',
+            msETH_OETH: '0x2b2962931433FE137fD17CF62Df4b9eC84a7dE00',
+            frxUSD_DUSD: '0x420D2D75c69331Df6ce4a1a74067D68e82670e13',
+            crvUSD_ETH_CRV: '0xb4edf0dd81b2ad31703b61da098401d0c83607bf'
         },
         CONVEX_FXN: {
             reUSD_fxUSD: '0xa63ded87df22ee573567ad1dd87d0a71c8fcd380',
-            fxUSD_USDC: '0x849cf82e0ebcfeab8270cc5a3ea3b26cd481b754'
+            fxUSD_USDC: '0x849cf82e0ebcfeab8270cc5a3ea3b26cd481b754',
         }
     },
     ORACLES: {
@@ -57,13 +62,14 @@ export const PROD_ADDRESSES = {
             USDT: '0xa3e8636213ec899e9ee6e94c1fdde8fae0ba1291',
             PYUSD: '0x01ddf74e6e27d73c12e16047dc78d0398b40ff88',
             USDe: "0x5d634da5e979155ae5f9bf6b56f451d69cb3df9b",
-            ETH: '0xddb637645349d0579fa627f3f583e52f53b7d600'
-
+            ETH: '0xddb637645349d0579fa627f3f583e52f53b7d600',
+            cbBTC: "0x5c50d150d8571098d5b419965ca9b378de60ba9f"
         },
         COIN_FROM_CURVE_LP_FALLBACK: {
             crvUSD: "0x31acd625f66a587fa77c7c7c603240377513ead7",
             RLUSD: "0x747582f3c12dd89219f788cdc152cfc9c7a54e16",
-            USDS: "0xc866d0d6532db2d3904d91dc69b6279d1b4a0e0c"
+            USDS: "0xc866d0d6532db2d3904d91dc69b6279d1b4a0e0c",
+            USDS_V2: "0x66c6391d2e87529cf75de3518a513854a30c4094"
         },
         CHAINLINK: {
             USDC: '0xfc3dff91fb8a7ac53f61d9d465d71d1b89e01fe4',
@@ -72,8 +78,10 @@ export const PROD_ADDRESSES = {
             crvUSD: '0x63f1715e46d9ce230f09a34c7d051ec0f738fe2b',
             RLUSD: '0x8ce9fb9a62dbae1cd8a3abbf5bf1e8b522d2f957',
             USDS: "0xe3adae98edd21c0b4a4c3e05e7e1136dad2163bd",
+            USDS_V2: "0xb42a898a1e5b55d147001d47bb2e0402c8f54924",
             USDe: '0xa3daa1d1e1fe2694db205eec4db7e89b2656c3f4',
-            ETH: '0x0f76534bbb9e5ee2c15f2ef7695afae4ceae9ccc'
+            ETH: '0x0f76534bbb9e5ee2c15f2ef7695afae4ceae9ccc',
+            cbBTC: '0x02447870d9492fabca066e197bb3591593efc629'
 
         },
         COIN_FROM_CURVE_LP: {
@@ -83,9 +91,13 @@ export const PROD_ADDRESSES = {
             OUSD: "0x6094c7944ebca80324f8ea2fe1504904aceb4a28",
             fxUSD: "0x905f644ad88f98a42ed830746b2a96c3378deefb",
             DOLA: "0x0124b3e9a4477ac694b37fbf6314fb5d7ed0b074",
+            DOLA_V2: "0x54620c295c100eec5dd53f501cf96c63e8cf7ffd",
             frxUSD: "0x8aa49a3ba86ed4c9fe8fa787934d2f7860509859",
             eUSD: "0xa8c43f747f17181eef26753371f52b3bb61651be",
-            msETH: "0xa7a0090b16aaea028f5082f203a1f515e3d96e6c"
+            msETH: "0xa7a0090b16aaea028f5082f203a1f515e3d96e6c",
+            OETH: "0x41fa19455b95c252e02e9fd52c9b306dcb59e891",
+            WBTC: "0x00fbd9cf0196b515678376c10fb2418db1eb945e",
+            DUSD: "0x04b5bc0cde3a93dad93cf69747daadfbd8187fdf"
 
         },
         CURVE_LP_STABLE_DUO: {
@@ -102,11 +114,23 @@ export const PROD_ADDRESSES = {
             frxUSD_scrvUSD: "0xf31be70c9d9596b23088125345f044065b0bf886",
             USDC_fxUSD: "0x35c62ac45ddf3079e2daa0b8957862a1800920da",
             reUSD_fxUSD: "0x9f162292bc39f194a3ca87e39700293bd9aa710a",
+            frxUSD_msUSD: "0x1abb39263bcc17c9c3af4c7b51bc2c6dc225c80f",
+            msUSD_fxUSD: "0xca30e7aacfd7c4d16d0d460e188d38150c123d01",
             msETH_WETH: "0x66d7753f2e72a5d64cee1d7ec4e1af2110f8185a",
-            reUSD_sDOLA: "0x48d670D189B4b48757992D36897bCa6E3f889040"
+            msETH_OETH: "0xb53b1e50643ba89e1be280d6e04186f90b698a81",
+            cbBTC_WBTC: "0xbc3066e81f4db2b55be8edde4d5c86ac979a5176",
+            reUSD_sDOLA: "0x48d670D189B4b48757992D36897bCa6E3f889040",
+
+            frxUSD_sUSDS_V2: "0x7ee47d8440928ad1964581bc46819afc46b899ac",
+            frxUSD_sDOLA_V2: "0x7f568a67ae52e8f5cb896de930f8bc3fb89f82bc",
+            reUSD_sDOLA_V2: "0xacb7a989ee3104b94846ab388b31389dc8493ad7",
+
+            frxUSD_DUSD: "0x3c2b25a95840cb29a140b07a98546c117318255b",
+            frxUSD_crvUSD: "0xc0BF3BAe48F9258BBf4a32d3c60b0DE345A45595"
         },
         CURVE_LP_CRYPTOSWAP: {
-            ETH_CVX: "0x55efb3af5206ccec916067a3ab4ef4eb18cf6af8"
+            ETH_CVX: "0x55efb3af5206ccec916067a3ab4ef4eb18cf6af8",
+            crvUSD_ETH_CRV: "0x4F00Afa47A6487bF4540e442d6E71e0AE6f1B0f3"
         }
 
     },

@@ -17,7 +17,7 @@ contract FeeDispatcherAuditPoC is MarketDeploymentContext {
 
     function setUp() external {
         vm.startPrank(owner);
-        dispatcher = new FeeDispatcher(owner, usg, zappingProxy, USGOracle, DAO);
+        dispatcher = new FeeDispatcher(owner, usg, zappingProxy, USGOracle, DAO, block.timestamp - 1 weeks, 0);
         controlTower.setFeeTreasury(address(dispatcher));
         crvOracle = new MockOracle();
         crvOracle.setLastAnswer(0.5 ether);
@@ -73,7 +73,7 @@ contract FeeDispatcherAuditPoC is MarketDeploymentContext {
 
     function test_dao_zero_rejected() external {
         vm.expectRevert(FeeDispatcher.InvalidDao.selector);
-        new FeeDispatcher(owner, usg, zappingProxy, USGOracle, address(0));
+        new FeeDispatcher(owner, usg, zappingProxy, USGOracle, address(0), block.timestamp - 1 weeks, 0);
     }
 
     function test_setDao() external {
