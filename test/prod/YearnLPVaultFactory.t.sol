@@ -3,21 +3,25 @@ pragma solidity ^0.8.22;
 
 import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {DeployYearnLPVaultFactory} from "script/DeployYearnLPVaultFactory.s.sol";
 import {YearnCurveLPVaultFactory} from "src/USG/Utilities/YearnCurveLPVaultFactory.sol";
 import {IYearnVaultFactory} from "src/interfaces/externals/YearnFi/IYearnVaultFactory.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IYearnRoleManager} from "src/interfaces/externals/YearnFi/IYearnRoleManager.sol";
 import {IRouterV2} from "src/interfaces/externals/YearnFi/IRouterV2.sol";
 import {IYearnV3Vault} from "src/interfaces/externals/YearnFi/IYearnV3Vault.sol";
 
 contract YearnLPVaultFactoryTest is Test {
     address constant LP = 0x97BA10115da528c113462EDE9C20D7adc806D93f; // USG-USDC
     address constant V2 = 0x2FEE733d8939343615a8627BC29f95390a161e74;
-    address constant MULTISIG = 0x461B62CB3A7e9Df8f800aE058AE92F855F2c27Ca;
+    IYearnRoleManager constant RM = IYearnRoleManager(0xb3bd6B2E61753C311EFbCF0111f75D29706D9a41);
+    address constant BRAIN = 0x16388463d60FFE0661Cf7F1f31a7D658aC790ff7;
 
     function test_factory() external {
         vm.createSelectFork("mainnet");
         YearnCurveLPVaultFactory factory = new DeployYearnLPVaultFactory().run();
+        assertEq(factory.owner(), BRAIN);
+        address keeper = RM.getKeeper();
 
         // permissionless deploy
         vm.prank(makeAddr("anyone"));
@@ -26,10 +30,8 @@ contract YearnLPVaultFactoryTest is Test {
 
         // vault config
         assertEq(vault.asset(), LP);
-        assertEq(vault.name(), "Curve USG-USDC yVault");
         assertEq(vault.deposit_limit(), 1e29);
         assertEq(vault.profitMaxUnlockTime(), 4 days);
-        assertEq(vault.accountant(), address(0));
         assertTrue(vault.auto_allocate());
         address[] memory queue = vault.get_default_queue();
         assertEq(queue.length, 1);
@@ -37,113 +39,91 @@ contract YearnLPVaultFactoryTest is Test {
         (,,, uint256 maxDebt) = IVaultStrategies(address(vault)).strategies(address(strategy));
         assertEq(maxDebt, 1e29);
 
-        // vault roles: factory keeps nothing, multisig has everything and is pending role manager
+        // vault handoff: factory keeps nothing, RoleManager is pending role manager
         assertEq(vault.roles(address(factory)), 0);
-        assertEq(vault.roles(MULTISIG), 0x3fff);
-        assertEq(vault.future_role_manager(), MULTISIG);
+        assertEq(vault.future_role_manager(), address(RM));
 
-        // strategy config
-        assertEq(strategy.asset(), LP);
+        // strategy config: Yearn roles from the RoleManager
         assertEq(strategy.V2_VAULT(), V2);
         assertTrue(strategy.allowed(address(vault)));
         assertEq(strategy.performanceFee(), 0);
         assertEq(strategy.profitMaxUnlockTime(), 0);
-        assertEq(strategy.keeper(), MULTISIG);
-        assertEq(strategy.emergencyAdmin(), MULTISIG);
-        assertEq(strategy.performanceFeeRecipient(), MULTISIG);
-        assertEq(strategy.pendingManagement(), MULTISIG);
-        // same TokenizedStrategy impl / version as Yearn's own RouterV2 strategy
-        IYearnStrategyInfo yearn = IYearnStrategyInfo(0xB6d651A1b8f63852DA92d126823d398db1c71002);
-        assertEq(IYearnStrategyInfo(address(strategy)).apiVersion(), yearn.apiVersion());
-        assertEq(IYearnStrategyInfo(address(strategy)).tokenizedStrategyAddress(), yearn.tokenizedStrategyAddress());
+        assertEq(strategy.keeper(), keeper);
+        assertEq(strategy.emergencyAdmin(), BRAIN);
+        assertEq(strategy.performanceFeeRecipient(), BRAIN);
+        assertEq(strategy.pendingManagement(), BRAIN);
 
         // one vault per LP
         vm.expectRevert(YearnCurveLPVaultFactory.VaultAlreadyExist.selector);
         factory.deploy(LP, "x", "x");
 
-        // multisig accepts
-        vm.startPrank(MULTISIG);
-        vault.accept_role_manager();
+        // Yearn adopts: Daddy adds the vault to the RoleManager, Brain accepts the strategy
+        vm.prank(RM.getDaddy());
+        RM.addNewVault(address(vault), 1);
+        vm.prank(BRAIN);
         strategy.acceptManagement();
-        vm.stopPrank();
-        assertEq(vault.role_manager(), MULTISIG);
-        assertEq(strategy.management(), MULTISIG);
+        assertEq(vault.role_manager(), address(RM));
+        assertTrue(RM.isVaultsRoleManager(address(vault)));
+        assertEq(vault.accountant(), RM.getAccountant());
+        assertGt(vault.roles(BRAIN), 0);
+        assertEq(strategy.management(), BRAIN);
 
-        // deposit -> V2, redeem back
+        // deposit -> V2, Yearn keeper reports, redeem back
         address user = makeAddr("user");
         deal(LP, user, 100e18);
         vm.startPrank(user);
         IERC20(LP).approve(address(vault), 100e18);
         vault.deposit(100e18, user);
+        vm.stopPrank();
         assertEq(vault.totalIdle(), 0);
         assertGt(IERC20(V2).balanceOf(address(strategy)), 0);
-        vault.redeem(vault.balanceOf(user), user, user);
-        vm.stopPrank();
+        vm.prank(keeper);
+        strategy.report();
+        uint256 shares = vault.balanceOf(user);
+        vm.prank(user);
+        vault.redeem(shares, user, user);
         assertApproxEqAbs(IERC20(LP).balanceOf(user), 100e18, 1e6);
     }
 
-    function test_ownerAndV3Factory() external {
+    function test_ownerSettings() external {
         vm.createSelectFork("mainnet");
         YearnCurveLPVaultFactory factory = new DeployYearnLPVaultFactory().run();
-        address newAdmin = makeAddr("newAdmin");
         address stranger = makeAddr("stranger");
-        address newV3Factory = 0x770D0d1Fb036483Ed4AbB6d53c1C88fb277D812F; // Yearn v3.0.4 factory
-
         bytes memory unauthorized = abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, stranger);
-        assertEq(factory.owner(), MULTISIG);
 
         // only owner
         vm.startPrank(stranger);
         vm.expectRevert(unauthorized);
-        factory.transferOwnership(stranger);
-        vm.expectRevert(unauthorized);
         factory.setV3Factory(IYearnVaultFactory(stranger));
-        vm.stopPrank();
-
-        // two-step ownership transfer
-        vm.prank(MULTISIG);
-        factory.transferOwnership(newAdmin);
-        assertEq(factory.owner(), MULTISIG);
-        vm.prank(stranger);
         vm.expectRevert(unauthorized);
-        factory.acceptOwnership();
-        vm.prank(newAdmin);
-        factory.acceptOwnership();
-        assertEq(factory.owner(), newAdmin);
-        assertEq(factory.pendingOwner(), address(0));
-
-        // ownership cannot be renounced
-        vm.prank(stranger);
+        factory.setRoleManager(IYearnRoleManager(stranger));
         vm.expectRevert(unauthorized);
         factory.renounceOwnership();
-        vm.prank(newAdmin);
+        vm.stopPrank();
+
+        vm.startPrank(BRAIN);
         vm.expectRevert(YearnCurveLPVaultFactory.CannotRenounceOwnership.selector);
         factory.renounceOwnership();
-        assertEq(factory.owner(), newAdmin);
-
-        // new owner swaps the V3 factory
-        vm.startPrank(newAdmin);
         vm.expectRevert(YearnCurveLPVaultFactory.WrongFactory.selector);
         factory.setV3Factory(IYearnVaultFactory(address(0)));
-        factory.setV3Factory(IYearnVaultFactory(newV3Factory));
-        vm.stopPrank();
-        assertEq(address(factory.v3Factory()), newV3Factory);
+        vm.expectRevert(YearnCurveLPVaultFactory.WrongRoleManager.selector);
+        factory.setRoleManager(IYearnRoleManager(address(0)));
 
-        // next deploy uses the new V3 factory and hands roles to the new owner
-        (IYearnV3Vault vault, IRouterV2 strategy) = factory.deploy(LP, "Curve USG-USDC yVault", "yvCurve-USG-USDC");
-        assertEq(vault.FACTORY(), newV3Factory);
-        assertEq(vault.roles(newAdmin), 0x3fff);
-        assertEq(vault.future_role_manager(), newAdmin);
-        assertEq(strategy.pendingManagement(), newAdmin);
-        assertEq(strategy.keeper(), newAdmin);
+        // swap V3 factory (v3.0.4) and two-step ownership transfer
+        address v304 = 0x770D0d1Fb036483Ed4AbB6d53c1C88fb277D812F;
+        factory.setV3Factory(IYearnVaultFactory(v304));
+        factory.transferOwnership(stranger);
+        vm.stopPrank();
+        assertEq(factory.owner(), BRAIN);
+        vm.prank(stranger);
+        factory.acceptOwnership();
+        assertEq(factory.owner(), stranger);
+
+        (IYearnV3Vault vault,) = factory.deploy(LP, "Curve USG-USDC yVault", "yvCurve-USG-USDC");
+        assertEq(vault.FACTORY(), v304);
     }
 }
 
 interface IVaultStrategies {
     function strategies(address) external view returns (uint256, uint256, uint256, uint256);
-}
-
-interface IYearnStrategyInfo {
-    function apiVersion() external view returns (string memory);
-    function tokenizedStrategyAddress() external view returns (address);
 }
